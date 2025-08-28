@@ -5,7 +5,7 @@ import { queryClient } from "~utils/tanstack";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import type { SwapData } from "../../swap.types";
 import { processWanderFee, cleanupFeeProcessingMutex, trackSwapAnalytics } from "./swap-fee-processor";
-import { sendSwapNotification } from "./swap-notifications";
+// import { sendSwapNotification } from "./swap-notifications";
 import { OrderError } from "../../dex/dex.utils";
 
 const SWAP_MONITOR_ALARM_NAME = "swap-monitor";
@@ -147,7 +147,12 @@ async function handleSwapSuccess(swap: SwapData) {
     );
 
     // Send success notification
-    await sendSwapNotification(swap, "success");
+    // await sendSwapNotification(swap, "success");
+
+    // Mark swap to show completion screen when popup opens
+    if (swap.transferId) {
+      await markSwapForCompletionDisplay(swap.transferId);
+    }
 
     log(LOG_GROUP.SWAP, `Swap ${swap.transferId} processed completely`);
   } catch (error) {
@@ -175,7 +180,7 @@ async function handleSwapFailure(swap: SwapData) {
     await trackSwapAnalytics(swap, "Failed");
 
     // Send failure notification
-    await sendSwapNotification(swap, "failed");
+    // await sendSwapNotification(swap, "failed");
 
     log(LOG_GROUP.SWAP, `Swap ${swap.transferId} marked as failed`);
   } catch (error) {
@@ -224,10 +229,22 @@ async function retryFeeProcessing(swap: SwapData) {
 
 /**
  * Start monitoring swaps in the background
+ * Only starts if not already running to prevent interrupting ongoing fee processing
+ * @param forceRestart - If true, will clear existing alarm and restart (use with caution)
  */
-export async function startSwapMonitoring() {
-  // Cancel any existing alarms
-  await browser.alarms.clear(SWAP_MONITOR_ALARM_NAME);
+export async function startSwapMonitoring(forceRestart: boolean = false) {
+  // Check if monitoring is already active
+  const existingAlarm = await browser.alarms.get(SWAP_MONITOR_ALARM_NAME);
+
+  if (existingAlarm && !forceRestart) {
+    log(LOG_GROUP.SWAP, "Swap monitoring is already active, not starting a new one");
+    return;
+  }
+
+  if (existingAlarm && forceRestart) {
+    log(LOG_GROUP.SWAP, "Force restarting swap monitoring (existing alarm will be cleared)");
+    await browser.alarms.clear(SWAP_MONITOR_ALARM_NAME);
+  }
 
   // Schedule immediate check
   await browser.alarms.create(SWAP_MONITOR_ALARM_NAME, {
@@ -235,14 +252,6 @@ export async function startSwapMonitoring() {
   });
 
   log(LOG_GROUP.SWAP, "Swap monitoring started");
-}
-
-/**
- * Stop monitoring swaps
- */
-export async function stopSwapMonitoring() {
-  await browser.alarms.clear(SWAP_MONITOR_ALARM_NAME);
-  log(LOG_GROUP.SWAP, "Swap monitoring stopped");
 }
 
 /**
@@ -302,5 +311,23 @@ export async function cleanupOldSwaps() {
 
   if (removedCount > 0) {
     log(LOG_GROUP.SWAP, `Cleaned up ${removedCount} old completed swaps and their mutexes`);
+  }
+}
+
+/**
+ * Mark a swap as needing to show completion screen when popup opens
+ */
+async function markSwapForCompletionDisplay(transferId: string) {
+  try {
+    await swapsArray.updateWhere(
+      (swap) => swap.transferId === transferId,
+      (swap) => ({
+        ...swap,
+        showCompletionScreen: true,
+      }),
+    );
+    log(LOG_GROUP.SWAP, `Marked swap ${transferId} to show completion screen on next popup open`);
+  } catch (error) {
+    log(LOG_GROUP.SWAP, `Failed to mark swap ${transferId} for completion display`, error);
   }
 }

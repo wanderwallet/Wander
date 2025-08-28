@@ -21,6 +21,8 @@ import { scheduleSwapExecution } from "~utils/agents/swap";
 import { WandAnnouncementPopup } from "~components/popup/home/WandAnnouncementPopup";
 import { AnnouncementsCarousel } from "./swap/components/AnnouncementsCarousel";
 import { SwapAnnouncementPopup } from "./swap/components/SwapAnnouncementPopup";
+import { checkForCompletedSwapToShow } from "./swap/utils/swap.progress";
+import { PopupPaths } from "~wallets/router/popup/popup.routes";
 
 export function HomeView() {
   const theme = useTheme();
@@ -116,6 +118,18 @@ export function HomeView() {
     // WALLET.TYPE JUST FOR KEYSTONE POPUP
     setOpen(announcement && wallet?.type === "hardware");
   }, [wallet, announcement]);
+
+  useAsyncEffect(async () => {
+    // Check for completed swaps to show on popup open
+    try {
+      const completedSwap = await checkForCompletedSwapToShow();
+      if (completedSwap) {
+        navigate(PopupPaths.SwapComplete);
+      }
+    } catch (error) {
+      console.error("Error checking for completed swaps:", error);
+    }
+  }, [navigate]);
 
   return (
     <HomeWrapper>

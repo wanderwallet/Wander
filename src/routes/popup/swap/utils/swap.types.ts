@@ -155,6 +155,7 @@ export interface SwapData {
   timestamp?: number;
   completedAt?: number;
   feeProcessedAt?: number;
+  showCompletionScreen?: boolean;
   monitoringStarted?: boolean;
 }
 

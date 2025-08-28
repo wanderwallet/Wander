@@ -2,6 +2,7 @@ import { swapsArray } from "./swap.utils";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import type { SwapData } from "./swap.types";
 import { cleanupOldSwaps, startSwapMonitoring } from "./alarms/swap-monitor/swap-monitor-alarm.handler";
+import { TempTransactionStorage } from "~utils/storage";
 
 /**
  * Initialize swap monitoring system
@@ -126,4 +127,34 @@ export async function getSwapStats(): Promise<{
     failed,
     needsFeeProcessing,
   };
+}
+
+/**
+ * Check for completed swaps that need to show completion screen
+ * Returns the swap data of the first swap that should be shown
+ */
+export async function checkForCompletedSwapToShow(): Promise<SwapData | null> {
+  try {
+    // Find the first swap that needs to show completion screen
+    const swapToShow = await swapsArray.find((swap) => swap.showCompletionScreen && swap.status === "completed");
+
+    if (!swapToShow) return null;
+
+    await TempTransactionStorage.set("swap-data", swapToShow);
+
+    // Clear the flag so it doesn't show again
+    await swapsArray.updateWhere(
+      (swap) => swap.transferId === swapToShow.transferId,
+      (swap) => ({
+        ...swap,
+        showCompletionScreen: false,
+      }),
+    );
+
+    log(LOG_GROUP.SWAP, `Found completed swap ${swapToShow.transferId} to show completion screen`);
+    return swapToShow;
+  } catch (error) {
+    log(LOG_GROUP.SWAP, "Error checking for completed swaps to show:", error);
+    return null;
+  }
 }
