@@ -3,9 +3,9 @@ import { ExtensionStorage } from "~utils/storage";
 import { Flex } from "~components/common/Flex";
 import SliderMenu from "~components/SliderMenu";
 import browser from "webextension-polyfill";
+import styled from "styled-components";
 
 import swapAnnouncementBackground from "~assets/images/swap/swap_announcement_bg.png";
-import styled from "styled-components";
 
 export const SwapAnnouncementPopup = ({ isOpen, setOpen }) => {
   async function handleClose() {
@@ -25,6 +25,7 @@ export const SwapAnnouncementPopup = ({ isOpen, setOpen }) => {
         backgroundPosition: "center top 32px",
         backgroundRepeat: "no-repeat",
         boxSizing: "border-box",
+        backgroundColor: "#121212",
       }}
       closeIconColor="white"
       fullscreen>
