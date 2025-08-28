@@ -4361,5 +4361,9 @@
         "example": "0.000000000001"
       }
     }
+  },
+  "swap_announcement_title": {
+    "message": "Swap Assets in Seconds",
+    "description": "Swap announcement title text"
   }
 }
