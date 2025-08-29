@@ -9,7 +9,7 @@ import {
   ERR_MSG_NO_ACTIVE_WALLET,
   ERR_MSG_NO_WALLETS_ADDED,
 } from "~utils/auth/auth.constants";
-import type { ModuleAppData } from "~api/background/background-modules";
+import type { ModuleAppData } from "../../background/background-modules";
 import { isNotCancelError } from "~utils/assertions";
 import type { StoredWallet, LocalWallet } from "./wallets.types";
 import { getWallets, getActiveAddress, openOrSelectWelcomePage } from "./wallets.utils";
@@ -339,6 +339,3 @@ export async function getWalletKeyLength(jwk: JWKInterface): Promise<WalletKeyLe
   const match = actualLength === expectedLength;
   return { actualLength, expectedLength, match };
 }
-
-export type { StoredWallet, LocalWallet };
-export { getWallets, getActiveAddress, openOrSelectWelcomePage } from "./wallets.utils";

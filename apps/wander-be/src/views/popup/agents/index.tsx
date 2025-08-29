@@ -13,7 +13,7 @@ import { LiquidOpsAgentListItem } from "./components/LiquidOpsAgentListItem";
 import { useLocation } from "~wallets/router/router.utils";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import { AOMintingPausedListItem } from "./components/AOMintingPausedListItem";
-import { useAOYieldLatestAgent } from "~utils/agents/hooks";
+import { useAOYieldLatestAgent } from "../../../../../../libs/core/src/lib/utils/agents/hooks";
 import { PageType, trackPage } from "~utils/analytics";
 import { useActiveTokens } from "./liquidops/utils/hooks/useAvailableTokens";
 import { HAS_SHOWN_AGENTS_EXPLAINER_POPUP } from "~utils/agents/constants";

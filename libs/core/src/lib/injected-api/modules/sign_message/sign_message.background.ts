@@ -1,5 +1,5 @@
 import { freeDecryptedWallet } from "~wallets/encryption";
-import type { BackgroundModuleFunction } from "~api/background/background-modules";
+import type { BackgroundModuleFunction } from "../../background/background-modules";
 import { getActiveKeyfile } from "~wallets";
 import { isArrayBuffer, isNumberArray, isSignMessageOptions } from "~utils/assertions";
 import { signAuthKeystone, type AuthKeystoneData } from "../sign/sign_auth.js";

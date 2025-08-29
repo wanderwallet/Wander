@@ -1,12 +1,12 @@
-import { createContextMenus } from "~utils/context_menus";
-import type { StorageChange } from "~utils/runtime";
-import { getAppURL } from "~utils/format";
-import { updateIcon } from "~utils/icon";
-import { forEachTab } from "~applications/tab";
-import { getActiveTab } from "~applications";
-import Application from "~applications/application";
-import { isomorphicSendMessage } from "~isomorphic-messaging";
-import { getCachedAuthPopupWindowTabID } from "~utils/auth/auth.utils";
+import { isomorphicSendMessage } from "@wanderapp/isomorphic-messaging";
+import { Application } from "../../../../../applications/application.class";
+import { getActiveTab } from "../../../../../applications/application.utils";
+import { forEachTab } from "../../../../../applications/tab";
+import { getCachedAuthPopupWindowTabID } from "../../../../../auth/auth.utils";
+import { createContextMenus } from "../../../../../utils/browser-extension/context-menus";
+import { updateIcon } from "../../../../../utils/browser-extension/icon";
+import { StorageChange } from "../../../../../utils/browser-extension/runtime";
+import { getAppURL } from "../../../../../utils/format/format";
 
 /**
  * App disconnected listener. Sends a message

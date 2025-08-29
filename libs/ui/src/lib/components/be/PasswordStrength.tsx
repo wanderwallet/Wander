@@ -4,7 +4,6 @@ import { useMemo } from "react";
 import browser from "webextension-polyfill";
 import styled from "styled-components";
 import { Check, X, AlertTriangle } from "@untitled-ui/icons-react";
-import { IS_EMBEDDED_APP } from "~utils/_embedded/embedded.constants";
 
 export interface PasswordStrengthProps {
   password: string;
@@ -40,7 +39,7 @@ export function PasswordStrength({ password, passwordsMatch, minLength }: Passwo
       case "Strong":
         return {
           bars: 4,
-          color: IS_EMBEDDED_APP ? "#007229" : "#5BF16E",
+          color: import.meta.env?.VITE_IS_EMBEDDED_APP === "1" ? "#007229" : "#5BF16E",
           text: `password_strength_${strengthIndex}`,
         };
       default:
@@ -125,10 +124,10 @@ const Bar = styled.div<{ active: boolean }>`
   height: 4px;
   background-color: ${(props) =>
     props.active
-      ? IS_EMBEDDED_APP
+      ? import.meta.env?.VITE_IS_EMBEDDED_APP === "1"
         ? "rgba(13, 108, 233)"
         : props.theme.theme
-      : IS_EMBEDDED_APP
+      : import.meta.env?.VITE_IS_EMBEDDED_APP === "1"
         ? "rgba(13, 108, 233, 0.50)"
         : "rgba(107, 87, 249, 0.50)"};
   transition: all 0.23s ease-in-out;
@@ -140,7 +139,7 @@ const StrengthChecklist = styled.div`
   gap: 0.45rem;
 `;
 
-const iconColors = IS_EMBEDDED_APP
+const iconColors = import.meta.env?.VITE_IS_EMBEDDED_APP === "1"
   ? ({
       valid: "#007229",
       warning: "#B90",

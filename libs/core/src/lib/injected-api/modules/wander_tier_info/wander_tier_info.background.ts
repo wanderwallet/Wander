@@ -1,4 +1,4 @@
-import type { BackgroundModuleFunction } from "~api/background/background-modules";
+import type { BackgroundModuleFunction } from "../../background/background-modules";
 import { ExtensionStorage } from "~utils/storage/storage";
 import { getActiveTier } from "~utils/tier/utils";
 import type { ActiveTier } from "~utils/tier/types";

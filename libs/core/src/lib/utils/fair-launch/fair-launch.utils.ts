@@ -3,7 +3,7 @@ import { createDataItemKeystoneSigner, createDataItemSigner, getTagValue, type T
 import { defaultConfig } from "~tokens/aoTokens/config";
 import { retryWithDelay } from "~utils/promises/retry";
 import { getActiveAddress, getActiveKeyfile, type DecryptedWallet } from "~wallets";
-import type { FlpTokenInfo } from "./fair_launch.types";
+import type { FlpTokenInfo } from "./fair-launch.types";
 import { isLocalWallet } from "~utils/assertions";
 import { freeDecryptedWallet } from "~wallets/encryption";
 import { queryClient } from "~utils/tanstack";
@@ -12,7 +12,7 @@ import { CACHE_API } from "~_constants/api";
 import { getAoTokens } from "~tokens";
 import { ExtensionStorage } from "~utils/storage";
 import { LOG_GROUP, log } from "~utils/log/log.utils";
-import { PI_FLP_ID } from "./fair_launch.constants";
+import { PI_FLP_ID } from "./fair-launch.constants";
 import { KeystoneSigner } from "~wallets/hardware/keystone";
 import { Id, Owner, WNDR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 

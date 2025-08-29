@@ -1,13 +1,12 @@
-import { isAppInfo, isGateway, isNotEmptyArray, isPermissionsArray } from "~utils/assertions";
-import { getMissingPermissions } from "~applications/permissions";
-import { createContextMenus } from "~utils/context_menus";
-import type { BackgroundModuleFunction } from "~api/background/background-modules";
-import { updateIcon } from "~utils/icon";
-import Application from "~applications/application";
-import { requestUserAuthorization } from "../../../utils/auth/auth.utils";
-import { getActiveAddress, getWallets, openOrSelectWelcomePage } from "~wallets";
-import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
-import { ERR_MSG_NO_WALLETS_ADDED } from "~utils/auth/auth.constants";
+import { Application } from "../../../applications/application.class";
+import { getMissingPermissions } from "../../../applications/permissions";
+import { ERR_MSG_NO_WALLETS_ADDED } from "../../../auth/auth.constants";
+import { requestUserAuthorization } from "../../../auth/auth.utils";
+import { isAppInfo, isGateway, isNotEmptyArray, isPermissionsArray } from "../../../utils/assertions/assertions";
+import { createContextMenus } from "../../../utils/browser-extension/context-menus";
+import { updateIcon } from "../../../utils/browser-extension/icon";
+import { getActiveAddress, getWallets, openOrSelectWelcomePage } from "../../../wallets/wallets.utils";
+import type { BackgroundModuleFunction } from "../../background/background-modules";
 
 const background: BackgroundModuleFunction<void> = async (
   appData,

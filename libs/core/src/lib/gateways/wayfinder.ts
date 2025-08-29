@@ -1,10 +1,10 @@
-import { sortGatewaysByOperatorStake } from "~utils/wayfinder/wayfinder";
 import { clGateway, defaultGateway, defaultGateways, goldskyGateway, suggestedGateways, type Gateway } from "./gateway";
 import { useEffect, useState } from "react";
 import { getGatewayCache } from "./cache";
-import { getSetting } from "~utils/settings/index";
 import Arweave from "arweave";
-import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import { sortGatewaysByOperatorStake } from "../utils/wayfinder/wayfinder";
+import { useAsyncEffect } from "../utils/react/useAsyncEffect";
+import { getSetting } from "../utils/settings";
 
 export const FULL_HISTORY: Requirements = { startBlock: 0 };
 

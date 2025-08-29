@@ -1,6 +1,6 @@
-import type { PermissionType } from "~applications/permissions";
-import type { BackgroundModuleFunction } from "~api/background/background-modules";
-import Application from "~applications/application";
+import { Application } from "../../../applications/application.class";
+import type { PermissionType } from "../../../applications/permissions";
+import type { BackgroundModuleFunction } from "../../background/background-modules";
 
 const background: BackgroundModuleFunction<PermissionType[]> = async (appData) => {
   // construct app

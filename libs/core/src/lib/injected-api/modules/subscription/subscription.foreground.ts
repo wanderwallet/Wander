@@ -1,5 +1,5 @@
 import type { SubscriptionData } from "~subscriptions/subscription";
-import type { ModuleFunction } from "~api/module";
+import type { ModuleFunction } from "../../module";
 
 const foreground: ModuleFunction<SubscriptionData[]> = (data) => {
   // Validate required fields

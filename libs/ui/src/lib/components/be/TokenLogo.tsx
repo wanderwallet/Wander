@@ -1,12 +1,6 @@
 import { useMemo, useState } from "react";
-import { Image } from "~components/common/Image/Image";
-import { useAsyncEffect } from "~utils/react/useAsyncEffect";
-import { getUserAvatar } from "~lib/avatar";
-import type { Token } from "~tokens/token";
-import type { TokenInfo } from "~tokens/aoTokens/ao";
-import { FULL_HISTORY, useGateway } from "~gateways/wayfinder";
-import { concatGatewayURL } from "~gateways/utils";
-import { AR_PROCESS_ID, AR_LOGO } from "~tokens/aoTokens/ao.constants";
+import { Image } from "../common/Image/Image";
+import { useAsyncEffect, getUserAvatar, type Token, type TokenInfo, FULL_HISTORY, useGateway, concatGatewayURL, AR_PROCESS_ID, AR_LOGO } from "@wanderapp/core";
 
 import tokenPlaceholder from "url:/assets/images/tokens/loading-token.svg?no-inline";
 import arLogoLight from "url:/assets/ar/ar-logo-light.svg";
@@ -25,7 +19,7 @@ function isURI(token: string | Partial<Token>): token is string {
   return typeof token === "string" && (token.startsWith("chrome-extension://") || token.startsWith("https://"));
 }
 
-function getTokenFallbackImage(token: string | Partial<Token>, name: string = "") {
+function getTokenFallbackImage(token: string | Partial<Token>, name = "") {
   const fallbackSymbol = (typeof token === "object" && token.ticker) || (name.includes(" ") ? "" : name) || "?";
 
   const fontSize = Math.max(1, 5 - Math.max(0, fallbackSymbol.length - 3) * 0.75);

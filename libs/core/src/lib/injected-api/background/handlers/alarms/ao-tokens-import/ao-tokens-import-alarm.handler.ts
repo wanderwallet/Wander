@@ -1,23 +1,14 @@
 import Arweave from "arweave";
 import type { Alarms } from "webextension-polyfill";
-import { getAoTokens, getAoTokensCache, getAoTokensAutoImportRestrictedIds } from "~tokens";
-import { getTokenInfo } from "~tokens/aoTokens/ao";
-import {
-  AO_TOKENS,
-  AO_TOKENS_AUTO_IMPORT_RESTRICTED_IDS,
-  AO_TOKENS_IMPORT_TIMESTAMP,
-  AO_TOKENS_LAST_BLOCK_HEIGHT,
-  gateway,
-  getNoticeTransactions,
-  tokenStorageMutex,
-  verifyCollectiblesType,
-} from "~tokens/aoTokens/sync";
-import { withRetry } from "~utils/promises/retry";
-import { timeoutPromise } from "~utils/promises/timeout";
-import { PersistentStorage } from "~utils/storage/storage";
-import { getActiveAddress } from "~wallets";
-import { checkAndImportFairLaunchTokens } from "~utils/fair_launch/fair_launch.alarms";
-import { FAIR_LAUNCH_TOKENS_ALARM_NAME } from "~utils/fair_launch/fair_launch.constants";
+import { getAoTokens, getAoTokensAutoImportRestrictedIds, getAoTokensCache } from "../../../../../tokens";
+import { PersistentStorage } from "../../../../../utils/storage/storage";
+import { AO_TOKENS, AO_TOKENS_AUTO_IMPORT_RESTRICTED_IDS, AO_TOKENS_IMPORT_TIMESTAMP, AO_TOKENS_LAST_BLOCK_HEIGHT, gateway, getNoticeTransactions, tokenStorageMutex, verifyCollectiblesType } from "../../../../../tokens/aoTokens/sync";
+import { withRetry } from "../../../../../utils/promises/retry";
+import { getTokenInfo } from "../../../../../tokens/aoTokens/ao";
+import { timeoutPromise } from "../../../../../utils/promises/timeout";
+import { getActiveAddress } from "../../../../../wallets/wallets.utils";
+import { checkAndImportFairLaunchTokens } from "../../../../../utils/fair-launch/fair-launch.alarms";
+import { FAIR_LAUNCH_TOKENS_ALARM_NAME } from "../../../../../utils/fair-launch/fair-launch.constants";
 
 /**
  *  Import AO Tokens

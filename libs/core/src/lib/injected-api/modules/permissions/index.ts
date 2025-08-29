@@ -1,4 +1,4 @@
-import type { ModuleProperties } from "~api/module";
+import type { ModuleProperties } from "../../module";
 
 const permissions: ModuleProperties = {
   functionName: "getPermissions",

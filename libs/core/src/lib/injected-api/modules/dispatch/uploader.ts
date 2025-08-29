@@ -1,5 +1,5 @@
 import type { DataItem } from "@dha-team/arbundles";
-import { defaultBundler, pricingEndpoint } from "~applications/application";
+import { defaultBundler, pricingEndpoint } from "../../../applications/application.class";
 
 /**
  * Upload a data entry to a Bundlr node

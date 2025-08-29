@@ -1,6 +1,6 @@
 import { isRawDataItem, isSignatureOptions } from "~utils/assertions";
 import { freeDecryptedWallet } from "~wallets/encryption";
-import type { BackgroundModuleFunction } from "~api/background/background-modules";
+import type { BackgroundModuleFunction } from "../../background/background-modules";
 import { createData } from "@dha-team/arbundles";
 import Application from "~applications/application";
 import { getActiveKeyfile, getActiveWallet } from "~wallets";

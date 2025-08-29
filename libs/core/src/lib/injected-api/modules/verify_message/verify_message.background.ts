@@ -1,5 +1,5 @@
 import { freeDecryptedWallet } from "~wallets/encryption";
-import type { BackgroundModuleFunction } from "~api/background/background-modules";
+import type { BackgroundModuleFunction } from "../../background/background-modules";
 import { getActiveKeyfile } from "~wallets";
 import { isString } from "typed-assert";
 import { isArrayBuffer, isLocalWallet, isNumberArray, isSignMessageOptions } from "~utils/assertions";

@@ -1,28 +1,23 @@
-import { ExtensionStorage } from "~utils/storage/storage";
-import { getActiveAddress } from "~wallets";
-import iconUrl from "url:/assets/icon512.png";
 import browser, { type Alarms } from "webextension-polyfill";
-import { arNotificationsHandler } from "~api/background/handlers/alarms/notifications/notifications-alarm.utils";
-import {
-  ALL_AR_RECEIVER_QUERY,
-  ALL_AR_SENT_QUERY,
-  AO_LIQUIDOPS_RECEIVER_QUERY,
-  AO_RECEIVER_QUERY,
-  AO_SENT_QUERY,
-  AR_RECEIVER_QUERY,
-  AR_SENT_QUERY,
-} from "~notifications/utils";
+
+import iconUrl from "url:/assets/icon512.png";
+import { ExtensionStorage } from "../../../../../utils/storage/storage";
+import { getActiveAddress } from "../../../../../wallets/wallets.utils";
+import { arNotificationsHandler } from "./notifications-alarm.utils";
+import { ALL_AR_RECEIVER_QUERY, ALL_AR_SENT_QUERY, AO_LIQUIDOPS_RECEIVER_QUERY, AO_RECEIVER_QUERY, AO_SENT_QUERY, AR_RECEIVER_QUERY, AR_SENT_QUERY } from "../../../../../notifications/utils";
 
 export async function handleNotificationsAlarm(alarm?: Alarms.Alarm) {
   if (!alarm?.name.startsWith("notifications")) return;
 
   const notificationSetting: boolean = await ExtensionStorage.get("setting_notifications");
+
   let aoNotificationSetting: string[] | undefined = await ExtensionStorage.get("setting_notifications_customize");
 
   if (!aoNotificationSetting) {
     await ExtensionStorage.set("setting_notifications_customize", ["default"]);
     aoNotificationSetting = ["default"];
   }
+
   const address = await getActiveAddress();
 
   try {

@@ -1,8 +1,8 @@
-import { addSubscription, getSubscriptionData } from "~subscriptions";
-import { getActiveAddress } from "~wallets";
 import type { Alarms } from "webextension-polyfill";
-import { handleSubscriptionPayment } from "~subscriptions/payments";
-import type { SubscriptionData } from "~subscriptions/subscription";
+import { getActiveAddress } from "../../../../../wallets/wallets.utils";
+import { addSubscription, getSubscriptionData } from "../../../../../subscriptions";
+import { SubscriptionData } from "../../../../../subscriptions/subscription";
+import { handleSubscriptionPayment } from "../../../../../subscriptions/payments";
 
 /**
  * + fetch subscription auto withdrawal allowance

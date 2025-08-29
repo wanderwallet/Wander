@@ -6,7 +6,15 @@
     "jsx": "react-jsx",
     "lib": ["dom"],
     "types": ["node", "@nx/react/typings/cssmodule.d.ts", "@nx/react/typings/image.d.ts", "vite/client"],
-    "rootDir": "src"
+    "rootDir": "src",
+
+    // Added:
+
+    "paths": {
+      "@wanderapp/isomorphic-messaging": ["./libs/isomorphic-messaging/src/index.ts"],
+      "@wanderapp/core": ["./libs/core/src/index.ts"],
+      "@wanderapp/ui": ["./libs/ui/src/index.ts"]
+    }
   },
   "exclude": [
     "out-tsc",

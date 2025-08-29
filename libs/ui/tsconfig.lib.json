@@ -5,7 +5,14 @@
     "types": ["node", "@nx/react/typings/cssmodule.d.ts", "@nx/react/typings/image.d.ts", "vite/client"],
     "rootDir": "src",
     "jsx": "react-jsx",
-    "tsBuildInfoFile": "dist/tsconfig.lib.tsbuildinfo"
+    "tsBuildInfoFile": "dist/tsconfig.lib.tsbuildinfo",
+
+    // Added:
+
+    "paths": {
+      "@wanderapp/isomorphic-messaging": ["./libs/isomorphic-messaging/src/index.ts"],
+      "@wanderapp/core": ["./libs/core/src/index.ts"]
+    }
   },
   "exclude": [
     "**/node_modules",

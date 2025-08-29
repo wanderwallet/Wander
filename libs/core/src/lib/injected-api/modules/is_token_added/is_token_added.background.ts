@@ -1,4 +1,4 @@
-import type { BackgroundModuleFunction } from "~api/background/background-modules";
+import type { BackgroundModuleFunction } from "../../background/background-modules";
 
 const background: BackgroundModuleFunction<boolean> = async (_, id: string) => {
   throw new Error("The isTokenAdded API is deprecated and removed.");

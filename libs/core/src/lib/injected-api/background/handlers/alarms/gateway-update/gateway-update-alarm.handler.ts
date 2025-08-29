@@ -1,8 +1,10 @@
-import { extractGarItems, pingUpdater } from "~lib/wayfinder";
 import { type Alarms } from "webextension-polyfill";
-import type { GatewayAddressRegistryItem } from "~gateways/types";
-import { RETRY_ALARM, scheduleGatewayUpdate, UPDATE_ALARM, updateGatewayCache } from "~gateways/cache";
 import { ARIO } from "@ar.io/sdk/web";
+import { GatewayAddressRegistryItem } from "../../../../../gateways/types";
+import { RETRY_ALARM, scheduleGatewayUpdate, UPDATE_ALARM, updateGatewayCache } from "../../../../../gateways/cache";
+import { extractGarItems, pingUpdater } from "../../../../../utils/wayfinder/wayfinder";
+
+// TODO: Update paths so that libs don't suggest importing from themselves...
 
 /**
  * Gateway cache update call. Usually called by an alarm,

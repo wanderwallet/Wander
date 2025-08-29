@@ -1,5 +1,5 @@
-import type { TransformFinalizer } from "~api/foreground/foreground-modules";
-import type { ModuleFunction } from "~api/module";
+import { TransformFinalizer } from "../../foreground/foreground-modules";
+import type { ModuleFunction } from "../../module";
 
 const foreground: ModuleFunction<unknown> = (data, options) => {
   if (options.algorithm) {

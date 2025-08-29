@@ -5,7 +5,7 @@ import { log, LOG_GROUP } from "../log/log.utils";
 import { INACTIVITY } from "./inactivity.constants";
 import throttle from "lodash.throttle";
 import type { AutoLockSettings } from "./inactivity.types";
-import type { StorageChange } from "~utils/runtime";
+import type { StorageChange } from "../browser-extension/runtime";
 
 export class InactivityManager {
   private lastActivityCheckTime = 0;

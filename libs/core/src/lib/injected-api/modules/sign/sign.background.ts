@@ -1,6 +1,6 @@
 import { arconfettiIcon, calculateReward } from "./utils.js";
 import { freeDecryptedWallet } from "~wallets/encryption";
-import type { BackgroundModuleFunction } from "~api/background/background-modules";
+import type { BackgroundModuleFunction } from "../../background/background-modules";
 import { type JWKInterface } from "arweave/web/lib/wallet";
 import { isSignatureOptions, isSplitTransaction } from "~utils/assertions";
 import { cleanUpChunks, getChunks } from "./chunks.js";

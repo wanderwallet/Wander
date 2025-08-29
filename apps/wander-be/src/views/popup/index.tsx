@@ -17,7 +17,7 @@ import { useLocation } from "~wallets/router/router.utils";
 import browser from "webextension-polyfill";
 import CreateWanderAgentCTA from "./agents/components/CreateWanderAgentCTA";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
-import { scheduleSwapExecution } from "~utils/agents/swap";
+import { scheduleSwapExecution } from "../../../../../libs/core/src/lib/utils/agents/swap";
 import { WandAnnouncementPopup } from "~components/popup/home/WandAnnouncementPopup";
 import { ActivityNotificationsNotice } from "~components/popup/home/ActivityNotificationsNotice";
 import { isStargridAnnouncementActive } from "~utils/announcements";

@@ -10,23 +10,21 @@ import type { AuthRequest, AuthRequestStatus, SignAuthRequest, SignKeystoneAuthR
 import { compareConnectAuthRequests, replyToAuthRequest, stopKeepAlive } from "./auth.utils";
 import Arweave from "arweave";
 import { bytesFromChunks, constructTransaction, type SplitTransaction } from "../injected-api/modules/sign/transaction_builder";
-import { isomorphicOnMessage } from "~isomorphic-messaging";
+import { isomorphicOnMessage } from "@wanderapp/isomorphic-messaging";
 import type { IBridgeMessage } from "@arconnect/webext-bridge";
-import { isError } from "~utils/error/error.utils";
-import { postEmbeddedMessage } from "~utils/_embedded/utils/messages/embedded-messages.utils";
-import { getDecryptionKey } from "~wallets/auth";
-import { addSignOutListener, removeSignOutListener } from "~utils/_embedded/embedded.utils";
 import { defaultGateway } from "../gateways/gateway";
 import { log, LOG_GROUP } from "../utils/log/log.utils";
 import type { Chunk } from "../injected-api/modules/sign/chunks";
+import { isError } from "../utils/error/error.utils";
+import { getDecryptionKey } from "../wallets/auth";
 
-interface AuthRequestsContextState {
+export interface AuthRequestsContextState {
   authRequests: AuthRequest[];
   currentAuthRequestIndex: number;
   lastCompletedAuthRequest: null | AuthRequest;
 }
 
-interface AuthRequestsContextData extends AuthRequestsContextState {
+export interface AuthRequestsContextData extends AuthRequestsContextState {
   setCurrentAuthRequestIndex: (currentAuthRequestIndex: number) => void;
   completeAuthRequest: (authID: string, data: any) => Promise<void>;
   closeAuthPopup: (delay?: number) => () => void;
@@ -44,6 +42,8 @@ export const AuthRequestsContext = createContext<AuthRequestsContextData>({
   completeAuthRequest: async () => {},
   closeAuthPopup: (delay?: number) => () => {},
 });
+
+// TODO: Add props for onRequestChange, addSignOutListener...
 
 export function AuthRequestsProvider({ children }: PropsWithChildren) {
   const [{ authRequests, currentAuthRequestIndex, lastCompletedAuthRequest }, setAuthRequestContextState] =

@@ -1,12 +1,12 @@
-import { scheduleGatewayUpdate } from "~gateways/cache";
 import browser, { type Runtime } from "webextension-polyfill";
-import { loadTokens } from "~tokens/token";
-import { initializeARBalanceMonitor } from "~utils/analytics";
-import { handleGatewayUpdateAlarm } from "~api/background/handlers/alarms/gateway-update/gateway-update-alarm.handler";
-import { openOrSelectWelcomePage } from "~wallets";
-import { ExtensionStorage } from "~utils/storage/storage.js";
-import { resetAllPermissions } from "./permissions.handler.js";
-import { scheduleFairLaunchTokensAlarm } from "~utils/fair_launch/fair_launch.alarms";
+import { scheduleGatewayUpdate } from "../../../../../gateways/cache";
+import { loadTokens } from "../../../../../tokens/token";
+import { ExtensionStorage } from "../../../../../utils/storage/storage";
+import { openOrSelectWelcomePage } from "../../../../../wallets/wallets.utils";
+import { handleGatewayUpdateAlarm } from "../../alarms/gateway-update/gateway-update-alarm.handler";
+import { resetAllPermissions } from "./permissions.handler";
+import { initializeARBalanceMonitor } from "../../../../../utils/analytics/analytics";
+import { scheduleFairLaunchTokensAlarm } from "../../../../../utils/fair-launch/fair-launch.alarms";
 
 /**
  * On extension installed event handler

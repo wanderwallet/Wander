@@ -1,11 +1,8 @@
 import type { Alarms } from "webextension-polyfill";
-import {
-  AO_YIELD_AGENT_ALARM_NAME,
-  AO_YIELD_AGENT_RECENT_TXS_CHECK_ALARM_NAME,
-  AO_YIELD_AGENT_SYNC_ALARM_NAME_PREFIX,
-} from "~utils/agents/constants";
-import { checkIfRecentTxSwapSucceeded, executeAutomaticSwapIfNeeded } from "~utils/agents/swap";
-import { checkAndSyncAgents } from "~utils/agents/sync";
+import { AO_YIELD_AGENT_ALARM_NAME, AO_YIELD_AGENT_RECENT_TXS_CHECK_ALARM_NAME, AO_YIELD_AGENT_SYNC_ALARM_NAME_PREFIX } from "../../../../../agents/constants";
+import { executeAutomaticSwapIfNeeded, checkIfRecentTxSwapSucceeded } from "../../../../../agents/swap";
+import { checkAndSyncAgents } from "../../../../../agents/sync";
+
 
 /**
  * Alarm handler for executing automatic token swaps via AO yield agent.

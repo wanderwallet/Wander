@@ -1,9 +1,9 @@
 import { getMissingPermissions, type PermissionType } from "./permissions";
 import { type Allowance, type AllowanceBigNumber, defaultAllowance } from "./allowance";
-import { PersistentStorage, useStorage } from "~utils/storage/storage";
 import type { Storage } from "@plasmohq/storage";
-import { defaultGateway, type Gateway } from "~gateways/gateway";
 import BigNumber from "bignumber.js";
+import { PersistentStorage, useStorage } from "../utils/storage/storage";
+import { defaultGateway, Gateway } from "../gateways/gateway";
 
 export const PREFIX = "app_";
 export const defaultBundler = "https://turbo.ardrive.io";

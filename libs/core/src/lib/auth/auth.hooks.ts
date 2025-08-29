@@ -1,7 +1,7 @@
 import { useContext } from "react";
-import { ERR_MSG_USER_CANCELLED_AUTH } from "~utils/auth/auth.constants";
-import { AuthRequestsContext } from "~utils/auth/auth.provider";
-import type { AuthRequestByType, AuthType } from "~utils/auth/auth.types";
+import { AuthRequestsContext } from "./auth.provider";
+import { AuthRequestByType, AuthType } from "./auth.types";
+import { ERR_MSG_USER_CANCELLED_AUTH } from "./auth.constants";
 
 export function useAuthRequests() {
   return useContext(AuthRequestsContext);

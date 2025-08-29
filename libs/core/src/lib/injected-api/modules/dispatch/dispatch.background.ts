@@ -1,23 +1,23 @@
-import { isLocalWallet, isSignatureOptions, isSplitTransaction } from "~utils/assertions";
-import { constructTransaction } from "../sign/transaction_builder.js";
-import { arconfettiIcon, signNotification } from "../sign/utils.js";
+import { constructTransaction, isSplitTransaction } from "../sign/transaction_builder.js";
+import { arconfettiIcon } from "../sign/utils.js";
 import { cleanUpChunks, getChunks } from "../sign/chunks.js";
-import { freeDecryptedWallet } from "~wallets/encryption";
-import type { BackgroundModuleFunction } from "~api/background/background-modules";
-import { createData, ArweaveSigner } from "@dha-team/arbundles";
+import type { BackgroundModuleFunction } from "../../background/background-modules";
+import { createData } from "@dha-team/arbundles";
 import { getPrice, uploadDataToTurbo } from "./uploader.js";
 import type { DispatchResult } from "./index.js";
 import { signedTxTags } from "../sign/tags.js";
-import { getActiveKeyfile } from "~wallets";
 import { isString } from "typed-assert";
-import Application from "~applications/application";
 import Arweave from "arweave";
 import { ensureAllowanceDispatch } from "./allowance.js";
 import BigNumber from "bignumber.js";
-import { isError } from "~utils/error/error.utils";
-import { ERR_MSG_USER_CANCELLED_AUTH } from "~utils/auth/auth.constants";
 import { checkIfUserNeedsToSign } from "../sign/sign_policy.js";
-import { createArweaveSignerWithOptions } from "~utils/signer.utils";
+import { isError } from "util";
+import { Application } from "../../../applications/application.class.js";
+import { ERR_MSG_USER_CANCELLED_AUTH } from "../../../auth/auth.constants.js";
+import { isSignatureOptions, isLocalWallet } from "../../../utils/assertions/assertions.js";
+import { createArweaveSignerWithOptions } from "../../../utils/signer/signer.utils.js";
+import { freeDecryptedWallet } from "../../../wallets/encryption.js";
+import { getActiveKeyfile } from "../../../wallets/index.js";
 
 type ReturnType = {
   arConfetti: string | false;
@@ -52,7 +52,7 @@ const background: BackgroundModuleFunction<ReturnType> = async (
   const chunks = getChunks(chunkCollectionID, appData.url);
 
   // reconstruct the transaction from the chunks
-  let transaction = arweave.transactions.fromRaw({
+  const transaction = arweave.transactions.fromRaw({
     ...constructTransaction(tx, chunks || []),
     owner: keyfile.n,
   });

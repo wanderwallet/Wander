@@ -1,4 +1,4 @@
-import { DevSpinner } from "~components/dev/spinner/spinner.component";
+import { DevSpinner } from "../spinner/spinner.component";
 
 import styles from "./spinner-cover.module.scss";
 

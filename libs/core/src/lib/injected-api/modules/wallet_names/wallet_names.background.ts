@@ -1,4 +1,4 @@
-import type { BackgroundModuleFunction } from "~api/background/background-modules";
+import type { BackgroundModuleFunction } from "../../background/background-modules";
 import { ERR_MSG_NO_WALLETS_ADDED } from "~utils/auth/auth.constants";
 import { getWallets } from "~wallets";
 

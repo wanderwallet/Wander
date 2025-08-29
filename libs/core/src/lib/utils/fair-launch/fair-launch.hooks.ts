@@ -1,10 +1,10 @@
 import { useQueries, useQuery } from "@tanstack/react-query";
-import { getClaimableBalance, getDelegationInfo, getFairLaunchTokens } from "./fair_launch.utils";
+import { getClaimableBalance, getDelegationInfo, getFairLaunchTokens } from "./fair-launch.utils";
 import { defaultOptions, useTokenBalance } from "~tokens/hooks";
 import { useActiveAddress } from "~wallets/hooks";
 import { useMemo } from "react";
-import { PI_FLP_ID } from "./fair_launch.constants";
-import type { FlpTokenInfo } from "./fair_launch.types";
+import { PI_FLP_ID } from "./fair-launch.constants";
+import type { FlpTokenInfo } from "./fair-launch.types";
 import { defaultTokens } from "~tokens/aoTokens/ao.constants";
 
 const arToken = defaultTokens[0];

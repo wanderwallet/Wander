@@ -1,7 +1,7 @@
 import type { SignMessageOptions } from "../sign_message/types.js";
-import type { TransformFinalizer } from "~api/foreground/foreground-modules";
-import type { ModuleFunction } from "~api/module";
-import { isArrayBuffer } from "~utils/assertions";
+import type { ModuleFunction } from "../../module";
+import { isArrayBuffer } from "../../../utils/assertions/assertions.js";
+import { TransformFinalizer } from "../../foreground/foreground-modules.js";
 
 const foreground: ModuleFunction<any[]> = (data: ArrayBuffer, options: SignMessageOptions) => {
   // validate

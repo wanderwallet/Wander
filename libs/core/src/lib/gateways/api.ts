@@ -3,7 +3,7 @@ import { concatGatewayURL } from "./utils";
 import { findGateway } from "./wayfinder";
 import { type Gateway } from "./gateway";
 import type { GQLEdgeInterface } from "ar-gql/dist/faces";
-import { retryWithDelay } from "~utils/promises/retry";
+import { retryWithDelay } from "../utils/promises/retry";
 
 /**
  * Run a query on the Arweave Graphql API,

@@ -10,7 +10,7 @@ import { SvgImageWithBackground } from "./SvgImage";
 import type { AOYieldAgent } from "~utils/agents/types";
 import { WAR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 import dayjs from "dayjs";
-import { useAOMintingStatus, useAOYieldAgentInfo } from "~utils/agents/hooks";
+import { useAOMintingStatus, useAOYieldAgentInfo } from "../../../../../../../libs/core/src/lib/utils/agents/hooks";
 import { getStatusColor, getStatusText, tokenIdInfoMap, updateLocalAOYieldAgent } from "~utils/agents/utils";
 import { useTheme } from "styled-components";
 import styled from "styled-components";

@@ -1,5 +1,5 @@
-import Application, { type InitAppParams, PREFIX } from "./application.class";
-import { PersistentStorage } from "~utils/storage/storage";
+import { PersistentStorage } from "../utils/storage/storage";
+import { Application, type InitAppParams, PREFIX } from "./application.class";
 import browser from "webextension-polyfill";
 
 /**

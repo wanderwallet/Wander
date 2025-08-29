@@ -1,13 +1,8 @@
-import type { SplitTransaction } from "~api/modules/sign/transaction_builder";
 import { type Transaction } from "@dha-team/arbundles";
 import { useState, useMemo, useCallback, useEffect } from "react";
-import type { DecodedTag } from "~api/modules/sign/tags";
-import { defaultGateway } from "~gateways/gateway";
-import { Box, Text, Row, ChevronRight } from "../ui";
-import { useLocation } from "~wallets/router/router.utils";
+import { useLocation, defaultGateway, type DecodedTag, type SplitTransaction, defaultGateway, type RawDataItem } from "@wanderapp/core";
 import browser from "webextension-polyfill";
 import Arweave from "arweave";
-import type { RawDataItem } from "~api/modules/sign_data_item/types";
 import type { ConnextTxDetailsRoutePath } from "~wallets/router/auth/auth.embed.routes";
 
 interface TransactionMessageProps {

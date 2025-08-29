@@ -2,7 +2,7 @@ import { Flex } from "~components/common/Flex";
 import { Text } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
 import { AO_PROCESS_ID, AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
-import { useAOYieldLatestAgent } from "~utils/agents/hooks";
+import { useAOYieldLatestAgent } from "../../../../../../libs/core/src/lib/utils/agents/hooks";
 import { AOYieldAgentListItem } from "~routes/popup/agents/components/AOYieldAgentListItem";
 import { useActiveTokens, type ActiveAgentToken } from "~routes/popup/agents/liquidops/utils/hooks/useAvailableTokens";
 import { useMemo } from "react";

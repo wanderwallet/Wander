@@ -1,5 +1,5 @@
 import type { SignatureOptions } from "arweave/node/lib/crypto/crypto-interface";
-import { type PermissionType, permissionData } from "~applications/permissions";
+import { type PermissionType, permissionData } from "../../../applications/permissions";
 import type { SplitTransaction } from "~api/modules/sign/transaction_builder";
 import type { SignMessageOptions } from "~api/modules/sign_message/types";
 import type { SignatureAlgorithm } from "~api/modules/signature/types";

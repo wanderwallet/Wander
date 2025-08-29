@@ -1,5 +1,5 @@
 import type { Alarms } from "webextension-polyfill";
-import { getDecryptionKey, removeDecryptionKey } from "~wallets/auth";
+import { getDecryptionKey, removeDecryptionKey } from "../../../../../wallets/auth";
 
 /**
  * Listener for the key removal alarm

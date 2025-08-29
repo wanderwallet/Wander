@@ -1,4 +1,4 @@
-import type Application from "./application.class";
+import { type Application } from "./application.class";
 import { concatGatewayURL } from "../gateways/utils";
 
 /**

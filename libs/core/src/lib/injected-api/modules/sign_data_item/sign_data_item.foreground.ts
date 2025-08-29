@@ -1,5 +1,5 @@
 import type { TransformFinalizer } from "~api/foreground/foreground-modules";
-import type { ModuleFunction } from "~api/module";
+import type { ModuleFunction } from "../../module";
 import type { RawDataItem, SignDataItemParams } from "./types.js";
 import { isArrayBuffer } from "~utils/assertions";
 import type { SignatureOptions } from "arweave/web/lib/crypto/crypto-interface";

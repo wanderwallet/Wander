@@ -20,9 +20,9 @@ import { getActiveAddress } from "~wallets/wallets.utils";
 import type { AOYieldAgentCreate, AOYieldAgentStatus } from "~utils/agents/types";
 import { getAOYieldAgents, setAOYieldAgents } from "~utils/agents/utils";
 import { EventType, PageType, trackEvent, trackPage } from "~utils/analytics";
-import { scheduleSwapExecution } from "~utils/agents/swap";
+import { scheduleSwapExecution } from "../../../../../../../libs/core/src/lib/utils/agents/swap";
 import { AGENT_VERSION } from "~utils/agents/constants";
-import { useAOYieldAgentProperties } from "~utils/agents/hooks";
+import { useAOYieldAgentProperties } from "../../../../../../../libs/core/src/lib/utils/agents/hooks";
 import { useDefiFeeDetails } from "~utils/tier/hooks";
 
 export function ConfirmAOYieldAgentView() {

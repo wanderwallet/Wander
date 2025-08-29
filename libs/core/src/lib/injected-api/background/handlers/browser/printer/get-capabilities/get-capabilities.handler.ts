@@ -1,4 +1,4 @@
-import { WANDER_PRINTER_ID } from "~api/background/handlers/browser/printer/printer.constants";
+import { WANDER_PRINTER_ID } from "../printer.constants";
 
 /**
  * Printer capabilities request callback type

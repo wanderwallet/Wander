@@ -1,4 +1,5 @@
-import { DevButton, type DevButtonProps } from "~components/dev/button/button.component";
+
+import { DevButton, type DevButtonProps } from "../button/button.component";
 
 import styles from "./buttons.module.scss";
 

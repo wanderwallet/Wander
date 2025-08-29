@@ -1,7 +1,6 @@
 import { nanoid } from "nanoid";
 import browser from "webextension-polyfill";
-import { Mutex } from "~utils/mutex";
-import { isomorphicOnMessage, isomorphicSendMessage } from "~isomorphic-messaging";
+import { isomorphicOnMessage, isomorphicSendMessage } from "@wanderapp/isomorphic-messaging";
 import {
   isAuthErrorResult,
   type AuthErrorResult,
@@ -20,6 +19,9 @@ import {
 } from "./auth.constants";
 import { log, LOG_GROUP } from "../utils/log/log.utils";
 import { isError } from "../utils/error/error.utils";
+import { Mutex } from "../utils/mutex/mutex";
+
+// TODO: Move postEmbeddedMessage nto core:
 import { postEmbeddedMessage } from "~utils/_embedded/utils/messages/embedded-messages.utils";
 
 const popupMutex = new Mutex();

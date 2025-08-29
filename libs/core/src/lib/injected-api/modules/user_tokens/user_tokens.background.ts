@@ -1,4 +1,4 @@
-import type { BackgroundModuleFunction } from "~api/background/background-modules";
+import type { BackgroundModuleFunction } from "../../background/background-modules";
 import { ExtensionStorage, PersistentStorage } from "~utils/storage/storage";
 import { getAoTokenBalance, type TokenInfo, type TokenInfoWithBalance } from "~tokens/aoTokens/ao";
 import { AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";

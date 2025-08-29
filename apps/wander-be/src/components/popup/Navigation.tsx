@@ -6,7 +6,7 @@ import { IS_EMBEDDED_APP } from "~utils/_embedded/embedded.constants";
 import { useStorage, ExtensionStorage } from "~utils/storage";
 import type { WanderRoutePath } from "~wallets/router/router.types";
 import HedgehogHeadIcon from "url:/assets/agents/images/hedgehog-head.svg";
-import { useAOMintingStatus } from "~utils/agents/hooks";
+import { useAOMintingStatus } from "../../../../../libs/core/src/lib/utils/agents/hooks";
 import { EventType, trackEvent } from "~utils/analytics";
 import { useHasClaimableBalance } from "~utils/fair_launch/fair_launch.hooks";
 

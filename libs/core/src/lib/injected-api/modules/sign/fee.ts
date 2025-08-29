@@ -1,16 +1,17 @@
-import { getActiveAddress, getActiveKeyfile } from "~wallets";
-import { defaultGateway, type Gateway } from "~gateways/gateway";
-import { freeDecryptedWallet } from "~wallets/encryption";
 import type { Alarms } from "webextension-polyfill";
-import { findGateway } from "~gateways/wayfinder";
-import { getArPrice } from "~lib/coingecko";
-import { getSetting } from "~settings";
-import { concatGatewayURL } from "~gateways/utils";
-import { gql } from "~gateways/api";
-import Application from "~applications/application";
 import browser from "webextension-polyfill";
 import Arweave from "arweave/web/common";
 import BigNumber from "bignumber.js";
+import { Application } from "../../../applications/application.class";
+import { gql } from "../../../gateways/api";
+import { Gateway } from "../../../gateways/gateway";
+import { concatGatewayURL } from "../../../gateways/utils";
+import { findGateway } from "../../../gateways/wayfinder";
+import { getArPrice } from "../../../utils/coingecko/coingecko";
+import { getSetting } from "../../../utils/settings";
+import { getActiveKeyfile } from "../../../wallets";
+import { freeDecryptedWallet } from "../../../wallets/encryption";
+import { getActiveAddress } from "../../../wallets/wallets.utils";
 //import redstone from "redstone-api";
 
 /**

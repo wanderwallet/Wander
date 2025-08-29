@@ -1,15 +1,15 @@
-import { WANDER_PRINTER_ID } from "~api/background/handlers/browser/printer/printer.constants";
-import { uploadDataToTurbo } from "~api/modules/dispatch/uploader";
-import { getActiveKeyfile, type DecryptedWallet } from "~wallets";
-import { freeDecryptedWallet } from "~wallets/encryption";
 import { createData, ArweaveSigner } from "@dha-team/arbundles";
-import { concatGatewayURL } from "~gateways/utils";
-import { findGateway } from "~gateways/wayfinder";
 import browser from "webextension-polyfill";
 import Arweave from "arweave";
-import { signAuth } from "~api/modules/sign/sign_auth";
-import { getActiveTab } from "~applications";
-import { sleep } from "~utils/promises/sleep";
+import { getActiveTab } from "../../../../../../applications/application.utils";
+import { concatGatewayURL } from "../../../../../../gateways/utils";
+import { findGateway } from "../../../../../../gateways/wayfinder";
+import { sleep } from "../../../../../../utils/promises/sleep";
+import { DecryptedWallet, getActiveKeyfile } from "../../../../../../wallets";
+import { freeDecryptedWallet } from "../../../../../../wallets/encryption";
+import { uploadDataToTurbo } from "../../../../../modules/dispatch/uploader";
+import { signAuth } from "../../../../../modules/sign/sign_auth";
+import { WANDER_PRINTER_ID } from "../printer.constants";
 
 /**
  * Print request (result) callback

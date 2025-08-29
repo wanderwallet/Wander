@@ -1,11 +1,11 @@
 import { deconstructTransaction } from "../sign/transaction_builder.js";
 import { createCoinWithAnimation } from "../sign/animation.js";
 import type Transaction from "arweave/web/lib/transaction";
-import type { TransformFinalizer } from "~api/foreground/foreground-modules";
-import type { ModuleFunction } from "~api/module";
+import type { ModuleFunction } from "../../module";
 import type { DispatchResult } from "./index.js";
-import { sendChunk } from "~isomorphic-chunking";
 import type { SignatureOptions } from "arweave/web/lib/crypto/crypto-interface";
+import { sendChunk } from "@wanderapp/isomorphic-messaging";
+import { TransformFinalizer } from "../../foreground/foreground-modules.js";
 
 const foreground: ModuleFunction<Record<any, any>> = async (
   transaction: Transaction,

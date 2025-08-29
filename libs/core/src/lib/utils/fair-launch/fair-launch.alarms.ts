@@ -4,10 +4,10 @@ import { AO_TOKENS, tokenStorageMutex } from "~tokens/aoTokens/sync";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { PersistentStorage } from "~utils/storage";
 import { getWallets } from "~wallets";
-import { getFairLaunchTokens } from "./fair_launch.utils";
+import { getFairLaunchTokens } from "./fair-launch.utils";
 import { fetchTokenBalance } from "~tokens/aoTokens/ao";
 import { retryWithDelay } from "~utils/promises/retry";
-import { FAIR_LAUNCH_TOKENS_ALARM_NAME } from "./fair_launch.constants";
+import { FAIR_LAUNCH_TOKENS_ALARM_NAME } from "./fair-launch.constants";
 
 export async function scheduleFairLaunchTokensAlarm() {
   try {

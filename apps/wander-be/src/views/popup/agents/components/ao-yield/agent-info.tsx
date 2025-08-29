@@ -5,7 +5,7 @@ import HeadV2 from "~components/popup/HeadV2";
 import { Flex } from "~components/common/Flex";
 import { PropertyName, PropertyValue, TransactionProperty } from "~routes/popup/transaction/[id]";
 import { useMemo, useState } from "react";
-import { useAOYieldAgent, useAOYieldAgentInfo, useAOYieldAgentProperties } from "~utils/agents/hooks";
+import { useAOYieldAgent, useAOYieldAgentInfo, useAOYieldAgentProperties } from "../../../../../../../../libs/core/src/lib/utils/agents/hooks";
 import { Divider } from "~components/Divider";
 import { RemoveButton } from "~routes/popup/settings/wallets/[address]";
 import { SvgImageWithBackground } from "../SvgImage";

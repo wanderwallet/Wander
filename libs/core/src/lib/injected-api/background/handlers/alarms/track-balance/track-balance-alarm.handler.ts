@@ -1,9 +1,9 @@
-import { getWallets } from "~wallets";
 import Arweave from "arweave";
-import { defaultGateway } from "~gateways/gateway";
 import browser, { type Alarms } from "webextension-polyfill";
 import BigNumber from "bignumber.js";
-import { EventType, setToStartOfNextMonth, trackDirect } from "~utils/analytics";
+import { getWallets } from "../../../../../wallets/wallets.utils";
+import { defaultGateway } from "../../../../../gateways/gateway";
+import { trackDirect, EventType, setToStartOfNextMonth } from "../../../../../utils/analytics/analytics";
 
 export async function handleTrackBalanceAlarm(alarmInfo?: Alarms.Alarm) {
   if (!alarmInfo?.name.startsWith("track-balance")) return;

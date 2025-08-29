@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import clsx from "clsx";
-import { sleep } from "~utils/promises/sleep";
-import { useTheme } from "~utils/theme/theme.hook";
+import { sleep } from "@wanderapp/core";
+import { useTheme } from "../../../theme/theme.hook";
+
+import styles from "./Image.module.scss";
 
 import defaultPlaceholderUrl from "url:/assets/placeholder.png";
 
-import styles from "./Image.module.scss";
 
 const fakeDelay = process.env.NODE_ENV === "development" ? 2500 : 0;
 

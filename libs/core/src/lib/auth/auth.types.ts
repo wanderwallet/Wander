@@ -1,11 +1,11 @@
-import type { AppInfo } from "~applications/application";
-import type { PermissionType } from "~applications/permissions";
-import type { Gateway } from "~gateways/gateway";
-import type { SubscriptionData } from "~subscriptions/subscription";
-import type { TokenType } from "~tokens/token";
-import type { SplitTransaction } from "~api/modules/sign/transaction_builder";
-import type { RawDataItem } from "~api/modules/sign_data_item/types";
 import type { Transaction } from "@dha-team/arbundles";
+import { PermissionType } from "../applications/permissions";
+import { AppInfo } from "../applications/application.class";
+import { Gateway } from "../gateways/gateway";
+import { TokenType } from "../tokens/token";
+import { SplitTransaction } from "../injected-api/modules/sign/transaction_builder";
+import { RawDataItem } from "../injected-api/modules/sign_data_item/types";
+import { SubscriptionData } from "../subscriptions/subscription";
 
 // COMMON:
 

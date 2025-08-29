@@ -20,7 +20,7 @@ import { AO_YIELD_AGENT_RECENT_TXS, WANDER_FEE_PROCESS_ID } from "../constants";
 import dayjs from "dayjs";
 import { isURL } from "~utils/urls/isURL";
 import { queryClient } from "~utils/tanstack";
-import { Mutex } from "~utils/mutex";
+import { Mutex } from "../../mutex/mutex";
 import { Id, Owner, WAR_PROCESS_ID, WUSDC_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 
 const agentStorageMutex = new Mutex();

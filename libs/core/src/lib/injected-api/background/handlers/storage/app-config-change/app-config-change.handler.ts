@@ -1,13 +1,12 @@
-import type { StorageChange } from "~utils/runtime";
-import { getStoredApps } from "~applications";
-import { getAppURL } from "~utils/format";
 import type { Event } from "shim";
-import { getMissingPermissions } from "~applications/permissions";
-import { forEachTab } from "~applications/tab";
-import { compareGateways } from "~gateways/utils";
-import type { InitAppParams } from "~applications/application";
-import Application, { PREFIX } from "~applications/application";
-import { isomorphicSendMessage } from "~isomorphic-messaging";
+import { isomorphicSendMessage } from "@wanderapp/isomorphic-messaging";
+import { InitAppParams, PREFIX, Application } from "../../../../../applications/application.class";
+import { getStoredApps } from "../../../../../applications/application.utils";
+import { getMissingPermissions } from "../../../../../applications/permissions";
+import { forEachTab } from "../../../../../applications/tab";
+import { compareGateways } from "../../../../../gateways/utils";
+import { StorageChange } from "../../../../../utils/browser-extension/runtime";
+import { getAppURL } from "../../../../../utils/format/format";
 
 export async function handleAppConfigChange(changes: Record<string, StorageChange<InitAppParams>>, areaName: string) {
   // only trigger for storage.local

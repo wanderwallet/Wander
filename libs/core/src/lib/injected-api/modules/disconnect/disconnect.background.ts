@@ -1,7 +1,7 @@
-import type { BackgroundModuleFunction } from "~api/background/background-modules";
-import { removeApp } from "~applications";
-import { createContextMenus } from "~utils/context_menus";
-import { updateIcon } from "~utils/icon";
+import { removeApp } from "../../../applications/application.utils";
+import { createContextMenus } from "../../../utils/browser-extension/context-menus";
+import { updateIcon } from "../../../utils/browser-extension/icon";
+import type { BackgroundModuleFunction } from "../../background/background-modules";
 
 const background: BackgroundModuleFunction<void> = async (appData) => {
   // remove app

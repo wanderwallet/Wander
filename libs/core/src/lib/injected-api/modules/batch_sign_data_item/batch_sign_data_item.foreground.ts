@@ -1,7 +1,7 @@
-import type { TransformFinalizer } from "~api/foreground/foreground-modules";
-import type { ModuleFunction } from "~api/module";
+import { isArrayBuffer } from "../../../utils/assertions/assertions";
+import { TransformFinalizer } from "../../foreground/foreground-modules";
+import type { ModuleFunction } from "../../module";
 import type { RawDataItem, SignDataItemParams } from "../sign_data_item/types.js";
-import { isArrayBuffer } from "~utils/assertions";
 import type { SignatureOptions } from "arweave/web/lib/crypto/crypto-interface";
 
 const MAX_TOTAL_SIZE = 200 * 1024;

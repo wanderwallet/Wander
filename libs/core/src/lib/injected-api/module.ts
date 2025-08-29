@@ -1,4 +1,4 @@
-import type { PermissionType } from "~applications/permissions";
+import type { PermissionType } from "../../../applications/permissions";
 
 /**
  * Why do we need separate modules?

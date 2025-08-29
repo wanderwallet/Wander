@@ -1,8 +1,8 @@
-import { type AllowanceBigNumber, defaultAllowance } from "~applications/allowance";
-import Application from "~applications/application";
-import { requestUserAuthorization } from "../../../utils/auth/auth.utils";
 import BigNumber from "bignumber.js";
-import type { ModuleAppData } from "~api/background/background-modules";
+import type { ModuleAppData } from "../../background/background-modules";
+import { defaultAllowance, AllowanceBigNumber } from "../../../applications/allowance";
+import { Application } from "../../../applications/application.class";
+import { requestUserAuthorization } from "../../../auth/auth.utils";
 
 /**
  * Get allowance for an app
@@ -56,7 +56,7 @@ export async function allowanceAuth(
   appData: ModuleAppData,
   allowance: AllowanceBigNumber,
   price: number | BigNumber,
-  override: boolean = false,
+  override = false,
 ) {
   // spent amount after this transaction
   const total = allowance.spent.plus(price);

@@ -1,16 +1,11 @@
-import { freeDecryptedWallet } from "~wallets/encryption";
-import type { BackgroundModuleFunction } from "~api/background/background-modules";
-import { defaultGateway } from "~gateways/gateway";
-import { getActiveKeyfile } from "~wallets";
+import { isArrayBuffer } from "util/types";
+import { requestUserAuthorization } from "../../../auth/auth.utils";
+import { defaultGateway } from "../../../gateways/gateway";
+import { isRawArrayBuffer, isLocalWallet, isLegacyEncryptionOptions, isEncryptionAlgorithm } from "../../../utils/assertions/assertions";
+import { getActiveKeyfile } from "../../../wallets";
+import { freeDecryptedWallet } from "../../../wallets/encryption";
+import type { BackgroundModuleFunction } from "../../background/background-modules";
 import Arweave from "arweave";
-import {
-  isArrayBuffer,
-  isEncryptionAlgorithm,
-  isLegacyEncryptionOptions,
-  isLocalWallet,
-  isRawArrayBuffer,
-} from "~utils/assertions";
-import { requestUserAuthorization } from "~utils/auth/auth.utils";
 
 const background: BackgroundModuleFunction<string | Uint8Array> = async (
   appData,

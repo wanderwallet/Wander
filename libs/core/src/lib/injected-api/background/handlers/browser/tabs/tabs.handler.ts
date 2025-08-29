@@ -1,11 +1,11 @@
-import Application from "~applications/application";
-import { getTab } from "~applications/tab";
-import { getCachedAuthPopupWindowTabID, resetKeepAlive, resetPopupTabID } from "~utils/auth/auth.utils";
-import { createContextMenus } from "~utils/context_menus";
-import { getAppURL } from "~utils/format";
-import { updateIcon } from "~utils/icon";
-import { isomorphicSendMessage } from "~isomorphic-messaging";
+import { isomorphicSendMessage } from "@wanderapp/isomorphic-messaging";
 import browser from "webextension-polyfill";
+import { Application } from "../../../../../applications/application.class";
+import { getTab } from "../../../../../applications/tab";
+import { getCachedAuthPopupWindowTabID, resetPopupTabID, resetKeepAlive } from "../../../../../auth/auth.utils";
+import { getAppURL } from "../../../../../utils/format/format";
+import { updateIcon } from "../../../../../utils/browser-extension/icon";
+import { createContextMenus } from "../../../../../utils/browser-extension/context-menus";
 
 /**
  * Handle tab updates (icon change, context menus, etc.)

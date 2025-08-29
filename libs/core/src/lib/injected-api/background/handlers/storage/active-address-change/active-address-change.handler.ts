@@ -1,9 +1,9 @@
-import type { StorageChange } from "~utils/runtime";
-import Application from "~applications/application";
-import { forEachTab } from "~applications/tab";
-import { getAppURL } from "~utils/format";
-import { isomorphicSendMessage } from "~isomorphic-messaging";
-import { getCachedAuthPopupWindowTabID } from "~utils/auth/auth.utils";
+import { isomorphicSendMessage } from "@wanderapp/isomorphic-messaging";
+import { Application } from "../../../../../applications/application.class";
+import { forEachTab } from "../../../../../applications/tab";
+import { getCachedAuthPopupWindowTabID } from "../../../../../auth/auth.utils";
+import { getAppURL } from "../../../../../utils/format/format";
+import { StorageChange } from "../../../../../utils/browser-extension/runtime";
 
 /**
  * Active address change event listener.

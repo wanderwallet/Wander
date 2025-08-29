@@ -1,6 +1,6 @@
-import { freeDecryptedWallet } from "~wallets/encryption";
-import type { BackgroundModuleFunction } from "~api/background/background-modules";
-import { getActiveKeyfile } from "~wallets";
+import { getActiveKeyfile } from "../../../wallets";
+import { freeDecryptedWallet } from "../../../wallets/encryption";
+import type { BackgroundModuleFunction } from "../../background/background-modules";
 
 const background: BackgroundModuleFunction<string> = async (appData) => {
   // grab the user's keyfile

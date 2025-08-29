@@ -1,5 +1,5 @@
-import type { BackgroundModuleFunction } from "~api/background/background-modules";
-import { getWallets } from "~wallets";
+import { getWallets } from "../../../wallets/wallets.utils";
+import type { BackgroundModuleFunction } from "../../background/background-modules";
 
 const background: BackgroundModuleFunction<string[]> = async () => {
   // retrive wallets

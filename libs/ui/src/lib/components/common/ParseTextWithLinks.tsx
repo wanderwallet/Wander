@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import styled from "styled-components";
-import { isURL } from "~utils/urls/isURL";
+import { isURL } from "@wanderapp/core";
 
 interface ParseTextWithLinksProps {
   text: string;

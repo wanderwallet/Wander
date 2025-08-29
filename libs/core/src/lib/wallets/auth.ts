@@ -3,7 +3,7 @@ import browser from "webextension-polyfill";
 import { type LocalWallet, type StoredWallet } from "./wallets.types";
 import { ExtensionStorage } from "~utils/storage/storage";
 import { createAuthPopup, onPopupClosed } from "~utils/auth/auth.utils";
-import type { ModuleAppData } from "~api/background/background-modules";
+import type { ModuleAppData } from "../../background/background-modules";
 import type { StorageChange } from "~utils/runtime";
 import { ERR_MSG_NO_KEY, ERR_MSG_USER_CANCELLED_AUTH } from "~utils/auth/auth.constants";
 import { log, LOG_GROUP } from "~utils/log/log.utils";

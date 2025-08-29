@@ -1,13 +1,11 @@
 import type { ApiCall, Event } from "shim";
-import type { MittInjectedEvents } from "~utils/events";
 import { nanoid } from "nanoid";
 import mitt from "mitt";
 import { version } from "../../../../wander-wallet-api/package.json";
-import { isApiErrorResponse } from "~utils/messaging/common/messaging.utils";
-import { isomorphicSendMessage } from "~isomorphic-messaging";
-import { setEmbeddedTargetIframe } from "~utils/messaging/strategies/iframe/iframe-messaging.strategy";
+import { isApiErrorResponse, isomorphicSendMessage, setEmbeddedTargetIframe } from "@wanderapp/isomorphic-messaging";
 import { foregroundModules, type ForegroundModule } from "./foreground-modules";
 import { log, LOG_GROUP } from '../../utils/log/log.utils';
+import { MittInjectedEvents } from "../../utils/events/events";
 // import { version as sdkVersion } from "../../../wander-connect-sdk/package.json";
 
 export function injectWanderConnectWalletAPI(targetWindowOrIframe: Window | HTMLIFrameElement = window) {

@@ -1,8 +1,9 @@
-import { freeDecryptedWallet } from "~wallets/encryption";
-import type { BackgroundModuleFunction } from "~api/background/background-modules";
-import { getActiveKeyfile } from "~wallets";
+import { isArrayBuffer } from "util/types";
+import { isNumberArray, isSignMessageOptions, isLocalWallet } from "../../../utils/assertions/assertions";
+import { getActiveKeyfile } from "../../../wallets";
+import { freeDecryptedWallet } from "../../../wallets/encryption";
+import type { BackgroundModuleFunction } from "../../background/background-modules";
 import Arweave from "arweave";
-import { isArrayBuffer, isLocalWallet, isNumberArray, isSignMessageOptions } from "~utils/assertions";
 
 const background: BackgroundModuleFunction<number[]> = async (appData, data: unknown, options: unknown) => {
   // validate input

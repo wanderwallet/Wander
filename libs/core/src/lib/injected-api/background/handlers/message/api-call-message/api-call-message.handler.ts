@@ -1,14 +1,10 @@
 import { isExactly, isNotUndefined, isString } from "typed-assert";
-import { isApiCall } from "~utils/assertions";
-import Application from "~applications/application";
 import type { ApiErrorResponse, ApiResponse, ApiSuccessResponse, BaseApiMessage } from "shim";
 import browser from "webextension-polyfill";
-import { getTab } from "~applications/tab";
-import { pushEvent } from "~utils/events";
-import { getAppURL } from "~utils/format";
-import { backgroundModules, type ModuleAppData } from "~api/background/background-modules";
-import type { OnMessageCallback } from "~utils/messaging/messaging.types";
-import { recordActivity } from "~utils/inactivity/inactivity.utils";
+import type { OnMessageCallback } from "@wanderapp/isomorphic-messaging";
+import { getTab } from "../../../../../applications/tab";
+import { getAppURL } from "../../../../../utils/format/format";
+import { backgroundModules, ModuleAppData } from "../../../background-modules";
 
 export const handleApiCallMessage: OnMessageCallback<"api_call"> = async ({ data, sender }): Promise<ApiResponse> => {
   // construct base message to extend and return

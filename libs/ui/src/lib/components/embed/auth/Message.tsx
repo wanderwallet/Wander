@@ -1,6 +1,8 @@
 import browser from "webextension-polyfill";
 import { useMemo, useState } from "react";
-import { Box, Row, Text } from "../ui";
+import { Row } from "../ui/atoms/row/Row";
+import { Text } from "../ui/atoms/text/Text";
+import { Box } from "../ui/atoms/box/Box";
 
 export function Message({ message }: Props) {
   const [decodeType, setDecodeType] = useState("UTF-8");

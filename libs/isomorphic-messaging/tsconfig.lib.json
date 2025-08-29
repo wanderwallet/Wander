@@ -9,7 +9,13 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "forceConsistentCasingInFileNames": true,
-    "types": ["node", "vite/client"]
+    "types": ["node", "vite/client"],
+
+    // Added:
+
+    "paths": {
+      "@wanderapp/core": ["./libs/core/src/index.ts"]
+    }
   },
   "include": ["src/**/*.ts"],
   "references": [],

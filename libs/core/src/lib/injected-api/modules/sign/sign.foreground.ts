@@ -1,7 +1,7 @@
 import type { SignatureOptions } from "arweave/web/lib/crypto/crypto-interface";
 import type { TransformFinalizer } from "~api/foreground/foreground-modules";
 import { createCoinWithAnimation } from "./animation.js";
-import type { ModuleFunction } from "~api/module";
+import type { ModuleFunction } from "../../module";
 import { sendChunk } from "~isomorphic-chunking";
 import { deconstructTransaction, type SplitTransaction } from "./transaction_builder.js";
 import type Transaction from "arweave/web/lib/transaction";

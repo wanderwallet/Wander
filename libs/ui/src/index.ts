@@ -5,7 +5,6 @@ export * from "./lib/components/be/QRCodeLoop";
 export * from "./lib/components/be/QRCodeWrapper";
 export * from "./lib/components/be/TokenLogo";
 
-export * from "./lib/components/common/AnimatedStarContainer";
 export * from "./lib/components/common/Box";
 export * from "./lib/components/common/Flex";
 export * from "./lib/components/common/IconButton";

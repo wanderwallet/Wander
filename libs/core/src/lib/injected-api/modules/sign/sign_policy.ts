@@ -1,8 +1,8 @@
 import Transaction from "arweave/web/lib/transaction";
 import BigNumber from "bignumber.js";
 import type { DataItem } from "@dha-team/arbundles";
-import type { RawDataItem } from "../sign_data_item/types.js";
-import type { AuthRequestData } from "~utils/auth/auth.types";
+import type { RawDataItem } from "../sign_data_item/types";
+import { AuthRequestData } from "../../../auth/auth.types";
 export type SignPolicy = "always_ask" | "ask_when_spending" | "auto_confirm";
 
 export function checkIfUserNeedsToSign(

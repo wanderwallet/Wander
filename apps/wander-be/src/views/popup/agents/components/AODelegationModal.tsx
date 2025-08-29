@@ -4,7 +4,7 @@ import SliderMenu from "~components/SliderMenu";
 import { Button, Text } from "@arconnect/components-rebrand";
 import alertWarning from "url:/assets/agents/images/alert-warning.svg";
 import { useEffect, useState } from "react";
-import { useAODelegationInfo } from "~utils/agents/hooks";
+import { useAODelegationInfo } from "../../../../../../../libs/core/src/lib/utils/agents/hooks";
 import { useLocation } from "~wallets/router/router.utils";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
 

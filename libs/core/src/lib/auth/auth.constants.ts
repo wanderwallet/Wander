@@ -1,4 +1,4 @@
-import type { ModuleAppData } from "~api/background/background-modules";
+import { ModuleAppData } from "../injected-api/background/background-modules";
 
 export const AUTH_POPUP_REQUEST_WAIT_MS = 1000 as const;
 export const AUTH_POPUP_REQUEST_ARRIVAL_WINDOW_MS = 1000 as const;

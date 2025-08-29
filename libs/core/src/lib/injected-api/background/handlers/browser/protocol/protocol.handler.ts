@@ -1,6 +1,6 @@
-import { getRedirectURL } from "~gateways/ar_protocol";
-import { findGateway } from "~gateways/wayfinder";
 import browser, { type WebNavigation } from "webextension-polyfill";
+import { getRedirectURL } from "../../../../../gateways/ar_protocol";
+import { findGateway } from "../../../../../gateways/wayfinder";
 
 /**
  * Handle custom ar:// protocol, using the

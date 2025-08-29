@@ -1,7 +1,7 @@
 import { Spacer, Text } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
 import styled from "styled-components";
-import { getPreReleaseVersionLabel, getVersionLabel } from "~utils/runtime";
+import { getPreReleaseVersionLabel, getVersionLabel } from "../../../../../libs/core/src/lib/utils/browser-extension/runtime";
 import { Flex } from "~components/common/Flex";
 import WanderIcon from "url:assets/icon.svg";
 import IconText from "~components/IconText";

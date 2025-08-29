@@ -1,5 +1,5 @@
 import type { SignMessageOptions } from "../sign_message/types.js";
-import type { ModuleFunction } from "~api/module";
+import type { ModuleFunction } from "../../module";
 import { isArrayBuffer } from "~utils/assertions";
 import Arweave from "arweave";
 

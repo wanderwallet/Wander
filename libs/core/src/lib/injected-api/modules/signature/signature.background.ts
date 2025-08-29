@@ -1,7 +1,7 @@
 import { isArray, isArrayOfType, isNumber, isString } from "typed-assert";
 import { freeDecryptedWallet } from "~wallets/encryption";
 import { isSignatureAlgorithm } from "~utils/assertions";
-import type { BackgroundModuleFunction } from "~api/background/background-modules";
+import type { BackgroundModuleFunction } from "../../background/background-modules";
 import { getActiveKeyfile } from "~wallets";
 import { requestUserAuthorization } from "../../../utils/auth/auth.utils";
 import Application from "~applications/application";

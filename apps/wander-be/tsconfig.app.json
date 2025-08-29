@@ -12,6 +12,9 @@
     // Added:
 
     "paths": {
+      "@wanderapp/isomorphic-messaging": ["./libs/isomorphic-messaging/src/index.ts"],
+      "@wanderapp/core": ["./libs/core/src/index.ts"],
+      "@wanderapp/ui": ["./libs/ui/src/index.ts"],
       "~*": ["./src/*"],
       "~isomorphic-messaging": ["../../libs/isomorphic-messaging/src/lib/messaging/strategies/extension/extension-messaging.strategy.ts"],
       "~isomorphic-chunking": ["../../libs/isomorphic-messaging/src/lib/messaging/strategies/extension/extension-chunking.strategy.ts"]
@@ -45,7 +48,7 @@
     "src/**/*.ts",
     "src/**/*.tsx",
     "./shim.d.ts"
-  ],
+, "../../libs/core/src/lib/utils/coingecko/coingecko.ts", "../../libs/core/src/lib/utils/mutex/mutex.ts", "../../libs/core/src/lib/utils/assertions/assertions.ts", "../../libs/core/src/lib/utils/browser-extension/icon.ts", "../../libs/core/src/lib/utils/browser-extension/context-menus.ts", "../../libs/core/src/lib/utils/browser-extension/runtime.ts"  ],
   "references": [
     {
       "path": "../../libs/ui/tsconfig.lib.json"

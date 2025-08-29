@@ -1,6 +1,6 @@
 import type { Alarms } from "webextension-polyfill";
-import { checkIfTransakPurchaseSucceeded } from "~utils/transak/transak.alarms";
-import { TRANSAK_PURCHASE_ALARM_NAME_PREFIX } from "~utils/transak/transak.constants";
+import { checkIfTransakPurchaseSucceeded } from "../../../../../transak/transak.alarms";
+import { TRANSAK_PURCHASE_ALARM_NAME_PREFIX } from "../../../../../transak/transak.constants";
 
 /**
  * Alarm handler for checking if transak purchase has succeeded.

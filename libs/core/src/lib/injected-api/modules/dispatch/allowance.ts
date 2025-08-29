@@ -1,13 +1,13 @@
-import { freeDecryptedWallet } from "~wallets/encryption";
-import type { AllowanceBigNumber } from "~applications/allowance";
-import type { ModuleAppData } from "~api/background/background-modules";
-import { defaultGateway } from "~gateways/gateway";
+import type { ModuleAppData } from "../../background/background-modules";
 import { signAuth } from "../sign/sign_auth.js";
 import Arweave from "arweave";
 import type { DataItem } from "@dha-team/arbundles";
 import type Transaction from "arweave/web/lib/transaction";
 import type BigNumber from "bignumber.js";
 import type { JWKInterface } from "arweave/web/lib/wallet";
+import { AllowanceBigNumber } from "../../../applications/allowance";
+import { defaultGateway } from "../../../gateways/gateway";
+import { freeDecryptedWallet } from "../../../wallets/encryption";
 
 /**
  * Ensure allowance for dispatch

@@ -1,11 +1,11 @@
 import { isExactly, isString } from "typed-assert";
-import { type Chunk, handleChunk } from "../../../../modules/sign/chunks";
-import { isChunk } from "~utils/assertions";
-import type { ApiCall, ApiErrorResponse, ApiResponse, ApiSuccessResponse, BaseApiMessage } from "shim";
+import { handleChunk } from "../../../../modules/sign/chunks";
+import type { ApiErrorResponse, ApiResponse, ApiSuccessResponse, BaseApiMessage } from "shim";
 import browser from "webextension-polyfill";
-import { getTab } from "~applications/tab";
-import { getAppURL } from "~utils/format";
-import type { OnMessageCallback } from "~utils/messaging/messaging.types";
+import type { OnMessageCallback } from "@wanderapp/isomorphic-messaging";
+import { isChunk } from "../../../../../utils/assertions/assertions";
+import { getTab } from "../../../../../applications/tab";
+import { getAppURL } from "../../../../../utils/format/format";
 
 export const handleChunkMessage: OnMessageCallback<"chunk"> = async ({
   data,

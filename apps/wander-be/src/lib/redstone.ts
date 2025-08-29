@@ -2,7 +2,7 @@ import type { GetPriceOptions } from "redstone-api/lib/types";
 import { useState } from "react";
 import useSetting from "~settings/hook";
 import redstone from "redstone-api";
-import { getPrice } from "./coingecko";
+import { getPrice } from "../../../../libs/core/src/lib/utils/coingecko/coingecko";
 import BigNumber from "bignumber.js";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 

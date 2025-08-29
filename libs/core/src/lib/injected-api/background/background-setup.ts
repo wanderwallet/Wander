@@ -1,41 +1,40 @@
-import handleFeeAlarm from "~api/modules/sign/fee";
-import { ExtensionStorage, PersistentStorage } from "~utils/storage/storage.js";
 import browser from "webextension-polyfill";
-import { handleApiCallMessage } from "~api/background/handlers/message/api-call-message/api-call-message.handler";
-import { handleChunkMessage } from "~api/background/handlers/message/chunk-message/chunk-message.handler";
-import { handleInstall } from "~api/background/handlers/browser/install/install.handler";
-import { handleProtocol } from "~api/background/handlers/browser/protocol/protocol.handler";
-import { handleActiveAddressChange } from "~api/background/handlers/storage/active-address-change/active-address-change.handler";
-import { handleWalletsChange } from "~api/background/handlers/storage/wallet-change/wallet-change.handler";
-import { handleAppsChange } from "~api/background/handlers/storage/apps-change/app-change.handler";
-import { handleAppConfigChange } from "~api/background/handlers/storage/app-config-change/app-config-change.handler";
-import { handleTrackBalanceAlarm } from "~api/background/handlers/alarms/track-balance/track-balance-alarm.handler";
-import { handleGetPrinters } from "~api/background/handlers/browser/printer/get-printers/get-printers.handler";
-import { handleGetCapabilities } from "~api/background/handlers/browser/printer/get-capabilities/get-capabilities.handler";
-import { handlePrint } from "~api/background/handlers/browser/printer/print/print.handler";
-import { handleNotificationsAlarm } from "~api/background/handlers/alarms/notifications/notifications-alarm.handler";
-import { handleSubscriptionsAlarm } from "~api/background/handlers/alarms/subscriptions/subscriptions-alarm.handler";
-import { handleAoTokenCacheAlarm } from "~api/background/handlers/alarms/ao-tokens-cache/ao-tokens-cache-alarm.handler";
-import { handleGatewayUpdateAlarm } from "~api/background/handlers/alarms/gateway-update/gateway-update-alarm.handler";
-import { handleSyncLabelsAlarm } from "~api/background/handlers/alarms/sync-labels/sync-labels-alarm.handler";
-import { handleWindowClose } from "~api/background/handlers/browser/window-close/window-close.handler";
-import { handleKeyRemovalAlarm } from "~api/background/handlers/alarms/key-removal/key-removal-alarm.handler";
+import { handleApiCallMessage } from "./handlers/message/api-call-message/api-call-message.handler";
+import { handleChunkMessage } from "./handlers/message/chunk-message/chunk-message.handler";
+import { handleInstall } from "./handlers/browser/install/install.handler";
+import { handleProtocol } from "./handlers/browser/protocol/protocol.handler";
+import { handleActiveAddressChange } from "./handlers/storage/active-address-change/active-address-change.handler";
+import { handleWalletsChange } from "./handlers/storage/wallet-change/wallet-change.handler";
+import { handleAppsChange } from "./handlers/storage/apps-change/app-change.handler";
+import { handleAppConfigChange } from "./handlers/storage/app-config-change/app-config-change.handler";
+import { handleTrackBalanceAlarm } from "./handlers/alarms/track-balance/track-balance-alarm.handler";
+import { handleGetPrinters } from "./handlers/browser/printer/get-printers/get-printers.handler";
+import { handleGetCapabilities } from "./handlers/browser/printer/get-capabilities/get-capabilities.handler";
+import { handlePrint } from "./handlers/browser/printer/print/print.handler";
+import { handleNotificationsAlarm } from "./handlers/alarms/notifications/notifications-alarm.handler";
+import { handleSubscriptionsAlarm } from "./handlers/alarms/subscriptions/subscriptions-alarm.handler";
+import { handleAoTokenCacheAlarm } from "./handlers/alarms/ao-tokens-cache/ao-tokens-cache-alarm.handler";
+import { handleGatewayUpdateAlarm } from "./handlers/alarms/gateway-update/gateway-update-alarm.handler";
+import { handleSyncLabelsAlarm } from "./handlers/alarms/sync-labels/sync-labels-alarm.handler";
+import { handleWindowClose } from "./handlers/browser/window-close/window-close.handler";
+import { handleKeyRemovalAlarm } from "./handlers/alarms/key-removal/key-removal-alarm.handler";
 import {
   handleAoTokensImportAlarm,
   handleFairLaunchTokensImportAlarm,
-} from "~api/background/handlers/alarms/ao-tokens-import/ao-tokens-import-alarm.handler";
+} from "./handlers/alarms/ao-tokens-import/ao-tokens-import-alarm.handler";
 import {
   handleAOYieldAgentAlarm,
   handleAOYieldAgentRecentTxsCheck,
   handleAOYieldAgentSync,
 } from "./handlers/alarms/ao-yield-agent/ao-yield-agent-alarm.handler.js";
 import { handleTransakPurchaseAlarm } from "./handlers/alarms/transak-purchase/transak-purchase-alarm.handler.js";
-import { handleTabClosed, handleTabUpdate } from "~api/background/handlers/browser/tabs/tabs.handler";
-import { log, LOG_GROUP } from "~utils/log/log.utils";
-import { isomorphicOnMessage } from "~isomorphic-messaging";
+import { handleTabClosed, handleTabUpdate } from "./handlers/browser/tabs/tabs.handler";
+import { isomorphicOnMessage } from "@wanderapp/isomorphic-messaging";
 import { handleAuthStateChange } from "./handlers/storage/auth-state-change/auth-state-change.handler.js";
-import { initInactivityTracking } from "~utils/inactivity/inactivity.utils";
 import { handleRefreshWalletLifetimeSavingsAlarm } from "./handlers/alarms/tiers/refresh-wallet-lifetime-savings-alarm.handler.js";
+import { ExtensionStorage, PersistentStorage } from "../../utils/storage/storage";
+import { log, LOG_GROUP } from "../../utils/log/log.utils";
+import { initInactivityTracking } from "../../utils/inactivity/inactivity.utils";
 
 export function setupBackgroundService() {
   log(

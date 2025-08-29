@@ -1,10 +1,9 @@
-import type { WanderRoutePath } from "~wallets/router/router.types";
-import { Link } from "~wallets/router/components/link/Link";
-import { DevSpinner } from "~components/dev/spinner/spinner.component";
+import React, { useMemo } from "react";
+import { useLocation, WanderRoutePath } from "@wanderapp/core";
+import { Link } from "../../../router/link/Link";
+import { DevSpinner } from "../spinner/spinner.component";
 
 import styles from "./button.module.scss";
-import React, { useMemo } from "react";
-import { useLocation } from "~wallets/router/router.utils";
 
 export interface DevButtonProps {
   label: string;

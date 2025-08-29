@@ -1,4 +1,4 @@
-import { defaultGateway, type Gateway } from "~gateways/gateway";
+import { defaultGateway, type Gateway } from "./gateway";
 import { findGateway } from "./wayfinder";
 
 /**

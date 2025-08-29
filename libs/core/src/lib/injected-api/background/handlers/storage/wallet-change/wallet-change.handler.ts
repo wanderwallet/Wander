@@ -1,10 +1,12 @@
-import { getActiveAddress, setActiveWallet, type StoredWallet } from "~wallets";
-import type { StorageChange } from "~utils/runtime";
-import Application from "~applications/application";
-import { forEachTab } from "~applications/tab";
-import { getAppURL } from "~utils/format";
 import browser from "webextension-polyfill";
-import { isomorphicSendMessage } from "~isomorphic-messaging";
+import { isomorphicSendMessage } from "@wanderapp/isomorphic-messaging";
+import { Application } from "../../../../../applications/application.class";
+import { forEachTab } from "../../../../../applications/tab";
+import { StorageChange } from "../../../../../utils/browser-extension/runtime";
+import { getAppURL } from "../../../../../utils/format/format";
+import { setActiveWallet } from "../../../../../wallets";
+import { StoredWallet } from "../../../../../wallets/wallets.types";
+import { getActiveAddress } from "../../../../../wallets/wallets.utils";
 
 /**
  * Added wallets change listener.

@@ -1,11 +1,9 @@
 import { useMemo, useState, type PropsWithChildren } from "react";
+
 import styles from "./figma-screen.module.scss";
-import { asArray } from "~utils/array";
-import { DevSpinnerCover } from "~components/dev/spinner-cover/spinner-cover.component";
-import type { DevButtonProps } from "~components/dev/button/button.component";
-import { DevButtons } from "~components/dev/buttons/buttons.component";
-import { isPromise } from "~utils/promises/isPromise";
-import { getFriendlyErrorMessage } from "~utils/error/error.utils";
+import { DevButtons, type DevButtonProps } from "../button/button.component";
+import { asArray, getFriendlyErrorMessage, isPromise } from "@wanderapp/core";
+import { DevSpinnerCover } from "../spinner-cover/spinner-cover.component";
 
 interface DevFigmaScreenState {
   isLoading: boolean;

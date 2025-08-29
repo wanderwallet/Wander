@@ -1,6 +1,6 @@
 import { isAddress, isLocalWallet, isSubscriptionType } from "~utils/assertions";
 import { getActiveAddress, getActiveKeyfile } from "~wallets";
-import type { BackgroundModuleFunction } from "~api/background/background-modules";
+import type { BackgroundModuleFunction } from "../../background/background-modules";
 import { requestUserAuthorization } from "../../../utils/auth/auth.utils";
 import { getSubscriptionData } from "~subscriptions";
 import { RecurringPaymentFrequency, type SubscriptionData } from "~subscriptions/subscription";

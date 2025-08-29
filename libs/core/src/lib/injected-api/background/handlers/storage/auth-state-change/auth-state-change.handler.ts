@@ -1,9 +1,9 @@
-import type { StorageChange } from "~utils/runtime";
-import { getAppURL } from "~utils/format";
-import { updateIcon } from "~utils/icon";
-import { getActiveTab } from "~applications";
-import Application from "~applications/application";
-import { createContextMenus } from "~utils/context_menus";
+import { Application } from "../../../../../applications/application.class";
+import { getActiveTab } from "../../../../../applications/application.utils";
+import { createContextMenus } from "../../../../../utils/browser-extension/context-menus";
+import { updateIcon } from "../../../../../utils/browser-extension/icon";
+import { StorageChange } from "../../../../../utils/browser-extension/runtime";
+import { getAppURL } from "../../../../../utils/format/format";
 
 /**
  * App disconnected listener. Sends a message

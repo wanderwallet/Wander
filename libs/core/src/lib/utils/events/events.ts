@@ -1,4 +1,4 @@
-import type { PermissionType } from "~applications/permissions";
+import type { PermissionType } from "../../../applications/permissions";
 import { ExtensionStorage } from "../../../../libs/core-2/src/lib/utils/storage/storage";
 import { type Gateway } from "~gateways/gateway";
 import type { EventType } from "mitt";

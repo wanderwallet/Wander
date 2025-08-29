@@ -2,19 +2,16 @@ import { Loading } from "@arconnect/components";
 import { FiatAmount, AmountTitle } from "~routes/popup/transaction/[id]";
 import browser from "webextension-polyfill";
 import { useMemo, useState } from "react";
-import { formatAddress } from "~utils/format";
-import { PersistentStorage, useStorage } from "~utils/storage";
-import { ExtensionStorage } from "~utils/storage";
+import { formatAddress, PersistentStorage, useStorage, ExtensionStorage, formatFiatBalance, useSetting, fetchTokenByProcessId, type TokenInfo, useAsyncEffect, RawDataItem } from "@wanderapp/core";
 import { Quantity } from "ao-tokens";
 import prettyBytes from "pretty-bytes";
-import { formatFiatBalance } from "~tokens/currency";
-import useSetting from "~settings/hook";
-import { fetchTokenByProcessId, type TokenInfo } from "~tokens/aoTokens/ao";
-import { Box, ChevronRight, Spacer, Text, Row } from "../ui";
-import TransactionTag from "./TransactionTag";
-import { useAsyncEffect } from "~utils/react/useAsyncEffect";
-import { TokenLogo } from "~components/popup/TokenLogo";
-import type { RawDataItem } from "~api/modules/sign_data_item/types";
+import { TransactionTag } from "./TransactionTag";
+import { Box } from "../ui/atoms/box/Box";
+import { TokenLogo } from "../../be/TokenLogo";
+import { Spacer } from "../ui/atoms/spacer/Spacer";
+import { Row } from "../ui/atoms/row/Row";
+import { Text } from "../ui/atoms/text/Text";
+import { ChevronRight } from "../icons";
 
 export interface SignDataItemDetailsProps {
   dataItem: RawDataItem;
@@ -92,93 +89,89 @@ export function SignDataItemDetails({ dataItem }: SignDataItemDetailsProps) {
     "",
   );
 
-  return (
-    <>
-      {dataItem ? (
-        <Box style={{ paddingLeft: 0, paddingRight: 0 }}>
+  return dataItem ? (
+    <Box style={{ paddingLeft: 0, paddingRight: 0 }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          marginBottom: "4px",
+        }}>
+        {loading ? (
+          <Loading style={{ width: "16px", height: "16px" }} />
+        ) : (
+          tokenInfo && <TokenLogo token={tokenInfo || ""} />
+        )}
+      </div>
+      {transfer && (
+        <>
+          <FiatAmount>{formatFiatBalance(fiatPrice, currency)}</FiatAmount>
+          <AmountTitle
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              justifyContent: "center",
+              alignItems: "flex-end",
+              marginBottom: "16px",
+              color: "#666666",
+            }}>
+            {formattedAmount}
+            <span style={{ lineHeight: "1.5em" }}>{tokenName}</span>
+          </AmountTitle>
+        </>
+      )}
+
+      <Box
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "0.5rem",
+          padding: 0,
+          margin: 0,
+          width: "100%",
+        }}
+        alignment="left"
+        isAutoWidth>
+        {dataItem?.target && (
+          <TransactionTag name={browser.i18n.getMessage("process_id")} value={formatAddress(dataItem?.target, 6)} />
+        )}
+        <TransactionTag
+          name={browser.i18n.getMessage("transaction_from")}
+          value={formatAddress(activeAddress, 6)}
+        />
+        {recipient && (
+          <TransactionTag name={browser.i18n.getMessage("transaction_to")} value={formatAddress(recipient, 6)} />
+        )}
+
+        <TransactionTag name={browser.i18n.getMessage("transaction_fee")} value={`0 AR`} />
+        <TransactionTag
+          name={browser.i18n.getMessage("transaction_size")}
+          value={prettyBytes(dataItem?.data.length)}
+        />
+        <Spacer y={0.1} />
+        <Row
+          alignment="center"
+          justifyContent="start"
+          style={{ gap: "0.3rem", cursor: "pointer" }}
+          onClick={() => setShowTags((prev) => !prev)}>
+          <Text variant="bodySm" style={{ color: "#666666" }}>
+            Tags
+          </Text>
           <div
             style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              marginBottom: "4px",
+              display: "inline-flex",
+              transition: "transform 0.2s ease",
+              transform: showTags ? "rotate(90deg)" : "rotate(0deg)",
             }}>
-            {loading ? (
-              <Loading style={{ width: "16px", height: "16px" }} />
-            ) : (
-              tokenInfo && <TokenLogo token={tokenInfo || ""} />
-            )}
+            <ChevronRight fontSize={24} color={"#666666"} />
           </div>
-          {transfer && (
-            <>
-              <FiatAmount>{formatFiatBalance(fiatPrice, currency)}</FiatAmount>
-              <AmountTitle
-                style={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  justifyContent: "center",
-                  alignItems: "flex-end",
-                  marginBottom: "16px",
-                  color: "#666666",
-                }}>
-                {formattedAmount}
-                <span style={{ lineHeight: "1.5em" }}>{tokenName}</span>
-              </AmountTitle>
-            </>
-          )}
-
-          <Box
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "0.5rem",
-              padding: 0,
-              margin: 0,
-              width: "100%",
-            }}
-            alignment="left"
-            isAutoWidth>
-            {dataItem?.target && (
-              <TransactionTag name={browser.i18n.getMessage("process_id")} value={formatAddress(dataItem?.target, 6)} />
-            )}
-            <TransactionTag
-              name={browser.i18n.getMessage("transaction_from")}
-              value={formatAddress(activeAddress, 6)}
-            />
-            {recipient && (
-              <TransactionTag name={browser.i18n.getMessage("transaction_to")} value={formatAddress(recipient, 6)} />
-            )}
-
-            <TransactionTag name={browser.i18n.getMessage("transaction_fee")} value={`0 AR`} />
-            <TransactionTag
-              name={browser.i18n.getMessage("transaction_size")}
-              value={prettyBytes(dataItem?.data.length)}
-            />
-            <Spacer y={0.1} />
-            <Row
-              alignment="center"
-              justifyContent="start"
-              style={{ gap: "0.3rem", cursor: "pointer" }}
-              onClick={() => setShowTags((prev) => !prev)}>
-              <Text variant="bodySm" style={{ color: "#666666" }}>
-                Tags
-              </Text>
-              <div
-                style={{
-                  display: "inline-flex",
-                  transition: "transform 0.2s ease",
-                  transform: showTags ? "rotate(90deg)" : "rotate(0deg)",
-                }}>
-                <ChevronRight fontSize={24} color={"#666666"} />
-              </div>
-            </Row>
-            <Spacer y={0.05} />
-            {showTags && dataItem?.tags?.map((tag, i) => <TransactionTag key={i} name={tag.name} value={tag.value} />)}
-          </Box>
-        </Box>
-      ) : (
-        <Loading />
-      )}
-    </>
+        </Row>
+        <Spacer y={0.05} />
+        {showTags && dataItem?.tags?.map((tag, i) => <TransactionTag key={i} name={tag.name} value={tag.value} />)}
+      </Box>
+    </Box>
+  ) : (
+    <Loading />
   );
 }

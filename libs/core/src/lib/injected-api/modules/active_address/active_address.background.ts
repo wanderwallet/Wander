@@ -1,5 +1,5 @@
-import type { BackgroundModuleFunction } from "~api/background/background-modules";
-import { ExtensionStorage } from "~utils/storage/storage";
+import { ExtensionStorage } from "../../../utils/storage/storage";
+import { BackgroundModuleFunction } from "../../background/background-modules";
 
 const background: BackgroundModuleFunction<string> = async () => {
   const address = await ExtensionStorage.get("active_address");

@@ -4,7 +4,7 @@ import { AnalyticsBrowser } from "@segment/analytics-next";
 import { getActiveKeyfile, getActiveAddress, getWalletKeyLength } from "~wallets";
 import browser from "webextension-polyfill";
 import axios from "axios";
-import { isLocalWallet } from "./assertions";
+import { isLocalWallet } from "../../../../libs/core/src/lib/utils/assertions/assertions";
 import { freeDecryptedWallet } from "~wallets/encryption";
 import { ERR_MSG_NO_WALLETS_ADDED } from "~utils/auth/auth.constants";
 import { nanoid } from "nanoid";

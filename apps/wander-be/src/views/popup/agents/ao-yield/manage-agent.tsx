@@ -1,4 +1,4 @@
-import { useAOMintingStatus, useAOYieldLatestAgent } from "~utils/agents/hooks";
+import { useAOMintingStatus, useAOYieldLatestAgent } from "../../../../../../../libs/core/src/lib/utils/agents/hooks";
 import { AgentInfo } from "../components/ao-yield/agent-info";
 import { AOMintingStatusModal } from "../components/AOMintingStatusModal";
 import { useEffect } from "react";

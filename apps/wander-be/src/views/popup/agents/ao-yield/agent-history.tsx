@@ -3,7 +3,7 @@ import { Button, Section, Text, Loading } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
 import HeadV2 from "~components/popup/HeadV2";
 import { Flex } from "~components/common/Flex";
-import { useAOYieldAgents } from "~utils/agents/hooks";
+import { useAOYieldAgents } from "../../../../../../../libs/core/src/lib/utils/agents/hooks";
 import { AOYieldAgentListItem } from "../components/AOYieldAgentListItem";
 import { useEffect, useMemo, useState } from "react";
 import { trackPage, PageType } from "~utils/analytics";

@@ -1,6 +1,6 @@
-import type { PermissionType } from "~applications/permissions";
+import type { PermissionType } from "../../../applications/permissions";
 import type { SplitTransaction } from "./transaction_builder.js";
-import type { ModuleProperties } from "~api/module";
+import type { ModuleProperties } from "../../module";
 
 const permissions: PermissionType[] = ["SIGN_TRANSACTION"];
 

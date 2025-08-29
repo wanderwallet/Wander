@@ -1,10 +1,10 @@
 import React, { useCallback, useEffect, useRef } from "react";
-import { useLocation } from "~wallets/router/router.utils";
+import { useLocation } from "@wanderapp/core";
 import { postEmbeddedMessage } from "~utils/_embedded/utils/messages/embedded-messages.utils";
 import { locationToRouteType, routeTypeToPreferredLayout } from "~utils/_embedded/utils/routes/embedded-routes.utils";
+import { useEmbedded } from "~utils/_embedded/embedded.hooks";
 
 import styles from "./ResizeEventObserver.module.scss";
-import { useEmbedded } from "~utils/_embedded/embedded.hooks";
 
 export interface ResizeEventObserverProps {
   containerRef: React.MutableRefObject<HTMLElement>;

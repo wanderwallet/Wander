@@ -4,7 +4,7 @@ import browser from "webextension-polyfill";
 import HeadV2 from "~components/popup/HeadV2";
 import { Flex } from "~components/common/Flex";
 import type { CommonRouteProps } from "~wallets/router/router.types";
-import { useTransactions } from "~utils/agents/hooks";
+import { useTransactions } from "../../../../../../../libs/core/src/lib/utils/agents/hooks";
 import dayjs from "dayjs";
 import { WAR_PROCESS_ID, WUSDC_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 import { SvgImageWithBackground } from "../components/SvgImage";

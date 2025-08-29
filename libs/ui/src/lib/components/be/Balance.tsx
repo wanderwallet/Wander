@@ -1,19 +1,11 @@
 import { Loading } from "@arconnect/components-rebrand";
 import { useEffect, useMemo, useState } from "react";
-import { useStorage } from "~utils/storage";
-import { PersistentStorage } from "~utils/storage";
-import { useBalance } from "~wallets/hooks";
-import { getToken24hChange, useArPrice } from "~lib/coingecko";
-import useSetting from "~settings/hook";
+import { getToken24hChange, PersistentStorage, useArPrice, useAsyncEffect, useBalance, useSetting, useStorage, useTotalFiatBalance } from "@wanderapp/core";
 import styled, { useTheme } from "styled-components";
 import { Text } from "@arconnect/components-rebrand";
 import BigNumber from "bignumber.js";
-import { useTotalFiatBalance } from "~tokens/hooks";
 import NumberFlow from "@number-flow/react";
-import { postEmbeddedMessage } from "~utils/_embedded/utils/messages/embedded-messages.utils";
-import { IS_EMBEDDED_APP } from "~utils/_embedded/embedded.constants";
-import { useAsyncEffect } from "~utils/react/useAsyncEffect";
-import TriangleIcon from "~components/icons/TriangleIcon";
+import { TriangleIcon } from "@iconicicons/react";
 
 export function Balance() {
   // balance in AR
@@ -168,7 +160,7 @@ function PriceChangeIndicator({
         variant="secondary"
         weight="medium"
         noMargin
-        style={IS_EMBEDDED_APP ? { color: "var(--color-font-body)" } : {}}>
+        style={import.meta.env?.VITE_IS_EMBEDDED_APP === "1" ? { color: "var(--color-font-body)" } : {}}>
         <NumberFlow
           value={fiatChange}
           format={{
@@ -181,7 +173,7 @@ function PriceChangeIndicator({
         variant="secondary"
         weight="medium"
         noMargin
-        style={IS_EMBEDDED_APP ? { color: "var(--color-font-body)" } : {}}>
+        style={import.meta.env?.VITE_IS_EMBEDDED_APP === "1" ? { color: "var(--color-font-body)" } : {}}>
         (
         <NumberFlow
           value={Math.abs(Number(percentageChange.toFixed(2)) / 100)}
@@ -230,5 +222,5 @@ const BalanceText = styled(Text).attrs({
 })`
   cursor: pointer;
   text-align: center;
-  ${IS_EMBEDDED_APP && "color: var(--color-font-heading)"}
+  ${import.meta.env?.VITE_IS_EMBEDDED_APP === "1" ? "color: var(--color-font-heading)" : ""}
 `;

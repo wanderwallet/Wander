@@ -2,7 +2,7 @@ import { AlertCircle, XClose } from "@untitled-ui/icons-react";
 import { Flex } from "~components/common/Flex";
 import { Button, Text } from "@arconnect/components-rebrand";
 import styled, { useTheme } from "styled-components";
-import { useAOMintingStatus } from "~utils/agents/hooks";
+import { useAOMintingStatus } from "../../../../../../../libs/core/src/lib/utils/agents/hooks";
 import { ExtensionStorage, useStorage } from "~utils/storage";
 import browser from "webextension-polyfill";
 

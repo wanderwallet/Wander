@@ -1,5 +1,5 @@
-import { removeDecryptionKey } from "~wallets/auth";
 import browser from "webextension-polyfill";
+import { removeDecryptionKey } from "../../../../../wallets/auth";
 
 /**
  * Listener for browser close.
