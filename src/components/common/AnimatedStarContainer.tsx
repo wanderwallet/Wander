@@ -26,6 +26,7 @@ interface AnimatedStarContainerProps {
   className?: string;
   onClick?: () => void;
   style?: React.CSSProperties;
+  centerCloseButton?: boolean;
 }
 
 export const defaultStars: StarConfig[] = [
@@ -46,6 +47,7 @@ export function AnimatedStarContainer({
   className,
   onClick,
   style,
+  centerCloseButton = false,
 }: AnimatedStarContainerProps) {
   return (
     <AnimatedContainer onClick={onClick} className={className} style={style}>
@@ -57,7 +59,7 @@ export function AnimatedStarContainer({
         overflow="hidden"
         style={{ position: "relative" }}>
         {showCloseButton && onClose && (
-          <CloseButtonWrapper>
+          <CloseButtonWrapper center={centerCloseButton}>
             <IconButton
               icon={<XClose style={{ width: 24, height: 24, cursor: "pointer" }} />}
               onClick={(e) => {
@@ -155,11 +157,12 @@ const AnimatedContainer = styled.div`
   }
 `;
 
-const CloseButtonWrapper = styled.div`
+const CloseButtonWrapper = styled.div<{ center: boolean }>`
   position: absolute;
-  top: 8px;
+  top: ${({ center }) => (center ? "50%" : "8px")};
   right: 12px;
   z-index: 2;
+  transform: ${({ center }) => (center ? "translateY(-50%)" : "none")};
 `;
 
 const ContentWrapper = styled.div<{ hasCloseButton: boolean }>`

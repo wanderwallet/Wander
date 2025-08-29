@@ -1,0 +1,1 @@
+export const DEVICE_NONCE_KEY = "DEVICE_NONCE";

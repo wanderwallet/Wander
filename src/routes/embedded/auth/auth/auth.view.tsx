@@ -95,14 +95,10 @@ export function AuthEmbeddedView() {
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [isCheckingEmail, setIsCheckingEmail] = useState(false);
 
-  const areButtonsDisabled =
-    authStatus === "unknown" ||
-    authStatus === "loading" ||
-    authStatus === "authLoading" ||
-    isAuthenticating ||
-    isCheckingEmail;
+  const isViewLoading =
+    authStatus === "unknown" || authStatus === "loading" || authStatus === "authLoading" || isAuthenticating;
 
-  const isViewLoading = areButtonsDisabled && !isCheckingEmail;
+  const areButtonsDisabled = isViewLoading || isCheckingEmail;
 
   // Handlers:
 

@@ -19,9 +19,10 @@ import CreateWanderAgentCTA from "./agents/components/CreateWanderAgentCTA";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { scheduleSwapExecution } from "~utils/agents/swap";
 import { WandAnnouncementPopup } from "~components/popup/home/WandAnnouncementPopup";
-import { ActivityNotificationsNotice } from "~components/popup/home/ActivityNotificationsNotice";
-import { isStargridAnnouncementActive } from "~utils/announcements";
-import { StargridAccessAnnouncementPopup } from "~components/popup/home/StargridAccessAnnouncementPopup";
+import { AnnouncementsCarousel } from "./swap/components/AnnouncementsCarousel";
+import { SwapAnnouncementPopup } from "./swap/components/SwapAnnouncementPopup";
+import { checkForCompletedSwapToShow } from "./swap/utils/swap.progress";
+import { PopupPaths } from "~wallets/router/popup/popup.routes";
 
 export function HomeView() {
   const theme = useTheme();
@@ -30,7 +31,7 @@ export function HomeView() {
   const [loggedIn, setLoggedIn] = useState(false);
   const [isOpen, setOpen] = useState(false);
   const [isWandAnnouncementOpen, setWandAnnouncementOpen] = useState(false);
-  const [isStargridAnnouncementOpen, setStargridAnnouncementOpen] = useState(false);
+  const [isSwapAnnouncementOpen, setSwapAnnouncementOpen] = useState(false);
 
   const [announcement, _] = useStorage<boolean>({
     key: "show_announcement",
@@ -107,17 +108,28 @@ export function HomeView() {
       setLoggedIn(true);
     }
 
-    const [wandAnnouncementShown, stargridAnnouncementShown] = await Promise.all([
+    const [wandAnnouncementShown, swapAnnouncementShown] = await Promise.all([
       ExtensionStorage.get<boolean>("wander_announcement_shown").then((val) => val ?? false),
-      ExtensionStorage.get<boolean>("stargrid_announcement_shown").then((val) => val ?? false),
+      ExtensionStorage.get<boolean>("swap_announcement_shown").then((val) => val ?? false),
     ]);
     setWandAnnouncementOpen(!wandAnnouncementShown);
-
-    setStargridAnnouncementOpen(isStargridAnnouncementActive() && !stargridAnnouncementShown);
+    setSwapAnnouncementOpen(!swapAnnouncementShown);
 
     // WALLET.TYPE JUST FOR KEYSTONE POPUP
     setOpen(announcement && wallet?.type === "hardware");
   }, [wallet, announcement]);
+
+  useAsyncEffect(async () => {
+    // Check for completed swaps to show on popup open
+    try {
+      const completedSwap = await checkForCompletedSwapToShow();
+      if (completedSwap) {
+        navigate(PopupPaths.SwapComplete);
+      }
+    } catch (error) {
+      console.error("Error checking for completed swaps:", error);
+    }
+  }, [navigate]);
 
   return (
     <HomeWrapper>
@@ -125,7 +137,7 @@ export function HomeView() {
       {loggedIn && (
         <>
           <KeystoneAnnouncementPopup isOpen={isOpen} setOpen={setOpen} />
-          <StargridAccessAnnouncementPopup isOpen={isStargridAnnouncementOpen} setOpen={setStargridAnnouncementOpen} />
+          <SwapAnnouncementPopup isOpen={isSwapAnnouncementOpen} setOpen={setSwapAnnouncementOpen} />
           <WandAnnouncementPopup isOpen={isWandAnnouncementOpen} setOpen={setWandAnnouncementOpen} />
         </>
       )}
@@ -133,7 +145,7 @@ export function HomeView() {
       <HomeContent>
         <Balance />
         <WalletActions />
-        <ActivityNotificationsNotice />
+        <AnnouncementsCarousel />
         <CreateWanderAgentCTA />
         <Tabs />
       </HomeContent>

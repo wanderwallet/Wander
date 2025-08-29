@@ -24,6 +24,7 @@ import {
   Owner,
   AR_PROCESS_ID,
   AO_PROCESS_ID,
+  WAR_PROCESS_ID,
 } from "~tokens/aoTokens/ao.constants";
 import type { Token } from "~tokens/token";
 
@@ -52,11 +53,14 @@ type DataItemResult = {
 };
 
 const { dryrun: customDryrun } = connect({ CU_URL: "https://cu.ardrive.io" });
+const { dryrun: wARDryrun } = connect({ CU_URL: "https://ao.arweave.asia" });
 
 const getDryrunForProcess = (processId: string) => {
   return processId === ARIO_PROCESS_ID || processId === USDA_PROCESS_ID || processId === WNDR_PROCESS_ID
     ? { dryrunFn: customDryrun, isCustomDryrun: true }
-    : { dryrunFn: dryrun, isCustomDryrun: false };
+    : processId === WAR_PROCESS_ID
+      ? { dryrunFn: wARDryrun, isCustomDryrun: true }
+      : { dryrunFn: dryrun, isCustomDryrun: false };
 };
 
 export function getTokenInfoFromData(res: any, id: string): TokenInfo {
@@ -112,7 +116,7 @@ export async function getTokenInfo(id: string): Promise<TokenInfo> {
     const response = await fetch(`${CACHE_API}/api/token-info?tokenId=${id}`, {
       cache: "force-cache",
       headers: {
-        "Cache-Control": "public, max-age=300", // 5 minutes
+        "Cache-Control": "public, max-age=3600", // 1 hour
       },
     });
     const data = await response.json();
@@ -192,7 +196,11 @@ export async function getAoTokenBalance(address: string, process: string, aoToke
   }
 
   const { dryrunFn, isCustomDryrun } = getDryrunForProcess(process);
-  const tags = [{ name: "Action", value: "Balance" }];
+  const tags = [
+    { name: "Action", value: "Balance" },
+    { name: "Recipient", value: address },
+    { name: "Target", value: address },
+  ];
 
   if (isCustomDryrun) {
     tags.push({ name: "Referer", value: "Wander" });
@@ -262,6 +270,22 @@ export const getTagValues = (tagNames: string[], tags: (Tag | DecodedTag)[]): (s
   const tagMap = new Map(tags.map((tag) => [tag.name, tag.value]));
   return tagNames.map((name) => tagMap.get(name));
 };
+
+export const getTagValueMap = (tags: (Tag | DecodedTag)[]): Map<string, string> => {
+  return new Map(tags.map((tag) => [tag.name, tag.value]));
+};
+
+/**
+ * Flatten tags to a key value object
+ */
+export const flattenTags = (tags: Tag[]) =>
+  tags.reduce(
+    (acc, tag) => {
+      acc[tag.name] = tag.value;
+      return acc;
+    },
+    {} as Record<string, string>,
+  );
 
 export const createDataItemSigner =
   (wallet: any) =>

@@ -23,13 +23,12 @@ export interface CarouselProps<T extends CarouselSlide = CarouselSlide> {
   navigationLeftArrowIcon?: typeof ChevronLeft;
   navigationRightArrowIcon?: typeof ChevronLeft;
   showNavigationArrowsOnHover?: boolean;
-  smoothSliding?: boolean;
-  slideDuration?: number;
-  slideEasing?: "ease" | "ease-in" | "ease-out" | "ease-in-out" | "linear" | string;
+  slideGap?: number;
   onSlideChange?: (index: number) => void;
   className?: string;
   containerStyle?: React.CSSProperties;
   slideNavigationGap?: number;
+  showSlideEdges?: boolean;
 }
 
 export function Carousel<T extends CarouselSlide = CarouselSlide>({
@@ -45,19 +44,18 @@ export function Carousel<T extends CarouselSlide = CarouselSlide>({
   navigationLeftArrowIcon,
   navigationRightArrowIcon,
   showNavigationArrowsOnHover = false,
-  smoothSliding = true,
-  slideDuration = 30,
-  slideEasing = "cubic-bezier(0.4, 0, 0.2, 1)",
   onSlideChange,
   className,
   containerStyle,
   dotColor,
   activeDotColor,
   slideNavigationGap = 20,
+  slideGap = 8,
+  showSlideEdges = false,
 }: CarouselProps<T>) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [canScrollPrevious, setCanScrollPrevious] = useState(false);
-  const [canScrollNextward, setCanScrollNextward] = useState(false);
+  const [canScrollNext, setCanScrollNext] = useState(false);
 
   const mergedOptions = useMemo<EmblaOptionsType>(
     () => ({
@@ -65,16 +63,13 @@ export function Carousel<T extends CarouselSlide = CarouselSlide>({
       align: "center",
       skipSnaps: false,
       dragFree: false,
-      containScroll: "trimSnaps",
-      ...(smoothSliding && {
-        duration: slideDuration,
-        inViewThreshold: 0.7,
-        watchDrag: true,
-        watchResize: true,
-      }),
+      containScroll: options?.loop === false ? false : "trimSnaps",
+      speed: 10,
+      watchDrag: true,
+      watchResize: true,
       ...(options || {}),
     }),
-    [smoothSliding, slideDuration, options],
+    [options],
   );
 
   const [emblaRef, emblaApi] = useEmblaCarousel(mergedOptions);
@@ -84,7 +79,7 @@ export function Carousel<T extends CarouselSlide = CarouselSlide>({
     const index = emblaApi.selectedScrollSnap();
     setSelectedIndex(index);
     setCanScrollPrevious(emblaApi.canScrollPrev());
-    setCanScrollNextward(emblaApi.canScrollNext());
+    setCanScrollNext(emblaApi.canScrollNext());
     onSlideChange?.(index);
   }, [emblaApi, onSlideChange]);
 
@@ -101,80 +96,88 @@ export function Carousel<T extends CarouselSlide = CarouselSlide>({
   }, [emblaApi, onSelect]);
 
   return (
-    <CarouselContainer className={className} style={containerStyle} slideNavigationGap={slideNavigationGap}>
-      <CarouselViewportContainer $showNavigationArrowsOnHover={showNavigationArrowsOnHover}>
-        <EmblaViewport ref={emblaRef} $smoothSliding={smoothSliding}>
-          <EmblaContainer $smoothSliding={smoothSliding} $duration={slideDuration} $easing={slideEasing}>
-            {slides.map((slide, index) => (
-              <EmblaSlide key={`slide-${index}`} $smoothSliding={smoothSliding}>
-                {renderSlide(slide, index)}
-              </EmblaSlide>
-            ))}
-          </EmblaContainer>
-        </EmblaViewport>
+    <FullWidthContainer showSlideEdges={showSlideEdges}>
+      <CarouselContainer className={className} style={containerStyle} slideNavigationGap={slideNavigationGap}>
+        <CarouselViewportContainer $showNavigationArrowsOnHover={showNavigationArrowsOnHover}>
+          <EmblaViewport ref={emblaRef}>
+            <EmblaContainer slideGap={slideGap} showSlideEdges={showSlideEdges}>
+              {slides.map((slide, index) => (
+                <EmblaSlide key={`slide-${index}`}>{renderSlide(slide, index)}</EmblaSlide>
+              ))}
+            </EmblaContainer>
+          </EmblaViewport>
 
-        {showNavigationArrows && navigationArrowPosition === "onSlides" && (
-          <>
-            <OverlayNavigationArrowButton
-              position="left"
-              onClick={scrollPrev}
-              disabled={!canScrollPrevious}
-              size={navigationArrowSize}
-              color={navigationArrowColor}
-              activeColor={navigationArrowActiveColor}>
-              <ChevronLeftIcon as={navigationLeftArrowIcon} size={navigationArrowSize} color={navigationArrowColor} />
-            </OverlayNavigationArrowButton>
-            <OverlayNavigationArrowButton
-              position="right"
-              onClick={scrollNext}
-              disabled={!canScrollNextward}
-              size={navigationArrowSize}
-              color={navigationArrowColor}
-              activeColor={navigationArrowActiveColor}>
-              <ChevronRightIcon as={navigationRightArrowIcon} size={navigationArrowSize} color={navigationArrowColor} />
-            </OverlayNavigationArrowButton>
-          </>
+          {showNavigationArrows && navigationArrowPosition === "onSlides" && (
+            <>
+              <OverlayNavigationArrowButton
+                position="left"
+                onClick={scrollPrev}
+                disabled={!canScrollPrevious}
+                size={navigationArrowSize}
+                color={navigationArrowColor}
+                activeColor={navigationArrowActiveColor}>
+                <ChevronLeftIcon as={navigationLeftArrowIcon} size={navigationArrowSize} color={navigationArrowColor} />
+              </OverlayNavigationArrowButton>
+              <OverlayNavigationArrowButton
+                position="right"
+                onClick={scrollNext}
+                disabled={!canScrollNext}
+                size={navigationArrowSize}
+                color={navigationArrowColor}
+                activeColor={navigationArrowActiveColor}>
+                <ChevronRightIcon
+                  as={navigationRightArrowIcon}
+                  size={navigationArrowSize}
+                  color={navigationArrowColor}
+                />
+              </OverlayNavigationArrowButton>
+            </>
+          )}
+        </CarouselViewportContainer>
+
+        {showDots && slides.length > 1 && (
+          <NavigationContainer showNavigationArrows={showNavigationArrows && navigationArrowPosition === "withDots"}>
+            {showNavigationArrows && navigationArrowPosition === "withDots" && (
+              <NavigationArrowButton
+                onClick={scrollPrev}
+                disabled={!canScrollPrevious}
+                size={navigationArrowSize}
+                color={navigationArrowColor}
+                activeColor={navigationArrowActiveColor}>
+                <ChevronLeftIcon as={navigationLeftArrowIcon} size={navigationArrowSize} color={navigationArrowColor} />
+              </NavigationArrowButton>
+            )}
+
+            <DotsContainer>
+              {slides.map((_, index) => (
+                <Dot
+                  key={`dot-${index}`}
+                  active={index === selectedIndex}
+                  onClick={() => scrollTo(index)}
+                  dotColor={dotColor}
+                  activeDotColor={activeDotColor}
+                />
+              ))}
+            </DotsContainer>
+
+            {showNavigationArrows && navigationArrowPosition === "withDots" && (
+              <NavigationArrowButton
+                onClick={scrollNext}
+                disabled={!canScrollNext}
+                size={navigationArrowSize}
+                color={navigationArrowColor}
+                activeColor={navigationArrowActiveColor}>
+                <ChevronRightIcon
+                  as={navigationRightArrowIcon}
+                  size={navigationArrowSize}
+                  color={navigationArrowColor}
+                />
+              </NavigationArrowButton>
+            )}
+          </NavigationContainer>
         )}
-      </CarouselViewportContainer>
-
-      {showDots && slides.length > 1 && (
-        <NavigationContainer showNavigationArrows={showNavigationArrows && navigationArrowPosition === "withDots"}>
-          {showNavigationArrows && navigationArrowPosition === "withDots" && (
-            <NavigationArrowButton
-              onClick={scrollPrev}
-              disabled={!canScrollPrevious}
-              size={navigationArrowSize}
-              color={navigationArrowColor}
-              activeColor={navigationArrowActiveColor}>
-              <ChevronLeftIcon as={navigationLeftArrowIcon} size={navigationArrowSize} color={navigationArrowColor} />
-            </NavigationArrowButton>
-          )}
-
-          <DotsContainer>
-            {slides.map((_, index) => (
-              <Dot
-                key={`dot-${index}`}
-                active={index === selectedIndex}
-                onClick={() => scrollTo(index)}
-                dotColor={dotColor}
-                activeDotColor={activeDotColor}
-              />
-            ))}
-          </DotsContainer>
-
-          {showNavigationArrows && navigationArrowPosition === "withDots" && (
-            <NavigationArrowButton
-              onClick={scrollNext}
-              disabled={!canScrollNextward}
-              size={navigationArrowSize}
-              color={navigationArrowColor}
-              activeColor={navigationArrowActiveColor}>
-              <ChevronRightIcon as={navigationRightArrowIcon} size={navigationArrowSize} color={navigationArrowColor} />
-            </NavigationArrowButton>
-          )}
-        </NavigationContainer>
-      )}
-    </CarouselContainer>
+      </CarouselContainer>
+    </FullWidthContainer>
   );
 }
 
@@ -208,40 +211,24 @@ const CarouselViewportContainer = styled.div<{ $showNavigationArrowsOnHover?: bo
   `}
 `;
 
-const EmblaViewport = styled.div<{ $smoothSliding?: boolean }>`
+const EmblaViewport = styled.div`
   overflow: hidden;
-  ${(props) =>
-    props.$smoothSliding &&
-    `
-    transform: translateZ(0);
-    backface-visibility: hidden;
-  `}
 `;
 
-const EmblaContainer = styled.div<{ $smoothSliding?: boolean; $duration?: number; $easing?: string }>`
+const EmblaContainer = styled.div<{
+  slideGap?: number;
+  showSlideEdges?: boolean;
+}>`
   display: flex;
   touch-action: pan-y pinch-zoom;
-  gap: 16px;
-  ${(props) =>
-    props.$smoothSliding &&
-    `
-    will-change: transform;
-    backface-visibility: hidden;
-    transition: transform ${props.$duration || 30}ms ${props.$easing || "cubic-bezier(0.4, 0, 0.2, 1)"};
-    transform: translateZ(0);
-  `}
+  gap: ${(props) => props.slideGap}px;
+  ${(props) => props.showSlideEdges && `padding-left: 24px; padding-right: 24px;`}
 `;
 
-const EmblaSlide = styled.div<{ $smoothSliding?: boolean }>`
+const EmblaSlide = styled.div`
   flex: 0 0 100%;
   min-width: 0;
-  ${(props) =>
-    props.$smoothSliding &&
-    `
-    backface-visibility: hidden;
-    transform: translateZ(0);
-    will-change: transform;
-  `}
+  position: relative;
 `;
 
 const NavigationContainer = styled.div<{ showNavigationArrows: boolean }>`
@@ -249,6 +236,8 @@ const NavigationContainer = styled.div<{ showNavigationArrows: boolean }>`
   align-items: center;
   justify-content: ${(props) => (props.showNavigationArrows ? "space-between" : "center")};
   gap: 16px;
+  padding-left: 24px;
+  padding-right: 24px;
 `;
 
 const DotsContainer = styled.div`
@@ -305,6 +294,7 @@ const OverlayNavigationArrowButton = styled.button<{
   size: number;
   color?: string;
   activeColor?: string;
+  showSlideEdges?: boolean;
 }>`
   position: absolute;
   top: 50%;
@@ -323,6 +313,7 @@ const OverlayNavigationArrowButton = styled.button<{
   align-items: center;
   justify-content: center;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  ${(props) => props.showSlideEdges && `margin-left: 24px; margin-right: 24px;`}
 
   &:hover:not(:disabled) {
     background: rgba(255, 255, 255, 0.05);
@@ -344,4 +335,8 @@ const ChevronLeftIcon = styled(ChevronLeft)<{ size: number }>`
 const ChevronRightIcon = styled(ChevronRight)<{ size: number }>`
   width: ${(props) => props.size}px;
   height: ${(props) => props.size}px;
+`;
+
+const FullWidthContainer = styled.div<{ showSlideEdges?: boolean }>`
+  margin: 0 ${(props) => (props.showSlideEdges ? "-24px" : "0")};
 `;

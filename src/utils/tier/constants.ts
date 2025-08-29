@@ -35,4 +35,3 @@ export const tierNameToId = {
 export const defiFeePercent = 1;
 
 export const EXPLORE_TIER_BENEFITS = "explore_tier_benefits";
-export const ACTIVITY_NOTIFICATIONS_NOTICE = "activity_notifications_notice";
