@@ -174,7 +174,7 @@ export interface ParsedSwapTransaction {
   rate: string;
   timestamp: number;
   provider: Provider;
-  networkFee: string;
+  networkProviderFee: string;
   wanderFee: string;
   slippage: string;
   priceImpact: string;

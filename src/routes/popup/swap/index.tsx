@@ -33,7 +33,7 @@ import { AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 import { getErrorMessage, validateAmount } from "../send/amount";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
-import { fromTokenBaseUnits, toFixed, toTokenBaseUnits } from "./utils/swap.utils";
+import { fromTokenBaseUnits, getPriceImpactColor, toFixed, toTokenBaseUnits } from "./utils/swap.utils";
 import { PageType, trackPage } from "~utils/analytics";
 import { TransactionDetailItem } from "./components/TransactionDetailItem";
 import { ErrorIcon } from "./components/ErrorIcon";
@@ -245,7 +245,7 @@ export function SwapView() {
               }
             />
             <TransactionDetailItem
-              title={browser.i18n.getMessage("network_fee")}
+              title={browser.i18n.getMessage("network_provider_fee")}
               value={providerNetworkFee}
               isLoading={amountIn && isLoading}
             />
@@ -273,6 +273,12 @@ export function SwapView() {
                   {selectedPoolInfo && wanderFee.finalFee !== "--" && <WanderFeeTag style={{ order: 3 }} />}
                 </Flex>
               }
+            />
+            <TransactionDetailItem
+              title={browser.i18n.getMessage("price_impact")}
+              value={selectedPoolInfo?.priceImpact ? `${selectedPoolInfo.priceImpact}%` : "--"}
+              valueColor={getPriceImpactColor(selectedPoolInfo?.priceImpact, theme)}
+              isLoading={amountIn && isLoading}
             />
           </Flex>
 

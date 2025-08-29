@@ -143,7 +143,10 @@ export function SwapCompleteView() {
                 title={browser.i18n.getMessage("est_swap_time")}
                 value={getSwapTime(selectedPoolInfo?.poolType)}
               />
-              <TransactionDetailItem title={browser.i18n.getMessage("network_fee")} value={providerNetworkFee} />
+              <TransactionDetailItem
+                title={browser.i18n.getMessage("network_provider_fee")}
+                value={providerNetworkFee}
+              />
               <TransactionDetailItem
                 title={browser.i18n.getMessage("wander_fee")}
                 value={

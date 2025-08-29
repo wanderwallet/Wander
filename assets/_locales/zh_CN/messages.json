@@ -4325,5 +4325,9 @@
     "swap_announcement_title": {
       "message": "在几秒钟内交换资产",
       "description": "Swap announcement title text"
+    },
+    "network_provider_fee": {
+      "message": "网络/提供者费用",
+      "description": "Network/Provider fee text"
     }
 }

@@ -4365,5 +4365,9 @@
   "swap_announcement_title": {
     "message": "Swap Assets in Seconds",
     "description": "Swap announcement title text"
+  },
+  "network_provider_fee": {
+    "message": "Network/Provider fee",
+    "description": "Network/Provider fee text"
   }
 }

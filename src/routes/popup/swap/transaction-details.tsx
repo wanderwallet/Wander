@@ -145,8 +145,8 @@ export function SwapTransactionDetailsView({ params: { id } }: SwapTransactionDe
                     value={getSwapTime(transaction.provider)}
                   />
                   <TransactionDetailItem
-                    title={browser.i18n.getMessage("network_fee")}
-                    value={transaction.networkFee}
+                    title={browser.i18n.getMessage("network_provider_fee")}
+                    value={transaction.networkProviderFee}
                   />
                   <TransactionDetailItem title={browser.i18n.getMessage("wander_fee")} value={transaction.wanderFee} />
                   <TransactionDetailItem title={browser.i18n.getMessage("slippage")} value={transaction.slippage} />

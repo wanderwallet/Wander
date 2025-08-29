@@ -281,7 +281,7 @@ export function parseSwapTransaction(transaction: GQLEdgeInterface): ParsedSwapT
     const bridgeStatus = getTagValue("Bridge-Status", tags);
     const rate = getTagValue("X-Rate", tags);
     const provider = getTagValue("X-Provider", tags) as Provider;
-    const networkFee = getTagValue("X-Network-Fee", tags);
+    const networkProviderFee = getTagValue("X-Network-Fee", tags);
     const wanderFee = getTagValue("X-Client-Fee", tags);
     const slippage = getTagValue("X-Slippage", tags);
     const priceImpact = getTagValue("X-Price-Impact", tags);
@@ -304,7 +304,7 @@ export function parseSwapTransaction(transaction: GQLEdgeInterface): ParsedSwapT
       rate,
       timestamp,
       provider,
-      networkFee,
+      networkProviderFee,
       wanderFee,
       slippage,
       priceImpact,
