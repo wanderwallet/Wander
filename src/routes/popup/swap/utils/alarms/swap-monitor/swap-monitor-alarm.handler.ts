@@ -103,10 +103,10 @@ async function checkSingleSwap(swap: SwapData) {
     } else {
       // If there's an error checking status, treat as potential failure after timeout
       const swapAge = Date.now() - (swap.timestamp || Date.now());
-      const maxWaitTime = 259200000; // 3 days
+      const SWAP_TIMEOUT_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
-      if (swapAge > maxWaitTime) {
-        log(LOG_GROUP.SWAP, `Swap ${swap.transferId} timed out with error`, error);
+      if (swapAge > SWAP_TIMEOUT_MS) {
+        log(LOG_GROUP.SWAP, `Swap ${swap.transferId} timed out with error after 7 days`, error);
         await handleSwapFailure(swap);
       }
     }
@@ -344,7 +344,12 @@ function shouldRemoveSwap(swap: SwapData, dayAgo: number): boolean {
     }
     // Remove ONLY if fee processed AND completion screen has been explicitly shown (false)
     // Logic: undefined -> keep, true -> keep, false -> remove
-    return swap.showCompletionScreen === false;
+    if (swap.showCompletionScreen === false) {
+      return true;
+    }
+
+    // Fallback: remove after 24 hours even if screen wasn't shown (safety measure)
+    return (swap.completedAt || 0) < dayAgo;
   }
 
   // Handle failed swaps - remove if completion screen shown OR after 24 hours (fallback)
