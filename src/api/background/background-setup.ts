@@ -37,7 +37,6 @@ import { handleAuthStateChange } from "./handlers/storage/auth-state-change/auth
 import { initInactivityTracking } from "~utils/inactivity/inactivity.utils";
 import { handleRefreshWalletLifetimeSavingsAlarm } from "./handlers/alarms/tiers/refresh-wallet-lifetime-savings-alarm.handler";
 import { handleSwapMonitorAlarm } from "~routes/popup/swap/utils/alarms/swap-monitor/swap-monitor-alarm.handler";
-import { initializeSwapMonitoring } from "~routes/popup/swap/utils/swap.progress";
 
 export function setupBackgroundService() {
   log(
@@ -145,11 +144,6 @@ export function setupBackgroundService() {
   browser.alarms.onAlarm.addListener(handleRefreshWalletLifetimeSavingsAlarm);
   browser.alarms.onAlarm.addListener(handleTransakPurchaseAlarm);
   browser.alarms.onAlarm.addListener(handleSwapMonitorAlarm);
-
-  // Initialize swap monitoring for any pending swaps
-  initializeSwapMonitoring().catch((error) => {
-    log(LOG_GROUP.SETUP, "Error initializing swap monitoring", error);
-  });
 
   // When the last window connected to the extension is closed, the decryption key will be removed from memory. This is no needed in the embedded wallet because
   // each wallet instance will be removed automatically when its tab/window is closed.
