@@ -228,7 +228,11 @@ export function SwapView() {
             )}
           </Flex>
           <Flex direction="column" gap={8}>
-            <TransactionDetailItem title={browser.i18n.getMessage("rate")} value={rate} />
+            <TransactionDetailItem
+              title={browser.i18n.getMessage("rate")}
+              value={rate}
+              isLoading={amountIn && isLoading}
+            />
             <TransactionDetailItem
               title={browser.i18n.getMessage("slippage")}
               value={
@@ -240,9 +244,14 @@ export function SwapView() {
                 </Flex>
               }
             />
-            <TransactionDetailItem title={browser.i18n.getMessage("network_fee")} value={providerNetworkFee} />
+            <TransactionDetailItem
+              title={browser.i18n.getMessage("network_fee")}
+              value={providerNetworkFee}
+              isLoading={amountIn && isLoading}
+            />
             <TransactionDetailItem
               title={browser.i18n.getMessage("wander_fee")}
+              isLoading={amountIn && isLoading}
               value={
                 <Flex justify="flex-end" align="center" gap={4} textAlign="right" wrap="wrap">
                   {selectedPoolInfo && wanderFee?.hasChanged && (

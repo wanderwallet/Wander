@@ -1,13 +1,15 @@
 import { Text } from "@arconnect/components-rebrand";
 import { Flex } from "~components/common/Flex";
+import Skeleton from "~components/Skeleton";
 
 interface TransactionDetailItemProps {
   title: React.ReactNode;
   value: React.ReactNode;
   valueColor?: string;
+  isLoading?: boolean;
 }
 
-export function TransactionDetailItem({ title, value, valueColor }: TransactionDetailItemProps) {
+export function TransactionDetailItem({ title, value, valueColor, isLoading }: TransactionDetailItemProps) {
   const titleElement =
     typeof title === "string" ? (
       <Text variant="secondary" size="sm" weight="medium" style={{ flexShrink: 0 }} noMargin>
@@ -39,7 +41,7 @@ export function TransactionDetailItem({ title, value, valueColor }: TransactionD
     <Flex justify="space-between" gap={8} style={{ minWidth: 0 }}>
       {titleElement}
       <Flex flex={1} minWidth={0} justify="flex-end" align="center">
-        {valueElement}
+        {isLoading ? <Skeleton width="80px" height="16px" /> : valueElement}
       </Flex>
     </Flex>
   );
