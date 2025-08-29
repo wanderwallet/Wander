@@ -265,6 +265,7 @@ export function useAoTokens({
       })
       .map((aoToken) => ({
         id: aoToken.processId,
+        processId: aoToken.processId,
         balance: "0",
         Ticker: aoToken.Ticker,
         Name: aoToken.Name,

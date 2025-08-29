@@ -62,6 +62,13 @@ import { AllocationSetView } from "~routes/popup/earn/allocation-set";
 import { TokensView } from "~routes/popup/tokens";
 import { TokenDetailView } from "~routes/popup/tokens/token-detail";
 import { HelpView } from "~routes/popup/settings/help";
+import { SwapView } from "~routes/popup/swap";
+import { SwapReviewView } from "~routes/popup/swap/review";
+import { SwapProgressView } from "~routes/popup/swap/progress";
+import { SwapCompleteView } from "~routes/popup/swap/complete";
+import { SwapFailedView } from "~routes/popup/swap/failed";
+import { SwapHistoryView } from "~routes/popup/swap/history";
+import { SwapTransactionDetailsView } from "~routes/popup/swap/transaction-details";
 
 export type PopupRoutePath =
   | "/"
@@ -126,7 +133,14 @@ export type PopupRoutePath =
   | `/tier`
   | `/earn`
   | `/earn/manage`
-  | `/earn/allocation-set`;
+  | `/earn/allocation-set`
+  | `/swap`
+  | `/swap/review`
+  | `/swap/progress`
+  | `/swap/complete`
+  | `/swap/failed`
+  | `/swap/history`
+  | `/swap/transaction-details/${string}`;
 
 export const PopupPaths = {
   Home: "/",
@@ -188,6 +202,13 @@ export const PopupPaths = {
   Earn: "/earn",
   ManageEarnings: "/earn/manage",
   AllocationSet: "/earn/allocation-set",
+  Swap: "/swap",
+  SwapReview: "/swap/review",
+  SwapProgress: "/swap/progress",
+  SwapComplete: "/swap/complete",
+  SwapFailed: "/swap/failed",
+  SwapHistory: "/swap/history",
+  SwapTransactionDetails: "/swap/transaction-details/:id",
 } as const satisfies Record<string, PopupRoutePath>;
 
 export const POPUP_ROUTES = [
@@ -432,5 +453,33 @@ export const POPUP_ROUTES = [
   {
     path: PopupPaths.AllocationSet,
     component: AllocationSetView,
+  },
+  {
+    path: PopupPaths.Swap,
+    component: SwapView,
+  },
+  {
+    path: PopupPaths.SwapReview,
+    component: SwapReviewView,
+  },
+  {
+    path: PopupPaths.SwapProgress,
+    component: SwapProgressView,
+  },
+  {
+    path: PopupPaths.SwapComplete,
+    component: SwapCompleteView,
+  },
+  {
+    path: PopupPaths.SwapFailed,
+    component: SwapFailedView,
+  },
+  {
+    path: PopupPaths.SwapHistory,
+    component: SwapHistoryView,
+  },
+  {
+    path: PopupPaths.SwapTransactionDetails,
+    component: SwapTransactionDetailsView,
   },
 ] as const satisfies RouteConfig[];

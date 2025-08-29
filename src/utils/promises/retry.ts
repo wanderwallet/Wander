@@ -1,3 +1,4 @@
+import { OrderError } from "~routes/popup/swap/utils/dex/dex.utils";
 import { sleep } from "~utils/promises/sleep";
 
 /**
@@ -18,7 +19,7 @@ export async function retryWithDelay<T>(
     try {
       return await fn(attempts);
     } catch (error) {
-      if (attempts === maxAttempts - 1) {
+      if (attempts === maxAttempts - 1 || error instanceof OrderError) {
         throw error;
       }
       await sleep(getDelay(attempts));

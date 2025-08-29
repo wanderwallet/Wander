@@ -13,9 +13,20 @@ interface SlippageSelectorModalProps {
   onClose: () => void;
   slippage: number;
   onSelect: (slippage: number) => void;
+  type?: "sell" | "swap";
+  minSlippage?: number;
+  maxSlippage?: number;
 }
 
-export function SlippageSelectorModal({ open, onClose, slippage, onSelect }: SlippageSelectorModalProps) {
+export function SlippageSelectorModal({
+  open,
+  onClose,
+  slippage,
+  onSelect,
+  type = "sell",
+  minSlippage = 0.5,
+  maxSlippage = 10,
+}: SlippageSelectorModalProps) {
   const toasts = useToasts();
   const [selectedSlippage, setSelectedSlippage] = useState(slippage);
   const [isHolding, setIsHolding] = useState(false);
@@ -27,11 +38,11 @@ export function SlippageSelectorModal({ open, onClose, slippage, onSelect }: Sli
   const throttledSlippageChange = useThrottledCallback(
     (amount: number, isIncrease: boolean) => {
       const newValue = Number((selectedSlippage + (isIncrease ? amount : -amount)).toFixed(1));
-      const isAtLimit = isIncrease ? selectedSlippage >= 10 : selectedSlippage <= 0.5;
+      const isAtLimit = isIncrease ? selectedSlippage >= maxSlippage : selectedSlippage <= minSlippage;
 
       if (isAtLimit && amount > 0) {
         if (!isToastShowing.current) {
-          showToast(toasts, !isIncrease);
+          showToast(toasts, !isIncrease, minSlippage, maxSlippage);
           isToastShowing.current = true;
           setTimeout(() => {
             isToastShowing.current = false;
@@ -40,10 +51,10 @@ export function SlippageSelectorModal({ open, onClose, slippage, onSelect }: Sli
         return;
       }
 
-      setSelectedSlippage(isIncrease ? Math.min(newValue, 10) : Math.max(newValue, 0.5));
+      setSelectedSlippage(isIncrease ? Math.min(newValue, maxSlippage) : Math.max(newValue, minSlippage));
     },
     100,
-    [selectedSlippage, toasts],
+    [selectedSlippage, toasts, minSlippage, maxSlippage],
   );
 
   useTimeout(
@@ -110,7 +121,7 @@ export function SlippageSelectorModal({ open, onClose, slippage, onSelect }: Sli
     <SliderMenu title={browser.i18n.getMessage("slippage")} isOpen={open} onClose={onClose}>
       <Flex direction="column" gap={24} height="100%" width="100%">
         <Text variant="secondary" size="sm" weight="medium" noMargin>
-          {browser.i18n.getMessage("slippage_description")}
+          {browser.i18n.getMessage(`${type}_slippage_description`)}
         </Text>
         <Flex direction="row" gap={16} align="center" justify="center" padding="20px 0" width="100%">
           <RoundedButton
@@ -143,11 +154,16 @@ export function SlippageSelectorModal({ open, onClose, slippage, onSelect }: Sli
   );
 }
 
-function showToast(toasts: ReturnType<typeof useToasts>, isMinSlippage: boolean) {
+function showToast(
+  toasts: ReturnType<typeof useToasts>,
+  isMinSlippage: boolean,
+  minSlippage: number,
+  maxSlippage: number,
+) {
   toasts.setToast({
     content: isMinSlippage
-      ? browser.i18n.getMessage("slippage_cannot_be_less_than_0_5")
-      : browser.i18n.getMessage("slippage_cannot_be_greater_than_10"),
+      ? browser.i18n.getMessage("slippage_cannot_be_less_than", [minSlippage.toString()])
+      : browser.i18n.getMessage("slippage_cannot_be_greater_than", [maxSlippage.toString()]),
     type: "info",
     duration: 3000,
     showProgress: true,

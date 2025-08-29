@@ -7,7 +7,7 @@ import defaultPlaceholderUrl from "url:/assets/placeholder.png";
 
 import styles from "./Image.module.scss";
 
-const fakeDelay = process.env.NODE_ENV === "development" ? 2500 : 0;
+const fakeDelay = process.env.NODE_ENV === "development" ? 0 : 0;
 
 type BorderRadiusVariant = "none" | "rounded" | "circular";
 

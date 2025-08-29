@@ -32,6 +32,7 @@ import {
 import type { Gateway } from "~gateways/gateway";
 import { RecurringPaymentFrequency, type SubscriptionData } from "~subscriptions/subscription";
 import { ERR_MSG_USER_CANCELLED_AUTH } from "~utils/auth/auth.constants";
+import { HARDWARE_WALLET_API_NOT_SUPPORTED_ERR_MSG } from "./wallets/wallets.constants";
 
 export function isGateway(input: unknown): asserts input is Gateway {
   isRecordWithKeys(
@@ -214,7 +215,7 @@ export function isRawArrayBuffer(input: unknown): asserts input is { [i: number]
 }
 
 export function isLocalWallet(input: DecryptedWallet): asserts input is LocalWallet<JWKInterface> {
-  isExactly(input.type, "local", "Hardware wallets don't support this API method currently.");
+  isExactly(input.type, "local", HARDWARE_WALLET_API_NOT_SUPPORTED_ERR_MSG);
 }
 
 export function isRawDataItem(input: unknown): asserts input is RawDataItem {

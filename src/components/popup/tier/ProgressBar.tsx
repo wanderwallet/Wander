@@ -34,6 +34,7 @@ interface ProgressBarProps {
   progressLineColor?: string;
   progressLineWidth?: number;
   showSegmentLabels?: boolean;
+  highlightTierLabel?: string;
 }
 
 const defaultSegments: ProgressSegment[] = [
@@ -47,6 +48,7 @@ const defaultSegments: ProgressSegment[] = [
 export function ProgressBar({
   progress,
   segments = defaultSegments,
+  highlightTierLabel,
   width = 330,
   height = 16,
   borderRadius = 8,
@@ -173,8 +175,12 @@ export function ProgressBar({
               key={`label-${index}`}
               $position={segment.start}
               $width={segment.actualWidth}
-              $isActive={segment.isCompletelyFilled}>
-              <SegmentLabelText>{segment.name}</SegmentLabelText>
+              $isActive={segment.isCompletelyFilled || (highlightTierLabel && segment.name === highlightTierLabel)}>
+              <SegmentLabelText
+                $isHighlighted={highlightTierLabel && segment.name === highlightTierLabel}
+                $hasHighlightedLabel={!!highlightTierLabel}>
+                {segment.name}
+              </SegmentLabelText>
             </SegmentLabel>
           ))}
         </SegmentLabelsContainer>
@@ -304,11 +310,24 @@ const SegmentLabel = styled(Text).attrs<{ $isActive: boolean }>(({ $isActive }) 
   }
 `;
 
-const SegmentLabelText = styled.div`
+const SegmentLabelText = styled.span<{ $isHighlighted: boolean; $hasHighlightedLabel: boolean }>`
   position: absolute;
-  top: 0;
+  top: ${({ $hasHighlightedLabel, $isHighlighted }) => ($hasHighlightedLabel && !$isHighlighted ? "2px" : "0")};
   left: 0;
   transform: translate(-40%, 0);
   white-space: nowrap;
   text-overflow: ellipsis;
+
+  ${({ $isHighlighted }) =>
+    $isHighlighted &&
+    `
+    top: -1px;
+    height: 20px;
+    width: 58px;
+    border-radius: 4px;
+    background: rgba(86, 201, 128, 0.30);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  `}
 `;

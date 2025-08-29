@@ -441,7 +441,7 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
             <Text variant="secondary" size="sm" weight="medium" noMargin>
               ~{networkFee}
               {" AR "}
-              {browser.i18n.getMessage("network_fee")}
+              {browser.i18n.getMessage("network_fee")?.toLowerCase()}
             </Text>
           </Datas>
           <Flex direction="column" gap={8}>
