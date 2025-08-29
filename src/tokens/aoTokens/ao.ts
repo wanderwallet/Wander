@@ -271,6 +271,10 @@ export const getTagValues = (tagNames: string[], tags: (Tag | DecodedTag)[]): (s
   return tagNames.map((name) => tagMap.get(name));
 };
 
+export const getTagValueMap = (tags: (Tag | DecodedTag)[]): Map<string, string> => {
+  return new Map(tags.map((tag) => [tag.name, tag.value]));
+};
+
 /**
  * Flatten tags to a key value object
  */

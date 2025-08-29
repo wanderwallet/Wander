@@ -1,4 +1,4 @@
-import { getTagValue, type TokenInfo } from "~tokens/aoTokens/ao";
+import { getTagValue, getTagValueMap, type TokenInfo } from "~tokens/aoTokens/ao";
 import {
   type SwapData,
   type BotegaPool,
@@ -270,33 +270,42 @@ export function toFixed(value: any, decimals: number, roundingMode: BigNumber.Ro
 
 export function parseSwapTransaction(transaction: GQLEdgeInterface): ParsedSwapTransaction {
   try {
-    const tags = transaction.node.tags || [];
+    const { node } = transaction;
+    const tags = node.tags || [];
 
-    const timestamp = transaction.node.block?.timestamp ? transaction.node.block.timestamp * 1000 : Date.now();
-    const isAo = getTagValue("Data-Protocol", tags) === "ao";
-    const pushedFor = getTagValue("Pushed-For", tags);
-    const txId = pushedFor || transaction.node.id;
-    const action = getTagValue("Action", tags);
-    const orderStatus = getTagValue("OrderStatus", tags);
-    const bridgeStatus = getTagValue("Bridge-Status", tags);
-    const rate = getTagValue("X-Rate", tags);
-    const provider = getTagValue("X-Provider", tags) as Provider;
-    const networkProviderFee = getTagValue("X-Network-Fee", tags);
-    const wanderFee = getTagValue("X-Client-Fee", tags);
-    const slippage = getTagValue("X-Slippage", tags);
-    const priceImpact = getTagValue("X-Price-Impact", tags);
-    const tokenIn = JSON.parse(getTagValue("X-Token-In", tags));
-    const tokenOut = JSON.parse(getTagValue("X-Token-Out", tags));
-    const amountIn = getTagValue("X-Amount-In", tags);
+    const tagValueMap = getTagValueMap(tags);
+
+    // Helper function for efficient tag access
+    const getTagValue = (name: string): string => tagValueMap.get(name) || "";
+
+    // Parse basic transaction data
+    const timestamp = node.block?.timestamp ? node.block.timestamp * 1000 : Date.now();
+    const pushedFor = getTagValue("Pushed-For");
+    const txId = pushedFor || node.id;
+    const isAo = getTagValue("Data-Protocol") === "ao";
+
+    // Parse transaction state
+    const action = getTagValue("Action");
+    const orderStatus = getTagValue("OrderStatus");
+    const bridgeStatus = getTagValue("Bridge-Status");
+
+    // Parse transaction details
+    const rate = getTagValue("X-Rate");
+    const provider = getTagValue("X-Provider") as Provider;
+    const networkProviderFee = getTagValue("X-Network-Fee");
+    const wanderFee = getTagValue("X-Client-Fee");
+    const slippage = getTagValue("X-Slippage");
+    const priceImpact = getTagValue("X-Price-Impact");
+    const amountIn = getTagValue("X-Amount-In");
     const amountOut =
-      getTagValue("To-Quantity", tags) ||
-      getTagValue("AmountOut", tags) ||
-      getTagValue("Quantity", tags) ||
-      getTagValue("X-Amount-Out", tags);
+      getTagValue("To-Quantity") || getTagValue("AmountOut") || getTagValue("Quantity") || getTagValue("X-Amount-Out");
 
-    const error = action === "Order-Error" || (orderStatus && orderStatus !== "Swapped");
+    const tokenIn = JSON.parse(getTagValue("X-Token-In"));
+    const tokenOut = JSON.parse(getTagValue("X-Token-Out"));
+
+    const isError = action === "Order-Error" || (orderStatus && orderStatus !== "Swapped");
     const isPending = bridgeStatus && bridgeStatus !== "success" && bridgeStatus !== "filled";
-    const status = error ? "Failed" : isPending ? "Pending" : "Completed";
+    const status = isError ? "Failed" : isPending ? "Pending" : "Completed";
 
     return {
       txId,
@@ -357,7 +366,7 @@ export async function getSwapTransaction(txId: string) {
 
       const confirmationTx = confirmationResponse?.data?.transactions?.edges[0];
       const confirmationTags = confirmationTx.node.tags;
-      tx.node.tags.unshift(
+      tx.node.tags.push(
         ...[
           {
             name: "OrderStatus",
