@@ -4,6 +4,7 @@ import type { ActiveTier } from "./types";
 import { getActiveTier, getDefiFeeDetailsForTier, getWalletLifetimeSavings } from "./utils";
 import { useMemo } from "react";
 import { defaultOptions } from "~tokens/hooks";
+import { TierTypes } from "./constants";
 
 export function useActiveTier() {
   const activeAddress = useActiveAddress();
@@ -31,8 +32,5 @@ export function useWalletLifetimeSavings() {
 export function useDefiFeeDetails() {
   const { data: activeTier } = useActiveTier();
 
-  return useMemo(() => {
-    if (!activeTier) return null;
-    return getDefiFeeDetailsForTier(activeTier.tier);
-  }, [activeTier]);
+  return useMemo(() => getDefiFeeDetailsForTier(activeTier?.tier || TierTypes.Core), [activeTier?.tier]);
 }

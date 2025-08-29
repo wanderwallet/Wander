@@ -36,6 +36,7 @@ import { isomorphicOnMessage } from "~isomorphic-messaging";
 import { handleAuthStateChange } from "./handlers/storage/auth-state-change/auth-state-change.handler";
 import { initInactivityTracking } from "~utils/inactivity/inactivity.utils";
 import { handleRefreshWalletLifetimeSavingsAlarm } from "./handlers/alarms/tiers/refresh-wallet-lifetime-savings-alarm.handler";
+import { handleSwapMonitorAlarm } from "~routes/popup/swap/utils/alarms/swap-monitor/swap-monitor-alarm.handler";
 
 export function setupBackgroundService() {
   log(
@@ -142,6 +143,7 @@ export function setupBackgroundService() {
   browser.alarms.onAlarm.addListener(handleAOYieldAgentSync);
   browser.alarms.onAlarm.addListener(handleRefreshWalletLifetimeSavingsAlarm);
   browser.alarms.onAlarm.addListener(handleTransakPurchaseAlarm);
+  browser.alarms.onAlarm.addListener(handleSwapMonitorAlarm);
 
   // When the last window connected to the extension is closed, the decryption key will be removed from memory. This is no needed in the embedded wallet because
   // each wallet instance will be removed automatically when its tab/window is closed.

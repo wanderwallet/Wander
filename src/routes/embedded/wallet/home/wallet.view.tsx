@@ -6,8 +6,8 @@ import { useActiveWallet } from "~wallets/hooks";
 import { scheduleImportAoTokens } from "~tokens/aoTokens/sync";
 import { Card, Divider, AccountSelector, TabBar, Snackbar, type SnackbarVariant, Button } from "~components/embed/ui";
 import type { StoredWallet } from "~wallets";
-import { WalletHomeActions } from "./actions.container";
-import { WalletHomeAssets } from "./assets.container";
+import { WalletHomeActions } from "./actions/actions.container";
+import { WalletHomeAssets } from "./assets/assets.container";
 import { useBalanceSortedTokens } from "~/tokens/hooks";
 import { WalletHomeBalance } from "./balance.container";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
@@ -113,7 +113,11 @@ export function WalletHomeEmbeddedView() {
         activeTab={activeTab}
         style={{ marginTop: children ? "var(--spacing-6)" : undefined, marginBottom: "var(--spacing-3)" }}
       />
-      {activeTab === 1 ? <WalletHomeActions /> : <WalletHomeAssets tokens={tokens} prices={prices} />}
+      {activeTab === 1 ? (
+        <WalletHomeActions />
+      ) : (
+        <WalletHomeAssets activeWalletAddress={wallet?.address} tokens={tokens} prices={prices} />
+      )}
     </Card>
   );
 }

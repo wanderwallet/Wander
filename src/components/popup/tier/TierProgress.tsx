@@ -1,6 +1,6 @@
 import { Text, Tooltip } from "@arconnect/components-rebrand";
 import { Flex } from "~components/common/Flex";
-import type { ActiveTier } from "~utils/tier/types";
+import type { ActiveTier, Tier } from "~utils/tier/types";
 import { ProgressBar } from "./ProgressBar";
 import browser from "webextension-polyfill";
 import { HelpCircle } from "@untitled-ui/icons-react";
@@ -8,9 +8,10 @@ import styled from "styled-components";
 
 interface TierProgressProps {
   activeTier: ActiveTier;
+  highlightTierLabel?: string;
 }
 
-export function TierProgress({ activeTier }: TierProgressProps) {
+export function TierProgress({ activeTier, highlightTierLabel }: TierProgressProps) {
   const currentRank = activeTier?.rank ? `#${activeTier?.rank}` : "-";
 
   return (
@@ -27,7 +28,7 @@ export function TierProgress({ activeTier }: TierProgressProps) {
         </Flex>
       </Flex>
 
-      <ProgressBar progress={activeTier?.progress ?? 0} />
+      <ProgressBar progress={activeTier?.progress ?? 0} highlightTierLabel={highlightTierLabel} />
     </Flex>
   );
 }

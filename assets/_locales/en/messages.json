@@ -1068,7 +1068,7 @@
     "description": "Optional message field"
   },
   "network_fee": {
-    "message": "network fee",
+    "message": "Network fee",
     "description": "Transaction network fee text"
   },
   "estimated": {
@@ -3128,8 +3128,12 @@
     "message": "Slippage",
     "description": "Slippage text"
   },
-  "slippage_description": {
+  "sell_slippage_description": {
     "message": "Your sell will be cancelled if the price changes more than the slippage percentage.",
+    "description": "Slippage description"
+  },
+  "swap_slippage_description": {
+    "message": "Your swap will be cancelled if the price changes more than the slippage percentage.",
     "description": "Slippage description"
   },
   "auto": {
@@ -3148,13 +3152,25 @@
     "message": "Your agents",
     "description": "Your agents text"
   },
-  "slippage_cannot_be_less_than_0_5": {
-    "message": "Slippage cannot be less than 0.5%",
-    "description": "Slippage cannot be less than 0.5% text"
+  "slippage_cannot_be_less_than": {
+    "message": "Slippage cannot be less than $MIN_SLIPPAGE$%",
+    "description": "Slippage cannot be less than 0.5% text",
+    "placeholders": {
+      "min_slippage": {
+        "content": "$1",
+        "example": "0.5"
+      }
+    }
   },
-  "slippage_cannot_be_greater_than_10": {
-    "message": "Slippage cannot be greater than 10%",
-    "description": "Slippage cannot be greater than 10% text"
+  "slippage_cannot_be_greater_than": {
+    "message": "Slippage cannot be greater than $MAX_SLIPPAGE$%",
+    "description": "Slippage cannot be greater than 10% text",
+    "placeholders": {
+      "max_slippage": {
+        "content": "$1",
+        "example": "10"
+      }
+    }
   },
   "select_running_dates": {
     "message": "Select running dates",
@@ -3700,6 +3716,18 @@
     "message": "WNDR Token holders receive instant access to the StarGrid Battle Tactics. Connect your Wander wallet, get verified and unlock access. Try now on [StarGrid](https://stargrid.ar.io)",
     "description": "Announcement 6 body"
   },
+  "announcement_7_title": {
+    "message": "Swaps Are Live! 🚀",
+    "description": "Announcement 7 title"
+  },
+  "announcement_7_description": {
+    "message": "Early access for Reserve, Edge & Prime members",
+    "description": "Announcement 7 description"
+  },
+  "announcement_7_body": {
+    "message": "Swaps have officially arrived in Wander! 🎉<br/><br/>Reserve, Edge, and Prime members can start using the new Swap feature today, directly from the Wander dashboard.<br/><br/>Core & Select members won't have to wait long! Access opens September 15th. Mark your calendars and get ready to swap!",
+    "description": "Announcement 7 body"
+  },
   "swipe_to_learn_more": {
     "message": "Swipe to learn more",
     "description": "Swipe to learn more text"
@@ -4166,9 +4194,29 @@
     "message": "No activity yet",
     "description": "No activity yet text"
   },
+  "token_swaps_available_now": {
+    "message": "Token swaps available now!",
+    "description": "Token swaps available now text"
+  },
+  "earn_wndr_tokens": {
+    "message": "Earn $$WNDR Tokens",
+    "description": "Earn $WNDR Tokens text"
+  },
   "agents_syncing": {
     "message": "Agents syncing",
     "description": "Agents syncing text"
+  },
+  "you_send": {
+    "message": "You send",
+    "description": "You send text"
+  },
+  "you_receive": {
+    "message": "You receive",
+    "description": "You receive text"
+  },
+  "swap": {
+    "message": "Swap",
+    "description": "Swap text"
   },
   "stargrid_battle_pass": {
     "message": "StarGrid Battle Pass",
@@ -4181,5 +4229,165 @@
   "days": {
     "message": "Days",
     "description": "Days text"
+  },
+  "unlock_tier_to_use_feature": {
+    "message": "Unlock $TIER$ to use this feature",
+    "description": "Unlock tier to use feature text",
+    "placeholders": {
+      "tier": {
+        "content": "$1",
+        "example": "Tier 1"
+      }
+    }
+  },
+  "swap_gating_reserve_tier_benefits_1": {
+    "message": "25% reduction on certain fees",
+    "description": "Swap gating reserve tier benefits 1 text"
+  },
+  "swap_gating_reserve_tier_benefits_2": {
+    "message": "Full feature access",
+    "description": "Swap gating reserve tier benefits 2 text"
+  },
+  "swap_gating_reserve_tier_benefits_2_subtitle": {
+    "message": "(some premium functions require a higher tier)",
+    "description": "Swap gating reserve tier benefits 2 subtitle text"
+  },
+  "search_token": {
+    "message": "Search token",
+    "description": "Search token text"
+  },
+  "no_tokens_found": {
+    "message": "No tokens found",
+    "description": "No tokens found text"
+  },
+  "swap_complete": {
+    "message": "Swap complete",
+    "description": "Swap complete text"
+  },
+  "swap_success": {
+    "message": "Swap success!",
+    "description": "Swap success text"
+  },
+  "transactions_details": {
+    "message": "Transactions details",
+    "description": "Transactions details text"
+  },
+  "rate": {
+    "message": "Rate",
+    "description": "Rate text"
+  },
+  "provider": {
+    "message": "Provider",
+    "description": "Provider text"
+  },
+  "est_swap_time": {
+    "message": "Est. Swap Time",
+    "description": "Est. Swap Time text"
+  },
+  "price_impact": {
+    "message": "Price Impact",
+    "description": "Price Impact text"
+  },
+  "swap_not_completed": {
+    "message": "Swap could not be completed",
+    "description": "Swap not completed text"
+  },
+  "swap_not_completed_description": {
+    "message": "Looks like something went wrong, please try again.",
+    "description": "Swap not completed description text"
+  },
+  "swap_history": {
+    "message": "Swap History",
+    "description": "Swap history text"
+  },
+  "swap_in_progress": {
+    "message": "Swap in progress",
+    "description": "Swap in progress text"
+  },
+  "swap_in_progress_description": {
+    "message": "Your swap is in progress. This may take $TIME$ to complete.",
+    "placeholders": {
+      "time": {
+        "content": "$1",
+        "example": "30-60 minutes"
+      }
+    },
+    "description": "Swap in progress description text"
+  },
+  "between_30_60_minutes": {
+    "message": "between 30-60 minutes",
+    "description": "Between 30-60 minutes text"
+  },
+  "a_few_minutes": {
+    "message": "a few minutes",
+    "description": "A few minutes text"
+  },
+  "no_liquidity_pools_found": {
+    "message": "No liquidity pools found for this token pair",
+    "description": "No liquidity pools found for this token pair text"
+  },
+  "unable_to_retrieve_quote": {
+    "message": "Unable to retrieve quote",
+    "description": "Unable to retrieve quote text"
+  },
+  "bridge_temporarily_closed": {
+    "message": "Bridge temporarily closed. Try again later",
+    "description": "Bridge temporarily closed text"
+  },
+  "amount_too_low": {
+    "message": "Amount too low. Minimum required: $MIN$",
+    "description": "Amount too low text",
+    "placeholders": {
+      "min": {
+        "content": "$1",
+        "example": "0.000000000001"
+      }
+    }
+  },
+  "amount_too_high": {
+    "message": "Amount too high. Maximum allowed: $MAX$",
+    "description": "Amount too high text",
+    "placeholders": {
+      "max": {
+        "content": "$1",
+        "example": "0.000000000001"
+      }
+    }
+  },
+  "amount_exceeds_per_transaction_limit": {
+    "message": "Amount exceeds per-transaction limit. Maximum allowed: $MAX$",
+    "description": "Amount exceeds per-transaction limit text",
+    "placeholders": {
+      "max": {
+        "content": "$1",
+        "example": "0.000000000001"
+      }
+    }
+  },
+  "daily_limit_reached": {
+    "message": "Daily limit reached. Remaining quota today: $MAX$",
+    "description": "Daily limit reached text",
+    "placeholders": {
+      "max": {
+        "content": "$1",
+        "example": "0.000000000001"
+      }
+    }
+  },
+  "swap_announcement_title": {
+    "message": "Swap Assets in Seconds",
+    "description": "Swap announcement title text"
+  },
+  "network_provider_fee": {
+    "message": "Network/Provider fee",
+    "description": "Network/Provider fee text"
+  },
+  "swap_error": {
+    "message": "Swap error. Please try again.",
+    "description": "Generic error message shown when a swap transaction fails" 
+  },
+  "free": {
+    "message": "Free!",
+    "description": "Free text"
   }
 }

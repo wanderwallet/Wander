@@ -37,7 +37,7 @@ export function TokenActivity({ id }: TokenActivityProps) {
             fullWidth
             disabled={!hasNextPage || loading}
             style={{ alignSelf: "center", marginTop: "5px" }}
-            onClick={fetchTransactions}>
+            onClick={() => fetchTransactions()}>
             {loading ? <Loading style={{ margin: "0.18rem" }} /> : browser.i18n.getMessage("load_more") + "..."}
           </Button>
         )}

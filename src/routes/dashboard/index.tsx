@@ -2,7 +2,6 @@ import { Input, Spacer, Text, useInput } from "@arconnect/components-rebrand";
 import SettingListItem from "~components/dashboard/list/SettingListItem";
 import { SettingsList } from "~components/dashboard/list/BaseElement";
 import { useEffect, useMemo, useState } from "react";
-import { ChevronUp, ChevronDown } from "@untitled-ui/icons-react";
 import browser from "webextension-polyfill";
 import styled, { useTheme } from "styled-components";
 import { PageType, trackPage } from "~utils/analytics";
@@ -19,11 +18,11 @@ import type Setting from "~settings/setting";
 import { DASHBOARD_SUB_SETTING_ROUTES, type DashboardRoutePath } from "~wallets/router/dashboard/dashboard.routes";
 import { Redirect } from "~wallets/router/components/redirect/Redirect";
 import { Routes } from "~wallets/router/routes.component";
-import { HorizontalLine } from "~components/HorizontalLine";
 import { Flex } from "~components/common/Flex";
 import WanderIcon from "url:assets/icon.svg";
 import IconText from "~components/IconText";
 import { Image } from "~components/common/Image/Image";
+import { DisclosureButton, DisclosureContent } from "~routes/popup/swap/components/Disclosure";
 
 export interface SettingsDashboardViewParams {
   setting?: string;
@@ -113,31 +112,21 @@ export function SettingsDashboardView({ params }: SettingsDashboardViewProps) {
             />
           ))}
 
-          <AdvancedWrapper onClick={() => setShowAdvanced((prev) => !prev)}>
-            <HorizontalLine />
-            <Flex gap={4} align="center" justify="center">
-              <Text style={{ whiteSpace: "nowrap" }} variant="secondary" size="xs" weight="medium" noMargin>
-                {browser.i18n.getMessage(showAdvanced ? "less_settings" : "more_settings")}
-              </Text>
-              <Action as={showAdvanced ? ChevronUp : ChevronDown} />
-            </Flex>
-            <HorizontalLine />
-          </AdvancedWrapper>
+          <DisclosureButton showAdvanced={showAdvanced} setShowAdvanced={setShowAdvanced} />
 
-          {(showAdvanced || searchInput.state) &&
-            advancedSettings
-              .filter(filterSearchResults)
-              .map((setting, i) => (
-                <SettingListItem
-                  theme={theme}
-                  displayName={setting.displayName}
-                  description={setting.description}
-                  icon={setting.icon}
-                  active={activeSettingParam === setting.name}
-                  onClick={() => navigate(`/${setting.name}` as DashboardRoutePath)}
-                  key={`advanced-settings-${i}`}
-                />
-              ))}
+          <DisclosureContent expanded={showAdvanced || !!searchInput.state} style={{ gap: 8 }}>
+            {advancedSettings.filter(filterSearchResults).map((setting, i) => (
+              <SettingListItem
+                theme={theme}
+                displayName={setting.displayName}
+                description={setting.description}
+                icon={setting.icon}
+                active={activeSettingParam === setting.name}
+                onClick={() => navigate(`/${setting.name}` as DashboardRoutePath)}
+                key={`advanced-settings-${i}`}
+              />
+            ))}
+          </DisclosureContent>
         </SettingsList>
       </Panel>
 
@@ -183,33 +172,6 @@ const SettingsWrapper = styled.div`
     height: auto;
     overflow: visible;
   }
-`;
-
-const AdvancedWrapper = styled.div`
-  display: flex;
-  justify-content: space-between;
-  gap: 0.5rem;
-  align-items: center;
-  padding: 0.5rem 0;
-  cursor: pointer;
-
-  transition: all 0.23s ease-in-out;
-
-  &:hover {
-    opacity: 0.85;
-  }
-
-  &:active {
-    transform: scale(0.92);
-  }
-`;
-
-const Action = styled(ChevronDown)`
-  cursor: pointer;
-  font-size: 1.25rem;
-  width: 1rem;
-  height: 1rem;
-  color: ${(props) => props.theme.tertiaryText};
 `;
 
 const isMac = () => {
