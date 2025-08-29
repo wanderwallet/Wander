@@ -12,6 +12,7 @@ import {
 import { getTagValue } from "~tokens/aoTokens/ao";
 import { parseSwapTransaction, validateGqlResponse } from "../swap.utils";
 import { goldskyGateway } from "~gateways/gateway";
+import { findGateway } from "~gateways/wayfinder";
 
 export class OrderError extends Error {
   constructor(message: string) {
@@ -160,12 +161,17 @@ export async function getLinkedMessages(
   pushedFor: string,
 ): Promise<AoMessage[]> {
   try {
-    const result = await gql(linkedMessagesQuery(!cursor), {
-      limit,
-      sortOrder: ascending ? "HEIGHT_ASC" : "INGESTED_AT_DESC",
-      cursor,
-      messageId: pushedFor,
-    });
+    const gateway = await findGateway({ random: true });
+    const result = await gql(
+      linkedMessagesQuery(),
+      {
+        limit,
+        sortOrder: ascending ? "HEIGHT_ASC" : "INGESTED_AT_DESC",
+        cursor,
+        messageId: pushedFor,
+      },
+      gateway,
+    );
 
     const { data } = result;
 

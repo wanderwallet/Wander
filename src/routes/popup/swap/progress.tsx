@@ -134,7 +134,7 @@ export function SwapProgressView() {
       <Wrapper>
         <WrapperContent>
           <WanderLoading />
-          <Flex direction="column" gap={16} padding="0 8px" style={{ marginTop: -6 }}>
+          <Flex direction="column" gap={16} padding="0 8px" style={{ marginTop: -4 }} width="100%">
             <Flex direction="row" justify="center" align="center" gap={16}>
               <Flex direction="row" align="center" gap={4}>
                 <TokenLogo size={24} token={sendToken} />
