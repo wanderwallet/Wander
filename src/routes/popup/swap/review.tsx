@@ -105,7 +105,7 @@ export function SwapReviewView() {
       const poolType = selectedPoolInfo?.poolType;
 
       const tags = [
-        { name: "X-Client", value: "Roam" }, // TODO: change this to the actual client name
+        { name: "X-Client", value: "Wander" },
         { name: "X-Type", value: "Swap" },
         { name: "X-Rate", value: rate },
         { name: "X-Provider", value: getProviderName(poolType) },

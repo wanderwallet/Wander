@@ -8,7 +8,7 @@ query($address: String!, $after: String) {
     tags: [
       {name: "Data-Protocol", values: ["ao"]},
       {name: "Action", values: ["Order-Confirmation", "Order-Error"]},
-      { name: "X-Client", values: ["Roam"]},
+      { name: "X-Client", values: ["Wander"]},
       { name: "X-Type", values: ["Swap"]} 
     ],
     recipients: [$address],
@@ -37,7 +37,7 @@ query($address: String!, $after: String) {
     tags: [
       {name: "Data-Protocol", values: ["ao"]},
       {name: "Action", values: ["Transfer"]},
-      { name: "X-Client", values: ["Roam"]},
+      { name: "X-Client", values: ["Wander"]},
       { name: "X-Type", values: ["Swap"]} 
     ],
     owners: [$address],
@@ -90,7 +90,7 @@ query($address: String!, $pushedFors: [String!]!) {
     tags: [
       {name: "Data-Protocol", values: ["ao"]},
       {name: "Action", values: ["Transfer"]},
-      { name: "X-Client", values: ["Roam"]},
+      { name: "X-Client", values: ["Wander"]},
       { name: "X-Type", values: ["Swap"]},
       { name: "Pushed-For", values: $pushedFors },
     ],
@@ -113,7 +113,7 @@ query($txId: ID!) {
   transactions(
     first: 1,
     tags: [
-      { name: "X-Client", values: ["Roam"]},
+      { name: "X-Client", values: ["Wander"]},
       { name: "X-Type", values: ["Swap"]},
     ],
     ids: [$txId],
@@ -136,7 +136,7 @@ query($txId: ID!) {
     first: 1,
     tags: [
       { name: "Data-Protocol", values: ["ao"] },
-      { name: "X-Client", values: ["Roam"]},
+      { name: "X-Client", values: ["Wander"]},
       { name: "X-Type", values: ["Swap"]},
     ],
     ids: [$txId],
@@ -180,7 +180,7 @@ query($txIds: [ID!]!) {
   transactions(
     ids: $txIds,
     tags: [
-      { name: "X-Client", values: ["Roam"]},
+      { name: "X-Client", values: ["Wander"]},
       { name: "X-Type", values: ["Swap"]},
     ],
     first: 10,
@@ -202,7 +202,7 @@ query($address: String!, $after: String) {
   transactions(
     first: 10,
     tags: [
-      { name: "X-Client", values: ["Roam"]},
+      { name: "X-Client", values: ["Wander"]},
       { name: "X-Type", values: ["Swap"]},
       { name: "X-Provider", values: ["Vento"] },
     ],

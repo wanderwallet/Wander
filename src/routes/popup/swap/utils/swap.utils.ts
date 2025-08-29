@@ -265,7 +265,7 @@ export function getPriceImpactColor(priceImpact: string, theme: DefaultTheme) {
 export function toFixed(value: any, decimals: number, roundingMode: BigNumber.RoundingMode = BigNumber.ROUND_DOWN) {
   const valueBN = value instanceof BigNumber ? value : BigNumber(value);
   if (valueBN.isNaN()) return value;
-  return valueBN.decimalPlaces(decimals, roundingMode).toString();
+  return valueBN.toFixed(decimals, roundingMode).replace(/0+$/, "");
 }
 
 export function parseSwapTransaction(transaction: GQLEdgeInterface): ParsedSwapTransaction {

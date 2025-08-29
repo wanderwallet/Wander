@@ -20,8 +20,7 @@ import { EventType, trackDirect } from "~utils/analytics";
 import { getDefiFeeDetailsForTier } from "~utils/tier/utils";
 import { fromTokenBaseUnits, toFixed } from "../../swap.utils";
 
-// TODO: Replace with actual recipient CDoilQgKg6Pmp4Q0LJ4d84VXRgB3Ay9pIJ_SA617cVk
-const WANDER_FEE_RECIPIENT = "5glNksg7gRpA0JIXXvCBjlx6U2RHpMG73Msfftke2lY";
+const WANDER_FEE_RECIPIENT = "CDoilQgKg6Pmp4Q0LJ4d84VXRgB3Ay9pIJ_SA617cVk";
 
 const aoInstance = connect(defaultConfig);
 
