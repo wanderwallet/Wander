@@ -3,7 +3,7 @@ import { Image } from "~components/common/Image/Image";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { getUserAvatar } from "~lib/avatar";
 import type { Token } from "~tokens/token";
-import { getTokenInfo, type TokenInfo } from "~tokens/aoTokens/ao";
+import { fetchTokenByProcessId, type TokenInfo } from "~tokens/aoTokens/ao";
 import { FULL_HISTORY, useGateway } from "~gateways/wayfinder";
 import { concatGatewayURL } from "~gateways/utils";
 import { AR_PROCESS_ID, AR_LOGO } from "~tokens/aoTokens/ao.constants";
@@ -144,7 +144,7 @@ export function TokenLogo({ token: tokenProp, name, size = 40, style, fetchMissi
       let tokenLogo = typeof token === "object" ? token.defaultLogo : token;
       if (!tokenLogo && token?.id && fetchMissingLogo) {
         try {
-          const tokenInfo = await getTokenInfo(token.id);
+          const tokenInfo = await fetchTokenByProcessId(token.id);
           tokenLogo = tokenInfo.Logo;
         } catch {}
       }

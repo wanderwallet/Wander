@@ -3676,6 +3676,18 @@
         "message": "WNDR 代币持有者获得 StarGrid 战斗策略的即时访问权限。连接你的 Wander 钱包，完成验证并解锁访问权限。立即在 [StarGrid](https://stargrid.ar.io) 上尝试",
         "description": "Announcement 6 body"
     },
+    "announcement_7_title": {
+        "message": "🚀 交换功能上线了！",
+        "description": "Announcement 7 title"
+    },
+    "announcement_7_description": {
+        "message": "Reserve、Edge 和 Prime 会员抢先体验",
+        "description": "Announcement 7 description"
+    },
+    "announcement_7_body": {
+        "message": "交换功能正式登陆 Wander！🎉<br/><br/>Reserve、Edge 和 Prime 会员今天就可以直接从 Wander 仪表板开始使用全新的交换功能。<br/><br/>Core 和 Select 会员不用等太久！9月15日开放访问。标记您的日历，准备好交换吧！",
+        "description": "Announcement 7 body"
+    },
     "swipe_to_learn_more": {
       "message": "滑动了解更多",
       "description": "Swipe to learn more text"
