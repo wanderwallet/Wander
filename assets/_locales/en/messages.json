@@ -4373,5 +4373,9 @@
   "swap_error": {
     "message": "Swap error. Please try again.",
     "description": "Generic error message shown when a swap transaction fails" 
+  },
+  "free": {
+    "message": "Free!",
+    "description": "Free text"
   }
 }

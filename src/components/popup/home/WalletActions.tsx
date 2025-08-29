@@ -2,15 +2,14 @@ import { ActionButtons, type ButtonConfig } from "../ActionButtons";
 import browser from "webextension-polyfill";
 import { ReceiveIcon } from "~components/icons/ReceiveIcon";
 import { SwapIcon } from "~routes/popup/swap/components/SwapIcon";
-import { useActiveTier } from "~utils/tier/hooks";
 import { useMemo, useState } from "react";
-import { tierNameToId, TierTypes } from "~utils/tier/constants";
+import { TierTypes } from "~utils/tier/constants";
 import styled, { useTheme } from "styled-components";
 import { WanderIcon } from "../tier/WanderIcon";
 import { SwapGatingPopup } from "~routes/popup/swap/components/SwapGatingPopup";
-import { SWAP_DISABLED_FOR_LOWER_TIERS } from "~routes/popup/swap/utils/swap.constants";
 
 import arLogoDark from "url:/assets/ar/ar-logo-dark.svg";
+import { useIsSwapGated } from "~routes/popup/swap/utils/swap.hooks";
 
 const purchaseButtonConfig: ButtonConfig = {
   text: browser.i18n.getMessage("buy_ar_button"),
@@ -27,27 +26,22 @@ const sendButtonConfig: ButtonConfig = {
   variant: "secondary",
 };
 
-const reserveTierId = tierNameToId[TierTypes.Reserve];
-
 export default function WalletActions() {
   const [isOpen, setIsOpen] = useState(false);
-  const { data: activeTier } = useActiveTier();
+  const isSwapGated = useIsSwapGated();
 
   const buttons: ButtonConfig[] = useMemo(() => {
-    const tierId = tierNameToId[activeTier?.tier || TierTypes.Core];
-    const disabled = tierId > reserveTierId && SWAP_DISABLED_FOR_LOWER_TIERS;
-
     const swapButtonConfig: ButtonConfig = {
       text: "",
       icon: <SwapIcon />,
       href: "/swap",
       variant: "secondary",
-      disabled,
+      disabled: isSwapGated,
       disabledTag: <DisabledTag onClick={() => setIsOpen((prev) => !prev)} />,
     };
 
     return [purchaseButtonConfig, sendButtonConfig, swapButtonConfig];
-  }, [activeTier?.tier]);
+  }, [isSwapGated]);
 
   return (
     <>

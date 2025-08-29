@@ -11,14 +11,12 @@ import { ExtensionStorage } from "~utils/storage";
 import { useLocation } from "~wallets/router/router.utils";
 import type { WanderRoutePath } from "~wallets/router/router.types";
 import { SwapIcon } from "./SwapIcon";
-import { useActiveTier } from "~utils/tier/hooks";
-import { tierNameToId, TierTypes } from "~utils/tier/constants";
-import { SWAP_DISABLED_FOR_LOWER_TIERS } from "../utils/swap.constants";
 import { AgentIcon } from "./AgentIcon";
+import { useIsSwapGated } from "../utils/swap.hooks";
 
 const stars = defaultStars.toSpliced(1, 1);
 
-const ANNOUNCEMENTS_NOTICE_SHOWN = "announcements_notice_shown";
+const ANNOUNCEMENTS_CAROUSEL_SHOWN = "announcements_carousel_shown";
 
 interface AgentSlide {
   icon: React.ReactNode;
@@ -65,31 +63,26 @@ const swapData = {
   href: "/swap",
 };
 
-const reserveTierId = tierNameToId[TierTypes.Reserve];
-
 export function AnnouncementsCarousel() {
   const theme = useTheme();
   const [isOpen, setOpen] = useState(false);
-  const { data: activeTier } = useActiveTier();
+  const isSwapGated = useIsSwapGated();
 
   const handleOnClose = () => {
-    ExtensionStorage.set(ANNOUNCEMENTS_NOTICE_SHOWN, true);
+    ExtensionStorage.set(ANNOUNCEMENTS_CAROUSEL_SHOWN, true);
     setOpen(false);
   };
 
   useAsyncEffect(async () => {
-    const storedValue = await ExtensionStorage.get<boolean>(ANNOUNCEMENTS_NOTICE_SHOWN);
+    const storedValue = await ExtensionStorage.get<boolean>(ANNOUNCEMENTS_CAROUSEL_SHOWN);
     setOpen(!(storedValue ?? false));
   }, []);
 
   const carouselData = useMemo(() => {
-    const tierId = tierNameToId[activeTier?.tier || TierTypes.Core];
-    const disabled = tierId > reserveTierId && SWAP_DISABLED_FOR_LOWER_TIERS;
-
-    const swapUpdatedData = { ...swapData, disabled };
+    const swapUpdatedData = { ...swapData, disabled: isSwapGated };
 
     return [swapUpdatedData, agentData, earnData];
-  }, [activeTier?.tier]);
+  }, [isSwapGated]);
 
   if (!isOpen) return null;
 

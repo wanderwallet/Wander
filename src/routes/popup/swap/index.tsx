@@ -12,6 +12,7 @@ import { DisclosureButton, DisclosureContent } from "~routes/popup/swap/componen
 import { SlippageInputButton } from "./components/SlippageInputButton";
 import {
   useARNetworkFee,
+  useIsSwapGated,
   usePoolForTokenPair,
   useProviderNetworkFee,
   useSwapRate,
@@ -43,6 +44,7 @@ export function SwapView() {
   const { navigate } = useLocation();
   const { loadSwapData } = useSearchParams<{ loadSwapData: string }>();
   const activeAddress = useActiveAddress();
+  const isSwapGated = useIsSwapGated();
   const [slippage, setSlippage] = useSwapSlippage();
   const defiFeeDetails = useDefiFeeDetails();
   const [openTokenSelector, setOpenTokenSelector] = useState(false);
@@ -255,7 +257,9 @@ export function SwapView() {
               value={
                 <Flex justify="flex-end" align="center" gap={4} textAlign="right" wrap="wrap">
                   {selectedPoolInfo && wanderFee?.hasChanged && (
-                    <CrossedOutText style={{ order: 1 }}>{toFixed(wanderFee?.originalFee, 8)}</CrossedOutText>
+                    <CrossedOutText style={{ order: 1 }}>
+                      {toFixed(wanderFee?.originalFee, 8)} {sendToken.Ticker}
+                    </CrossedOutText>
                   )}
                   <Text
                     size="sm"
@@ -267,7 +271,9 @@ export function SwapView() {
                     }}
                     noMargin>
                     {selectedPoolInfo && wanderFee?.finalFee !== "--"
-                      ? `${toFixed(wanderFee?.finalFee, 8)} ${sendToken.Ticker}`
+                      ? wanderFee?.finalFee === "0"
+                        ? browser.i18n.getMessage("free")
+                        : `${toFixed(wanderFee?.finalFee, 8)} ${sendToken.Ticker}`
                       : "--"}
                   </Text>
                   {selectedPoolInfo && wanderFee.finalFee !== "--" && <WanderFeeTag style={{ order: 3 }} />}
@@ -299,7 +305,9 @@ export function SwapView() {
         <Flex gap={8}>
           <Button
             style={{ flex: 1 }}
-            disabled={!debouncedValueIn || isLoading || isNetworkFeeLoading || !!errorMessage || !!poolError}
+            disabled={
+              !debouncedValueIn || isLoading || isNetworkFeeLoading || !!errorMessage || !!poolError || isSwapGated
+            }
             loading={amountIn && isLoading}
             onClick={handleSwap}
             fullWidth>

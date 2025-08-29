@@ -292,7 +292,7 @@ export function parseSwapTransaction(transaction: GQLEdgeInterface): ParsedSwapT
     // Parse transaction details
     const rate = getTagValue("X-Rate");
     const provider = getTagValue("X-Provider") as Provider;
-    const networkProviderFee = getTagValue("X-Network-Fee");
+    const networkProviderFee = getTagValue("X-Provider-Network-Fee") || getTagValue("X-Network-Fee");
     const wanderFee = getTagValue("X-Client-Fee");
     const slippage = getTagValue("X-Slippage");
     const priceImpact = getTagValue("X-Price-Impact");

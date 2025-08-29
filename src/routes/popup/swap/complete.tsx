@@ -163,7 +163,11 @@ export function SwapCompleteView() {
                         textAlign: "right",
                       }}
                       noMargin>
-                      {wanderFee?.finalFee !== "--" ? `${toFixed(wanderFee?.finalFee, 8)} ${sendToken.Ticker}` : "--"}
+                      {wanderFee?.finalFee !== "--"
+                        ? wanderFee?.finalFee === "0"
+                          ? browser.i18n.getMessage("free")
+                          : `${toFixed(wanderFee?.finalFee, 8)} ${sendToken.Ticker}`
+                        : "--"}
                     </Text>
                     {wanderFee.finalFee !== "--" && <WanderFeeTag style={{ order: 3 }} />}
                   </Flex>

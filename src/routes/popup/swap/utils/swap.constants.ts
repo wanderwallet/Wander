@@ -1,3 +1,5 @@
+import { tierNameToId, TierTypes } from "~utils/tier/constants";
+
 export enum PoolTypeEnum {
   BOTEGA = "botega",
   PERMASWAP = "permaswap",
@@ -13,3 +15,5 @@ const TWO_WEEKS_MS = 1_209_600_000;
 
 // Swap disabled for lower tiers until 14 days after launch
 export const SWAP_DISABLED_FOR_LOWER_TIERS = Date.now() < SWAP_LAUNCH_TIMESTAMP + TWO_WEEKS_MS;
+
+export const RESERVE_TIER_ID = 3;

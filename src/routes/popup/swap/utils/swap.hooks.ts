@@ -30,7 +30,7 @@ import {
 import { aox } from "./bridge/bridge.aox";
 import { retryWithGateways } from "~gateways/wayfinder";
 import { useAoxBridgeInfo, useVentoBridgeInfo } from "./bridge/bridge.hooks";
-import { PoolTypeEnum } from "./swap.constants";
+import { PoolTypeEnum, RESERVE_TIER_ID, SWAP_DISABLED_FOR_LOWER_TIERS } from "./swap.constants";
 import {
   AOX_BRIDGE_TOKEN_IDS,
   getAoxBridgeTransactions,
@@ -48,6 +48,8 @@ import { vento, VENTO_BRIDGE_ADDRESS } from "./bridge/bridge.vento";
 import type { TokenInfo } from "~tokens/aoTokens/ao";
 import type { DefiFeeDetails } from "~utils/tier/types";
 import browser from "webextension-polyfill";
+import { useActiveTier } from "~utils/tier/hooks";
+import { tierNameToId, TierTypes } from "~utils/tier/constants";
 
 export function usePools() {
   return useQuery({
@@ -850,4 +852,13 @@ export function useSwapRate({
     const valueOutForUnitValueIn = valueOut.dividedBy(valueIn);
     return `1 ${sendToken.Ticker} ≈ ${toFixed(valueOutForUnitValueIn, 8)} ${receiveToken.Ticker}`;
   }, [selectedPoolInfo, sendToken, receiveToken, amountIn]);
+}
+
+export function useIsSwapGated() {
+  const { data: activeTier } = useActiveTier();
+
+  return useMemo(() => {
+    const tierId = tierNameToId[activeTier?.tier || TierTypes.Core];
+    return tierId > RESERVE_TIER_ID && SWAP_DISABLED_FOR_LOWER_TIERS;
+  }, [activeTier?.tier]);
 }

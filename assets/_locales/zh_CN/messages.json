@@ -4333,5 +4333,9 @@
     "swap_error": {
       "message": "交换错误。请再试一次。",
       "description": "Swap error text"
+    },
+    "free": {
+      "message": "免费！",
+      "description": "Free text"
     }
 }

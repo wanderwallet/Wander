@@ -109,7 +109,7 @@ export function SwapReviewView() {
         { name: "X-Type", value: "Swap" },
         { name: "X-Rate", value: rate },
         { name: "X-Provider", value: getProviderName(poolType) },
-        { name: "X-Network-Fee", value: providerNetworkFee || `0 ${sendToken?.Ticker}` },
+        { name: "X-Provider-Network-Fee", value: providerNetworkFee || `0 ${sendToken?.Ticker}` },
         { name: "X-Client-Fee", value: wanderFee?.finalFee || `0 ${sendToken?.Ticker}` },
         { name: "X-Slippage", value: `${slippage}%` },
         { name: "X-Price-Impact", value: `${selectedPoolInfo?.priceImpact || "0"}%` },
@@ -262,7 +262,11 @@ export function SwapReviewView() {
                         textAlign: "right",
                       }}
                       noMargin>
-                      {wanderFee?.finalFee !== "--" ? `${toFixed(wanderFee?.finalFee, 8)} ${sendToken.Ticker}` : "--"}
+                      {wanderFee?.finalFee !== "--"
+                        ? wanderFee?.finalFee === "0"
+                          ? browser.i18n.getMessage("free")
+                          : `${toFixed(wanderFee?.finalFee, 8)} ${sendToken.Ticker}`
+                        : "--"}
                     </Text>
                     {wanderFee.finalFee !== "--" && <WanderFeeTag style={{ order: 3 }} />}
                   </Flex>
