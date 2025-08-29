@@ -34,6 +34,10 @@ export const VENTO_BRIDGE_ADDRESS = "mFRKcHsO6Tlv2E2wZcrcbv3mmzxzD7vYPbyybI3KCVA
 export async function readSwapResult({ orderId }: ReadSwapResult): Promise<ReadSwapResultResponse> {
   const transaction = await getVentoBridgeTransaction(orderId);
 
+  if (transaction.status === "failed") {
+    throw new OrderError("Failed to bridge token");
+  }
+
   if (transaction.failureReason && transaction.failureReason !== "") {
     throw new OrderError(transaction.failureReason);
   }

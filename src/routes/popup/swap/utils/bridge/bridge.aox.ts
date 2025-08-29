@@ -26,6 +26,9 @@ import { AR_PROCESS_ID, WAR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 import { createDataItemSigner } from "~tokens/aoTokens/ao";
 import type { DecodedTag } from "~api/modules/sign/tags";
 import BigNumber from "bignumber.js";
+import type { AoxBridgeTransactionStatus } from "./bridge.types";
+
+const FAILED_STATUSES = new Set<AoxBridgeTransactionStatus>(["failed", "submintAosFailed", "notOnChain", "refunded"]);
 
 /**
  * Fetch the result of a swap message
@@ -33,7 +36,7 @@ import BigNumber from "bignumber.js";
 export async function readSwapResult({ orderId }: ReadSwapResult): Promise<ReadSwapResultResponse> {
   const transaction = await getAoxBridgeTransaction(orderId);
 
-  const isError = transaction.status === "error";
+  const isError = FAILED_STATUSES.has(transaction.status) || transaction?.errMsg === "refunded";
   if (isError) throw new OrderError(transaction.status);
 
   const statusSuccess = transaction.status === "success";

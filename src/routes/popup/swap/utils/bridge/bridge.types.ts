@@ -64,6 +64,20 @@ export interface VentoHealthInfo {
   apiStatus: number;
 }
 
+export type AoxBridgeTransactionStatus =
+  | "unPackaged"
+  | "waiting"
+  | "confirmed"
+  | "wrapping"
+  | "burning"
+  | "executing"
+  | "success"
+  | "failed"
+  | "submintAosFailed"
+  | "notOnChain"
+  // special case, comes from errMsg not status:
+  | "refunded";
+
 export interface AoxBridgeTransaction {
   rawId: number;
   createdAt: string;
@@ -83,8 +97,9 @@ export interface AoxBridgeTransaction {
   feeRecipient: string;
   confirmNum: number;
   confirmRange: number;
-  status: string;
+  status: AoxBridgeTransactionStatus;
   targetChainTxHash: string;
+  errMsg?: string;
 }
 
 export interface AoxBridgeTransactionResponse {
@@ -97,7 +112,7 @@ export interface VentoBridgeTransaction {
   txId: string;
   type: "deposit" | "burn";
   failureReason: string;
-  status: "pending confirmation" | "filled";
+  status: "pending confirmation" | "filled" | "failed" | "open" | "pending";
   inputChain: "arweave" | "ao";
   inputTokenType: "arweave" | "ao";
   inputTokenAddress: "AR";
