@@ -27,10 +27,10 @@ export function SwapProgressView() {
   const { navigate } = useLocation();
   const [swapData] = useSavedSwapData();
 
-  const { sendToken, receiveToken, amountIn, selectedPoolInfo, transferId } = swapData || {};
+  const { sendToken, receiveToken, amountIn, selectedPoolInfo, transferId, noteSettle, swapper } = swapData || {};
 
   const swap = useMemo(() => {
-    const poolType = selectedPoolInfo?.pool?.poolType;
+    const poolType = selectedPoolInfo?.poolType;
     const isBridge = poolType === PoolTypeEnum.AOX || poolType === PoolTypeEnum.VENTO;
     const isAo = sendToken?.processId !== AR_PROCESS_ID;
     return { isBridge, isAo };
@@ -74,10 +74,10 @@ export function SwapProgressView() {
       return;
     }
 
-    const poolType = selectedPoolInfo?.pool?.poolType;
+    const poolType = selectedPoolInfo?.poolType;
 
     try {
-      const { success, result } = await waitForSwapResultFn(poolType, transferId);
+      const { success, result } = await waitForSwapResultFn(poolType, { orderId: transferId, noteSettle, swapper });
       if (success) {
         const activeAddress = await getActiveAddress();
         queryClient.invalidateQueries({ queryKey: ["tokenBalance", receiveToken?.processId, activeAddress] });
@@ -104,7 +104,7 @@ export function SwapProgressView() {
     } catch (error) {
       log(LOG_GROUP.SWAP, "Error checking swap status in progress view", error);
     }
-  }, [transferId, selectedPoolInfo]);
+  }, [transferId, selectedPoolInfo, noteSettle, swapper]);
 
   useEffect(() => {
     trackPage(PageType.SWAP_PROGRESS);

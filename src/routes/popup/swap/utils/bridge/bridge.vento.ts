@@ -6,8 +6,10 @@ import type {
   GetExpectedOutputResponse,
   GetLiquidityParams,
   GetLiquidityResponse,
+  ReadSwapResult,
   ReadSwapResultResponse,
   SwapExecutionParams,
+  SwapExecutionResponse,
   WaitForSwapResultResponse,
 } from "../dex/dex.types";
 import { freeDecryptedWallet } from "~wallets/encryption";
@@ -29,8 +31,8 @@ export const VENTO_BRIDGE_ADDRESS = "mFRKcHsO6Tlv2E2wZcrcbv3mmzxzD7vYPbyybI3KCVA
 /**
  * Fetch the result of a swap message
  */
-export async function readSwapResult(orderID: string): Promise<ReadSwapResultResponse> {
-  const transaction = await getVentoBridgeTransaction(orderID);
+export async function readSwapResult({ orderId }: ReadSwapResult): Promise<ReadSwapResultResponse> {
+  const transaction = await getVentoBridgeTransaction(orderId);
 
   if (transaction.failureReason && transaction.failureReason !== "") {
     throw new OrderError(transaction.failureReason);
@@ -74,7 +76,11 @@ export async function getExpectedOutput({
   } satisfies GetExpectedOutputResponse;
 }
 
-export async function executeSwap({ tokenIn, amountIn, tags = [] }: SwapExecutionParams) {
+export async function executeSwap({
+  tokenIn,
+  amountIn,
+  tags = [],
+}: SwapExecutionParams): Promise<SwapExecutionResponse> {
   let decryptedWallet: DecryptedWallet;
   try {
     decryptedWallet = await getActiveKeyfile();
@@ -150,7 +156,7 @@ export async function executeSwap({ tokenIn, amountIn, tags = [] }: SwapExecutio
     // Invalidate transfered token balance
     queryClient.invalidateQueries({ queryKey: ["tokenBalance", tokenIn, activeAddress] });
 
-    return transferId;
+    return { transferId };
   } catch (err) {
     log(LOG_GROUP.SWAP, "Error executing swap", err);
     throw err;
@@ -173,9 +179,9 @@ export async function getLiquidity({ poolId, tokenIn, tokenOut }: GetLiquidityPa
   } satisfies GetLiquidityResponse;
 }
 
-export async function waitForSwapResult(transferId: string): Promise<WaitForSwapResultResponse> {
+export async function waitForSwapResult(params: ReadSwapResult): Promise<WaitForSwapResultResponse> {
   try {
-    const result = await retryWithDelay(() => readSwapResult(transferId), 1000, 300000);
+    const result = await retryWithDelay(() => readSwapResult(params), 1000, 300000);
 
     return { success: true, result };
   } catch (err) {

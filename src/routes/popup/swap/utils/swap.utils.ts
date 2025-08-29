@@ -33,7 +33,7 @@ import { aox } from "./bridge/bridge.aox";
 import { botega } from "./dex/dex.botega";
 import { permaswap } from "./dex/dex.permaswap";
 import { vento } from "./bridge/bridge.vento";
-import type { GetExpectedOutputParams, SwapExecutionParams } from "./dex/dex.types";
+import type { GetExpectedOutputParams, ReadSwapResult, SwapExecutionParams } from "./dex/dex.types";
 import { getAoxBridgeTransaction, getVentoBridgeTransaction } from "./bridge/bridge.utils";
 
 const BOTEGA_POOL_OPTIONS = {
@@ -261,10 +261,10 @@ export function getPriceImpactColor(priceImpact: string, theme: DefaultTheme) {
   if (priceImpactNumber >= 5) return "#EEBD41";
 }
 
-export function toFixed(value: any, decimals: number) {
-  const valueBN = BigNumber(value);
+export function toFixed(value: any, decimals: number, roundingMode: BigNumber.RoundingMode = BigNumber.ROUND_DOWN) {
+  const valueBN = value instanceof BigNumber ? value : BigNumber(value);
   if (valueBN.isNaN()) return value;
-  return valueBN.decimalPlaces(decimals, BigNumber.ROUND_DOWN).toString();
+  return valueBN.decimalPlaces(decimals, roundingMode).toString();
 }
 
 export function parseSwapTransaction(transaction: GQLEdgeInterface): ParsedSwapTransaction {
@@ -428,16 +428,16 @@ export function executeSwapFn(poolType: PoolType, params: SwapExecutionParams) {
   }
 }
 
-export function waitForSwapResultFn(poolType: PoolType, transferId: string) {
+export function waitForSwapResultFn(poolType: PoolType, params: ReadSwapResult) {
   switch (poolType) {
     case PoolTypeEnum.BOTEGA:
-      return botega.waitForSwapResult(transferId);
+      return botega.waitForSwapResult(params);
     case PoolTypeEnum.PERMASWAP:
-      return permaswap.waitForSwapResult(transferId);
+      return permaswap.waitForSwapResult(params);
     case PoolTypeEnum.AOX:
-      return aox.waitForSwapResult(transferId);
+      return aox.waitForSwapResult(params);
     case PoolTypeEnum.VENTO:
-      return vento.waitForSwapResult(transferId);
+      return vento.waitForSwapResult(params);
   }
 }
 
@@ -454,16 +454,16 @@ export function getExpectedOutputFn(poolType: PoolType, params: GetExpectedOutpu
   }
 }
 
-export function readSwapResultFn(poolType: PoolType, transferId: string) {
+export function readSwapResultFn(poolType: PoolType, params: ReadSwapResult) {
   switch (poolType) {
     case PoolTypeEnum.BOTEGA:
-      return botega.readSwapResult(transferId);
+      return botega.readSwapResult(params);
     case PoolTypeEnum.PERMASWAP:
-      return permaswap.readSwapResult(transferId);
+      return permaswap.readSwapResult(params);
     case PoolTypeEnum.AOX:
-      return aox.readSwapResult(transferId);
+      return aox.readSwapResult(params);
     case PoolTypeEnum.VENTO:
-      return vento.readSwapResult(transferId);
+      return vento.readSwapResult(params);
   }
 }
 
@@ -483,7 +483,7 @@ export function toTokenBaseUnits<T extends "BigNumber" | "string" = "string">(
   value = value || "0";
   const denomNum = Number(denomination) || 0;
 
-  const valueBN = value instanceof BigNumber ? value : new BigNumber(value);
+  const valueBN = value instanceof BigNumber ? value : BigNumber(value);
 
   if (valueBN.isNaN()) {
     throw new Error(`Invalid numeric value: ${value}`);
@@ -516,7 +516,7 @@ export function fromTokenBaseUnits<T extends "BigNumber" | "string" = "string">(
   units = units || "0";
   const denomNum = Number(denomination) || 0;
 
-  const unitsBN = units instanceof BigNumber ? units : new BigNumber(units);
+  const unitsBN = units instanceof BigNumber ? units : BigNumber(units);
 
   if (unitsBN.isNaN()) {
     throw new Error(`Invalid numeric units: ${units}`);

@@ -54,7 +54,8 @@ export function SwapReviewView() {
     tokenOut: receiveToken?.processId,
     slippage,
     amountIn,
-    pool: swapData?.selectedPoolInfo?.pool,
+    poolId: swapData?.selectedPoolInfo?.poolId,
+    poolType: swapData?.selectedPoolInfo?.poolType,
     stopFetching: isExecutingSwap,
     wanderFeePercent: +defiFeeDetails.finalFeePercent,
   });
@@ -99,7 +100,7 @@ export function SwapReviewView() {
 
       setIsExecutingSwap(true);
 
-      const poolType = selectedPoolInfo?.pool?.poolType;
+      const poolType = selectedPoolInfo?.poolType;
 
       const tags = [
         { name: "X-Client", value: "Roam" }, // TODO: change this to the actual client name
@@ -134,12 +135,12 @@ export function SwapReviewView() {
         { name: "X-Amount-Out", value: selectedPoolInfo.quoteOutput.amountOut },
       ];
 
-      const transferId = await executeSwapFn(poolType, {
+      const { transferId, noteSettle } = await executeSwapFn(poolType, {
         tokenIn: sendToken?.processId,
         tokenOut: receiveToken?.processId,
         amountIn: selectedPoolInfo.quoteOutput.transferAmountIn,
         minAmountOut: selectedPoolInfo.quoteOutput.amountOut,
-        poolId: selectedPoolInfo.pool.poolId,
+        poolId: selectedPoolInfo.poolId,
         tags,
       });
 
@@ -147,6 +148,7 @@ export function SwapReviewView() {
         ...swapData,
         selectedPoolInfo,
         transferId,
+        noteSettle,
         timestamp: Date.now(),
         status: "pending" as const,
         monitoringStarted: true,
@@ -224,11 +226,11 @@ export function SwapReviewView() {
               <TransactionDetailItem title={browser.i18n.getMessage("rate")} value={rate} />
               <TransactionDetailItem
                 title={browser.i18n.getMessage("provider")}
-                value={getProviderName(selectedPoolInfo?.pool?.poolType)}
+                value={getProviderName(selectedPoolInfo?.poolType)}
               />
               <TransactionDetailItem
                 title={browser.i18n.getMessage("est_swap_time")}
-                value={getSwapTime(selectedPoolInfo?.pool?.poolType)}
+                value={getSwapTime(selectedPoolInfo?.poolType)}
               />
               <TransactionDetailItem title={browser.i18n.getMessage("network_fee")} value={providerNetworkFee} />
               <TransactionDetailItem

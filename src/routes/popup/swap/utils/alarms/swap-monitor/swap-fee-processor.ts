@@ -18,7 +18,7 @@ import type { DecodedTag } from "~api/modules/sign/tags";
 import { getSetting } from "~settings";
 import { EventType, trackDirect } from "~utils/analytics";
 import { getDefiFeeDetailsForTier } from "~utils/tier/utils";
-import { fromTokenBaseUnits } from "../../swap.utils";
+import { fromTokenBaseUnits, toFixed } from "../../swap.utils";
 
 // TODO: Replace with actual recipient CDoilQgKg6Pmp4Q0LJ4d84VXRgB3Ay9pIJ_SA617cVk
 const WANDER_FEE_RECIPIENT = "5glNksg7gRpA0JIXXvCBjlx6U2RHpMG73Msfftke2lY";
@@ -114,7 +114,7 @@ export async function processWanderFee(swap: SwapData): Promise<boolean> {
       ];
 
       const isARSwap =
-        (swap.selectedPoolInfo.pool.poolType === "aox" || swap.selectedPoolInfo.pool.poolType === "vento") &&
+        (swap.selectedPoolInfo.poolType === "aox" || swap.selectedPoolInfo.poolType === "vento") &&
         swap.sendToken.processId === AR_PROCESS_ID;
 
       if (isARSwap) {
@@ -299,10 +299,10 @@ export async function trackSwapAnalytics(swap: SwapData, status: "Success" | "Fa
     const sellTokenPrice = await getTokenPrice(swap.sendToken.processId);
     const buyTokenPrice = await getTokenPrice(swap.receiveToken.processId);
 
-    const wanderFeeAmountUsd = finalFeeValueBN.multipliedBy(sellTokenPrice).toFixed();
-    const wanderFeeDiscountAmountUsd = discountFeeValueBN.multipliedBy(sellTokenPrice).toFixed();
-    const sellTokenAmountUsd = valueInBN.multipliedBy(sellTokenPrice).toFixed();
-    const buyTokenAmountUsd = valueOutBN.multipliedBy(buyTokenPrice).toFixed();
+    const wanderFeeAmountUsd = toFixed(finalFeeValueBN.multipliedBy(sellTokenPrice), 6, BigNumber.ROUND_UP);
+    const wanderFeeDiscountAmountUsd = toFixed(discountFeeValueBN.multipliedBy(sellTokenPrice), 6, BigNumber.ROUND_UP);
+    const sellTokenAmountUsd = toFixed(valueInBN.multipliedBy(sellTokenPrice), 6, BigNumber.ROUND_UP);
+    const buyTokenAmountUsd = toFixed(valueOutBN.multipliedBy(buyTokenPrice), 6, BigNumber.ROUND_UP);
 
     const swapCompletedData = {
       sellTokenName: swap.sendToken.Name,
@@ -313,7 +313,7 @@ export async function trackSwapAnalytics(swap: SwapData, status: "Success" | "Fa
       buyTokenProcessId: swap.receiveToken.processId,
       buyTokenAmount: swap.selectedPoolInfo.quoteOutput.amountOut,
       buyTokenAmountUsd,
-      provider: swap.selectedPoolInfo.pool.poolType,
+      provider: swap.selectedPoolInfo.poolType,
       status,
       userWanderTier: swap.tier,
       wanderFeeAmount: finalFeeAmount,

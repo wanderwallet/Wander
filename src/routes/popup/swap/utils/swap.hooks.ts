@@ -4,7 +4,7 @@ import { defaultOptions, useAoTokens } from "~tokens/hooks";
 import { useMemo, useCallback, useState, useEffect } from "react";
 import type {
   ParsedSwapTransaction,
-  Pool,
+  PoolType,
   SelectedPoolInfo,
   SwapData,
   TokenInfoWithPoolPartners,
@@ -140,7 +140,8 @@ export function usePoolForTokenPair({
         });
 
         setSelectedPoolInfo({
-          pool: pairPools?.aox?.[0],
+          poolId: aoxPool.poolId,
+          poolType: aoxPool.poolType,
           quoteOutput: aoxOutput,
           priceImpact: "0.00",
         });
@@ -166,7 +167,8 @@ export function usePoolForTokenPair({
         });
 
         setSelectedPoolInfo({
-          pool: pairPools?.vento?.[0],
+          poolId: ventoPool.poolId,
+          poolType: ventoPool.poolType,
           quoteOutput: ventoOutput,
           priceImpact: "0.00",
         });
@@ -231,7 +233,12 @@ export function usePoolForTokenPair({
 
       const priceImpact = getPriceImpact(liquidity.reserveIn, liquidity.reserveOut, finalOutput.poolAmountIn);
 
-      setSelectedPoolInfo({ pool: finalPool, quoteOutput: finalOutput, priceImpact });
+      setSelectedPoolInfo({
+        poolId: finalPool.poolId,
+        poolType: finalPool.poolType,
+        quoteOutput: finalOutput,
+        priceImpact,
+      });
       setError(null);
     } catch (error) {
       log(LOG_GROUP.SWAP, "Error fetching pool for token pair", error);
@@ -259,7 +266,8 @@ interface usePoolQuoteProps {
   tokenOut?: string;
   slippage?: number;
   amountIn?: string;
-  pool: Pool;
+  poolId?: string;
+  poolType?: PoolType;
   stopFetching?: boolean;
   wanderFeePercent?: number;
 }
@@ -269,7 +277,8 @@ export function usePoolQuote({
   tokenOut,
   slippage,
   amountIn,
-  pool,
+  poolId,
+  poolType,
   stopFetching,
   wanderFeePercent,
 }: usePoolQuoteProps) {
@@ -279,7 +288,16 @@ export function usePoolQuote({
 
   const fetchPoolQuote = useCallback(async () => {
     try {
-      if (!tokenIn || !tokenOut || !slippage || !amountIn || !pool || isNaN(wanderFeePercent) || stopFetching) {
+      if (
+        !tokenIn ||
+        !tokenOut ||
+        !slippage ||
+        !amountIn ||
+        !poolId ||
+        !poolType ||
+        isNaN(wanderFeePercent) ||
+        stopFetching
+      ) {
         setSelectedPoolInfo(null);
         setError(null);
         return;
@@ -299,7 +317,7 @@ export function usePoolQuote({
         wanderFee,
       };
 
-      const output = await getExpectedOutputFn(pool.poolType, { poolId: pool.poolId, ...params });
+      const output = await getExpectedOutputFn(poolType, { poolId, ...params });
 
       if (!output) {
         log(LOG_GROUP.SWAP, "No final output found");
@@ -310,9 +328,9 @@ export function usePoolQuote({
       let liquidity: GetLiquidityResponse;
 
       if (output.type === PoolTypeEnum.BOTEGA) {
-        liquidity = await botega.getLiquidity({ poolId: pool.poolId, tokenIn, tokenOut });
+        liquidity = await botega.getLiquidity({ poolId, tokenIn, tokenOut });
       } else {
-        liquidity = await permaswap.getLiquidity({ poolId: pool.poolId, tokenIn, tokenOut });
+        liquidity = await permaswap.getLiquidity({ poolId, tokenIn, tokenOut });
       }
 
       if (!liquidity) {
@@ -323,7 +341,12 @@ export function usePoolQuote({
 
       const priceImpact = getPriceImpact(liquidity.reserveIn, liquidity.reserveOut, output.poolAmountIn);
 
-      setSelectedPoolInfo({ pool, quoteOutput: output, priceImpact });
+      setSelectedPoolInfo({
+        poolId,
+        poolType,
+        quoteOutput: output,
+        priceImpact,
+      });
       setError(null);
     } catch (error) {
       log(LOG_GROUP.SWAP, "Error fetching pool for token pair", error);
@@ -331,7 +354,7 @@ export function usePoolQuote({
     } finally {
       setIsLoading(false);
     }
-  }, [tokenIn, tokenOut, slippage, amountIn, pool, wanderFeePercent]);
+  }, [tokenIn, tokenOut, slippage, amountIn, poolId, poolType, wanderFeePercent]);
 
   useEffect(() => {
     if (
@@ -339,7 +362,8 @@ export function usePoolQuote({
       !tokenOut ||
       !slippage ||
       !amountIn ||
-      !pool ||
+      !poolId ||
+      !poolType ||
       stopFetching ||
       (AOX_BRIDGE_TOKEN_IDS.has(tokenIn) && AOX_BRIDGE_TOKEN_IDS.has(tokenOut)) ||
       (VENTO_BRIDGE_TOKEN_IDS.has(tokenIn) && VENTO_BRIDGE_TOKEN_IDS.has(tokenOut))
@@ -352,7 +376,7 @@ export function usePoolQuote({
     const interval = setInterval(fetchPoolQuote, 10000);
 
     return () => clearInterval(interval);
-  }, [fetchPoolQuote, tokenIn, tokenOut, slippage, amountIn, pool, stopFetching]);
+  }, [fetchPoolQuote, tokenIn, tokenOut, slippage, amountIn, poolId, poolType, stopFetching]);
 
   return { selectedPoolInfo, isLoading, error };
 }
@@ -778,7 +802,7 @@ export function useProviderNetworkFee({
     let tokenInFee = BigNumber(selectedPoolInfo.quoteOutput.tokenInFee || "0");
     let tokenOutFee = BigNumber(selectedPoolInfo.quoteOutput.tokenOutFee || "0");
 
-    if (selectedPoolInfo.pool.poolType === "aox" || selectedPoolInfo.pool.poolType === "vento") {
+    if (selectedPoolInfo.poolType === "aox" || selectedPoolInfo.poolType === "vento") {
       if (sendToken.processId === AR_PROCESS_ID) {
         tokenInFee = tokenInFee.plus(networkFee);
       } else {

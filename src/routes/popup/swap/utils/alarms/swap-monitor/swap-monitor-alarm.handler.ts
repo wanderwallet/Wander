@@ -82,14 +82,18 @@ async function checkSingleSwap(swap: SwapData) {
     return;
   }
 
-  const poolType = swap.selectedPoolInfo.pool.poolType;
+  const poolType = swap.selectedPoolInfo.poolType;
   if (!poolType) {
     log(LOG_GROUP.SWAP, "Invalid pool type", swap);
     return;
   }
 
   try {
-    const result = await readSwapResultFn(poolType, swap.transferId);
+    const result = await readSwapResultFn(poolType, {
+      orderId: swap.transferId,
+      noteSettle: swap.noteSettle,
+      swapper: swap.swapper,
+    });
     const expectedOutput = swap.selectedPoolInfo.quoteOutput.amountOut;
     swap.selectedPoolInfo.quoteOutput.amountOut = result?.amountOut || expectedOutput;
     await handleSwapSuccess(swap);

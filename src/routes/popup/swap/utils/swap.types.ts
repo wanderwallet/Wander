@@ -128,7 +128,8 @@ export interface BotegaPoolOverview {
 export type TokenSelectorType = "send" | "receive";
 
 export interface SelectedPoolInfo {
-  pool: Pool;
+  poolId: string;
+  poolType: PoolType;
   quoteOutput: GetExpectedOutputResponse;
   priceImpact: string;
 }
@@ -148,6 +149,7 @@ export interface SwapData {
   slippage: number;
   amountIn: string;
   swapper: string;
+  noteSettle?: string; // For Permaswap
   tier: Tier;
   wanderFeeSent?: boolean;
   analyticsSent?: boolean;

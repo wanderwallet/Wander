@@ -31,7 +31,7 @@ export function SwapCompleteView() {
   const { sendToken, receiveToken, wanderFee, slippage, amountIn, selectedPoolInfo, transferId } = swapData || {};
 
   const swap = useMemo(() => {
-    const poolType = selectedPoolInfo?.pool?.poolType;
+    const poolType = selectedPoolInfo?.poolType;
     const isBridge = poolType === PoolTypeEnum.AOX || poolType === PoolTypeEnum.VENTO;
     const isAo = sendToken?.processId !== AR_PROCESS_ID;
     return { isBridge, isAo };
@@ -137,11 +137,11 @@ export function SwapCompleteView() {
               <TransactionDetailItem title={browser.i18n.getMessage("rate")} value={rate} />
               <TransactionDetailItem
                 title={browser.i18n.getMessage("provider")}
-                value={getProviderName(selectedPoolInfo?.pool?.poolType)}
+                value={getProviderName(selectedPoolInfo?.poolType)}
               />
               <TransactionDetailItem
                 title={browser.i18n.getMessage("est_swap_time")}
-                value={getSwapTime(selectedPoolInfo?.pool?.poolType)}
+                value={getSwapTime(selectedPoolInfo?.poolType)}
               />
               <TransactionDetailItem title={browser.i18n.getMessage("network_fee")} value={providerNetworkFee} />
               <TransactionDetailItem

@@ -35,6 +35,11 @@ export interface SwapExecutionParams {
   tags?: Tag[];
 }
 
+export interface SwapExecutionResponse {
+  transferId: string;
+  noteSettle?: string;
+}
+
 export interface GetLiquidityParams {
   poolId: string;
   tokenIn: string;
@@ -70,6 +75,12 @@ export interface AoMessage {
   dataSize: number;
 }
 
+export interface ReadSwapResult {
+  orderId: string;
+  swapper?: string;
+  noteSettle?: string; // For Permaswap
+}
+
 export interface ReadSwapResultResponse {
   amountOut: string;
   confirmationTxId: string;
@@ -81,3 +92,15 @@ export interface WaitForSwapResultResponse {
 }
 
 export type DryRunResult = Awaited<ReturnType<typeof dryrun>>;
+
+export interface PermaswapGetSettled {
+  SettledDate: number;
+  NoteIDs: string;
+  Fees: string;
+  Status: "Open" | "Started" | "Executing" | "Settled" | "Rejected" | "Timeout" | "Expired" | "Canceled";
+  SettleID: string;
+  TxsIn: string;
+  ID: number;
+  TxsOut: string;
+  Settler: string;
+}
