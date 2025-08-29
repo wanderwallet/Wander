@@ -1,4 +1,4 @@
-import { useInput, Loading, Input, Text } from "@arconnect/components-rebrand";
+import { useInput, Loading, Input, Text, Spacer } from "@arconnect/components-rebrand";
 import { useRef, useCallback } from "react";
 import { Flex } from "~components/common/Flex";
 import SliderMenu from "~components/SliderMenu";
@@ -8,6 +8,7 @@ import type { TokenInfoWithPoolPartners, TokenSelectorType } from "../utils/swap
 import styled from "styled-components";
 import browser from "webextension-polyfill";
 import Token from "~components/popup/Token";
+import { VERIFIED_TOKENS } from "~tokens/aoTokens/ao.constants";
 
 interface TokenSelectorPopupProps {
   tokenSelectorType: TokenSelectorType;
@@ -91,6 +92,7 @@ const TokenSelectorScreen = ({ onClose, updateToken, tokenSelectorType, filterTo
         />
       </div>
       <TokenListContainer ref={scrollContainerRef} onScroll={handleScroll}>
+        <Spacer y={0.15} />
         <Flex direction="column" gap={20}>
           {isInitialLoading ? (
             <Flex justify="center" align="center" style={{ height: "200px" }}>
@@ -103,7 +105,7 @@ const TokenSelectorScreen = ({ onClose, updateToken, tokenSelectorType, filterTo
                   key={token.processId}
                   type={"asset"}
                   defaultLogo={token?.Logo}
-                  id={token.processId || token.id}
+                  id={token.processId}
                   showId={true}
                   ticker={token.Ticker}
                   divisibility={token.Denomination}
@@ -113,6 +115,8 @@ const TokenSelectorScreen = ({ onClose, updateToken, tokenSelectorType, filterTo
                   }}
                   addressOverFiat
                   addressSize="sm"
+                  fetchMissingLogo
+                  isVerified={VERIFIED_TOKENS.has(token.processId)}
                 />
               ))}
               {searchInput.state && tokens.length === 0 && (

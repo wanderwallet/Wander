@@ -1,5 +1,5 @@
 import { formatFiatBalance } from "~tokens/currency";
-import { type MouseEventHandler, useEffect, useMemo, useRef, useState } from "react";
+import { type MouseEventHandler, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { hoverEffect } from "~utils/theme";
 import { type Token } from "~tokens/token";
 import { useStorage } from "~utils/storage";
@@ -19,7 +19,9 @@ import { TokenLogo } from "~components/popup/TokenLogo";
 import { NetworkErrorIcon } from "~components/icons/NetworkErrorIcon";
 import { WarningIcon } from "~components/icons/WarningIcon";
 import { DegradedMessage, NetworkErrorMessage } from "~components/popup/tokens/ErrorMessages";
-import { AO_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
+import { AO_PROCESS_ID, AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
+import VerifiedIcon from "~components/icons/VerifiedIcon";
+import browser from "webextension-polyfill";
 
 export default function Token({ onClick, disableClickEffect, disableCursor, ...props }: Props) {
   const ref = useRef(null);
@@ -66,6 +68,17 @@ export default function Token({ onClick, disableClickEffect, disableCursor, ...p
     return formatFiatBalance(props.fiatPrice, currency);
   }, [props.fiatPrice, currency]);
 
+  const handleOpenAoLink = useCallback(
+    (e: React.MouseEvent<HTMLAnchorElement>) => {
+      e.stopPropagation();
+
+      if (props.id !== AR_PROCESS_ID) {
+        browser.tabs.create({ url: `https://ao.link/#/token/${props.id}` });
+      }
+    },
+    [props.id],
+  );
+
   // token logo
 
   const hasActionButton = props?.onAddClick || props?.onRemoveClick || props?.onSettingsClick || props?.onHideClick;
@@ -101,7 +114,21 @@ export default function Token({ onClick, disableClickEffect, disableCursor, ...p
       {(!aoConfettiShown || ref.current) && AO_PROCESS_ID === props.id && +fractBalance > 0 && <Canvas ref={ref} />}
       <InnerWrapper width={hasActionButton ? "86%" : "100%"} onClick={onClick}>
         <LogoAndDetails>
-          <TokenLogo key={props.id} token={props.defaultLogo || ""} name={props.name || props.ticker} />
+          <div style={{ position: "relative", overflow: "visible" }}>
+            <TokenLogo
+              key={props.id}
+              token={tokenInfo}
+              name={props.name || props.ticker}
+              fetchMissingLogo={props.fetchMissingLogo}
+            />
+            {props.isVerified && (
+              <VerifiedIcon
+                style={{ position: "absolute", top: -4, right: -4, height: 16, width: 16, borderRadius: "50%" }}
+                color="#6B57F9"
+                checkmarkColor="#fff"
+              />
+            )}
+          </div>
           <div>
             <div style={{ display: "flex", gap: "0.5rem" }}>
               <TokenName>{props.name || props.ticker || "???"}</TokenName>
@@ -114,7 +141,12 @@ export default function Token({ onClick, disableClickEffect, disableCursor, ...p
             {hasActionButton ? (
               <FiatBalance>{balance}</FiatBalance>
             ) : props.addressOverFiat ? (
-              <Address size={props.addressSize || "base"}>{formatAddress(props.id, 4)}</Address>
+              <Address
+                size={props.addressSize || "base"}
+                showAsLink={props.id !== AR_PROCESS_ID}
+                onClick={handleOpenAoLink}>
+                {formatAddress(props.id, 4)}
+              </Address>
             ) : (
               formattedFiatPrice && <FiatBalance>{formattedFiatPrice}</FiatBalance>
             )}
@@ -240,8 +272,18 @@ const Address = styled(Text).attrs({
   noMargin: true,
   weight: "light",
   lineHeight: 1.4,
-})`
+})<{ showAsLink?: boolean }>`
   color: ${(props) => props.theme.secondaryText};
+
+  ${({ showAsLink, theme }) =>
+    showAsLink &&
+    `
+      &:hover {
+        text-decoration: underline;
+        cursor: pointer;
+        color: ${theme.theme};
+      }
+    `}
 `;
 
 const NativeBalance = styled(Text).attrs({
@@ -293,4 +335,7 @@ interface Props extends Omit<Token, "balance"> {
   addressOverFiat?: boolean;
   /** Size of the address text. Defaults to "sm" */
   addressSize?: TextProps["size"];
+  /** If true, fetch missing token logo from cache or ao */
+  fetchMissingLogo?: boolean;
+  isVerified?: boolean;
 }

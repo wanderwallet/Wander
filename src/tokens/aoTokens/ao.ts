@@ -116,7 +116,7 @@ export async function getTokenInfo(id: string): Promise<TokenInfo> {
     const response = await fetch(`${CACHE_API}/api/token-info?tokenId=${id}`, {
       cache: "force-cache",
       headers: {
-        "Cache-Control": "public, max-age=300", // 5 minutes
+        "Cache-Control": "public, max-age=3600", // 1 hour
       },
     });
     const data = await response.json();

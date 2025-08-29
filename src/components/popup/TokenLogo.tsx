@@ -3,7 +3,7 @@ import { Image } from "~components/common/Image/Image";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { getUserAvatar } from "~lib/avatar";
 import type { Token } from "~tokens/token";
-import type { TokenInfo } from "~tokens/aoTokens/ao";
+import { getTokenInfo, type TokenInfo } from "~tokens/aoTokens/ao";
 import { FULL_HISTORY, useGateway } from "~gateways/wayfinder";
 import { concatGatewayURL } from "~gateways/utils";
 import { AR_PROCESS_ID, AR_LOGO } from "~tokens/aoTokens/ao.constants";
@@ -78,9 +78,12 @@ export interface TokenLogoProps {
   size?: number;
 
   style?: React.CSSProperties;
+
+  /** If true, fetch missing token logo from cache or ao */
+  fetchMissingLogo?: boolean;
 }
 
-export function TokenLogo({ token: tokenProp, name, size = 40, style }: TokenLogoProps) {
+export function TokenLogo({ token: tokenProp, name, size = 40, style, fetchMissingLogo }: TokenLogoProps) {
   const gateway = useGateway(FULL_HISTORY);
 
   const token = useMemo(() => {
@@ -138,7 +141,15 @@ export function TokenLogo({ token: tokenProp, name, size = 40, style }: TokenLog
     // Load the token logo from Arweave using its transaction ID.
 
     try {
-      const logoSrc = await getUserAvatar(typeof token === "object" ? token.defaultLogo : token);
+      let tokenLogo = typeof token === "object" ? token.defaultLogo : token;
+      if (!tokenLogo && token?.id && fetchMissingLogo) {
+        try {
+          const tokenInfo = await getTokenInfo(token.id);
+          tokenLogo = tokenInfo.Logo;
+        } catch {}
+      }
+
+      const logoSrc = await getUserAvatar(tokenLogo);
 
       if (!logoSrc)
         throw new Error(`Could not load logo for ${typeof token === "object" ? token.defaultLogo : token}.`);
@@ -149,7 +160,7 @@ export function TokenLogo({ token: tokenProp, name, size = 40, style }: TokenLog
 
       // TODO: Also show the error state / fallback if there's an error loading the token info on the parent component.
     }
-  }, [token]);
+  }, [token, fetchMissingLogo]);
 
   const title = process.env.NODE_ENV === "development" ? `token=${JSON.stringify(token)}, name="${name}"` : undefined;
 
