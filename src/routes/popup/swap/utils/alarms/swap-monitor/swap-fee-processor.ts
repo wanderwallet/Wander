@@ -218,38 +218,6 @@ function extractFeeValue(feeString: string): BigNumber | null {
 }
 
 /**
- * Check if a swap should have its fee processed
- * @param swap The swap data to check
- * @returns boolean Whether fee processing is needed
- */
-export function shouldProcessFee(swap: SwapData): boolean {
-  return (
-    swap.status === "completed" &&
-    swap.wanderFeeSent !== true &&
-    !!swap.wanderFee &&
-    swap.wanderFee.finalFee !== "--" &&
-    !!swap.sendToken &&
-    !!swap.amountIn
-  );
-}
-
-/**
- * Estimate if fee processing will succeed (for validation)
- * @param swap The swap data
- * @returns Promise<boolean> Whether fee processing is likely to succeed
- */
-export async function canProcessFee(swap: SwapData): Promise<boolean> {
-  try {
-    if (!swap.wanderFee || !swap.sendToken) return false;
-
-    const feeValue = extractFeeValue(swap.wanderFee.finalFee);
-    return feeValue !== null && !feeValue.isZero();
-  } catch {
-    return false;
-  }
-}
-
-/**
  * Clean up mutex for a completed transaction to free memory
  * @param transferId The transaction ID to clean up
  */

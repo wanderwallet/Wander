@@ -230,7 +230,8 @@ export function getPriceImpact(reserveIn: string, reserveOut: string, amountIn: 
   const priceImpact = newPrice.minus(oldPrice).multipliedBy(100).dividedBy(oldPrice);
 
   // Return percentage with 2 decimal places
-  return priceImpact.toFixed(2);
+  const result = priceImpact.toFixed(2);
+  return result === "-0.00" ? "0.00" : result;
 }
 
 export function getProviderName(poolType: PoolType) {

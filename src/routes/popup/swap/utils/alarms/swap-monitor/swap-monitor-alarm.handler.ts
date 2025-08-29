@@ -103,7 +103,7 @@ async function checkSingleSwap(swap: SwapData) {
     } else {
       // If there's an error checking status, treat as potential failure after timeout
       const swapAge = Date.now() - (swap.timestamp || Date.now());
-      const maxWaitTime = 86400000;
+      const maxWaitTime = 259200000; // 3 days
 
       if (swapAge > maxWaitTime) {
         log(LOG_GROUP.SWAP, `Swap ${swap.transferId} timed out with error`, error);
@@ -178,6 +178,7 @@ async function handleSwapFailure(swap: SwapData) {
         ...s,
         status: "failed" as const,
         completedAt: Date.now(),
+        showCompletionScreen: true, // Mark for display to user
       }),
     );
 
@@ -186,7 +187,10 @@ async function handleSwapFailure(swap: SwapData) {
     // Send failure notification
     // await sendSwapNotification(swap, "failed");
 
-    log(LOG_GROUP.SWAP, `Swap ${swap.transferId} marked as failed`);
+    log(LOG_GROUP.SWAP, `Swap ${swap.transferId} marked as failed and queued for display`);
+
+    // Mark for completion display (similar to successful swaps)
+    await markSwapForCompletionDisplay(swap.transferId);
   } catch (error) {
     log(LOG_GROUP.SWAP, `Error processing failed swap ${swap.transferId}`, error);
   }
@@ -223,6 +227,8 @@ async function retryFeeProcessing(swap: SwapData) {
       log(LOG_GROUP.SWAP, `Fee processing completed for swap ${swap.transferId}`);
       // Clean up mutex since fee processing is complete
       cleanupFeeProcessingMutex(swap.transferId);
+      // Check if we can clean up this swap immediately
+      await cleanupSwapIfReady(swap.transferId);
     } else {
       log(LOG_GROUP.SWAP, `Fee processing failed for swap ${swap.transferId}, will retry next cycle`);
     }
@@ -287,35 +293,101 @@ async function scheduleNextSwapMonitorCheck() {
 }
 
 /**
- * Clean up old completed swaps (older than 24 hours)
- * Only removes swaps that have completed fee processing or failed swaps
+ * Immediately clean up a swap if it's ready for removal
+ * - Completed swaps: only if fee processed and doesn't need to be shown
+ * - Failed swaps: only if completion screen has been shown
+ */
+async function cleanupSwapIfReady(transferId: string) {
+  try {
+    const swap = await swapsArray.find((s) => s.transferId === transferId);
+    if (!swap) return;
+
+    let shouldCleanup = false;
+    let reason = "";
+
+    // Completed swaps only if fee processed and doesn't need display
+    if (swap.status === "completed" && swap.wanderFeeSent && swap.showCompletionScreen === false) {
+      shouldCleanup = true;
+      reason = "completed swap with fee processed and screen shown";
+    }
+    // Failed swaps only if completion screen has been shown
+    else if (swap.status === "failed" && swap.showCompletionScreen === false) {
+      shouldCleanup = true;
+      reason = "failed swap with screen shown";
+    }
+
+    if (shouldCleanup) {
+      await swapsArray.removeWhere((s) => s.transferId === transferId);
+      cleanupFeeProcessingMutex(transferId);
+      log(LOG_GROUP.SWAP, `Immediately cleaned up ${reason}: ${transferId}`);
+    }
+  } catch (error) {
+    log(LOG_GROUP.SWAP, `Error in immediate cleanup for swap ${transferId}`, error);
+  }
+}
+
+/**
+ * Determine if a swap should be removed from storage
+ * CRITICAL: Never remove swaps until fee processing succeeds - fees must be processed at any cost
+ */
+function shouldRemoveSwap(swap: SwapData, dayAgo: number): boolean {
+  // Early return for pending swaps - never remove
+  if (swap.status === "pending") {
+    return false;
+  }
+
+  // Handle completed swaps
+  if (swap.status === "completed") {
+    // NEVER remove if fee hasn't been processed - keep trying forever
+    if (!swap.wanderFeeSent) {
+      return false;
+    }
+    // Remove ONLY if fee processed AND completion screen has been explicitly shown (false)
+    // Logic: undefined -> keep, true -> keep, false -> remove
+    return swap.showCompletionScreen === false;
+  }
+
+  // Handle failed swaps - remove if completion screen shown OR after 24 hours (fallback)
+  if (swap.status === "failed") {
+    // Remove if completion screen has been shown
+    if (swap.showCompletionScreen === false) {
+      return true;
+    }
+    // Fallback: remove after 24 hours even if screen wasn't shown (safety measure)
+    return (swap.completedAt || 0) < dayAgo;
+  }
+
+  // Unknown status - don't remove to be safe
+  return false;
+}
+
+/**
+ * Clean up completed and failed swaps based on processing status and age
+ * Removes swaps that have completed fee processing, been shown (if needed), or are old failures
+ * CRITICAL: Never remove swaps until fee processing succeeds - fees must be processed at any cost
  */
 export async function cleanupOldSwaps() {
-  const dayAgo = Date.now() - 24 * 60 * 60 * 1000;
+  const dayAgo = Date.now() - 24 * 60 * 60 * 1000; // 24 hours for failed swaps
 
   // Get swaps to be removed for mutex cleanup
-  const swapsToRemove = await swapsArray.filter(
-    (swap) =>
-      ((swap.status === "completed" && swap.wanderFeeSent) || swap.status === "failed") &&
-      (swap.completedAt || 0) < dayAgo,
-  );
+  const swapsToRemove = await swapsArray.filter((swap) => shouldRemoveSwap(swap, dayAgo));
+
+  // Early exit if nothing to clean up
+  if (swapsToRemove.length === 0) {
+    return;
+  }
 
   // Clean up mutexes for swaps being removed
-  swapsToRemove.forEach((swap) => {
+  for (const swap of swapsToRemove) {
     if (swap.transferId) {
       cleanupFeeProcessingMutex(swap.transferId);
     }
-  });
-
-  const removedCount = await swapsArray.removeWhere(
-    (swap) =>
-      ((swap.status === "completed" && swap.wanderFeeSent) || swap.status === "failed") &&
-      (swap.completedAt || 0) < dayAgo,
-  );
-
-  if (removedCount > 0) {
-    log(LOG_GROUP.SWAP, `Cleaned up ${removedCount} old completed swaps and their mutexes`);
   }
+
+  // Remove swaps from storage
+  const removedCount = await swapsArray.removeWhere((swap) => shouldRemoveSwap(swap, dayAgo));
+
+  log(LOG_GROUP.SWAP, `Cleaned up ${removedCount} processed/old swaps and their mutexes`);
 }
 
 /**
@@ -324,7 +396,7 @@ export async function cleanupOldSwaps() {
 async function markSwapForCompletionDisplay(transferId: string) {
   try {
     await swapsArray.updateWhere(
-      (swap) => swap.transferId === transferId && typeof swap.showCompletionScreen !== "boolean",
+      (swap) => swap.transferId === transferId && swap.showCompletionScreen !== true,
       (swap) => ({
         ...swap,
         showCompletionScreen: true,

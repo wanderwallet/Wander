@@ -32,129 +32,43 @@ export async function initializeSwapMonitoring() {
 }
 
 /**
- * Get all pending swaps that need monitoring
- */
-export async function getPendingSwaps(): Promise<SwapData[]> {
-  return await swapsArray.filter(
-    (swap) => swap.status !== "completed" && swap.status !== "failed" && !!swap.transferId,
-  );
-}
-
-/**
- * Get all completed swaps
- */
-export async function getCompletedSwaps(): Promise<SwapData[]> {
-  return await swapsArray.filter((swap) => swap.status === "completed");
-}
-
-/**
- * Get all failed swaps
- */
-export async function getFailedSwaps(): Promise<SwapData[]> {
-  return await swapsArray.filter((swap) => swap.status === "failed");
-}
-
-/**
- * Get swaps that need fee processing
- */
-export async function getSwapsNeedingFeeProcessing(): Promise<SwapData[]> {
-  return await swapsArray.filter((swap) => swap.status === "completed" && !swap.wanderFeeSent && !!swap.transferId);
-}
-
-/**
- * Get swap by transfer ID
- */
-export async function getSwapByTransferId(transferId: string): Promise<SwapData | undefined> {
-  return await swapsArray.find((swap) => swap.transferId === transferId);
-}
-
-/**
- * Mark a swap as completed or failed
- */
-export async function markSwapCompleted(
-  transferId: string,
-  options: { status: "completed" | "failed"; wanderFeeSent?: boolean } = { status: "completed" },
-): Promise<void> {
-  await swapsArray.updateWhere(
-    (swap) => swap.transferId === transferId,
-    (swap) => ({
-      ...swap,
-      status: options.status,
-      wanderFeeSent: options.wanderFeeSent || false,
-      completedAt: Date.now(),
-    }),
-  );
-}
-
-/**
- * Remove old swaps from storage
- * @param olderThanHours Remove swaps older than this many hours
- */
-export async function removeOldSwaps(olderThanHours: number = 24): Promise<number> {
-  const cutoffTime = Date.now() - olderThanHours * 60 * 60 * 1000;
-
-  return await swapsArray.removeWhere(
-    (swap) =>
-      ((swap.status === "completed" && swap.wanderFeeSent) || swap.status === "failed") &&
-      ((swap.completedAt && swap.completedAt < cutoffTime) ||
-        (!swap.completedAt && swap.timestamp && swap.timestamp < cutoffTime)),
-  );
-}
-
-/**
- * Get swap statistics for monitoring
- */
-export async function getSwapStats(): Promise<{
-  total: number;
-  pending: number;
-  completed: number;
-  failed: number;
-  needsFeeProcessing: number;
-}> {
-  const allSwaps = await swapsArray.getAll();
-
-  const pending = allSwaps.filter((s) => s.status !== "completed" && s.status !== "failed" && !!s.transferId).length;
-  const completed = allSwaps.filter((s) => s.status === "completed").length;
-  const failed = allSwaps.filter((s) => s.status === "failed").length;
-  const needsFeeProcessing = allSwaps.filter(
-    (s) => s.status === "completed" && !s.wanderFeeSent && s.wanderFee?.finalFee !== "--",
-  ).length;
-
-  return {
-    total: allSwaps.length,
-    pending,
-    completed,
-    failed,
-    needsFeeProcessing,
-  };
-}
-
-/**
- * Check for completed swaps that need to show completion screen
+ * Check for completed or failed swaps that need to show completion screen
  * Returns the swap data of the first swap that should be shown
  */
 export async function checkForCompletedSwapToShow(): Promise<SwapData | null> {
   try {
-    // Find the first swap that needs to show completion screen
-    const swapToShow = await swapsArray.find((swap) => swap.showCompletionScreen && swap.status === "completed");
+    // Find the first swap that needs to show completion screen (completed OR failed)
+    const swapToShow = await swapsArray.find(
+      (swap) => (swap.status === "completed" || swap.status === "failed") && swap.showCompletionScreen !== false,
+    );
 
     if (!swapToShow) return null;
 
     await TempTransactionStorage.set("swap-data", swapToShow);
 
-    // Clear the flag so it doesn't show again
-    await swapsArray.updateWhere(
-      (swap) => swap.transferId === swapToShow.transferId,
-      (swap) => ({
-        ...swap,
-        showCompletionScreen: false,
-      }),
-    );
+    // Clear the flag and remove swap if fully processed
+    const swapIsFullyProcessed =
+      (swapToShow.status === "completed" && swapToShow.wanderFeeSent) || swapToShow.status === "failed"; // Failed swaps don't need fee processing
 
-    log(LOG_GROUP.SWAP, `Found completed swap ${swapToShow.transferId} to show completion screen`);
+    if (swapIsFullyProcessed) {
+      // Remove the swap entirely - it's completed/failed and has been shown
+      await swapsArray.removeWhere((swap) => swap.transferId === swapToShow.transferId);
+      log(LOG_GROUP.SWAP, `Removed fully processed ${swapToShow.status} swap ${swapToShow.transferId} from storage`);
+    } else {
+      // Just clear the flag if fee processing is still pending (only for completed swaps)
+      await swapsArray.updateWhere(
+        (swap) => swap.transferId === swapToShow.transferId,
+        (swap) => ({
+          ...swap,
+          showCompletionScreen: false,
+        }),
+      );
+    }
+
+    log(LOG_GROUP.SWAP, `Found ${swapToShow.status} swap ${swapToShow.transferId} to show completion screen`);
     return swapToShow;
   } catch (error) {
-    log(LOG_GROUP.SWAP, "Error checking for completed swaps to show:", error);
+    log(LOG_GROUP.SWAP, "Error checking for completed/failed swaps to show:", error);
     return null;
   }
 }
