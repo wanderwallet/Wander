@@ -4369,5 +4369,9 @@
   "network_provider_fee": {
     "message": "Network/Provider fee",
     "description": "Network/Provider fee text"
+  },
+  "swap_error": {
+    "message": "Swap error. Please try again.",
+    "description": "Generic error message shown when a swap transaction fails" 
   }
 }

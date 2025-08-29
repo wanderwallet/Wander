@@ -4329,5 +4329,9 @@
     "network_provider_fee": {
       "message": "网络/提供者费用",
       "description": "Network/Provider fee text"
+    },
+    "swap_error": {
+      "message": "交换错误。请再试一次。",
+      "description": "Swap error text"
     }
 }

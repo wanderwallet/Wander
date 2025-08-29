@@ -1,4 +1,4 @@
-import { Section, Button, Text, Loading } from "@arconnect/components-rebrand";
+import { Section, Button, Text, Loading, useToasts } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
 import styled, { useTheme } from "styled-components";
 import HeadV2 from "~components/popup/HeadV2";
@@ -34,6 +34,7 @@ import {
 import { useDefiFeeDetails } from "~utils/tier/hooks";
 import { PageType, trackPage } from "~utils/analytics";
 import { startSwapMonitoring } from "./utils/alarms/swap-monitor/swap-monitor-alarm.handler";
+import { HARDWARE_WALLET_API_NOT_SUPPORTED_ERR_MSG } from "~utils/wallets/wallets.constants";
 
 export function SwapReviewView() {
   const { navigate } = useLocation();
@@ -41,6 +42,7 @@ export function SwapReviewView() {
   const [isExecutingSwap, setIsExecutingSwap] = useState(false);
   const [swapData] = useSavedSwapData();
   const defiFeeDetails = useDefiFeeDetails();
+  const { setToast } = useToasts();
 
   const { sendToken, receiveToken, wanderFee, slippage, amountIn } = swapData || {};
 
@@ -162,6 +164,14 @@ export function SwapReviewView() {
       navigate(PopupPaths.SwapProgress);
     } catch (err) {
       log(LOG_GROUP.SWAP, "Error executing swap", err);
+      const errorMessage = err instanceof Error ? err.message : "Swap error. Please try again.";
+      setToast({
+        type: "error",
+        content: errorMessage.includes(HARDWARE_WALLET_API_NOT_SUPPORTED_ERR_MSG)
+          ? browser.i18n.getMessage("wallet_hardware_unsupported")
+          : browser.i18n.getMessage("swap_error"),
+        duration: 2400,
+      });
     } finally {
       setIsExecutingSwap(false);
     }
