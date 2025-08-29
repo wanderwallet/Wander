@@ -1,0 +1,176 @@
+import { constructTransaction, isSplitTransaction } from "../sign/transaction_builder.js";
+import { arconfettiIcon } from "../sign/utils.js";
+import { cleanUpChunks, getChunks } from "../sign/chunks.js";
+import type { BackgroundModuleFunction } from "../../background/background-modules";
+import { createData } from "@dha-team/arbundles";
+import { getPrice, uploadDataToTurbo } from "./uploader.js";
+import type { DispatchResult } from "./index.js";
+import { signedTxTags } from "../sign/tags.js";
+import { isString } from "typed-assert";
+import Arweave from "arweave";
+import { ensureAllowanceDispatch } from "./allowance.js";
+import BigNumber from "bignumber.js";
+import { checkIfUserNeedsToSign } from "../sign/sign_policy.js";
+import { isError } from "util";
+import { Application } from "../../../applications/application.class.js";
+import { ERR_MSG_USER_CANCELLED_AUTH } from "../../../auth/auth.constants.js";
+import { isSignatureOptions, isLocalWallet } from "../../../utils/assertions/assertions.js";
+import { createArweaveSignerWithOptions } from "../../../utils/signer/signer.utils.js";
+import { freeDecryptedWallet } from "../../../wallets/encryption.js";
+import { getActiveKeyfile } from "../../../wallets/index.js";
+
+type ReturnType = {
+  arConfetti: string | false;
+  res: DispatchResult;
+};
+
+const background: BackgroundModuleFunction<ReturnType> = async (
+  appData,
+  tx: unknown,
+  chunkCollectionID: unknown,
+  signatureOptions?: unknown,
+) => {
+  // validate input
+  isSplitTransaction(tx);
+  isString(chunkCollectionID);
+  if (signatureOptions) isSignatureOptions(signatureOptions);
+
+  // create client
+  const app = new Application(appData.url);
+  const arweave = new Arweave(await app.getGatewayConfig());
+
+  // grab the user's keyfile
+  let decryptedWallet = await getActiveKeyfile(appData);
+
+  // ensure that the currently selected
+  // wallet is not a local wallet
+  isLocalWallet(decryptedWallet);
+
+  let keyfile = decryptedWallet.keyfile;
+
+  // get chunks for transaction
+  const chunks = getChunks(chunkCollectionID, appData.url);
+
+  // reconstruct the transaction from the chunks
+  const transaction = arweave.transactions.fromRaw({
+    ...constructTransaction(tx, chunks || []),
+    owner: keyfile.n,
+  });
+
+  // clean up chunks
+  cleanUpChunks(chunkCollectionID);
+
+  // grab tx data and tags
+  const data = transaction.get("data", { decode: true, string: false });
+  // @ts-expect-error
+  const tags = (transaction.get("tags") as Tag[]).map((tag) => ({
+    name: tag.get("name", { decode: true, string: true }),
+    value: tag.get("value", { decode: true, string: true }),
+  }));
+
+  // add Wander tags to the tag list
+  tags.push(...signedTxTags);
+
+  // get allowance
+  const allowance = await app.getAllowance();
+
+  // always ask
+  // const alwaysAsk = allowance.enabled && allowance.limit.eq(BigNumber("0"));
+  const signPolicy = await app.getSignPolicy();
+  const alwaysAsk = checkIfUserNeedsToSign(signPolicy, transaction, decryptedWallet?.type);
+
+  // attempt to create a bundle
+  try {
+    // create bundlr tx as a data entry
+    const dataSigner = createArweaveSignerWithOptions(decryptedWallet.keyfile, signatureOptions);
+    const dataEntry = createData(data, dataSigner, { tags });
+
+    // check allowance
+    const price = await getPrice(dataEntry, await app.getBundler());
+
+    await ensureAllowanceDispatch(dataEntry, appData, allowance, decryptedWallet.keyfile, price, alwaysAsk);
+
+    // sign and upload bundler tx
+    await dataEntry.sign(dataSigner);
+    await uploadDataToTurbo(dataEntry, await app.getBundler());
+
+    // update allowance spent amount (in winstons)
+    // await updateAllowance(appData.url, price);
+
+    // show notification
+    // await signNotification(0, dataEntry.id, appData.url, "dispatch");
+
+    // remove wallet from memory
+    freeDecryptedWallet(keyfile);
+
+    return {
+      arConfetti: await arconfettiIcon(),
+      res: {
+        id: dataEntry.id,
+        type: "BUNDLED",
+      },
+    };
+  } catch (err) {
+    if (isError(err) && err.message === ERR_MSG_USER_CANCELLED_AUTH) {
+      freeDecryptedWallet(keyfile);
+
+      throw err;
+    }
+  }
+
+  try {
+    // grab the user's keyfile again:
+    decryptedWallet = await getActiveKeyfile(appData);
+
+    // ensure that the currently selected
+    // wallet is not a local wallet again:
+    isLocalWallet(decryptedWallet);
+
+    keyfile = decryptedWallet.keyfile;
+
+    // TODO: If there's an error in the first request, the previous (already accepted) AuthRequest's UI should probably
+    // reflect that. Maybe we could even reuse the same AuthRequest item instead of creating a separated one.
+
+    // sign & post if there is something wrong with turbo
+    // add Wander tags to the tx object
+    for (const arcTag of signedTxTags) {
+      transaction.addTag(arcTag.name, arcTag.value);
+    }
+    // calculate price
+    const price = BigNumber(transaction.reward).plus(transaction.quantity);
+
+    // ensure allowance
+    await ensureAllowanceDispatch(transaction, appData, allowance, decryptedWallet.keyfile, price, alwaysAsk);
+
+    // sign and upload
+    await arweave.transactions.sign(transaction, keyfile);
+    const uploader = await arweave.transactions.getUploader(transaction);
+
+    while (!uploader.isComplete) {
+      await uploader.uploadChunk();
+    }
+
+    // update allowance spent amount (in winstons)
+    // await updateAllowance(appData.url, price);
+
+    // show notification
+    // await signNotification(price, transaction.id, appData.url);
+
+    // remove wallet from memory
+    freeDecryptedWallet(keyfile);
+
+    return {
+      arConfetti: await arconfettiIcon(),
+      res: {
+        id: transaction.id,
+        type: "BASE",
+      },
+    };
+  } catch (err) {
+    freeDecryptedWallet(keyfile);
+
+    throw err;
+  }
+};
+
+export default background;

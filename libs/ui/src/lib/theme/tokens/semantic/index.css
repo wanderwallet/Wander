@@ -1,0 +1,9 @@
+/**
+ * SEMANTIC TOKENS
+ * 
+ * This file imports all semantic tokens (light and dark themes).
+ * Semantic tokens apply meaning to base tokens.
+ */
+
+@import "../themes/light.css";
+@import "../themes/dark.css";

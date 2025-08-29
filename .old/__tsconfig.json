@@ -1,0 +1,24 @@
+{
+  "extends": "plasmo/templates/tsconfig.base",
+  "exclude": ["node_modules", "wander-connect-sdk"],
+  "include": [
+    ".plasmo/index.d.ts",
+    ".plasmo/**/*",
+    "./**/*.ts",
+    "./**/*.tsx",
+    "./shim.d.ts",
+    "vite.config.js",
+    "vite.config.js"
+  ],
+  "compilerOptions": {
+    "paths": {
+      "~*": ["../.old-already-moved/src/*"],
+      "~isomorphic-messaging": ["../.old-already-moved/src/utils/messaging/strategies/extension/extension-messaging.strategy.ts"],
+      "~isomorphic-chunking": ["../.old-already-moved/src/utils/messaging/strategies/extension/extension-chunking.strategy.ts"]
+    },
+    "resolveJsonModule": true,
+    "baseUrl": ".",
+    "jsx": "react-jsx",
+    "moduleResolution": "bundler"
+  }
+}

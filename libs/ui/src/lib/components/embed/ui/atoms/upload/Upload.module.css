@@ -1,0 +1,62 @@
+@import "../../../tokens/index.css";
+
+.upload {
+  border-radius: var(--border-radius-lg);
+  border: 1px solid var(--color-copyable-border);
+  font-family: var(--font-family-serif);
+  overflow: hidden;
+  padding: var(--spacing-12) var(--spacing-6);
+  cursor: pointer;
+  width: auto;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform linear 150ms;
+}
+
+.upload__blurry {
+  filter: blur(2px);
+}
+
+.upload__full__width {
+  width: 100%;
+  max-width: 100%;
+  font-size: var(--font-size-md);
+  font-family: var(--font-family-serif);
+}
+
+.upload__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.upload__filename {
+  word-break: break-all;
+  text-align: center;
+  margin-bottom: var(--spacing-2);
+}
+
+.upload__description {
+  text-align: center;
+  text-wrap: balance;
+}
+
+.upload:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.upload:active {
+  transform: scale(0.95);
+  opacity: 0.8;
+}
+
+.upload:hover {
+  opacity: 0.8;
+}

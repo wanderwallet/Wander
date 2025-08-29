@@ -1,0 +1,32 @@
+.root {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--size, 16px);
+  height: var(--size, 16px);
+  animation: spin 0.5s linear infinite;
+
+  &.static {
+    position: relative;
+  }
+
+  &.absolute {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+}
+
+.icon {
+  font-size: var(--size, 16px);
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

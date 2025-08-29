@@ -1,0 +1,40 @@
+@import "../../../tokens/index.css";
+
+.wrapper {
+  height: var(--input-height);
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  border-radius: var(--input-border-radius);
+  background: var(--input-background);
+  overflow: hidden;
+  border: var(--input-border);
+  box-shadow: var(--input-shadow);
+  width: 100%;
+}
+
+.input {
+  padding: 0 8px;
+  flex: 1 1 100%;
+  color: var(--input-color);
+  border: none;
+
+  font-family: var(--font-family-serif);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-snug);
+  background-color: transparent;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  &:hover {
+  }
+
+  &:focus {
+    outline: none;
+  }
+}

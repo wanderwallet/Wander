@@ -1,3 +1,10 @@
+# Add files here to ignore them from prettier formatting
+/dist
+/coverage
+/.nx/cache
+/.nx/workspace-data
+
+# From the old repo .prettierignore file:
 node_modules
 build
 .plasmo

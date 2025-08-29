@@ -1,0 +1,14 @@
+.input {
+  height: var(--input-height);
+  border-radius: var(--input-border-radius);
+  background: var(--input-background);
+  border: var(--input-border);
+  color: var(--input-color);
+  font-family: var(--font-family-serif);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-snug);
+  width: 40px;
+  text-align: center;
+  outline: none;
+}

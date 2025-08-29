@@ -1,0 +1,24 @@
+/**
+ * BORDER TOKENS
+ * 
+ * Defines border radii and widths used throughout the application.
+ */
+
+:root {
+  /* Border radius */
+  --border-radius-none: 0;
+  --border-radius-sm: 0.125rem; /* 2px */
+  --border-radius-md: 0.25rem; /* 4px */
+  --border-radius-lg: 0.5rem; /* 8px */
+  --border-radius-xl: 0.75rem; /* 12px */
+  --border-radius-2xl: 1rem; /* 16px */
+  --border-radius-3xl: 1.5rem; /* 24px */
+  --border-radius-full: 9999px;
+
+  /* Border width */
+  --border-width-0: 0;
+  --border-width-1: 1px;
+  --border-width-2: 2px;
+  --border-width-4: 4px;
+  --border-width-8: 8px;
+}

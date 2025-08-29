@@ -1,24 +1,31 @@
 {
-  "extends": "plasmo/templates/tsconfig.base",
-  "exclude": ["node_modules", "wander-connect-sdk"],
-  "include": [
-    ".plasmo/index.d.ts",
-    ".plasmo/**/*",
-    "./**/*.ts",
-    "./**/*.tsx",
-    "./shim.d.ts",
-    "vite.config.js",
-    "vite.config.js"
-  ],
-  "compilerOptions": {
-    "paths": {
-      "~*": ["./src/*"],
-      "~isomorphic-messaging": ["./src/utils/messaging/strategies/extension/extension-messaging.strategy.ts"],
-      "~isomorphic-chunking": ["./src/utils/messaging/strategies/extension/extension-chunking.strategy.ts"]
+  "extends": "./tsconfig.base.json",
+  "compileOnSave": false,
+  "files": [],
+  "references": [
+    {
+      "path": "./apps/wander-connect-e2e"
     },
-    "resolveJsonModule": true,
-    "baseUrl": ".",
-    "jsx": "react-jsx",
-    "moduleResolution": "bundler"
-  }
+    {
+      "path": "./apps/wander-connect"
+    },
+    {
+      "path": "./apps/wander-be-e2e"
+    },
+    {
+      "path": "./apps/wander-be"
+    },
+    {
+      "path": "./libs/wander-connect-sdk"
+    },
+    {
+      "path": "./libs/isomorphic-messaging"
+    },
+    {
+      "path": "./libs/core"
+    },
+    {
+      "path": "./libs/ui"
+    }
+  ]
 }

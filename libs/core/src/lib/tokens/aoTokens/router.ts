@@ -1,0 +1,31 @@
+import { useState } from "react";
+import { getAoTokens } from "~tokens";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import { PersistentStorage, useStorage } from "~utils/storage/storage";
+
+export function useTokenIDs(): [string[], boolean] {
+  // all token ids
+  const [tokenIDs, setTokenIDs] = useState<string[]>([]);
+
+  // loading
+  const [loading, setLoading] = useState(true);
+
+  const [aoTokens] = useStorage<any[]>({
+    key: "ao_tokens",
+    instance: PersistentStorage,
+  });
+
+  useAsyncEffect(async () => {
+    setLoading(true);
+
+    try {
+      const aoTokens = await getAoTokens();
+      const aoTokenIds = aoTokens.map((token) => token.processId);
+      setTokenIDs(aoTokenIds);
+    } catch {}
+
+    setLoading(false);
+  }, [aoTokens]);
+
+  return [tokenIDs, loading];
+}

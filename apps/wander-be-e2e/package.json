@@ -1,0 +1,10 @@
+{
+  "name": "@org/wander-be-e2e",
+  "version": "0.0.1",
+  "private": true,
+  "nx": {
+    "implicitDependencies": [
+      "@org/wander-be"
+    ]
+  }
+}

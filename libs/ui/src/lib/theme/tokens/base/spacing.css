@@ -1,0 +1,22 @@
+/**
+ * SPACING TOKENS
+ * 
+ * These tokens define the spacing system used throughout the application.
+ * Follows an 8px scaling system for consistency.
+ */
+
+:root {
+  --spacing-0: 0;
+  --spacing-1: 4px; /* 0.25rem */
+  --spacing-2: 8px; /* 0.5rem */
+  --spacing-3: 12px; /* 0.75rem */
+  --spacing-4: 16px; /* 1rem */
+  --spacing-5: 20px; /* 1.25rem */
+  --spacing-6: 24px; /* 1.5rem */
+  --spacing-8: 32px; /* 2rem */
+  --spacing-10: 40px; /* 2.5rem */
+  --spacing-12: 48px; /* 3rem */
+  --spacing-16: 64px; /* 4rem */
+  --spacing-20: 80px; /* 5rem */
+  --spacing-24: 96px; /* 6rem */
+}
