@@ -118,8 +118,8 @@ export function UnpartitionedStateMissingEmbeddedView() {
 
       const localStorage = await LocalStorage.getInstance();
 
-      if (["rejected", "error"].includes(localStorage.status)) {
-        throw localStorage.error || new Error(COULD_NOT_ACCESS_UNPARTITIONED_STATE_ERR_MESSAGE);
+      if (["rejected", "error"].includes(localStorage.unpartitionedState.status)) {
+        throw localStorage.unpartitionedState.error || new Error(COULD_NOT_ACCESS_UNPARTITIONED_STATE_ERR_MESSAGE);
       }
 
       navigate(EmbeddedPaths.Auth);
@@ -147,7 +147,7 @@ export function UnpartitionedStateMissingEmbeddedView() {
       if (hasAccess) {
         const localStorage = await LocalStorage.getInstance();
 
-        if (!["rejected", "error"].includes(localStorage.status)) {
+        if (!["rejected", "error"].includes(localStorage.unpartitionedState.status)) {
           setIsRequestingPermission(true);
           navigate(EmbeddedPaths.Auth);
         }

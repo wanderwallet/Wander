@@ -1,5 +1,5 @@
 import { createSupabaseClient, createTRPCClient } from "embed-api";
-import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
+import { IS_EMBEDDED_APP, SUPABASE_AUTH_TOKEN_KEY_REGEXP } from "~utils/embedded/embedded.constants";
 import { LocalStorage } from "~iframe/storage/unpartitioned-storage/local-storage";
 import { isInsideIframe, EMBEDDED_CLIENT_ID, EMBEDDED_ANCESTOR_ORIGIN, EMBEDDED_SERVER_BASE_URL } from "./iframe.utils";
 import { ExtensionStorage } from "~utils/storage";
@@ -66,10 +66,13 @@ export async function signOut(close = true) {
     console.error("Error signing out:", err);
 
     const storage = await LocalStorage.getInstance();
+    const storageKeys = await storage.keys();
+    const supabaseAuthTokenKeys = storageKeys.filter((key) => SUPABASE_AUTH_TOKEN_KEY_REGEXP.test(key));
+    const supabaseAuthTokenRemovePromises = supabaseAuthTokenKeys.map((supabaseAuthTokenKey) => {
+      return storage.removeItem(supabaseAuthTokenKey);
+    });
 
-    const supabaseAuthTokenKeys = storage.keys().filter((key) => key.endsWith("-auth-token"));
-
-    storage.removeItems(supabaseAuthTokenKeys);
+    await Promise.all(supabaseAuthTokenRemovePromises);
 
     window.location.href = "#/";
     window.location.reload();
@@ -84,8 +87,8 @@ export async function signOut(close = true) {
 
 export async function checkStoredSupabaseAuthToken() {
   const storage = await LocalStorage.getInstance();
-
-  const supabaseAuthTokenKeys = storage.keys().filter((key) => key.endsWith("-auth-token"));
+  const storageKeys = await storage.keys();
+  const supabaseAuthTokenKeys = storageKeys.filter((key) => SUPABASE_AUTH_TOKEN_KEY_REGEXP.test(key));
 
   return supabaseAuthTokenKeys.length > 0;
 }
@@ -151,8 +154,8 @@ export async function getSupabaseClient() {
           persistSession: true,
           detectSessionInUrl: true,
           storage: {
-            getItem: (key: string) => storage.getRaw(key),
-            setItem: (key: string, value: string) => storage.setRaw(key, value),
+            getItem: (key: string) => storage.getItem(key),
+            setItem: (key: string, value: string) => storage.setItem(key, value),
             removeItem: (key: string) => storage.removeItem(key),
           },
         },
