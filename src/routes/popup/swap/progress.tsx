@@ -137,12 +137,12 @@ export function SwapProgressView() {
           <Flex direction="column" gap={16} padding="0 8px" style={{ marginTop: -4 }} width="100%">
             <Flex direction="row" justify="center" align="center" gap={16}>
               <Flex direction="row" align="center" gap={4}>
-                <TokenLogo size={24} token={sendToken} />
+                <TokenLogo size={24} token={sendToken} style={{ flexShrink: 0 }} />
                 <TokenValueWithTooltip formattedValue={valueInFormatted} ticker={sendToken?.Ticker} textSize="base" />
               </Flex>
               <ArrowRight style={{ width: 24, height: 24, color: theme.secondaryText }} />
               <Flex direction="row" align="center" gap={4}>
-                <TokenLogo size={24} token={receiveToken} />
+                <TokenLogo size={24} token={receiveToken} style={{ flexShrink: 0 }} />
                 <TokenValueWithTooltip
                   formattedValue={valueOutFormatted}
                   ticker={receiveToken?.Ticker}
