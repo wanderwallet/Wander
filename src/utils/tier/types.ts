@@ -18,6 +18,8 @@ export type ActiveTier = {
   totalHolders: number;
 };
 
+export type ActiveTierFromApi = Omit<ActiveTier, "tier"> & { tier: number };
+
 export type DefiFeeDetails = {
   originalFeePercent: string;
   finalFeePercent: string;
