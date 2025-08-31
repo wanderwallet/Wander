@@ -82,18 +82,16 @@ export async function processWanderFee(swap: SwapData): Promise<boolean> {
       // Convert fee amount to the token's base units
       const quantity = feeValue.shiftedBy(swap.sendToken.Denomination).toFixed(0, BigNumber.ROUND_DOWN);
 
-      const balance = await queryClient.fetchQuery({
-        queryKey: ["tokenBalance", swap.sendToken.processId, swap.swapper],
-        queryFn: async () => {
-          try {
+      const balance = await queryClient
+        .fetchQuery({
+          queryKey: ["tokenBalance", swap.sendToken.processId, swap.swapper],
+          queryFn: async () => {
             const balance = await fetchTokenBalance(swap.sendToken, swap.swapper);
             return balance || "0";
-          } catch {
-            return "0";
-          }
-        },
-        ...defaultOptions,
-      });
+          },
+          ...defaultOptions,
+        })
+        .catch(() => "0");
 
       if (balance && BigNumber(balance).shiftedBy(swap.sendToken.Denomination).lt(quantity)) {
         log(LOG_GROUP.SWAP, `Not enough token ${swap.sendToken.Ticker} balance to process swap fee`);
