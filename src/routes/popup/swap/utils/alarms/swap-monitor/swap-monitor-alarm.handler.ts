@@ -9,6 +9,9 @@ import { processWanderFee, cleanupFeeProcessingMutex, trackSwapAnalytics } from 
 import { OrderError } from "../../dex/dex.utils";
 import { isWalletUnlocked } from "~wallets/auth";
 import { AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
+import { fetchTokenByProcessId, type TokenInfo } from "~tokens/aoTokens/ao";
+import { ExtensionStorage } from "~utils/storage";
+import { getAoTokens } from "~tokens";
 
 const SWAP_MONITOR_ALARM_NAME = "swap-monitor";
 const SWAP_CHECK_INTERVAL_MINUTES = 2; // Check every 2 minutes
@@ -166,6 +169,9 @@ async function handleSwapSuccess(swap: SwapData) {
     if (swap.transferId) {
       await markSwapForCompletionDisplay(swap.transferId);
     }
+
+    // import receiving token
+    await importToken(swap.receiveToken);
 
     log(LOG_GROUP.SWAP, `Swap ${swap.transferId} processed completely`);
   } catch (error) {
@@ -430,3 +436,34 @@ async function markSwapForCompletionDisplay(transferId: string) {
     log(LOG_GROUP.SWAP, `Failed to mark swap ${transferId} for completion display`, error);
   }
 }
+
+const importToken = async (token: TokenInfo) => {
+  try {
+    // Validate required fields first before doing any async operations
+    if (!token.Name || !token.Ticker || isNaN(+token.Denomination)) return;
+
+    const aoTokens = await getAoTokens();
+    if (aoTokens.some(({ processId }) => processId === token.processId)) return;
+
+    let tokenToImport: TokenInfo = {
+      Name: token.Name,
+      Ticker: token.Ticker,
+      Denomination: token.Denomination,
+      Logo: token.Logo,
+      processId: token.processId,
+      type: "asset",
+    };
+
+    if (!tokenToImport.Logo) {
+      const tokenInfo = await fetchTokenByProcessId(token.processId);
+      tokenToImport = { ...tokenToImport, Logo: tokenInfo.Logo };
+    }
+
+    if (!tokenToImport.Name || !tokenToImport.Ticker || isNaN(+tokenToImport.Denomination)) return;
+
+    aoTokens.push(tokenToImport);
+    await ExtensionStorage.set("ao_tokens", aoTokens);
+  } catch {
+    log(LOG_GROUP.SWAP, "Error importing token: ", token);
+  }
+};
