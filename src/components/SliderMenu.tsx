@@ -8,6 +8,7 @@ import styled from "styled-components";
 interface SliderMenuProps {
   title?: string;
   hasHeader?: boolean;
+  scrollable?: boolean;
   isOpen: boolean;
   onClose?: () => void;
   paddingHorizontal?: number;
@@ -25,6 +26,7 @@ interface SliderMenuProps {
 export default function SliderMenu({
   title,
   hasHeader = true,
+  scrollable = true,
   isOpen,
   onClose,
   paddingHorizontal,
@@ -55,6 +57,7 @@ export default function SliderMenu({
       />
 
       <Wrapper
+        scrollable={scrollable}
         fullscreen={fullscreen}
         height={height}
         maxHeight={maxHeight}
@@ -122,6 +125,7 @@ const Wrapper = styled(motion.div)<{
   height?: number | string;
   maxHeight?: number | string;
   fullscreen?: boolean;
+  scrollable?: boolean;
 }>`
   position: fixed;
   bottom: 0;
@@ -134,7 +138,7 @@ const Wrapper = styled(motion.div)<{
   flex-direction: column;
   width: 377px;
   z-index: 1000;
-  overflow: scroll;
+  overflow: ${({ scrollable }) => (scrollable ? "scroll" : "visible")};
   background-color: ${({ theme }) => (theme.displayTheme === "light" ? "#ffffff" : "#1B1B1B")};
   border-radius: ${({ fullscreen }) => (fullscreen ? "0px" : "24px 24px 0px 0px")};
   padding: ${({ paddingVertical = 24, paddingHorizontal = 24 }) => `${paddingVertical}px ${paddingHorizontal}px`};
