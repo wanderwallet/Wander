@@ -142,9 +142,8 @@ const SelectorWrapper = styled.div`
 `;
 
 const TokenListContainer = styled.div`
-  max-height: 60vh;
+  height: 65vh;
   overflow-y: auto;
-  padding-right: 8px;
 
   &::-webkit-scrollbar {
     width: 4px;
