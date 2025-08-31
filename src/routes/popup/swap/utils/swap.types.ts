@@ -150,6 +150,7 @@ export interface SwapData {
   amountIn: string;
   swapper: string;
   noteSettle?: string; // For Permaswap
+  debitNoticeId?: string; // For Vento vAR -> AR
   tier: Tier;
   wanderFeeSent?: boolean;
   analyticsSent?: boolean;

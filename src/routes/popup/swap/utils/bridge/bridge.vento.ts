@@ -24,21 +24,25 @@ import { AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 import { createDataItemSigner } from "~tokens/aoTokens/ao";
 import type { DecodedTag } from "~api/modules/sign/tags";
 import BigNumber from "bignumber.js";
-import { OrderError } from "../dex/dex.utils";
+import { getLinkedMessages, OrderError } from "../dex/dex.utils";
 
 export const VENTO_BRIDGE_ADDRESS = "mFRKcHsO6Tlv2E2wZcrcbv3mmzxzD7vYPbyybI3KCVA";
 
 /**
  * Fetch the result of a swap message
  */
-export async function readSwapResult({ orderId }: ReadSwapResult): Promise<ReadSwapResultResponse> {
-  const transaction = await getVentoBridgeTransaction(orderId);
+export async function readSwapResult({
+  orderId,
+  debitNoticeId,
+  isAo,
+}: ReadSwapResult): Promise<ReadSwapResultResponse> {
+  const transaction = await getVentoBridgeTransaction(debitNoticeId || orderId, isAo);
 
   if (transaction.status === "failed") {
     throw new OrderError("Failed to bridge token");
   }
 
-  if (transaction.failureReason && transaction.failureReason !== "") {
+  if (transaction.failureReason) {
     throw new OrderError(transaction.failureReason);
   }
 
@@ -94,6 +98,7 @@ export async function executeSwap({
     const activeAddress = await getActiveAddress();
 
     let transferId: string;
+    let debitNoticeId: string | undefined = undefined;
 
     if (tokenIn === AR_PROCESS_ID) {
       const { result: transaction, arweave } = await retryWithGateways((arweave) =>
@@ -155,12 +160,24 @@ export async function executeSwap({
         log(LOG_GROUP.SWAP, transferError);
         throw new Error(transferError);
       }
+
+      debitNoticeId = await retryWithDelay(
+        async () => {
+          const messages = await getLinkedMessages(undefined, undefined, false, transferId);
+          const debitNotice = messages.find((msg) => msg.tags["Action"] === "Debit-Notice");
+          if (!debitNotice) throw new Error("Debit notice not found");
+          return debitNotice.id;
+        },
+        20,
+        1000,
+        (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 30000),
+      ).catch(() => undefined);
     }
 
     // Invalidate transfered token balance
     queryClient.invalidateQueries({ queryKey: ["tokenBalance", tokenIn, activeAddress] });
 
-    return { transferId };
+    return { transferId, debitNoticeId };
   } catch (err) {
     log(LOG_GROUP.SWAP, "Error executing swap", err);
     throw err;
@@ -185,7 +202,12 @@ export async function getLiquidity({ poolId, tokenIn, tokenOut }: GetLiquidityPa
 
 export async function waitForSwapResult(params: ReadSwapResult): Promise<WaitForSwapResultResponse> {
   try {
-    const result = await retryWithDelay(() => readSwapResult(params), 1000, 300000);
+    const result = await retryWithDelay(
+      () => readSwapResult(params),
+      1000,
+      2000,
+      (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    );
 
     return { success: true, result };
   } catch (err) {

@@ -124,7 +124,7 @@ export function usePoolForTokenPair({
       const wanderFee = BigNumber(amountIn)
         .multipliedBy(wanderFeePercent)
         .dividedBy(100)
-        .toFixed(0, BigNumber.ROUND_FLOOR);
+        .toFixed(0, BigNumber.ROUND_DOWN);
 
       if (isAoxBridgeTokenPair(tokenIn, tokenOut)) {
         const validationError = validateAoxBridgeTransaction(amountIn, wanderFee, aoxBridgeInfo, tokenIn, tokenOut);
@@ -310,7 +310,7 @@ export function usePoolQuote({
       const wanderFee = BigNumber(amountIn)
         .multipliedBy(wanderFeePercent)
         .dividedBy(100)
-        .toFixed(0, BigNumber.ROUND_FLOOR);
+        .toFixed(0, BigNumber.ROUND_DOWN);
 
       const params = {
         tokenIn,

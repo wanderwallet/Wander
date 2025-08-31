@@ -137,7 +137,7 @@ export function SwapReviewView() {
         { name: "X-Amount-Out", value: selectedPoolInfo.quoteOutput.amountOut },
       ];
 
-      const { transferId, noteSettle } = await executeSwapFn(poolType, {
+      const { transferId, noteSettle, debitNoticeId } = await executeSwapFn(poolType, {
         tokenIn: sendToken?.processId,
         tokenOut: receiveToken?.processId,
         amountIn: selectedPoolInfo.quoteOutput.transferAmountIn,
@@ -151,6 +151,7 @@ export function SwapReviewView() {
         selectedPoolInfo,
         transferId,
         noteSettle,
+        debitNoticeId,
         timestamp: Date.now(),
         status: "pending" as const,
         monitoringStarted: true,

@@ -8,6 +8,7 @@ import { processWanderFee, cleanupFeeProcessingMutex, trackSwapAnalytics } from 
 // import { sendSwapNotification } from "./swap-notifications";
 import { OrderError } from "../../dex/dex.utils";
 import { isWalletUnlocked } from "~wallets/auth";
+import { AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 
 const SWAP_MONITOR_ALARM_NAME = "swap-monitor";
 const SWAP_CHECK_INTERVAL_MINUTES = 2; // Check every 2 minutes
@@ -99,6 +100,8 @@ async function checkSingleSwap(swap: SwapData) {
       orderId: swap.transferId,
       noteSettle: swap.noteSettle,
       swapper: swap.swapper,
+      debitNoticeId: swap.debitNoticeId,
+      isAo: swap.sendToken?.processId !== AR_PROCESS_ID,
     });
     const expectedOutput = swap.selectedPoolInfo.quoteOutput.amountOut;
     swap.selectedPoolInfo.quoteOutput.amountOut = result?.amountOut || expectedOutput;

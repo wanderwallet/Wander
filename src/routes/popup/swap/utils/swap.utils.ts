@@ -35,6 +35,7 @@ import { permaswap } from "./dex/dex.permaswap";
 import { vento } from "./bridge/bridge.vento";
 import type { GetExpectedOutputParams, ReadSwapResult, SwapExecutionParams } from "./dex/dex.types";
 import { getAoxBridgeTransaction, getVentoBridgeTransaction } from "./bridge/bridge.utils";
+import { getLinkedMessages } from "./dex/dex.utils";
 
 const BOTEGA_POOL_OPTIONS = {
   headers: {
@@ -400,14 +401,22 @@ export async function getSwapTransaction(txId: string) {
           ],
         );
       } else {
-        const confirmationTx = await getVentoBridgeTransaction(txId);
+        const isAo = getTagValue("Data-Protocol", tags) === "ao";
+        const isBurn = getTagValue("Action", tags) === "Burn";
+        let finalTxId = txId;
+        if (isBurn) {
+          const messages = await getLinkedMessages(undefined, undefined, false, txId);
+          const debitNotice = messages.find((msg) => msg.tags["Action"] === "Debit-Notice");
+          finalTxId = debitNotice?.id || txId;
+        }
+        const confirmationTx = await getVentoBridgeTransaction(finalTxId, isAo);
         tx.node.tags.push(
           ...[
             { name: "Bridge-Status", value: confirmationTx.status },
             { name: "To-Quantity", value: confirmationTx.outputAmountRaw },
             {
               name: "OrderStatus",
-              value: confirmationTx.failureReason && confirmationTx.failureReason !== "" ? "Error" : "Swapped",
+              value: confirmationTx.failureReason || confirmationTx.status === "failed" ? "Error" : "Swapped",
             },
           ],
         );
