@@ -215,7 +215,11 @@ export function SwapReviewView() {
               </Text>
               <Flex direction="row" align="center" gap={4}>
                 <TokenLogo size={24} token={sendToken} />
-                <TokenValueWithTooltip formattedValue={valueInFormatted} ticker={sendToken?.Ticker} />
+                <TokenValueWithTooltip
+                  formattedValue={valueInFormatted}
+                  ticker={sendToken?.Ticker}
+                  tooltipPosition="bottom"
+                />
               </Flex>
             </Flex>
             <Flex direction="column" gap={8}>
