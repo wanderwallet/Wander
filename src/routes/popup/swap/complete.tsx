@@ -79,7 +79,7 @@ export function SwapCompleteView() {
   if (!swapData) {
     return (
       <>
-        <HeadV2 title={browser.i18n.getMessage("review")} />
+        <HeadV2 title={browser.i18n.getMessage("swap_complete")} />
         <Wrapper>
           <WrapperContent>
             <Flex direction="row" gap={8} align="center" justify="center" style={{ height: "100%" }}>
