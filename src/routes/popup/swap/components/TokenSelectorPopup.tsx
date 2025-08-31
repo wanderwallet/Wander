@@ -131,6 +131,7 @@ const TokenSelectorScreen = ({ onClose, updateToken, tokenSelectorType, filterTo
             </>
           )}
         </Flex>
+        <Spacer y={1.5} />
       </TokenListContainer>
     </SelectorWrapper>
   );
