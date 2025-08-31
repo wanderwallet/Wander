@@ -17,7 +17,7 @@ import { isLocalWallet } from "~utils/assertions";
 import { retryWithDelay } from "~utils/promises/retry";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { queryClient } from "~utils/tanstack";
-import { getVentoBridgeTransaction } from "./bridge.utils";
+import { getVentoBridgeInfo, getVentoBridgeTransaction } from "./bridge.utils";
 import { retryWithGateways } from "~gateways/wayfinder";
 import browser from "webextension-polyfill";
 import { AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
@@ -25,6 +25,7 @@ import { createDataItemSigner } from "~tokens/aoTokens/ao";
 import type { DecodedTag } from "~api/modules/sign/tags";
 import BigNumber from "bignumber.js";
 import { getLinkedMessages, OrderError } from "../dex/dex.utils";
+import { defaultOptions } from "~tokens/hooks";
 
 export const VENTO_BRIDGE_ADDRESS = "mFRKcHsO6Tlv2E2wZcrcbv3mmzxzD7vYPbyybI3KCVA";
 
@@ -61,10 +62,16 @@ export async function getExpectedOutput({
   amountIn,
   wanderFee,
 }: GetExpectedOutputParams): Promise<GetExpectedOutputResponse> {
+  const bridgeInfo = await queryClient.fetchQuery({
+    queryKey: ["vento-bridge-info"],
+    queryFn: getVentoBridgeInfo,
+    ...defaultOptions,
+  });
+
   const isARToVAR = tokenIn === AR_PROCESS_ID;
   const amountInBN = BigNumber(amountIn);
-  // const mintOrBurnFee = amountInBN.dividedBy(100).toFixed(0, BigNumber.ROUND_DOWN); // 1% fee
-  const mintOrBurnFee = "0"; // 0% fee
+  const bridgeFeeRate = bridgeInfo.bridgeFeeRate || 0;
+  const mintOrBurnFee = amountInBN.multipliedBy(bridgeFeeRate).toFixed(0, BigNumber.ROUND_DOWN);
   const providerFee = BigNumber(mintOrBurnFee);
   const totalFee = BigNumber(mintOrBurnFee).plus(wanderFee);
   const transferAmountIn = amountInBN.minus(wanderFee).toFixed(0, BigNumber.ROUND_DOWN);

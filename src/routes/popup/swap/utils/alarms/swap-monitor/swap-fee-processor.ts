@@ -83,7 +83,7 @@ export async function processWanderFee(swap: SwapData): Promise<boolean> {
       const quantity = feeValue.shiftedBy(swap.sendToken.Denomination).toFixed(0, BigNumber.ROUND_DOWN);
 
       const balance = await queryClient.fetchQuery({
-        queryKey: ["tokenBalance", AO_PROCESS_ID, swap.swapper],
+        queryKey: ["tokenBalance", swap.sendToken.processId, swap.swapper],
         queryFn: async () => {
           try {
             const balance = await fetchTokenBalance(swap.sendToken, swap.swapper);

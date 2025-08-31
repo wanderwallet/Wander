@@ -301,10 +301,17 @@ export function SwapReviewView() {
           <Button
             style={{ flex: 1 }}
             disabled={isExecutingSwap || isLoading || isNetworkFeeLoading}
-            loading={isExecutingSwap || isLoading}
             onClick={handleSwap}
             fullWidth>
-            {browser.i18n.getMessage("swap")}
+            {isExecutingSwap ? (
+              <>
+                {browser.i18n.getMessage("submitting")} <Loading style={{ marginLeft: 4 }} />
+              </>
+            ) : isLoading ? (
+              <Loading />
+            ) : (
+              browser.i18n.getMessage("swap")
+            )}
           </Button>
         </Flex>
       </Wrapper>

@@ -13,19 +13,19 @@ import BigNumber from "bignumber.js";
 import { useLocation } from "~wallets/router/router.utils";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
-import { getActiveAddress } from "~wallets";
-import { queryClient } from "~utils/tanstack";
 import { PoolTypeEnum } from "./utils/swap.constants";
 import { useSavedSwapData } from "./utils/swap.hooks";
 import { AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 import { trackPage, PageType } from "~utils/analytics";
 import { swapsArray, waitForSwapResultFn } from "./utils/swap.utils";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
+import { useQueryClient } from "@tanstack/react-query";
 
 export function SwapProgressView() {
   const theme = useTheme();
   const { navigate } = useLocation();
   const [swapData] = useSavedSwapData();
+  const queryClient = useQueryClient();
 
   const { sendToken, receiveToken, amountIn, selectedPoolInfo, transferId, noteSettle, debitNoticeId, swapper } =
     swapData || {};
@@ -86,9 +86,8 @@ export function SwapProgressView() {
         isAo: sendToken?.processId !== AR_PROCESS_ID,
       });
       if (success) {
-        const activeAddress = await getActiveAddress();
-        queryClient.invalidateQueries({ queryKey: ["tokenBalance", receiveToken?.processId, activeAddress] });
-        queryClient.invalidateQueries({ queryKey: ["tokenBalance", sendToken?.processId, activeAddress] });
+        await queryClient.invalidateQueries({ queryKey: ["tokenBalance", receiveToken?.processId, swapper] });
+        await queryClient.invalidateQueries({ queryKey: ["tokenBalance", sendToken?.processId, swapper] });
 
         // Update swap status in storage
         await swapsArray.updateWhere(
@@ -111,7 +110,7 @@ export function SwapProgressView() {
     } catch (error) {
       log(LOG_GROUP.SWAP, "Error checking swap status in progress view", error);
     }
-  }, [transferId, selectedPoolInfo, noteSettle, swapper, debitNoticeId, sendToken]);
+  }, [transferId, selectedPoolInfo, noteSettle, swapper, debitNoticeId, sendToken, receiveToken, queryClient]);
 
   useEffect(() => {
     trackPage(PageType.SWAP_PROGRESS);

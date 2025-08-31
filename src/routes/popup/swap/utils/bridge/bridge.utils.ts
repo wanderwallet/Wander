@@ -50,9 +50,10 @@ export async function getVentoBridgeInfo(): Promise<VentoBridgeInfoResult> {
   const healthInfo = (await healthResponse.json()) as VentoHealthInfo;
 
   const minBridgeAmount = bridgeInfo.MININUM_ARWEAVE_BRIDGE;
+  const bridgeFeeRate = bridgeInfo.FEES.AR;
   const isHealthy = healthInfo.status === "healthy" && healthInfo.apiStatus === 200;
 
-  return { minBridgeAmount, bridge: PoolTypeEnum.VENTO, isHealthy };
+  return { minBridgeAmount, bridge: PoolTypeEnum.VENTO, isHealthy, bridgeFeeRate };
 }
 
 export async function getAoxBridgeTransaction(txId: string) {

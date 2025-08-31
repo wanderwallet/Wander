@@ -1,7 +1,7 @@
 import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import { getExpectedOutputFn, getPools, getPriceImpact, getSwapTransaction, processToken, toFixed } from "./swap.utils";
 import { defaultOptions, useAoTokens } from "~tokens/hooks";
-import { useMemo, useCallback, useState, useEffect } from "react";
+import { useMemo, useCallback, useState } from "react";
 import type {
   ParsedSwapTransaction,
   PoolType,
@@ -32,14 +32,12 @@ import { retryWithGateways } from "~gateways/wayfinder";
 import { useAoxBridgeInfo, useVentoBridgeInfo } from "./bridge/bridge.hooks";
 import { PoolTypeEnum, RESERVE_TIER_ID, SWAP_DISABLED_FOR_LOWER_TIERS } from "./swap.constants";
 import {
-  AOX_BRIDGE_TOKEN_IDS,
   getAoxBridgeTransactions,
   getVentoBridgeTransactions,
   isAoxBridgeTokenPair,
   isVentoBridgeTokenPair,
   validateAoxBridgeTransaction,
   validateVentoBridgeTransaction,
-  VENTO_BRIDGE_TOKEN_IDS,
 } from "./bridge/bridge.utils";
 import { getBotegaTransactions, getPermaswapTransactions } from "./dex/dex.utils";
 import { useActiveAddress } from "~wallets/hooks";
@@ -50,6 +48,8 @@ import type { DefiFeeDetails } from "~utils/tier/types";
 import browser from "webextension-polyfill";
 import { useActiveTier } from "~utils/tier/hooks";
 import { tierNameToId, TierTypes } from "~utils/tier/constants";
+
+const TEN_SECONDS_MS = 10000;
 
 export function usePools() {
   return useQuery({
@@ -241,6 +241,7 @@ export function usePoolForTokenPair({
         quoteOutput: finalOutput,
         priceImpact,
       });
+      TempTransactionStorage.set("last_swap_quote_timestamp", Date.now());
       setError(null);
     } catch (error) {
       log(LOG_GROUP.SWAP, "Error fetching pool for token pair", error);
@@ -358,7 +359,7 @@ export function usePoolQuote({
     }
   }, [tokenIn, tokenOut, slippage, amountIn, poolId, poolType, wanderFeePercent]);
 
-  useEffect(() => {
+  useAsyncEffect(async () => {
     if (
       !tokenIn ||
       !tokenOut ||
@@ -367,17 +368,32 @@ export function usePoolQuote({
       !poolId ||
       !poolType ||
       stopFetching ||
-      (AOX_BRIDGE_TOKEN_IDS.has(tokenIn) && AOX_BRIDGE_TOKEN_IDS.has(tokenOut)) ||
-      (VENTO_BRIDGE_TOKEN_IDS.has(tokenIn) && VENTO_BRIDGE_TOKEN_IDS.has(tokenOut))
+      isAoxBridgeTokenPair(tokenIn, tokenOut) ||
+      isVentoBridgeTokenPair(tokenIn, tokenOut)
     ) {
       return;
     }
 
-    // fetchPoolQuote();
+    // Check if enough time has passed since last quote from review screen
+    let timeout: NodeJS.Timeout = undefined;
+    const now = Date.now();
+    const lastQuoteTime = (await TempTransactionStorage.get<number>("last_swap_quote_timestamp")) || now;
+    const timeSinceLastQuote = now - lastQuoteTime;
 
-    const interval = setInterval(fetchPoolQuote, 10000);
+    // Fetch immediately if enough time passed, otherwise wait remaining time
+    if (timeSinceLastQuote >= TEN_SECONDS_MS) {
+      fetchPoolQuote();
+    } else {
+      timeout = setTimeout(fetchPoolQuote, TEN_SECONDS_MS - timeSinceLastQuote);
+    }
 
-    return () => clearInterval(interval);
+    // Set up recurring fetch
+    const interval = setInterval(fetchPoolQuote, TEN_SECONDS_MS);
+
+    return () => {
+      clearInterval(interval);
+      if (timeout) clearTimeout(timeout);
+    };
   }, [fetchPoolQuote, tokenIn, tokenOut, slippage, amountIn, poolId, poolType, stopFetching]);
 
   return { selectedPoolInfo, isLoading, error };

@@ -4349,5 +4349,9 @@
     "free": {
       "message": "免费！",
       "description": "Free text"
+    },
+    "submitting": {
+      "message": "提交中",
+      "description": "Submitting text"
     }
 }
