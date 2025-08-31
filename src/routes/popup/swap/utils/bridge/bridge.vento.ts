@@ -63,7 +63,8 @@ export async function getExpectedOutput({
 }: GetExpectedOutputParams): Promise<GetExpectedOutputResponse> {
   const isARToVAR = tokenIn === AR_PROCESS_ID;
   const amountInBN = BigNumber(amountIn);
-  const mintOrBurnFee = amountInBN.dividedBy(100).toFixed(0, BigNumber.ROUND_DOWN); // 1% fee
+  // const mintOrBurnFee = amountInBN.dividedBy(100).toFixed(0, BigNumber.ROUND_DOWN); // 1% fee
+  const mintOrBurnFee = "0"; // 0% fee
   const providerFee = BigNumber(mintOrBurnFee);
   const totalFee = BigNumber(mintOrBurnFee).plus(wanderFee);
   const transferAmountIn = amountInBN.minus(wanderFee).toFixed(0, BigNumber.ROUND_DOWN);
