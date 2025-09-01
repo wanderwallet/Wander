@@ -13,24 +13,25 @@ import BigNumber from "bignumber.js";
 import { useLocation } from "~wallets/router/router.utils";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
-import { getActiveAddress } from "~wallets";
-import { queryClient } from "~utils/tanstack";
 import { PoolTypeEnum } from "./utils/swap.constants";
 import { useSavedSwapData } from "./utils/swap.hooks";
 import { AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 import { trackPage, PageType } from "~utils/analytics";
 import { swapsArray, waitForSwapResultFn } from "./utils/swap.utils";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
+import { useQueryClient } from "@tanstack/react-query";
 
 export function SwapProgressView() {
   const theme = useTheme();
   const { navigate } = useLocation();
   const [swapData] = useSavedSwapData();
+  const queryClient = useQueryClient();
 
-  const { sendToken, receiveToken, amountIn, selectedPoolInfo, transferId } = swapData || {};
+  const { sendToken, receiveToken, amountIn, selectedPoolInfo, transferId, noteSettle, debitNoticeId, swapper } =
+    swapData || {};
 
   const swap = useMemo(() => {
-    const poolType = selectedPoolInfo?.pool?.poolType;
+    const poolType = selectedPoolInfo?.poolType;
     const isBridge = poolType === PoolTypeEnum.AOX || poolType === PoolTypeEnum.VENTO;
     const isAo = sendToken?.processId !== AR_PROCESS_ID;
     return { isBridge, isAo };
@@ -74,14 +75,19 @@ export function SwapProgressView() {
       return;
     }
 
-    const poolType = selectedPoolInfo?.pool?.poolType;
+    const poolType = selectedPoolInfo?.poolType;
 
     try {
-      const { success, result } = await waitForSwapResultFn(poolType, transferId);
+      const { success, result } = await waitForSwapResultFn(poolType, {
+        orderId: transferId,
+        noteSettle,
+        swapper,
+        debitNoticeId,
+        isAo: sendToken?.processId !== AR_PROCESS_ID,
+      });
       if (success) {
-        const activeAddress = await getActiveAddress();
-        queryClient.invalidateQueries({ queryKey: ["tokenBalance", receiveToken?.processId, activeAddress] });
-        queryClient.invalidateQueries({ queryKey: ["tokenBalance", sendToken?.processId, activeAddress] });
+        await queryClient.invalidateQueries({ queryKey: ["tokenBalance", receiveToken?.processId, swapper] });
+        await queryClient.invalidateQueries({ queryKey: ["tokenBalance", sendToken?.processId, swapper] });
 
         // Update swap status in storage
         await swapsArray.updateWhere(
@@ -104,7 +110,7 @@ export function SwapProgressView() {
     } catch (error) {
       log(LOG_GROUP.SWAP, "Error checking swap status in progress view", error);
     }
-  }, [transferId, selectedPoolInfo]);
+  }, [transferId, selectedPoolInfo, noteSettle, swapper, debitNoticeId, sendToken, receiveToken, queryClient]);
 
   useEffect(() => {
     trackPage(PageType.SWAP_PROGRESS);
@@ -113,7 +119,7 @@ export function SwapProgressView() {
   if (!swapData) {
     return (
       <>
-        <HeadV2 title={browser.i18n.getMessage("review")} />
+        <HeadV2 title={browser.i18n.getMessage("swap_in_progress")} />
         <Wrapper>
           <WrapperContent>
             <Flex direction="row" gap={8} align="center" justify="center" style={{ height: "100%" }}>
@@ -134,15 +140,15 @@ export function SwapProgressView() {
       <Wrapper>
         <WrapperContent>
           <WanderLoading />
-          <Flex direction="column" gap={16} padding="0 8px" style={{ marginTop: -6 }}>
+          <Flex direction="column" gap={16} padding="0 8px" style={{ marginTop: -4 }} width="100%">
             <Flex direction="row" justify="center" align="center" gap={16}>
               <Flex direction="row" align="center" gap={4}>
-                <TokenLogo size={24} token={sendToken} />
+                <TokenLogo size={24} token={sendToken} style={{ flexShrink: 0 }} />
                 <TokenValueWithTooltip formattedValue={valueInFormatted} ticker={sendToken?.Ticker} textSize="base" />
               </Flex>
-              <ArrowRight style={{ width: 24, height: 24, color: theme.secondaryText }} />
+              <ArrowRight style={{ width: 24, height: 24, color: theme.secondaryText, flexShrink: 0 }} />
               <Flex direction="row" align="center" gap={4}>
-                <TokenLogo size={24} token={receiveToken} />
+                <TokenLogo size={24} token={receiveToken} style={{ flexShrink: 0 }} />
                 <TokenValueWithTooltip
                   formattedValue={valueOutFormatted}
                   ticker={receiveToken?.Ticker}
@@ -161,7 +167,7 @@ export function SwapProgressView() {
           </Flex>
         </WrapperContent>
 
-        <Flex direction="column" gap={12}>
+        <Flex direction="column" gap={12} padding="0 24px">
           {swap.isBridge && (
             <Button fullWidth onClick={() => navigate(PopupPaths.Home)}>
               {browser.i18n.getMessage("go_to_dashboard")}
@@ -177,7 +183,7 @@ export function SwapProgressView() {
   );
 }
 
-const Wrapper = styled(Section).attrs({ showPaddingVertical: false })`
+const Wrapper = styled(Section).attrs({ showPaddingVertical: false, showPaddingHorizontal: false })`
   height: calc(100vh - 100px);
   display: flex;
   flex-direction: column;
@@ -196,4 +202,5 @@ const WrapperContent = styled.div`
   overflow-y: auto;
   min-height: 0;
   text-align: center;
+  padding: 0 24px;
 `;

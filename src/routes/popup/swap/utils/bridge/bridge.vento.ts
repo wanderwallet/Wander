@@ -6,8 +6,10 @@ import type {
   GetExpectedOutputResponse,
   GetLiquidityParams,
   GetLiquidityResponse,
+  ReadSwapResult,
   ReadSwapResultResponse,
   SwapExecutionParams,
+  SwapExecutionResponse,
   WaitForSwapResultResponse,
 } from "../dex/dex.types";
 import { freeDecryptedWallet } from "~wallets/encryption";
@@ -15,25 +17,35 @@ import { isLocalWallet } from "~utils/assertions";
 import { retryWithDelay } from "~utils/promises/retry";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { queryClient } from "~utils/tanstack";
-import { getVentoBridgeTransaction } from "./bridge.utils";
-import { findGateway } from "~gateways/wayfinder";
-import Arweave from "arweave";
+import { getVentoBridgeInfo, getVentoBridgeTransaction } from "./bridge.utils";
+import { retryWithGateways } from "~gateways/wayfinder";
 import browser from "webextension-polyfill";
 import { AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 import { createDataItemKeystoneSigner, createDataItemSigner } from "~tokens/aoTokens/ao";
 import type { DecodedTag } from "~api/modules/sign/tags";
 import BigNumber from "bignumber.js";
-import { OrderError } from "../dex/dex.utils";
+import { getLinkedMessages, OrderError } from "../dex/dex.utils";
+import { defaultOptions } from "~tokens/hooks";
+import type { JWKInterface } from "arweave/web/lib/wallet";
+import type { HardwareWallet } from "~wallets/hardware";
 
 export const VENTO_BRIDGE_ADDRESS = "mFRKcHsO6Tlv2E2wZcrcbv3mmzxzD7vYPbyybI3KCVA";
 
 /**
  * Fetch the result of a swap message
  */
-export async function readSwapResult(orderID: string): Promise<ReadSwapResultResponse> {
-  const transaction = await getVentoBridgeTransaction(orderID);
+export async function readSwapResult({
+  orderId,
+  debitNoticeId,
+  isAo,
+}: ReadSwapResult): Promise<ReadSwapResultResponse> {
+  const transaction = await getVentoBridgeTransaction(debitNoticeId || orderId, isAo);
 
-  if (transaction.failureReason && transaction.failureReason !== "") {
+  if (transaction.status === "failed") {
+    throw new OrderError("Failed to bridge token");
+  }
+
+  if (transaction.failureReason) {
     throw new OrderError(transaction.failureReason);
   }
 
@@ -52,9 +64,16 @@ export async function getExpectedOutput({
   amountIn,
   wanderFee,
 }: GetExpectedOutputParams): Promise<GetExpectedOutputResponse> {
+  const bridgeInfo = await queryClient.fetchQuery({
+    queryKey: ["vento-bridge-info"],
+    queryFn: getVentoBridgeInfo,
+    ...defaultOptions,
+  });
+
   const isARToVAR = tokenIn === AR_PROCESS_ID;
   const amountInBN = BigNumber(amountIn);
-  const mintOrBurnFee = amountInBN.dividedBy(100).toFixed(0, BigNumber.ROUND_DOWN); // 1% fee
+  const bridgeFeeRate = bridgeInfo.bridgeFeeRate || 0;
+  const mintOrBurnFee = amountInBN.multipliedBy(bridgeFeeRate).toFixed(0, BigNumber.ROUND_DOWN);
   const providerFee = BigNumber(mintOrBurnFee);
   const totalFee = BigNumber(mintOrBurnFee).plus(wanderFee);
   const transferAmountIn = amountInBN.minus(wanderFee).toFixed(0, BigNumber.ROUND_DOWN);
@@ -75,13 +94,18 @@ export async function getExpectedOutput({
   } satisfies GetExpectedOutputResponse;
 }
 
-export async function executeSwap({ tokenIn, amountIn, tags = [], keystoneSigner }: SwapExecutionParams) {
+export async function executeSwap({
+  tokenIn,
+  amountIn,
+  tags = [],
+  keystoneSigner,
+}: SwapExecutionParams): Promise<SwapExecutionResponse> {
   let decryptedWallet: DecryptedWallet;
   try {
     decryptedWallet = await getActiveKeyfile();
 
     // Get keyfile only for local wallets
-    let keyfile;
+    let keyfile: JWKInterface;
     if (!keystoneSigner) {
       isLocalWallet(decryptedWallet);
       keyfile = decryptedWallet.keyfile;
@@ -90,18 +114,15 @@ export async function executeSwap({ tokenIn, amountIn, tags = [], keystoneSigner
     const activeAddress = await getActiveAddress();
 
     let transferId: string;
+    let debitNoticeId: string | undefined = undefined;
 
     if (tokenIn === AR_PROCESS_ID) {
-      if (keystoneSigner) {
-        throw new Error("Hardware wallets don't support AR swaps on Vento bridge yet");
-      }
-
-      const gateway = await findGateway({ random: true });
-      const arweave = new Arweave(gateway);
-      const transaction = await arweave.createTransaction({
-        target: VENTO_BRIDGE_ADDRESS,
-        quantity: amountIn,
-      });
+      const { result: transaction, arweave } = await retryWithGateways((arweave) =>
+        arweave.createTransaction({
+          target: VENTO_BRIDGE_ADDRESS,
+          quantity: amountIn,
+        }),
+      );
 
       transaction.addTag("Type", "Transfer");
       transaction.addTag("Action", "BridgeARToVAR");
@@ -110,7 +131,13 @@ export async function executeSwap({ tokenIn, amountIn, tags = [], keystoneSigner
       transaction.addTag("Forward-Wallet", activeAddress);
       tags.forEach((tag) => transaction.addTag(tag.name, tag.value));
 
-      await arweave.transactions.sign(transaction, keyfile);
+      if (keystoneSigner) {
+        const { id, signature } = await keystoneSigner.signTransaction(transaction);
+        transaction.setSignature({ id, signature, owner: (decryptedWallet as HardwareWallet).publicKey });
+      } else {
+        await arweave.transactions.sign(transaction, keyfile);
+      }
+
       const result = await arweave.transactions.post(transaction);
 
       if (result.status !== 200) throw new Error("Failed to post transaction");
@@ -155,12 +182,24 @@ export async function executeSwap({ tokenIn, amountIn, tags = [], keystoneSigner
         log(LOG_GROUP.SWAP, transferError);
         throw new Error(transferError);
       }
+
+      debitNoticeId = await retryWithDelay(
+        async () => {
+          const messages = await getLinkedMessages(undefined, undefined, false, transferId);
+          const debitNotice = messages.find((msg) => msg.tags["Action"] === "Debit-Notice");
+          if (!debitNotice) throw new Error("Debit notice not found");
+          return debitNotice.id;
+        },
+        20,
+        1000,
+        (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 30000),
+      ).catch(() => undefined);
     }
 
     // Invalidate transfered token balance
     queryClient.invalidateQueries({ queryKey: ["tokenBalance", tokenIn, activeAddress] });
 
-    return transferId;
+    return { transferId, debitNoticeId };
   } catch (err) {
     log(LOG_GROUP.SWAP, "Error executing swap", err);
     throw err;
@@ -183,9 +222,14 @@ export async function getLiquidity({ poolId, tokenIn, tokenOut }: GetLiquidityPa
   } satisfies GetLiquidityResponse;
 }
 
-export async function waitForSwapResult(transferId: string): Promise<WaitForSwapResultResponse> {
+export async function waitForSwapResult(params: ReadSwapResult): Promise<WaitForSwapResultResponse> {
   try {
-    const result = await retryWithDelay(() => readSwapResult(transferId), 1000, 300000);
+    const result = await retryWithDelay(
+      () => readSwapResult(params),
+      1000,
+      2000,
+      (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    );
 
     return { success: true, result };
   } catch (err) {

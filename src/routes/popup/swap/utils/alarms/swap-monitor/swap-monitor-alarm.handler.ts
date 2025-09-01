@@ -7,6 +7,11 @@ import type { SwapData } from "../../swap.types";
 import { processWanderFee, cleanupFeeProcessingMutex, trackSwapAnalytics } from "./swap-fee-processor";
 // import { sendSwapNotification } from "./swap-notifications";
 import { OrderError } from "../../dex/dex.utils";
+import { isWalletUnlocked } from "~wallets/auth";
+import { AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
+import { fetchTokenByProcessId, type TokenInfo } from "~tokens/aoTokens/ao";
+import { ExtensionStorage } from "~utils/storage";
+import { getAoTokens } from "~tokens";
 
 const SWAP_MONITOR_ALARM_NAME = "swap-monitor";
 const SWAP_CHECK_INTERVAL_MINUTES = 2; // Check every 2 minutes
@@ -32,29 +37,32 @@ export async function handleSwapMonitorAlarm(alarmInfo?: Alarms.Alarm) {
  * Check all pending swaps and update their status
  */
 async function checkPendingSwaps() {
+  // Check if wallet is unlocked - skip fee processing if locked
+  const walletUnlocked = await isWalletUnlocked();
+
   // Get pending swaps (not yet completed/failed)
   const pendingSwaps = await swapsArray.filter(
     (swap) => swap.status !== "completed" && swap.status !== "failed" && !!swap.transferId,
   );
 
-  // Get completed swaps that still need fee processing
-  const completedSwapsNeedingFees = await swapsArray.filter(
-    (swap) => swap.status === "completed" && !swap.wanderFeeSent && !!swap.transferId,
-  );
+  // Get completed swaps that still need fee processing (only if wallet is unlocked)
+  const completedSwapsNeedingFees = walletUnlocked
+    ? await swapsArray.filter((swap) => swap.status === "completed" && !swap.wanderFeeSent && !!swap.transferId)
+    : [];
 
   const totalToProcess = pendingSwaps.length + completedSwapsNeedingFees.length;
 
   if (totalToProcess === 0) {
-    log(LOG_GROUP.SWAP, "No swaps to monitor");
+    log(LOG_GROUP.SWAP, walletUnlocked ? "No swaps to monitor" : "No swaps to monitor (wallet locked)");
     return;
   }
 
   log(
     LOG_GROUP.SWAP,
-    `Checking ${pendingSwaps.length} pending swaps and ${completedSwapsNeedingFees.length} swaps needing fee processing`,
+    `Checking ${pendingSwaps.length} pending swaps and ${completedSwapsNeedingFees.length} swaps needing fee processing${walletUnlocked ? "" : " (wallet locked - skipping fee processing)"}`,
   );
 
-  // Check pending swaps for completion
+  // Check pending swaps for completion (always check status regardless of lock state)
   for (const swap of pendingSwaps) {
     try {
       await checkSingleSwap(swap);
@@ -63,12 +71,14 @@ async function checkPendingSwaps() {
     }
   }
 
-  // Retry fee processing for completed swaps
-  for (const swap of completedSwapsNeedingFees) {
-    try {
-      await retryFeeProcessing(swap);
-    } catch (error) {
-      log(LOG_GROUP.SWAP, `Error retrying fee processing for swap ${swap.transferId}`, error);
+  // Retry fee processing for completed swaps (only if wallet is unlocked)
+  if (walletUnlocked) {
+    for (const swap of completedSwapsNeedingFees) {
+      try {
+        await retryFeeProcessing(swap);
+      } catch (error) {
+        log(LOG_GROUP.SWAP, `Error retrying fee processing for swap ${swap.transferId}`, error);
+      }
     }
   }
 }
@@ -82,14 +92,20 @@ async function checkSingleSwap(swap: SwapData) {
     return;
   }
 
-  const poolType = swap.selectedPoolInfo.pool.poolType;
+  const poolType = swap.selectedPoolInfo.poolType;
   if (!poolType) {
     log(LOG_GROUP.SWAP, "Invalid pool type", swap);
     return;
   }
 
   try {
-    const result = await readSwapResultFn(poolType, swap.transferId);
+    const result = await readSwapResultFn(poolType, {
+      orderId: swap.transferId,
+      noteSettle: swap.noteSettle,
+      swapper: swap.swapper,
+      debitNoticeId: swap.debitNoticeId,
+      isAo: swap.sendToken?.processId !== AR_PROCESS_ID,
+    });
     const expectedOutput = swap.selectedPoolInfo.quoteOutput.amountOut;
     swap.selectedPoolInfo.quoteOutput.amountOut = result?.amountOut || expectedOutput;
     await handleSwapSuccess(swap);
@@ -99,10 +115,10 @@ async function checkSingleSwap(swap: SwapData) {
     } else {
       // If there's an error checking status, treat as potential failure after timeout
       const swapAge = Date.now() - (swap.timestamp || Date.now());
-      const maxWaitTime = 86400000;
+      const SWAP_TIMEOUT_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
-      if (swapAge > maxWaitTime) {
-        log(LOG_GROUP.SWAP, `Swap ${swap.transferId} timed out with error`, error);
+      if (swapAge > SWAP_TIMEOUT_MS) {
+        log(LOG_GROUP.SWAP, `Swap ${swap.transferId} timed out with error after 7 days`, error);
         await handleSwapFailure(swap);
       }
     }
@@ -154,6 +170,9 @@ async function handleSwapSuccess(swap: SwapData) {
       await markSwapForCompletionDisplay(swap.transferId);
     }
 
+    // import receiving token
+    await importToken(swap.receiveToken);
+
     log(LOG_GROUP.SWAP, `Swap ${swap.transferId} processed completely`);
   } catch (error) {
     log(LOG_GROUP.SWAP, `Error processing successful swap ${swap.transferId}`, error);
@@ -174,6 +193,7 @@ async function handleSwapFailure(swap: SwapData) {
         ...s,
         status: "failed" as const,
         completedAt: Date.now(),
+        showCompletionScreen: true, // Mark for display to user
       }),
     );
 
@@ -182,7 +202,10 @@ async function handleSwapFailure(swap: SwapData) {
     // Send failure notification
     // await sendSwapNotification(swap, "failed");
 
-    log(LOG_GROUP.SWAP, `Swap ${swap.transferId} marked as failed`);
+    log(LOG_GROUP.SWAP, `Swap ${swap.transferId} marked as failed and queued for display`);
+
+    // Mark for completion display (similar to successful swaps)
+    await markSwapForCompletionDisplay(swap.transferId);
   } catch (error) {
     log(LOG_GROUP.SWAP, `Error processing failed swap ${swap.transferId}`, error);
   }
@@ -219,6 +242,8 @@ async function retryFeeProcessing(swap: SwapData) {
       log(LOG_GROUP.SWAP, `Fee processing completed for swap ${swap.transferId}`);
       // Clean up mutex since fee processing is complete
       cleanupFeeProcessingMutex(swap.transferId);
+      // Check if we can clean up this swap immediately
+      await cleanupSwapIfReady(swap.transferId);
     } else {
       log(LOG_GROUP.SWAP, `Fee processing failed for swap ${swap.transferId}, will retry next cycle`);
     }
@@ -258,60 +283,140 @@ export async function startSwapMonitoring(forceRestart: boolean = false) {
  * Schedule the next swap monitor check
  */
 async function scheduleNextSwapMonitorCheck() {
+  // Check if wallet is unlocked for fee processing consideration
+  const walletUnlocked = await isWalletUnlocked();
+
   const pendingSwaps = await swapsArray.filter(
     (swap) => swap.status !== "completed" && swap.status !== "failed" && !!swap.transferId,
   );
 
-  const completedSwapsNeedingFees = await swapsArray.filter(
-    (swap) => swap.status === "completed" && !swap.wanderFeeSent && !!swap.transferId,
-  );
+  // Only check for fee processing if wallet is unlocked
+  const completedSwapsNeedingFees = walletUnlocked
+    ? await swapsArray.filter((swap) => swap.status === "completed" && !swap.wanderFeeSent && !!swap.transferId)
+    : [];
 
   const totalToMonitor = pendingSwaps.length + completedSwapsNeedingFees.length;
 
-  // Continue monitoring if there are pending swaps OR completed swaps needing fee processing
+  // Continue monitoring if there are pending swaps OR (completed swaps needing fee processing AND wallet is unlocked)
   if (totalToMonitor > 0) {
     await browser.alarms.create(SWAP_MONITOR_ALARM_NAME, {
       when: Date.now() + SWAP_CHECK_INTERVAL_MINUTES * 60 * 1000,
     });
     log(
       LOG_GROUP.SWAP,
-      `Next swap check scheduled in ${SWAP_CHECK_INTERVAL_MINUTES} minutes (${pendingSwaps.length} pending, ${completedSwapsNeedingFees.length} needing fees)`,
+      `Next swap check scheduled in ${SWAP_CHECK_INTERVAL_MINUTES} minutes (${pendingSwaps.length} pending, ${completedSwapsNeedingFees.length} needing fees)${walletUnlocked ? "" : " (wallet locked)"}`,
     );
   } else {
-    log(LOG_GROUP.SWAP, "No swaps to monitor, stopping monitoring");
+    log(
+      LOG_GROUP.SWAP,
+      walletUnlocked
+        ? "No swaps to monitor, stopping monitoring"
+        : "No swaps to monitor (wallet locked), stopping monitoring",
+    );
   }
 }
 
 /**
- * Clean up old completed swaps (older than 24 hours)
- * Only removes swaps that have completed fee processing or failed swaps
+ * Immediately clean up a swap if it's ready for removal
+ * - Completed swaps: only if fee processed and doesn't need to be shown
+ * - Failed swaps: only if completion screen has been shown
+ */
+async function cleanupSwapIfReady(transferId: string) {
+  try {
+    const swap = await swapsArray.find((s) => s.transferId === transferId);
+    if (!swap) return;
+
+    let shouldCleanup = false;
+    let reason = "";
+
+    // Completed swaps only if fee processed and doesn't need display
+    if (swap.status === "completed" && swap.wanderFeeSent && swap.showCompletionScreen === false) {
+      shouldCleanup = true;
+      reason = "completed swap with fee processed and screen shown";
+    }
+    // Failed swaps only if completion screen has been shown
+    else if (swap.status === "failed" && swap.showCompletionScreen === false) {
+      shouldCleanup = true;
+      reason = "failed swap with screen shown";
+    }
+
+    if (shouldCleanup) {
+      await swapsArray.removeWhere((s) => s.transferId === transferId);
+      cleanupFeeProcessingMutex(transferId);
+      log(LOG_GROUP.SWAP, `Immediately cleaned up ${reason}: ${transferId}`);
+    }
+  } catch (error) {
+    log(LOG_GROUP.SWAP, `Error in immediate cleanup for swap ${transferId}`, error);
+  }
+}
+
+/**
+ * Determine if a swap should be removed from storage
+ * CRITICAL: Never remove swaps until fee processing succeeds - fees must be processed at any cost
+ */
+function shouldRemoveSwap(swap: SwapData, dayAgo: number): boolean {
+  // Early return for pending swaps - never remove
+  if (swap.status === "pending") {
+    return false;
+  }
+
+  // Handle completed swaps
+  if (swap.status === "completed") {
+    // NEVER remove if fee hasn't been processed - keep trying forever
+    if (!swap.wanderFeeSent) {
+      return false;
+    }
+    // Remove ONLY if fee processed AND completion screen has been explicitly shown (false)
+    // Logic: undefined -> keep, true -> keep, false -> remove
+    if (swap.showCompletionScreen === false) {
+      return true;
+    }
+
+    // Fallback: remove after 24 hours even if screen wasn't shown (safety measure)
+    return (swap.completedAt || 0) < dayAgo;
+  }
+
+  // Handle failed swaps - remove if completion screen shown OR after 24 hours (fallback)
+  if (swap.status === "failed") {
+    // Remove if completion screen has been shown
+    if (swap.showCompletionScreen === false) {
+      return true;
+    }
+    // Fallback: remove after 24 hours even if screen wasn't shown (safety measure)
+    return (swap.completedAt || 0) < dayAgo;
+  }
+
+  // Unknown status - don't remove to be safe
+  return false;
+}
+
+/**
+ * Clean up completed and failed swaps based on processing status and age
+ * Removes swaps that have completed fee processing, been shown (if needed), or are old failures
+ * CRITICAL: Never remove swaps until fee processing succeeds - fees must be processed at any cost
  */
 export async function cleanupOldSwaps() {
-  const dayAgo = Date.now() - 24 * 60 * 60 * 1000;
+  const dayAgo = Date.now() - 24 * 60 * 60 * 1000; // 24 hours for failed swaps
 
   // Get swaps to be removed for mutex cleanup
-  const swapsToRemove = await swapsArray.filter(
-    (swap) =>
-      ((swap.status === "completed" && swap.wanderFeeSent) || swap.status === "failed") &&
-      (swap.completedAt || 0) < dayAgo,
-  );
+  const swapsToRemove = await swapsArray.filter((swap) => shouldRemoveSwap(swap, dayAgo));
+
+  // Early exit if nothing to clean up
+  if (swapsToRemove.length === 0) {
+    return;
+  }
 
   // Clean up mutexes for swaps being removed
-  swapsToRemove.forEach((swap) => {
+  for (const swap of swapsToRemove) {
     if (swap.transferId) {
       cleanupFeeProcessingMutex(swap.transferId);
     }
-  });
-
-  const removedCount = await swapsArray.removeWhere(
-    (swap) =>
-      ((swap.status === "completed" && swap.wanderFeeSent) || swap.status === "failed") &&
-      (swap.completedAt || 0) < dayAgo,
-  );
-
-  if (removedCount > 0) {
-    log(LOG_GROUP.SWAP, `Cleaned up ${removedCount} old completed swaps and their mutexes`);
   }
+
+  // Remove swaps from storage
+  const removedCount = await swapsArray.removeWhere((swap) => shouldRemoveSwap(swap, dayAgo));
+
+  log(LOG_GROUP.SWAP, `Cleaned up ${removedCount} processed/old swaps and their mutexes`);
 }
 
 /**
@@ -320,7 +425,7 @@ export async function cleanupOldSwaps() {
 async function markSwapForCompletionDisplay(transferId: string) {
   try {
     await swapsArray.updateWhere(
-      (swap) => swap.transferId === transferId && typeof swap.showCompletionScreen !== "boolean",
+      (swap) => swap.transferId === transferId && swap.showCompletionScreen !== true,
       (swap) => ({
         ...swap,
         showCompletionScreen: true,
@@ -331,3 +436,34 @@ async function markSwapForCompletionDisplay(transferId: string) {
     log(LOG_GROUP.SWAP, `Failed to mark swap ${transferId} for completion display`, error);
   }
 }
+
+const importToken = async (token: TokenInfo) => {
+  try {
+    // Validate required fields first before doing any async operations
+    if (!token.Name || !token.Ticker || isNaN(+token.Denomination)) return;
+
+    const aoTokens = await getAoTokens();
+    if (aoTokens.some(({ processId }) => processId === token.processId)) return;
+
+    let tokenToImport: TokenInfo = {
+      Name: token.Name,
+      Ticker: token.Ticker,
+      Denomination: token.Denomination,
+      Logo: token.Logo,
+      processId: token.processId,
+      type: "asset",
+    };
+
+    if (!tokenToImport.Logo) {
+      const tokenInfo = await fetchTokenByProcessId(token.processId);
+      tokenToImport = { ...tokenToImport, Logo: tokenInfo.Logo };
+    }
+
+    if (!tokenToImport.Name || !tokenToImport.Ticker || isNaN(+tokenToImport.Denomination)) return;
+
+    aoTokens.push(tokenToImport);
+    await ExtensionStorage.set("ao_tokens", aoTokens);
+  } catch {
+    log(LOG_GROUP.SWAP, "Error importing token: ", token);
+  }
+};

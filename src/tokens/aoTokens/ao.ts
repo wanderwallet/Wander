@@ -116,7 +116,7 @@ export async function getTokenInfo(id: string): Promise<TokenInfo> {
     const response = await fetch(`${CACHE_API}/api/token-info?tokenId=${id}`, {
       cache: "force-cache",
       headers: {
-        "Cache-Control": "public, max-age=300", // 5 minutes
+        "Cache-Control": "public, max-age=3600", // 1 hour
       },
     });
     const data = await response.json();
@@ -269,6 +269,10 @@ export const getTagValue = (tagName: string, tags: (Tag | DecodedTag)[]) => tags
 export const getTagValues = (tagNames: string[], tags: (Tag | DecodedTag)[]): (string | undefined)[] => {
   const tagMap = new Map(tags.map((tag) => [tag.name, tag.value]));
   return tagNames.map((name) => tagMap.get(name));
+};
+
+export const getTagValueMap = (tags: (Tag | DecodedTag)[]): Map<string, string> => {
+  return new Map(tags.map((tag) => [tag.name, tag.value]));
 };
 
 /**

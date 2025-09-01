@@ -43,6 +43,8 @@ import AnimatedQRPlayer from "~components/hardware/AnimatedQRPlayer";
 import { Spacer } from "~components/embed";
 import { SignType } from "@keystonehq/bc-ur-registry-arweave";
 import Arweave from "arweave";
+import { HARDWARE_WALLET_API_NOT_SUPPORTED_ERR_MSG } from "~utils/wallets/wallets.constants";
+import { AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 
 export function SwapReviewView() {
   const { navigate } = useLocation();
@@ -55,9 +57,10 @@ export function SwapReviewView() {
   const [transactionUR, setTransactionUR] = useState<UR>();
   const [hardwareStatus, setHardwareStatus] = useState<"play" | "scan">();
   const [currentTransactionCount, setCurrentTransactionCount] = useState(0);
-  const [transactionsCount, setTransactionsCount] = useState(0);
 
   const { sendToken, receiveToken, wanderFee, slippage, amountIn } = swapData || {};
+
+  const isAo = useMemo(() => sendToken?.processId === AR_PROCESS_ID, [sendToken]);
 
   const keystoneInteraction = useMemo(() => {
     const keystoneInteraction: KeystoneInteraction = {
@@ -76,11 +79,11 @@ export function SwapReviewView() {
     const keystoneSigner = new KeystoneSigner(
       Buffer.from(Arweave.utils.b64UrlToBuffer(wallet.publicKey)),
       wallet.xfp,
-      SignType.DataItem,
+      isAo ? SignType.DataItem : SignType.Transaction,
       keystoneInteraction,
     );
     return keystoneSigner;
-  }, [wallet, keystoneInteraction]);
+  }, [wallet, keystoneInteraction, isAo]);
 
   const { networkFee, isLoading: isNetworkFeeLoading } = useARNetworkFee({
     tokenIn: sendToken?.processId,
@@ -92,7 +95,8 @@ export function SwapReviewView() {
     tokenOut: receiveToken?.processId,
     slippage,
     amountIn,
-    pool: swapData?.selectedPoolInfo?.pool,
+    poolId: swapData?.selectedPoolInfo?.poolId,
+    poolType: swapData?.selectedPoolInfo?.poolType,
     stopFetching: isExecutingSwap,
     wanderFeePercent: +defiFeeDetails.finalFeePercent,
   });
@@ -130,14 +134,18 @@ export function SwapReviewView() {
         }
 
         // decode signature
-        const { signature } = await decodeSignature(res);
+        const { id, signature } = await decodeSignature(res);
 
-        keystoneSigner.submitSignature(signature);
+        if (isAo) {
+          keystoneSigner.submitSignature(signature);
+        } else {
+          keystoneSigner.submitSignature({ id, signature });
+        }
       } catch (e) {
         console.log(e);
       }
     },
-    [wallet, keystoneSigner],
+    [wallet, keystoneSigner, isAo],
   );
 
   // qr-tx scanner
@@ -160,14 +168,14 @@ export function SwapReviewView() {
 
       setIsExecutingSwap(true);
 
-      const poolType = selectedPoolInfo?.pool?.poolType;
+      const poolType = selectedPoolInfo?.poolType;
 
       const tags = [
-        { name: "X-Client", value: "Roam" }, // TODO: change this to the actual client name
+        { name: "X-Client", value: "Wander" },
         { name: "X-Type", value: "Swap" },
         { name: "X-Rate", value: rate },
         { name: "X-Provider", value: getProviderName(poolType) },
-        { name: "X-Network-Fee", value: providerNetworkFee || `0 ${sendToken?.Ticker}` },
+        { name: "X-Provider-Network-Fee", value: providerNetworkFee || `0 ${sendToken?.Ticker}` },
         { name: "X-Client-Fee", value: wanderFee?.finalFee || `0 ${sendToken?.Ticker}` },
         { name: "X-Slippage", value: `${slippage}%` },
         { name: "X-Price-Impact", value: `${selectedPoolInfo?.priceImpact || "0"}%` },
@@ -195,17 +203,12 @@ export function SwapReviewView() {
         { name: "X-Amount-Out", value: selectedPoolInfo.quoteOutput.amountOut },
       ];
 
-      // Set transaction count for hardware wallets
-      if (wallet?.type === "hardware") {
-        setTransactionsCount(1);
-      }
-
-      const transferId = await executeSwapFn(poolType, {
+      const { transferId, noteSettle, debitNoticeId } = await executeSwapFn(poolType, {
         tokenIn: sendToken?.processId,
         tokenOut: receiveToken?.processId,
         amountIn: selectedPoolInfo.quoteOutput.transferAmountIn,
         minAmountOut: selectedPoolInfo.quoteOutput.amountOut,
-        poolId: selectedPoolInfo.pool.poolId,
+        poolId: selectedPoolInfo.poolId,
         tags,
         keystoneSigner: wallet?.type === "hardware" ? keystoneSigner : undefined,
       });
@@ -214,6 +217,8 @@ export function SwapReviewView() {
         ...swapData,
         selectedPoolInfo,
         transferId,
+        noteSettle,
+        debitNoticeId,
         timestamp: Date.now(),
         status: "pending" as const,
         monitoringStarted: true,
@@ -227,9 +232,12 @@ export function SwapReviewView() {
       navigate(PopupPaths.SwapProgress);
     } catch (err) {
       log(LOG_GROUP.SWAP, "Error executing swap", err);
+      const errorMessage = err instanceof Error ? err.message : "Swap error. Please try again.";
       setToast({
         type: "error",
-        content: browser.i18n.getMessage("swap_execution_failed"),
+        content: errorMessage.includes(HARDWARE_WALLET_API_NOT_SUPPORTED_ERR_MSG)
+          ? browser.i18n.getMessage("wallet_hardware_unsupported")
+          : browser.i18n.getMessage("swap_error"),
         duration: 2400,
       });
     } finally {
@@ -264,13 +272,16 @@ export function SwapReviewView() {
 
   return (
     <>
-      <HeadV2 title={browser.i18n.getMessage("review")} />
+      <HeadV2
+        title={browser.i18n.getMessage("review")}
+        back={() => navigate(PopupPaths.Swap, { search: { loadSwapData: "true" } })}
+      />
       <Wrapper>
         {(hardwareStatus === "play" && transactionUR) || hardwareStatus === "scan" ? (
           <WrapperContent>
             <Flex direction="column" gap={8}>
               <Text noMargin style={{ textAlign: "center" }}>
-                {currentTransactionCount}/{transactionsCount}
+                {currentTransactionCount}/2
               </Text>
               {hardwareStatus === "play" && transactionUR && (
                 <Flex direction="column" align="center" justify="center" textAlign="center" gap={16}>
@@ -309,7 +320,11 @@ export function SwapReviewView() {
                 </Text>
                 <Flex direction="row" align="center" gap={4}>
                   <TokenLogo size={24} token={sendToken} />
-                  <TokenValueWithTooltip formattedValue={valueInFormatted} ticker={sendToken?.Ticker} />
+                  <TokenValueWithTooltip
+                    formattedValue={valueInFormatted}
+                    ticker={sendToken?.Ticker}
+                    tooltipPosition="bottom"
+                  />
                 </Flex>
               </Flex>
               <Flex direction="column" gap={8}>
@@ -331,13 +346,16 @@ export function SwapReviewView() {
                 <TransactionDetailItem title={browser.i18n.getMessage("rate")} value={rate} />
                 <TransactionDetailItem
                   title={browser.i18n.getMessage("provider")}
-                  value={getProviderName(selectedPoolInfo?.pool?.poolType)}
+                  value={getProviderName(selectedPoolInfo?.poolType)}
                 />
                 <TransactionDetailItem
                   title={browser.i18n.getMessage("est_swap_time")}
-                  value={getSwapTime(selectedPoolInfo?.pool?.poolType)}
+                  value={getSwapTime(selectedPoolInfo?.poolType)}
                 />
-                <TransactionDetailItem title={browser.i18n.getMessage("network_fee")} value={providerNetworkFee} />
+                <TransactionDetailItem
+                  title={browser.i18n.getMessage("network_provider_fee")}
+                  value={providerNetworkFee}
+                />
                 <TransactionDetailItem
                   title={browser.i18n.getMessage("wander_fee")}
                   value={
@@ -354,7 +372,11 @@ export function SwapReviewView() {
                           textAlign: "right",
                         }}
                         noMargin>
-                        {wanderFee?.finalFee !== "--" ? `${toFixed(wanderFee?.finalFee, 8)} ${sendToken.Ticker}` : "--"}
+                        {wanderFee?.finalFee !== "--"
+                          ? wanderFee?.finalFee === "0"
+                            ? browser.i18n.getMessage("free")
+                            : `${toFixed(wanderFee?.finalFee, 8)} ${sendToken.Ticker}`
+                          : "--"}
                       </Text>
                       {wanderFee.finalFee !== "--" && <WanderFeeTag style={{ order: 3 }} />}
                     </Flex>
@@ -385,15 +407,27 @@ export function SwapReviewView() {
           <Button
             style={{ flex: 1 }}
             disabled={isExecutingSwap || isLoading || isNetworkFeeLoading}
-            loading={isExecutingSwap && !hardwareStatus}
             onClick={async () => {
-              if (!isExecutingSwap) await handleSwap();
-              else if (hardwareStatus === "play") {
+              if (isExecutingSwap) return;
+
+              if (!hardwareStatus || hardwareStatus === "play") {
                 setHardwareStatus((val) => (val === "play" ? "scan" : "play"));
+              } else {
+                await handleSwap();
               }
             }}
             fullWidth>
-            {hardwareStatus ? browser.i18n.getMessage("keystone_scan") : browser.i18n.getMessage("swap")}
+            {isExecutingSwap ? (
+              <>
+                {browser.i18n.getMessage("submitting")} <Loading style={{ marginLeft: 4 }} />
+              </>
+            ) : isLoading ? (
+              <Loading />
+            ) : hardwareStatus === "play" ? (
+              browser.i18n.getMessage("keystone_scan")
+            ) : (
+              browser.i18n.getMessage("swap")
+            )}
           </Button>
         </Flex>
       </Wrapper>

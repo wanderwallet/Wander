@@ -181,7 +181,7 @@ export function EditAOYieldAgentView() {
               </Tooltip>
             </Flex>
             <HorizontalLine />
-            <SlippageInputButton selectedSlippage={selectedSlippage} setSelectedSlippage={setSelectedSlippage} />
+            <SlippageInputButton slippage={selectedSlippage} setSlippage={setSelectedSlippage} />
           </Flex>
         </Content>
         <Flex gap={8}>

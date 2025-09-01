@@ -37,6 +37,12 @@ export interface SwapExecutionParams {
   keystoneSigner?: KeystoneSigner | null;
 }
 
+export interface SwapExecutionResponse {
+  transferId: string;
+  noteSettle?: string; // For Permaswap
+  debitNoticeId?: string; // For Vento vAR -> AR
+}
+
 export interface GetLiquidityParams {
   poolId: string;
   tokenIn: string;
@@ -72,6 +78,14 @@ export interface AoMessage {
   dataSize: number;
 }
 
+export interface ReadSwapResult {
+  orderId: string;
+  swapper?: string;
+  noteSettle?: string; // For Permaswap
+  debitNoticeId?: string; // For Vento vAR -> AR
+  isAo?: boolean;
+}
+
 export interface ReadSwapResultResponse {
   amountOut: string;
   confirmationTxId: string;
@@ -83,3 +97,15 @@ export interface WaitForSwapResultResponse {
 }
 
 export type DryRunResult = Awaited<ReturnType<typeof dryrun>>;
+
+export interface PermaswapGetSettled {
+  SettledDate: number;
+  NoteIDs: string;
+  Fees: string;
+  Status: "Open" | "Started" | "Executing" | "Settled" | "Rejected" | "Timeout" | "Expired" | "Canceled";
+  SettleID: string;
+  TxsIn: string;
+  ID: number;
+  TxsOut: string;
+  Settler: string;
+}

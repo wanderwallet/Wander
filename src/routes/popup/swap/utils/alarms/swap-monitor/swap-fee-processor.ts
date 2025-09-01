@@ -13,16 +13,14 @@ import { AO_PROCESS_ID, AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 import { Mutex } from "~utils/mutex";
 import BigNumber from "bignumber.js";
 import browser from "webextension-polyfill";
-import Arweave from "arweave";
-import { findGateway } from "~gateways/wayfinder";
+import { retryWithGateways } from "~gateways/wayfinder";
 import type { DecodedTag } from "~api/modules/sign/tags";
 import { getSetting } from "~settings";
 import { EventType, trackDirect } from "~utils/analytics";
 import { getDefiFeeDetailsForTier } from "~utils/tier/utils";
-import { fromTokenBaseUnits } from "../../swap.utils";
+import { fromTokenBaseUnits, toFixed } from "../../swap.utils";
 
-// TODO: Replace with actual recipient CDoilQgKg6Pmp4Q0LJ4d84VXRgB3Ay9pIJ_SA617cVk
-const WANDER_FEE_RECIPIENT = "5glNksg7gRpA0JIXXvCBjlx6U2RHpMG73Msfftke2lY";
+const WANDER_FEE_RECIPIENT = "CDoilQgKg6Pmp4Q0LJ4d84VXRgB3Ay9pIJ_SA617cVk";
 
 const aoInstance = connect(defaultConfig);
 
@@ -84,18 +82,16 @@ export async function processWanderFee(swap: SwapData): Promise<boolean> {
       // Convert fee amount to the token's base units
       const quantity = feeValue.shiftedBy(swap.sendToken.Denomination).toFixed(0, BigNumber.ROUND_DOWN);
 
-      const balance = await queryClient.fetchQuery({
-        queryKey: ["tokenBalance", AO_PROCESS_ID, swap.swapper],
-        queryFn: async () => {
-          try {
+      const balance = await queryClient
+        .fetchQuery({
+          queryKey: ["tokenBalance", swap.sendToken.processId, swap.swapper],
+          queryFn: async () => {
             const balance = await fetchTokenBalance(swap.sendToken, swap.swapper);
             return balance || "0";
-          } catch {
-            return "0";
-          }
-        },
-        ...defaultOptions,
-      });
+          },
+          ...defaultOptions,
+        })
+        .catch(() => "0");
 
       if (balance && BigNumber(balance).shiftedBy(swap.sendToken.Denomination).lt(quantity)) {
         log(LOG_GROUP.SWAP, `Not enough token ${swap.sendToken.Ticker} balance to process swap fee`);
@@ -115,16 +111,16 @@ export async function processWanderFee(swap: SwapData): Promise<boolean> {
       ];
 
       const isARSwap =
-        (swap.selectedPoolInfo.pool.poolType === "aox" || swap.selectedPoolInfo.pool.poolType === "vento") &&
+        (swap.selectedPoolInfo.poolType === "aox" || swap.selectedPoolInfo.poolType === "vento") &&
         swap.sendToken.processId === AR_PROCESS_ID;
 
       if (isARSwap) {
-        const gateway = await findGateway({ random: true });
-        const arweave = new Arweave(gateway);
-        const transaction = await arweave.createTransaction({
-          target: WANDER_FEE_RECIPIENT,
-          quantity,
-        });
+        const { result: transaction, arweave } = await retryWithGateways((arweave) =>
+          arweave.createTransaction({
+            target: WANDER_FEE_RECIPIENT,
+            quantity,
+          }),
+        );
 
         tags.forEach((tag) => transaction.addTag(tag.name, tag.value));
 
@@ -219,38 +215,6 @@ function extractFeeValue(feeString: string): BigNumber | null {
 }
 
 /**
- * Check if a swap should have its fee processed
- * @param swap The swap data to check
- * @returns boolean Whether fee processing is needed
- */
-export function shouldProcessFee(swap: SwapData): boolean {
-  return (
-    swap.status === "completed" &&
-    swap.wanderFeeSent !== true &&
-    !!swap.wanderFee &&
-    swap.wanderFee.finalFee !== "--" &&
-    !!swap.sendToken &&
-    !!swap.amountIn
-  );
-}
-
-/**
- * Estimate if fee processing will succeed (for validation)
- * @param swap The swap data
- * @returns Promise<boolean> Whether fee processing is likely to succeed
- */
-export async function canProcessFee(swap: SwapData): Promise<boolean> {
-  try {
-    if (!swap.wanderFee || !swap.sendToken) return false;
-
-    const feeValue = extractFeeValue(swap.wanderFee.finalFee);
-    return feeValue !== null && !feeValue.isZero();
-  } catch {
-    return false;
-  }
-}
-
-/**
  * Clean up mutex for a completed transaction to free memory
  * @param transferId The transaction ID to clean up
  */
@@ -300,10 +264,10 @@ export async function trackSwapAnalytics(swap: SwapData, status: "Success" | "Fa
     const sellTokenPrice = await getTokenPrice(swap.sendToken.processId);
     const buyTokenPrice = await getTokenPrice(swap.receiveToken.processId);
 
-    const wanderFeeAmountUsd = finalFeeValueBN.multipliedBy(sellTokenPrice).toFixed();
-    const wanderFeeDiscountAmountUsd = discountFeeValueBN.multipliedBy(sellTokenPrice).toFixed();
-    const sellTokenAmountUsd = valueInBN.multipliedBy(sellTokenPrice).toFixed();
-    const buyTokenAmountUsd = valueOutBN.multipliedBy(buyTokenPrice).toFixed();
+    const wanderFeeAmountUsd = toFixed(finalFeeValueBN.multipliedBy(sellTokenPrice), 6, BigNumber.ROUND_UP);
+    const wanderFeeDiscountAmountUsd = toFixed(discountFeeValueBN.multipliedBy(sellTokenPrice), 6, BigNumber.ROUND_UP);
+    const sellTokenAmountUsd = toFixed(valueInBN.multipliedBy(sellTokenPrice), 6, BigNumber.ROUND_UP);
+    const buyTokenAmountUsd = toFixed(valueOutBN.multipliedBy(buyTokenPrice), 6, BigNumber.ROUND_UP);
 
     const swapCompletedData = {
       sellTokenName: swap.sendToken.Name,
@@ -314,7 +278,7 @@ export async function trackSwapAnalytics(swap: SwapData, status: "Success" | "Fa
       buyTokenProcessId: swap.receiveToken.processId,
       buyTokenAmount: swap.selectedPoolInfo.quoteOutput.amountOut,
       buyTokenAmountUsd,
-      provider: swap.selectedPoolInfo.pool.poolType,
+      provider: swap.selectedPoolInfo.poolType,
       status,
       userWanderTier: swap.tier,
       wanderFeeAmount: finalFeeAmount,

@@ -8,8 +8,10 @@ import type {
   GetExpectedOutputResponse,
   GetLiquidityParams,
   GetLiquidityResponse,
+  ReadSwapResult,
   ReadSwapResultResponse,
   SwapExecutionParams,
+  SwapExecutionResponse,
   WaitForSwapResultResponse,
 } from "./dex.types";
 import { freeDecryptedWallet } from "~wallets/encryption";
@@ -22,8 +24,8 @@ import { queryClient } from "~utils/tanstack";
 /**
  * Fetch the result of a swap message
  */
-export async function readSwapResult(orderID: string): Promise<ReadSwapResultResponse> {
-  const messages = await getLinkedMessages(undefined, undefined, false, orderID);
+export async function readSwapResult({ orderId }: ReadSwapResult): Promise<ReadSwapResultResponse> {
+  const messages = await getLinkedMessages(undefined, undefined, false, orderId);
 
   const error = messages.find((msg) => msg.tags["Action"] === "Order-Error");
   if (error) throw new OrderError(error.tags["Result"]);
@@ -69,7 +71,7 @@ export async function getExpectedOutput({
   const minAmountOut = BigNumber(amountOut)
     .multipliedBy(BigNumber(1).minus(slippage || 0))
     .div(100)
-    .toFixed(0, BigNumber.ROUND_FLOOR);
+    .toFixed(0, BigNumber.ROUND_DOWN);
   const poolAmountIn = amountInWithoutWanderFee;
 
   return {
@@ -94,7 +96,7 @@ export async function executeSwap({
   poolId,
   tags = [],
   keystoneSigner,
-}: SwapExecutionParams) {
+}: SwapExecutionParams): Promise<SwapExecutionResponse> {
   let decryptedWallet: DecryptedWallet;
   try {
     const swapNonce = `${Date.now()}-${Math.floor(Math.random() * 1000000000)}`;
@@ -130,7 +132,7 @@ export async function executeSwap({
     const activeAddress = await getActiveAddress();
     queryClient.invalidateQueries({ queryKey: ["tokenBalance", tokenIn, activeAddress] });
 
-    return transferId;
+    return { transferId };
   } catch (err) {
     log(LOG_GROUP.SWAP, "Error executing swap", err);
     throw err;
@@ -170,10 +172,10 @@ export async function getLiquidity({ poolId, tokenIn, tokenOut }: GetLiquidityPa
   } satisfies GetLiquidityResponse;
 }
 
-export async function waitForSwapResult(transferId: string): Promise<WaitForSwapResultResponse> {
+export async function waitForSwapResult(params: ReadSwapResult): Promise<WaitForSwapResultResponse> {
   try {
     const result = await retryWithDelay(
-      () => readSwapResult(transferId),
+      () => readSwapResult(params),
       1000,
       2000,
       (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 30000),

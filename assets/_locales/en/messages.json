@@ -3716,6 +3716,18 @@
     "message": "WNDR Token holders receive instant access to the StarGrid Battle Tactics. Connect your Wander wallet, get verified and unlock access. Try now on [StarGrid](https://stargrid.ar.io)",
     "description": "Announcement 6 body"
   },
+  "announcement_7_title": {
+    "message": "Swaps Are Live! 🚀",
+    "description": "Announcement 7 title"
+  },
+  "announcement_7_description": {
+    "message": "Early access for Reserve, Edge & Prime members",
+    "description": "Announcement 7 description"
+  },
+  "announcement_7_body": {
+    "message": "Swaps have officially arrived in Wander! 🎉<br/><br/>Reserve, Edge, and Prime members can start using the new Swap feature today, directly from the Wander dashboard.<br/><br/>Core & Select members won't have to wait long! Access opens September 15th. Mark your calendars and get ready to swap!",
+    "description": "Announcement 7 body"
+  },
   "swipe_to_learn_more": {
     "message": "Swipe to learn more",
     "description": "Swipe to learn more text"
@@ -4369,5 +4381,21 @@
   "swap_announcement_title": {
     "message": "Swap Assets in Seconds",
     "description": "Swap announcement title text"
+  },
+  "network_provider_fee": {
+    "message": "Network/Provider fee",
+    "description": "Network/Provider fee text"
+  },
+  "swap_error": {
+    "message": "Swap error. Please try again.",
+    "description": "Generic error message shown when a swap transaction fails" 
+  },
+  "free": {
+    "message": "Free!",
+    "description": "Free text"
+  },
+  "submitting": {
+    "message": "Submitting",
+    "description": "Submitting text"
   }
 }

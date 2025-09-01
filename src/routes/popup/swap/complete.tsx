@@ -31,7 +31,7 @@ export function SwapCompleteView() {
   const { sendToken, receiveToken, wanderFee, slippage, amountIn, selectedPoolInfo, transferId } = swapData || {};
 
   const swap = useMemo(() => {
-    const poolType = selectedPoolInfo?.pool?.poolType;
+    const poolType = selectedPoolInfo?.poolType;
     const isBridge = poolType === PoolTypeEnum.AOX || poolType === PoolTypeEnum.VENTO;
     const isAo = sendToken?.processId !== AR_PROCESS_ID;
     return { isBridge, isAo };
@@ -79,7 +79,7 @@ export function SwapCompleteView() {
   if (!swapData) {
     return (
       <>
-        <HeadV2 title={browser.i18n.getMessage("review")} />
+        <HeadV2 title={browser.i18n.getMessage("swap_complete")} />
         <Wrapper>
           <WrapperContent>
             <Flex direction="row" gap={8} align="center" justify="center" style={{ height: "100%" }}>
@@ -119,12 +119,12 @@ export function SwapCompleteView() {
           </Flex>
           <Flex direction="row" justify="center" align="center" gap={16}>
             <Flex direction="row" align="center" gap={4}>
-              <TokenLogo size={24} token={sendToken} />
+              <TokenLogo size={24} token={sendToken} style={{ flexShrink: 0 }} />
               <TokenValueWithTooltip formattedValue={valueInFormatted} ticker={sendToken?.Ticker} textSize="base" />
             </Flex>
-            <ArrowRight style={{ width: 24, height: 24, color: theme.secondaryText }} />
+            <ArrowRight style={{ width: 24, height: 24, color: theme.secondaryText, flexShrink: 0 }} />
             <Flex direction="row" align="center" gap={4}>
-              <TokenLogo size={24} token={receiveToken} />
+              <TokenLogo size={24} token={receiveToken} style={{ flexShrink: 0 }} />
               <TokenValueWithTooltip formattedValue={valueOutFormatted} ticker={receiveToken?.Ticker} textSize="base" />
             </Flex>
           </Flex>
@@ -137,13 +137,16 @@ export function SwapCompleteView() {
               <TransactionDetailItem title={browser.i18n.getMessage("rate")} value={rate} />
               <TransactionDetailItem
                 title={browser.i18n.getMessage("provider")}
-                value={getProviderName(selectedPoolInfo?.pool?.poolType)}
+                value={getProviderName(selectedPoolInfo?.poolType)}
               />
               <TransactionDetailItem
                 title={browser.i18n.getMessage("est_swap_time")}
-                value={getSwapTime(selectedPoolInfo?.pool?.poolType)}
+                value={getSwapTime(selectedPoolInfo?.poolType)}
               />
-              <TransactionDetailItem title={browser.i18n.getMessage("network_fee")} value={providerNetworkFee} />
+              <TransactionDetailItem
+                title={browser.i18n.getMessage("network_provider_fee")}
+                value={providerNetworkFee}
+              />
               <TransactionDetailItem
                 title={browser.i18n.getMessage("wander_fee")}
                 value={
@@ -160,7 +163,11 @@ export function SwapCompleteView() {
                         textAlign: "right",
                       }}
                       noMargin>
-                      {wanderFee?.finalFee !== "--" ? `${toFixed(wanderFee?.finalFee, 8)} ${sendToken.Ticker}` : "--"}
+                      {wanderFee?.finalFee !== "--"
+                        ? wanderFee?.finalFee === "0"
+                          ? browser.i18n.getMessage("free")
+                          : `${toFixed(wanderFee?.finalFee, 8)} ${sendToken.Ticker}`
+                        : "--"}
                     </Text>
                     {wanderFee.finalFee !== "--" && <WanderFeeTag style={{ order: 3 }} />}
                   </Flex>
@@ -186,7 +193,7 @@ export function SwapCompleteView() {
           </Flex>
         </WrapperContent>
 
-        <Flex direction="column" gap={12}>
+        <Flex direction="column" gap={12} padding="0 24px">
           <Button onClick={() => navigate(PopupPaths.Home)} fullWidth>
             {browser.i18n.getMessage("done")}
           </Button>
@@ -200,7 +207,7 @@ export function SwapCompleteView() {
   );
 }
 
-const Wrapper = styled(Section).attrs({ showPaddingVertical: false })`
+const Wrapper = styled(Section).attrs({ showPaddingVertical: false, showPaddingHorizontal: false })`
   height: calc(100vh - 100px);
   display: flex;
   flex-direction: column;
@@ -217,6 +224,7 @@ const WrapperContent = styled.div`
   flex: 1;
   overflow-y: auto;
   min-height: 0;
+  padding: 0 24px;
 `;
 
 const CrossedOutText = styled(Text).attrs({

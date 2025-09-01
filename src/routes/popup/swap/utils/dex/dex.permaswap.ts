@@ -8,8 +8,10 @@ import type {
   GetExpectedOutputResponse,
   GetLiquidityParams,
   GetLiquidityResponse,
+  ReadSwapResult,
   ReadSwapResultResponse,
   SwapExecutionParams,
+  SwapExecutionResponse,
   WaitForSwapResultResponse,
 } from "./dex.types";
 import { isLocalWallet } from "~utils/assertions";
@@ -21,16 +23,76 @@ import { queryClient } from "~utils/tanstack";
 
 const aoInstance = connect(defaultConfig);
 
+enum SettlementStatus {
+  Open = "Open",
+  Started = "Started",
+  Executing = "Executing",
+  Settled = "Settled",
+  Rejected = "Rejected",
+  Timeout = "Timeout",
+  Expired = "Expired",
+  Canceled = "Canceled",
+}
+
+type SwapStatus = "pending" | "success" | "failed";
+
+export function getSwapStatus(status: SettlementStatus): SwapStatus {
+  switch (status) {
+    case SettlementStatus.Settled:
+      return "success";
+
+    case SettlementStatus.Rejected:
+    case SettlementStatus.Timeout:
+    case SettlementStatus.Expired:
+    case SettlementStatus.Canceled:
+      return "failed";
+
+    case SettlementStatus.Open:
+    case SettlementStatus.Started:
+    case SettlementStatus.Executing:
+      return "pending";
+
+    default:
+      return "pending";
+  }
+}
+
 /**
  * Fetch the result of a swap message
  */
-export async function readSwapResult(orderID: string): Promise<ReadSwapResultResponse> {
-  const messages = await getLinkedMessages(undefined, undefined, false, orderID);
+export async function readSwapResult({
+  orderId,
+  noteSettle,
+  swapper,
+}: ReadSwapResult): Promise<ReadSwapResultResponse> {
+  // const result = await aoInstance.dryrun({
+  //   process: poolId,
+  //   tags: [
+  //     { name: "Action", value: "GetSettled" },
+  //     { name: "SettleID", value: orderId },
+  //   ],
+  // });
+  // const data = JSON.parse(result?.Messages?.[0]?.Data);
+  // const status = getSwapStatus(data.Status);
+
+  // if (status === "success") {
+  //   const swap = await swapsArray.find((s) => s.transferId === orderId);
+  //   const amountOut = swap.selectedPoolInfo.quoteOutput.amountOut;
+  //   return { amountOut, confirmationTxId: orderId };
+  // } else if (status === "pending") {
+  //   throw new Error("Order not settled");
+  // } else if (status === "failed") {
+  //   throw new OrderError(data.Status);
+  // }
+
+  const messages = await getLinkedMessages(undefined, undefined, false, orderId);
 
   const error = messages.find((msg) => msg.tags["Action"] === "Order-Error");
   if (error) throw new OrderError(error.tags["Result"]);
 
-  const confirmation = messages.find((msg) => msg.tags["Action"] === "Credit-Notice");
+  const confirmation = messages.find(
+    (msg) => msg.tags["Action"] === "Credit-Notice" && msg.tags["Sender"] === noteSettle && msg.to === swapper,
+  );
   if (!confirmation) throw new Error("Credit notice not found");
 
   const xffpFor = confirmation.tags["X-FFP-For"];
@@ -52,16 +114,20 @@ export async function readSwapResult(orderID: string): Promise<ReadSwapResultRes
 /**
  * Fetch the result of a swap message
  */
-export async function readRequestOrderResult(requestOrderId: string) {
-  const messages = await getLinkedMessages(undefined, undefined, false, requestOrderId);
+export async function readRequestOrderResult(poolId: string, requestOrderId: string) {
+  const result = await aoInstance.dryrun({
+    process: poolId,
+    tags: [
+      { name: "Action", value: "GetNote" },
+      { name: "MakeTx", value: requestOrderId },
+    ],
+  });
 
-  const orderMadeNoticeMessage = messages.find((msg) => msg.tags["Action"] === "OrderMade-Notice");
-  if (!orderMadeNoticeMessage) throw new Error("Order made notice not found");
+  const tags = result?.Messages?.[0]?.Tags || [];
+  const noteId = getTagValue("NoteID", tags) || "";
+  const noteSettle = getTagValue("NoteSettle", tags) || "";
 
-  const orderMadeNoticeTags = orderMadeNoticeMessage.tags || {};
-
-  const noteId = orderMadeNoticeTags["NoteID"];
-  const noteSettle = orderMadeNoticeTags["NoteSettle"];
+  if (!noteId || !noteSettle) throw new Error("Failed to get note ID or settle for Permaswap order");
 
   return { noteId, noteSettle };
 }
@@ -95,7 +161,7 @@ export async function getExpectedOutput({
   const minAmountOut = BigNumber(amountOut)
     .multipliedBy(BigNumber(1).minus(slippage))
     .div(100)
-    .toFixed(0, BigNumber.ROUND_FLOOR);
+    .toFixed(0, BigNumber.ROUND_DOWN);
   const poolAmountIn = BigNumber(amountInWithoutWanderFee).minus(tokenInFee).toFixed(0, BigNumber.ROUND_DOWN);
 
   return {
@@ -121,7 +187,7 @@ export async function executeSwap({
   poolId,
   tags = [],
   keystoneSigner,
-}: SwapExecutionParams) {
+}: SwapExecutionParams): Promise<SwapExecutionResponse> {
   let decryptedWallet: DecryptedWallet;
   try {
     decryptedWallet = await getActiveKeyfile();
@@ -150,8 +216,8 @@ export async function executeSwap({
     });
 
     const { noteId, noteSettle } = await retryWithDelay(
-      () => readRequestOrderResult(requestMessageId),
-      10,
+      () => readRequestOrderResult(poolId, requestMessageId),
+      20,
       1000,
       (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 30000),
     );
@@ -175,7 +241,7 @@ export async function executeSwap({
     const activeAddress = await getActiveAddress();
     queryClient.invalidateQueries({ queryKey: ["tokenBalance", tokenIn, activeAddress] });
 
-    return transferId;
+    return { transferId, noteSettle };
   } catch (err) {
     log(LOG_GROUP.SWAP, "Error executing swap", err);
     throw err;
@@ -209,10 +275,10 @@ export async function getLiquidity({ poolId, tokenIn, tokenOut }: GetLiquidityPa
   } satisfies GetLiquidityResponse;
 }
 
-export async function waitForSwapResult(transferId: string): Promise<WaitForSwapResultResponse> {
+export async function waitForSwapResult(params: ReadSwapResult): Promise<WaitForSwapResultResponse> {
   try {
     const result = await retryWithDelay(
-      () => readSwapResult(transferId),
+      () => readSwapResult(params),
       1000,
       2000,
       (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 30000),

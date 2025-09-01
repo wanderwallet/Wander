@@ -1,4 +1,4 @@
-import { getTagValue, type TokenInfo } from "~tokens/aoTokens/ao";
+import { getTagValue, getTagValueMap, type TokenInfo } from "~tokens/aoTokens/ao";
 import {
   type SwapData,
   type BotegaPool,
@@ -33,8 +33,9 @@ import { aox } from "./bridge/bridge.aox";
 import { botega } from "./dex/dex.botega";
 import { permaswap } from "./dex/dex.permaswap";
 import { vento } from "./bridge/bridge.vento";
-import type { GetExpectedOutputParams, SwapExecutionParams } from "./dex/dex.types";
+import type { GetExpectedOutputParams, ReadSwapResult, SwapExecutionParams } from "./dex/dex.types";
 import { getAoxBridgeTransaction, getVentoBridgeTransaction } from "./bridge/bridge.utils";
+import { getLinkedMessages } from "./dex/dex.utils";
 
 const BOTEGA_POOL_OPTIONS = {
   headers: {
@@ -230,7 +231,8 @@ export function getPriceImpact(reserveIn: string, reserveOut: string, amountIn: 
   const priceImpact = newPrice.minus(oldPrice).multipliedBy(100).dividedBy(oldPrice);
 
   // Return percentage with 2 decimal places
-  return priceImpact.toFixed(2);
+  const result = priceImpact.toFixed(2);
+  return result === "-0.00" ? "0.00" : result;
 }
 
 export function getProviderName(poolType: PoolType) {
@@ -261,41 +263,50 @@ export function getPriceImpactColor(priceImpact: string, theme: DefaultTheme) {
   if (priceImpactNumber >= 5) return "#EEBD41";
 }
 
-export function toFixed(value: any, decimals: number) {
-  const valueBN = BigNumber(value);
+export function toFixed(value: any, decimals: number, roundingMode: BigNumber.RoundingMode = BigNumber.ROUND_DOWN) {
+  const valueBN = value instanceof BigNumber ? value : BigNumber(value);
   if (valueBN.isNaN()) return value;
-  return valueBN.decimalPlaces(decimals, BigNumber.ROUND_DOWN).toString();
+  return valueBN.toFixed(decimals, roundingMode).replace(/\.?0*$/, "");
 }
 
 export function parseSwapTransaction(transaction: GQLEdgeInterface): ParsedSwapTransaction {
   try {
-    const tags = transaction.node.tags || [];
+    const { node } = transaction;
+    const tags = node.tags || [];
 
-    const timestamp = transaction.node.block?.timestamp ? transaction.node.block.timestamp * 1000 : Date.now();
-    const isAo = getTagValue("Data-Protocol", tags) === "ao";
-    const pushedFor = getTagValue("Pushed-For", tags);
-    const txId = pushedFor || transaction.node.id;
-    const action = getTagValue("Action", tags);
-    const orderStatus = getTagValue("OrderStatus", tags);
-    const bridgeStatus = getTagValue("Bridge-Status", tags);
-    const rate = getTagValue("X-Rate", tags);
-    const provider = getTagValue("X-Provider", tags) as Provider;
-    const networkFee = getTagValue("X-Network-Fee", tags);
-    const wanderFee = getTagValue("X-Client-Fee", tags);
-    const slippage = getTagValue("X-Slippage", tags);
-    const priceImpact = getTagValue("X-Price-Impact", tags);
-    const tokenIn = JSON.parse(getTagValue("X-Token-In", tags));
-    const tokenOut = JSON.parse(getTagValue("X-Token-Out", tags));
-    const amountIn = getTagValue("X-Amount-In", tags);
+    const tagValueMap = getTagValueMap(tags);
+
+    // Helper function for efficient tag access
+    const getTagValue = (name: string): string => tagValueMap.get(name) || "";
+
+    // Parse basic transaction data
+    const timestamp = node.block?.timestamp ? node.block.timestamp * 1000 : Date.now();
+    const pushedFor = getTagValue("Pushed-For");
+    const txId = pushedFor || node.id;
+    const isAo = getTagValue("Data-Protocol") === "ao";
+
+    // Parse transaction state
+    const action = getTagValue("Action");
+    const orderStatus = getTagValue("OrderStatus");
+    const bridgeStatus = getTagValue("Bridge-Status");
+
+    // Parse transaction details
+    const rate = getTagValue("X-Rate");
+    const provider = getTagValue("X-Provider") as Provider;
+    const networkProviderFee = getTagValue("X-Provider-Network-Fee") || getTagValue("X-Network-Fee");
+    const wanderFee = getTagValue("X-Client-Fee");
+    const slippage = getTagValue("X-Slippage");
+    const priceImpact = getTagValue("X-Price-Impact");
+    const amountIn = getTagValue("X-Amount-In");
     const amountOut =
-      getTagValue("To-Quantity", tags) ||
-      getTagValue("AmountOut", tags) ||
-      getTagValue("Quantity", tags) ||
-      getTagValue("X-Amount-Out", tags);
+      getTagValue("To-Quantity") || getTagValue("AmountOut") || getTagValue("Quantity") || getTagValue("X-Amount-Out");
 
-    const error = action === "Order-Error" || (orderStatus && orderStatus !== "Swapped");
+    const tokenIn = JSON.parse(getTagValue("X-Token-In"));
+    const tokenOut = JSON.parse(getTagValue("X-Token-Out"));
+
+    const isError = action === "Order-Error" || (orderStatus && orderStatus !== "Swapped");
     const isPending = bridgeStatus && bridgeStatus !== "success" && bridgeStatus !== "filled";
-    const status = error ? "Failed" : isPending ? "Pending" : "Completed";
+    const status = isError ? "Failed" : isPending ? "Pending" : "Completed";
 
     return {
       txId,
@@ -303,7 +314,7 @@ export function parseSwapTransaction(transaction: GQLEdgeInterface): ParsedSwapT
       rate,
       timestamp,
       provider,
-      networkFee,
+      networkProviderFee,
       wanderFee,
       slippage,
       priceImpact,
@@ -356,7 +367,7 @@ export async function getSwapTransaction(txId: string) {
 
       const confirmationTx = confirmationResponse?.data?.transactions?.edges[0];
       const confirmationTags = confirmationTx.node.tags;
-      tx.node.tags.unshift(
+      tx.node.tags.push(
         ...[
           {
             name: "OrderStatus",
@@ -390,14 +401,22 @@ export async function getSwapTransaction(txId: string) {
           ],
         );
       } else {
-        const confirmationTx = await getVentoBridgeTransaction(txId);
+        const isAo = getTagValue("Data-Protocol", tags) === "ao";
+        const isBurn = getTagValue("Action", tags) === "Burn";
+        let finalTxId = txId;
+        if (isBurn) {
+          const messages = await getLinkedMessages(undefined, undefined, false, txId);
+          const debitNotice = messages.find((msg) => msg.tags["Action"] === "Debit-Notice");
+          finalTxId = debitNotice?.id || txId;
+        }
+        const confirmationTx = await getVentoBridgeTransaction(finalTxId, isAo);
         tx.node.tags.push(
           ...[
             { name: "Bridge-Status", value: confirmationTx.status },
             { name: "To-Quantity", value: confirmationTx.outputAmountRaw },
             {
               name: "OrderStatus",
-              value: confirmationTx.failureReason && confirmationTx.failureReason !== "" ? "Error" : "Swapped",
+              value: confirmationTx.failureReason || confirmationTx.status === "failed" ? "Error" : "Swapped",
             },
           ],
         );
@@ -428,16 +447,16 @@ export function executeSwapFn(poolType: PoolType, params: SwapExecutionParams) {
   }
 }
 
-export function waitForSwapResultFn(poolType: PoolType, transferId: string) {
+export function waitForSwapResultFn(poolType: PoolType, params: ReadSwapResult) {
   switch (poolType) {
     case PoolTypeEnum.BOTEGA:
-      return botega.waitForSwapResult(transferId);
+      return botega.waitForSwapResult(params);
     case PoolTypeEnum.PERMASWAP:
-      return permaswap.waitForSwapResult(transferId);
+      return permaswap.waitForSwapResult(params);
     case PoolTypeEnum.AOX:
-      return aox.waitForSwapResult(transferId);
+      return aox.waitForSwapResult(params);
     case PoolTypeEnum.VENTO:
-      return vento.waitForSwapResult(transferId);
+      return vento.waitForSwapResult(params);
   }
 }
 
@@ -454,16 +473,16 @@ export function getExpectedOutputFn(poolType: PoolType, params: GetExpectedOutpu
   }
 }
 
-export function readSwapResultFn(poolType: PoolType, transferId: string) {
+export function readSwapResultFn(poolType: PoolType, params: ReadSwapResult) {
   switch (poolType) {
     case PoolTypeEnum.BOTEGA:
-      return botega.readSwapResult(transferId);
+      return botega.readSwapResult(params);
     case PoolTypeEnum.PERMASWAP:
-      return permaswap.readSwapResult(transferId);
+      return permaswap.readSwapResult(params);
     case PoolTypeEnum.AOX:
-      return aox.readSwapResult(transferId);
+      return aox.readSwapResult(params);
     case PoolTypeEnum.VENTO:
-      return vento.readSwapResult(transferId);
+      return vento.readSwapResult(params);
   }
 }
 
@@ -483,7 +502,7 @@ export function toTokenBaseUnits<T extends "BigNumber" | "string" = "string">(
   value = value || "0";
   const denomNum = Number(denomination) || 0;
 
-  const valueBN = value instanceof BigNumber ? value : new BigNumber(value);
+  const valueBN = value instanceof BigNumber ? value : BigNumber(value);
 
   if (valueBN.isNaN()) {
     throw new Error(`Invalid numeric value: ${value}`);
@@ -516,7 +535,7 @@ export function fromTokenBaseUnits<T extends "BigNumber" | "string" = "string">(
   units = units || "0";
   const denomNum = Number(denomination) || 0;
 
-  const unitsBN = units instanceof BigNumber ? units : new BigNumber(units);
+  const unitsBN = units instanceof BigNumber ? units : BigNumber(units);
 
   if (unitsBN.isNaN()) {
     throw new Error(`Invalid numeric units: ${units}`);

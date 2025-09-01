@@ -12,6 +12,7 @@ import { DisclosureButton, DisclosureContent } from "~routes/popup/swap/componen
 import { SlippageInputButton } from "./components/SlippageInputButton";
 import {
   useARNetworkFee,
+  useIsSwapGated,
   usePoolForTokenPair,
   useProviderNetworkFee,
   useSwapRate,
@@ -33,15 +34,17 @@ import { AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 import { getErrorMessage, validateAmount } from "../send/amount";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
-import { fromTokenBaseUnits, toFixed, toTokenBaseUnits } from "./utils/swap.utils";
+import { fromTokenBaseUnits, getPriceImpactColor, toFixed, toTokenBaseUnits } from "./utils/swap.utils";
 import { PageType, trackPage } from "~utils/analytics";
 import { TransactionDetailItem } from "./components/TransactionDetailItem";
+import { ErrorIcon } from "./components/ErrorIcon";
 
 export function SwapView() {
   const theme = useTheme();
   const { navigate } = useLocation();
   const { loadSwapData } = useSearchParams<{ loadSwapData: string }>();
   const activeAddress = useActiveAddress();
+  const isSwapGated = useIsSwapGated();
   const [slippage, setSlippage] = useSwapSlippage();
   const defiFeeDetails = useDefiFeeDetails();
   const [openTokenSelector, setOpenTokenSelector] = useState(false);
@@ -176,7 +179,7 @@ export function SwapView() {
 
   return (
     <>
-      <HeadV2 title={browser.i18n.getMessage("swap")} />
+      <HeadV2 title={browser.i18n.getMessage("swap")} back={() => navigate(PopupPaths.Home)} />
       <Wrapper>
         <WrapperContent>
           <Flex direction="column" gap={8} style={{ position: "relative" }}>
@@ -220,10 +223,18 @@ export function SwapView() {
               }}
               token={receiveToken}
             />
-            {(errorMessage || poolError) && <ErrorMsg>{errorMessage || poolError}</ErrorMsg>}
+            {(errorMessage || poolError) && (
+              <ErrorMsg>
+                {errorMessage || poolError} <ErrorIcon style={{ verticalAlign: "text-top" }} size={14} />
+              </ErrorMsg>
+            )}
           </Flex>
           <Flex direction="column" gap={8}>
-            <TransactionDetailItem title={browser.i18n.getMessage("rate")} value={rate} />
+            <TransactionDetailItem
+              title={browser.i18n.getMessage("rate")}
+              value={rate}
+              isLoading={amountIn && isLoading}
+            />
             <TransactionDetailItem
               title={browser.i18n.getMessage("slippage")}
               value={
@@ -235,13 +246,20 @@ export function SwapView() {
                 </Flex>
               }
             />
-            <TransactionDetailItem title={browser.i18n.getMessage("network_fee")} value={providerNetworkFee} />
+            <TransactionDetailItem
+              title={browser.i18n.getMessage("network_provider_fee")}
+              value={providerNetworkFee}
+              isLoading={amountIn && isLoading}
+            />
             <TransactionDetailItem
               title={browser.i18n.getMessage("wander_fee")}
+              isLoading={amountIn && isLoading}
               value={
                 <Flex justify="flex-end" align="center" gap={4} textAlign="right" wrap="wrap">
                   {selectedPoolInfo && wanderFee?.hasChanged && (
-                    <CrossedOutText style={{ order: 1 }}>{toFixed(wanderFee?.originalFee, 8)}</CrossedOutText>
+                    <CrossedOutText style={{ order: 1 }}>
+                      {toFixed(wanderFee?.originalFee, 8)} {sendToken.Ticker}
+                    </CrossedOutText>
                   )}
                   <Text
                     size="sm"
@@ -253,12 +271,20 @@ export function SwapView() {
                     }}
                     noMargin>
                     {selectedPoolInfo && wanderFee?.finalFee !== "--"
-                      ? `${toFixed(wanderFee?.finalFee, 8)} ${sendToken.Ticker}`
+                      ? wanderFee?.finalFee === "0"
+                        ? browser.i18n.getMessage("free")
+                        : `${toFixed(wanderFee?.finalFee, 8)} ${sendToken.Ticker}`
                       : "--"}
                   </Text>
                   {selectedPoolInfo && wanderFee.finalFee !== "--" && <WanderFeeTag style={{ order: 3 }} />}
                 </Flex>
               }
+            />
+            <TransactionDetailItem
+              title={browser.i18n.getMessage("price_impact")}
+              value={selectedPoolInfo?.priceImpact ? `${selectedPoolInfo.priceImpact}%` : "--"}
+              valueColor={getPriceImpactColor(selectedPoolInfo?.priceImpact, theme)}
+              isLoading={amountIn && isLoading}
             />
           </Flex>
 
@@ -279,7 +305,9 @@ export function SwapView() {
         <Flex gap={8}>
           <Button
             style={{ flex: 1 }}
-            disabled={!debouncedValueIn || isLoading || isNetworkFeeLoading || !!errorMessage || !!poolError}
+            disabled={
+              !debouncedValueIn || isLoading || isNetworkFeeLoading || !!errorMessage || !!poolError || isSwapGated
+            }
             loading={amountIn && isLoading}
             onClick={handleSwap}
             fullWidth>

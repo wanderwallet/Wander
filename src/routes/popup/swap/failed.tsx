@@ -72,19 +72,19 @@ export function SwapFailedView() {
         </Text>
         <Flex direction="row" justify="center" align="center" gap={16}>
           <Flex direction="row" align="center" gap={4}>
-            <TokenLogo size={24} token={sendToken} />
+            <TokenLogo size={24} token={sendToken} style={{ flexShrink: 0 }} />
             <TokenValueWithTooltip formattedValue={valueInFormatted} ticker={sendToken?.Ticker} textSize="base" />
           </Flex>
-          <ArrowRight style={{ width: 24, height: 24, color: theme.secondaryText }} />
+          <ArrowRight style={{ width: 24, height: 24, color: theme.secondaryText, flexShrink: 0 }} />
           <Flex direction="row" align="center" gap={4}>
-            <TokenLogo size={24} token={receiveToken} />
+            <TokenLogo size={24} token={receiveToken} style={{ flexShrink: 0 }} />
             <TokenValueWithTooltip formattedValue={valueOutFormatted} ticker={receiveToken?.Ticker} textSize="base" />
           </Flex>
         </Flex>
       </WrapperContent>
 
-      <Flex direction="column" gap={12}>
-        <Button onClick={() => navigate(PopupPaths.Swap, { params: { loadSwapData: "true" } })} fullWidth>
+      <Flex direction="column" gap={12} padding="0 24px">
+        <Button onClick={() => navigate(PopupPaths.Swap, { search: { loadSwapData: "true" } })} fullWidth>
           {browser.i18n.getMessage("try_again")}
         </Button>
         <Button
@@ -101,7 +101,7 @@ export function SwapFailedView() {
   );
 }
 
-const Wrapper = styled(Section).attrs({ showPaddingVertical: false })`
+const Wrapper = styled(Section).attrs({ showPaddingVertical: false, showPaddingHorizontal: false })`
   height: calc(100vh - 24px);
   display: flex;
   flex: 1;
@@ -122,4 +122,5 @@ const WrapperContent = styled.div`
   flex: 1;
   overflow-y: auto;
   min-height: 0;
+  padding: 0 24px;
 `;

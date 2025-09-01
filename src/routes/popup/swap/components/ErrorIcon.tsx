@@ -1,10 +1,10 @@
-interface ErrorIconProps {
+interface ErrorIconProps extends React.SVGProps<SVGSVGElement> {
   size?: number;
 }
 
-export function ErrorIcon({ size = 80 }: ErrorIconProps) {
+export function ErrorIcon({ size = 80, ...props }: ErrorIconProps) {
   return (
-    <svg width={size} height={size} viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width={size} height={size} viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
       <circle cx="40.75" cy="40.5" r="40" fill="#372323" />
       <path
         d="M39.4967 49.4727C37.3011 49.4727 36.1626 48.3748 36.0812 46.1792L35.3494 22.7587C35.268 20.4817 36.3659 19.3432 38.6429 19.3432H42.7902C45.0672 19.3432 46.1651 20.4817 46.0838 22.7587L45.3519 46.1792C45.2705 48.3748 44.132 49.4727 41.9364 49.4727H39.4967ZM35.8983 57.1575C35.8983 54.9212 37.0164 53.803 39.2528 53.803H42.1803C44.4167 53.803 45.5348 54.9212 45.5348 57.1575V59.5972C45.5348 61.8335 44.4167 62.9517 42.1803 62.9517H39.2528C37.0164 62.9517 35.8983 61.8335 35.8983 59.5972V57.1575Z"

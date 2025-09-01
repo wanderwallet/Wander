@@ -59,7 +59,7 @@ export function SlippageInputButton({ slippage, setSlippage, type = "sell" }: Sl
         onSelect={setSlippage}
         type={type}
         minSlippage={0.5}
-        maxSlippage={25}
+        maxSlippage={type === "sell" ? 10 : 25}
       />
     </>
   );

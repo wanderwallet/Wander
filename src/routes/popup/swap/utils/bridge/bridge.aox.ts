@@ -6,8 +6,10 @@ import type {
   GetExpectedOutputResponse,
   GetLiquidityParams,
   GetLiquidityResponse,
+  ReadSwapResult,
   ReadSwapResultResponse,
   SwapExecutionParams,
+  SwapExecutionResponse,
   WaitForSwapResultResponse,
 } from "../dex/dex.types";
 import { freeDecryptedWallet } from "~wallets/encryption";
@@ -18,21 +20,25 @@ import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { queryClient } from "~utils/tanstack";
 import { getAoxBridgeInfo, getAoxBridgeTransaction } from "./bridge.utils";
 import { defaultOptions } from "~tokens/hooks";
-import { findGateway } from "~gateways/wayfinder";
-import Arweave from "arweave";
+import { retryWithGateways } from "~gateways/wayfinder";
 import browser from "webextension-polyfill";
 import { AR_PROCESS_ID, WAR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 import { createDataItemKeystoneSigner, createDataItemSigner } from "~tokens/aoTokens/ao";
 import type { DecodedTag } from "~api/modules/sign/tags";
 import BigNumber from "bignumber.js";
+import type { AoxBridgeTransactionStatus } from "./bridge.types";
+import type { JWKInterface } from "arweave/web/lib/wallet";
+import type { HardwareWallet } from "~wallets/hardware";
+
+const FAILED_STATUSES = new Set<AoxBridgeTransactionStatus>(["failed", "submintAosFailed", "notOnChain", "refunded"]);
 
 /**
  * Fetch the result of a swap message
  */
-export async function readSwapResult(orderID: string): Promise<ReadSwapResultResponse> {
-  const transaction = await getAoxBridgeTransaction(orderID);
+export async function readSwapResult({ orderId }: ReadSwapResult): Promise<ReadSwapResultResponse> {
+  const transaction = await getAoxBridgeTransaction(orderId);
 
-  const isError = transaction.status === "error";
+  const isError = FAILED_STATUSES.has(transaction.status) || transaction?.errMsg === "refunded";
   if (isError) throw new OrderError(transaction.status);
 
   const statusSuccess = transaction.status === "success";
@@ -78,7 +84,12 @@ export async function getExpectedOutput({
   } satisfies GetExpectedOutputResponse;
 }
 
-export async function executeSwap({ tokenIn, amountIn, tags = [], keystoneSigner }: SwapExecutionParams) {
+export async function executeSwap({
+  tokenIn,
+  amountIn,
+  tags = [],
+  keystoneSigner,
+}: SwapExecutionParams): Promise<SwapExecutionResponse> {
   let decryptedWallet: DecryptedWallet;
   try {
     const bridgeInfo = await queryClient.fetchQuery({
@@ -90,7 +101,7 @@ export async function executeSwap({ tokenIn, amountIn, tags = [], keystoneSigner
     decryptedWallet = await getActiveKeyfile();
 
     // Get keyfile only for local wallets
-    let keyfile;
+    let keyfile: JWKInterface;
     if (!keystoneSigner) {
       isLocalWallet(decryptedWallet);
       keyfile = decryptedWallet.keyfile;
@@ -101,23 +112,25 @@ export async function executeSwap({ tokenIn, amountIn, tags = [], keystoneSigner
     let transferId: string;
 
     if (tokenIn === AR_PROCESS_ID) {
-      if (keystoneSigner) {
-        throw new Error("Hardware wallets don't support AR swaps on AOX bridge yet");
-      }
-
-      const gateway = await findGateway({ random: true });
-      const arweave = new Arweave(gateway);
-      const transaction = await arweave.createTransaction({
-        target: bridgeInfo.arToken.locker,
-        quantity: amountIn,
-      });
+      const { result: transaction, arweave } = await retryWithGateways((arweave) =>
+        arweave.createTransaction({
+          target: bridgeInfo.arToken.locker,
+          quantity: amountIn,
+        }),
+      );
 
       transaction.addTag("Type", "Transfer");
       transaction.addTag("Client", "Wander");
       transaction.addTag("Client-Version", browser.runtime.getManifest().version);
       tags.forEach((tag) => transaction.addTag(tag.name, tag.value));
 
-      await arweave.transactions.sign(transaction, keyfile);
+      if (keystoneSigner) {
+        const { id, signature } = await keystoneSigner.signTransaction(transaction);
+        transaction.setSignature({ id, signature, owner: (decryptedWallet as HardwareWallet).publicKey });
+      } else {
+        await arweave.transactions.sign(transaction, keyfile);
+      }
+
       const result = await arweave.transactions.post(transaction);
 
       if (result.status !== 200) throw new Error("Failed to post transaction");
@@ -183,7 +196,7 @@ export async function executeSwap({ tokenIn, amountIn, tags = [], keystoneSigner
     // Invalidate transfered token balance
     queryClient.invalidateQueries({ queryKey: ["tokenBalance", tokenIn, activeAddress] });
 
-    return transferId;
+    return { transferId };
   } catch (err) {
     log(LOG_GROUP.SWAP, "Error executing swap", err);
     throw err;
@@ -206,9 +219,14 @@ export async function getLiquidity({ poolId, tokenIn, tokenOut }: GetLiquidityPa
   } satisfies GetLiquidityResponse;
 }
 
-export async function waitForSwapResult(transferId: string): Promise<WaitForSwapResultResponse> {
+export async function waitForSwapResult(params: ReadSwapResult): Promise<WaitForSwapResultResponse> {
   try {
-    const result = await retryWithDelay(() => readSwapResult(transferId), 1000, 300000);
+    const result = await retryWithDelay(
+      () => readSwapResult(params),
+      1000,
+      2000,
+      (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    );
 
     return { success: true, result };
   } catch (err) {
