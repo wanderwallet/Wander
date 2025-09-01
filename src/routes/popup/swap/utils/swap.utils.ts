@@ -491,8 +491,7 @@ export function readSwapResultFn(poolType: PoolType, params: ReadSwapResult) {
  * @param value - Human-readable string/number (e.g. "1.5" or 1.5)
  * @param denomination - Denomination of the token (e.g. 12 for WAR)
  * @param returnType - Return type: "BigNumber" or "string" (default: "string")
- * @returns Base units as string or BigNumber based on returnType
- * @throws {Error} When value is invalid or denomination is negative
+ * @returns Base units as string or BigNumber based on returnType. Returns "0" for invalid or negative values.
  */
 export function toTokenBaseUnits<T extends "BigNumber" | "string" = "string">(
   value: string | number | BigNumber,
@@ -504,12 +503,10 @@ export function toTokenBaseUnits<T extends "BigNumber" | "string" = "string">(
 
   const valueBN = value instanceof BigNumber ? value : BigNumber(value);
 
-  if (valueBN.isNaN()) {
-    throw new Error(`Invalid numeric value: ${value}`);
-  }
-
-  if (valueBN.isNegative()) {
-    throw new Error(`Value cannot be negative: ${value}`);
+  // Return "0" for invalid or negative values instead of throwing errors
+  if (valueBN.isNaN() || valueBN.isNegative()) {
+    const zeroBN = BigNumber(0);
+    return (returnType === "BigNumber" ? zeroBN : zeroBN.toFixed(0)) as T extends "BigNumber" ? BigNumber : string;
   }
 
   const shiftedValue = valueBN.shiftedBy(denomNum);
@@ -524,8 +521,7 @@ export function toTokenBaseUnits<T extends "BigNumber" | "string" = "string">(
  * @param units - Base units (e.g. "1500000000000000000")
  * @param denomination - Denomination of the token (e.g. 12 for WAR)
  * @param returnType - Return type: "BigNumber" or "string" (default: "string")
- * @returns Human-readable value as string or BigNumber based on returnType
- * @throws {Error} When units is invalid or denomination is negative
+ * @returns Human-readable value as string or BigNumber based on returnType. Returns "0" for invalid or negative values.
  */
 export function fromTokenBaseUnits<T extends "BigNumber" | "string" = "string">(
   units: string | number | BigNumber,
@@ -537,12 +533,10 @@ export function fromTokenBaseUnits<T extends "BigNumber" | "string" = "string">(
 
   const unitsBN = units instanceof BigNumber ? units : BigNumber(units);
 
-  if (unitsBN.isNaN()) {
-    throw new Error(`Invalid numeric units: ${units}`);
-  }
-
-  if (unitsBN.isNegative()) {
-    throw new Error(`Units cannot be negative: ${units}`);
+  // Return "0" for invalid or negative values instead of throwing errors
+  if (unitsBN.isNaN() || unitsBN.isNegative()) {
+    const zeroBN = BigNumber(0);
+    return (returnType === "BigNumber" ? zeroBN : zeroBN.toFixed()) as T extends "BigNumber" ? BigNumber : string;
   }
 
   const shiftedValue = unitsBN.shiftedBy(-denomNum);
