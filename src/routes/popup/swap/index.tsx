@@ -306,7 +306,13 @@ export function SwapView() {
           <Button
             style={{ flex: 1 }}
             disabled={
-              !debouncedValueIn || isLoading || isNetworkFeeLoading || !!errorMessage || !!poolError || isSwapGated
+              !debouncedValueIn ||
+              isLoading ||
+              isNetworkFeeLoading ||
+              !!errorMessage ||
+              !!poolError ||
+              isSwapGated ||
+              isNaN(+valueOut)
             }
             loading={amountIn && isLoading}
             onClick={handleSwap}
