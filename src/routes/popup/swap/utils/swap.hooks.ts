@@ -480,10 +480,10 @@ export function useTokensWithPagination(
       const symbol = token.Ticker?.toLowerCase() || "";
       return name.includes(searchLower) || symbol.includes(searchLower);
     });
-  }, [allTokens, searchTerm, tokenSelectorType, filterTokenId]);
+  }, [allTokens, searchTerm]);
 
   const infiniteQuery = useInfiniteQuery({
-    queryKey: ["tokens-with-pagination", filteredTokens.length, pageSize, searchTerm, tokenSelectorType],
+    queryKey: ["tokens-with-pagination", searchTerm.trim(), tokenSelectorType, filterTokenId],
     queryFn: ({ pageParam = 0 }) => {
       const startIndex = pageParam * pageSize;
       const endIndex = startIndex + pageSize;
