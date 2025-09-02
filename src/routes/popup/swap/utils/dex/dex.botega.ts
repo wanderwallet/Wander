@@ -51,6 +51,8 @@ export async function getExpectedOutput({
   slippage,
   wanderFee,
 }: GetExpectedOutputParams): Promise<GetExpectedOutputResponse> {
+  if (!poolId) throw new Error("Pool ID is required");
+
   swapper = swapper || (await getActiveAddress());
   const amountInWithoutWanderFee = BigNumber(amountIn).minus(wanderFee).toFixed(0, BigNumber.ROUND_DOWN);
   const response = await aoInstance.dryrun({
@@ -67,7 +69,7 @@ export async function getExpectedOutput({
   const amountOut = getTagValue("Output", tags) || "0";
   const lpFeeQuantity = getTagValue("LP-Fee-Quantity", tags) || "0";
   const protocolFeeQuantity = getTagValue("Protocol-Fee-Quantity", tags) || "0";
-  const tokenOutFee = BigNumber(lpFeeQuantity).plus(protocolFeeQuantity).toFixed(0, BigNumber.ROUND_DOWN);
+  const tokenInFee = BigNumber(lpFeeQuantity).plus(protocolFeeQuantity).toFixed(0, BigNumber.ROUND_DOWN);
   const minAmountOut = BigNumber(amountOut)
     .multipliedBy(BigNumber(1).minus(slippage || 0))
     .div(100)
@@ -82,8 +84,8 @@ export async function getExpectedOutput({
     wanderFee,
     minAmountOut,
     poolAmountIn,
-    tokenOutFee,
-    tokenInFee: "0",
+    tokenOutFee: "0",
+    tokenInFee,
     transferAmountIn: amountInWithoutWanderFee,
     type: "botega",
   } satisfies GetExpectedOutputResponse;

@@ -197,8 +197,8 @@ export function usePoolForTokenPair({
       };
 
       const [botegaResponse, permaswapResponse] = await Promise.allSettled([
-        botega.getExpectedOutput({ poolId: botegaPool.poolId, ...params }),
-        permaswap.getExpectedOutput({ poolId: permaswapPool.poolId, ...params }),
+        botega.getExpectedOutput({ poolId: botegaPool?.poolId, ...params }),
+        permaswap.getExpectedOutput({ poolId: permaswapPool?.poolId, ...params }),
       ]);
 
       const botegaOutput = botegaResponse.status === "fulfilled" ? botegaResponse.value : null;
