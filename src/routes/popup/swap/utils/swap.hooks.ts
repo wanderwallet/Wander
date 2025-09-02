@@ -107,6 +107,7 @@ export function usePoolForTokenPair({
     return tokenPools[key] || { botega: [], permaswap: [], aox: [], vento: [] };
   }, [tokenPools, tokenIn, tokenOut]);
 
+  // TODO: Optimize this useAsyncEffect to use requests system
   useAsyncEffect(async () => {
     try {
       if (isLoadingPools) return;
