@@ -224,3 +224,25 @@ query($address: String!, $after: String) {
     }
   }
 }`;
+
+export const VENTO_BURN_DEBIT_NOTICE_QUERY = `
+query($pushedFors: [String!]!) {
+  transactions(
+    first: 10,
+    tags: [
+      {name: "Data-Protocol", values: ["ao"]},
+      {name: "Action", values: ["Debit-Notice"]},
+      { name: "Pushed-For", values: $pushedFors }
+    ],
+  ) {
+    edges {
+      node {
+        id
+        recipient
+        owner { address }
+        block { timestamp, height }
+        tags { name, value }
+      }
+    }
+  }
+}`;

@@ -56,7 +56,7 @@ export interface AoxBridgeInfo {
 
 export interface VentoBridgeInfo {
   MININUM_ARWEAVE_BRIDGE: string;
-  MININUM_USDC_BRIDGE: string;
+  FEES: { AR: number };
 }
 
 export interface VentoHealthInfo {
@@ -150,4 +150,5 @@ export interface VentoBridgeInfoResult {
   bridge: "aox" | "vento";
   minBridgeAmount: string;
   isHealthy: boolean;
+  bridgeFeeRate: number;
 }

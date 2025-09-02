@@ -148,7 +148,10 @@ export function SwapTransactionDetailsView({ params: { id } }: SwapTransactionDe
                     title={browser.i18n.getMessage("network_provider_fee")}
                     value={transaction.networkProviderFee}
                   />
-                  <TransactionDetailItem title={browser.i18n.getMessage("wander_fee")} value={transaction.wanderFee} />
+                  <TransactionDetailItem
+                    title={browser.i18n.getMessage("wander_fee")}
+                    value={`${transaction.wanderFee} ${transaction.tokenOut.Ticker}`}
+                  />
                   <TransactionDetailItem title={browser.i18n.getMessage("slippage")} value={transaction.slippage} />
                   <TransactionDetailItem
                     title={browser.i18n.getMessage("price_impact")}

@@ -4389,5 +4389,9 @@
   "free": {
     "message": "Free!",
     "description": "Free text"
+  },
+  "submitting": {
+    "message": "Submitting",
+    "description": "Submitting text"
   }
 }
