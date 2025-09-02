@@ -48,6 +48,7 @@ import type { DefiFeeDetails } from "~utils/tier/types";
 import browser from "webextension-polyfill";
 import { useActiveTier } from "~utils/tier/hooks";
 import { tierNameToId, TierTypes } from "~utils/tier/constants";
+import { retryWithDelay } from "~utils/promises/retry";
 
 const TEN_SECONDS_MS = 10000;
 
@@ -120,6 +121,8 @@ export function usePoolForTokenPair({
       }
 
       setIsLoading(true);
+      setError(null);
+      setSelectedPoolInfo(null);
 
       const wanderFee = BigNumber(amountIn)
         .multipliedBy(wanderFeePercent)
@@ -134,12 +137,16 @@ export function usePoolForTokenPair({
         }
 
         const aoxPool = pairPools?.aox?.[0];
-        const aoxOutput = await aox.getExpectedOutput({
-          poolId: aoxPool.poolId,
-          tokenIn,
-          amountIn,
-          wanderFee,
-        });
+        const aoxOutput = await retryWithDelay(
+          () =>
+            aox.getExpectedOutput({
+              poolId: aoxPool.poolId,
+              tokenIn,
+              amountIn,
+              wanderFee,
+            }),
+          2,
+        );
 
         setSelectedPoolInfo({
           poolId: aoxPool.poolId,
@@ -161,12 +168,16 @@ export function usePoolForTokenPair({
         }
 
         const ventoPool = pairPools?.vento?.[0];
-        const ventoOutput = await vento.getExpectedOutput({
-          poolId: ventoPool.poolId,
-          tokenIn,
-          amountIn,
-          wanderFee,
-        });
+        const ventoOutput = await retryWithDelay(
+          () =>
+            vento.getExpectedOutput({
+              poolId: ventoPool.poolId,
+              tokenIn,
+              amountIn,
+              wanderFee,
+            }),
+          2,
+        );
 
         setSelectedPoolInfo({
           poolId: ventoPool.poolId,
@@ -197,8 +208,8 @@ export function usePoolForTokenPair({
       };
 
       const [botegaResponse, permaswapResponse] = await Promise.allSettled([
-        botega.getExpectedOutput({ poolId: botegaPool.poolId, ...params }),
-        permaswap.getExpectedOutput({ poolId: permaswapPool.poolId, ...params }),
+        retryWithDelay(() => botega.getExpectedOutput({ poolId: botegaPool?.poolId, ...params }), 2),
+        retryWithDelay(() => permaswap.getExpectedOutput({ poolId: permaswapPool?.poolId, ...params }), 2),
       ]);
 
       const botegaOutput = botegaResponse.status === "fulfilled" ? botegaResponse.value : null;
@@ -222,9 +233,15 @@ export function usePoolForTokenPair({
       let liquidity: GetLiquidityResponse;
 
       if (finalOutput.type === "botega") {
-        liquidity = await botega.getLiquidity({ poolId: botegaPool.poolId, tokenIn, tokenOut });
+        liquidity = await retryWithDelay(
+          () => botega.getLiquidity({ poolId: botegaPool.poolId, tokenIn, tokenOut }),
+          2,
+        );
       } else {
-        liquidity = await permaswap.getLiquidity({ poolId: permaswapPool.poolId, tokenIn, tokenOut });
+        liquidity = await retryWithDelay(
+          () => permaswap.getLiquidity({ poolId: permaswapPool.poolId, tokenIn, tokenOut }),
+          2,
+        );
       }
 
       if (!liquidity) {
@@ -320,7 +337,7 @@ export function usePoolQuote({
         wanderFee,
       };
 
-      const output = await getExpectedOutputFn(poolType, { poolId, ...params });
+      const output = await retryWithDelay(() => getExpectedOutputFn(poolType, { poolId, ...params }), 2);
 
       if (!output) {
         log(LOG_GROUP.SWAP, "No final output found");
@@ -331,9 +348,9 @@ export function usePoolQuote({
       let liquidity: GetLiquidityResponse;
 
       if (output.type === PoolTypeEnum.BOTEGA) {
-        liquidity = await botega.getLiquidity({ poolId, tokenIn, tokenOut });
+        liquidity = await retryWithDelay(() => botega.getLiquidity({ poolId, tokenIn, tokenOut }), 2);
       } else {
-        liquidity = await permaswap.getLiquidity({ poolId, tokenIn, tokenOut });
+        liquidity = await retryWithDelay(() => permaswap.getLiquidity({ poolId, tokenIn, tokenOut }), 2);
       }
 
       if (!liquidity) {
