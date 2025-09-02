@@ -58,6 +58,7 @@ export function SwapReviewView() {
   const [transactionUR, setTransactionUR] = useState<UR>();
   const [hardwareStatus, setHardwareStatus] = useState<"play" | "scan">();
   const [currentTransactionCount, setCurrentTransactionCount] = useState(0);
+  const [submissionCount, setSubmissionCount] = useState(0);
 
   const { sendToken, receiveToken, wanderFee, slippage, amountIn } = swapData || {};
 
@@ -106,6 +107,8 @@ export function SwapReviewView() {
     return selectedPoolInfoQuote || swapData?.selectedPoolInfo;
   }, [selectedPoolInfoQuote, swapData?.selectedPoolInfo]);
 
+  const totalTransactionCount = selectedPoolInfo?.poolType === PoolTypeEnum.PERMASWAP ? 3 : 2;
+
   const rate = useSwapRate({ selectedPoolInfo, sendToken, receiveToken, amountIn });
 
   const providerNetworkFee = useProviderNetworkFee({ selectedPoolInfo, sendToken, receiveToken, networkFee });
@@ -142,6 +145,7 @@ export function SwapReviewView() {
         } else {
           keystoneSigner.submitSignature({ id, signature } as any);
         }
+        setSubmissionCount((prev) => prev + 1);
       } catch (e) {
         log(LOG_GROUP.SWAP, "Error decoding signature", e);
       }
@@ -281,10 +285,10 @@ export function SwapReviewView() {
       />
       <Wrapper>
         {(hardwareStatus === "play" && transactionUR) || hardwareStatus === "scan" ? (
-          <WrapperContent>
+          <WrapperContent style={{ overflow: "visible" }}>
             <Flex direction="column" gap={8}>
               <Text noMargin style={{ textAlign: "center" }}>
-                {currentTransactionCount}/{selectedPoolInfo?.poolType === PoolTypeEnum.PERMASWAP ? 3 : 2}
+                {currentTransactionCount}/{totalTransactionCount}
               </Text>
               {hardwareStatus === "play" && transactionUR && (
                 <Flex direction="column" align="center" justify="center" textAlign="center" gap={16}>
@@ -406,32 +410,33 @@ export function SwapReviewView() {
           </WrapperContent>
         )}
 
-        {hardwareStatus !== "scan" && (
-          <Flex gap={8}>
-            <Button
-              style={{ flex: 1 }}
-              disabled={(isExecutingSwap || isLoading || isNetworkFeeLoading) && !hardwareStatus}
-              onClick={async () => {
-                if (!isExecutingSwap) await handleSwap();
-                else if (!hardwareStatus || hardwareStatus === "play") {
-                  setHardwareStatus((val) => (val === "play" ? "scan" : "play"));
-                }
-              }}
-              fullWidth>
-              {isExecutingSwap && !hardwareStatus ? (
-                <>
-                  {browser.i18n.getMessage("submitting")} <Loading style={{ marginLeft: 4 }} />
-                </>
-              ) : isLoading && !hardwareStatus ? (
-                <Loading />
-              ) : hardwareStatus === "play" ? (
-                browser.i18n.getMessage("keystone_scan")
-              ) : (
-                browser.i18n.getMessage("swap")
-              )}
-            </Button>
-          </Flex>
-        )}
+        <Flex gap={8}>
+          <Button
+            style={{ flex: 1 }}
+            disabled={
+              ((isExecutingSwap || isLoading || isNetworkFeeLoading) && !hardwareStatus) || hardwareStatus === "scan"
+            }
+            onClick={async () => {
+              if (!isExecutingSwap) await handleSwap();
+              else if (!hardwareStatus || hardwareStatus === "play") {
+                setHardwareStatus((val) => (val === "play" ? "scan" : "play"));
+              }
+            }}
+            fullWidth>
+            {(isExecutingSwap && !hardwareStatus) ||
+            (hardwareStatus === "scan" && submissionCount === totalTransactionCount) ? (
+              <>
+                {browser.i18n.getMessage("submitting")} <Loading style={{ marginLeft: 4 }} />
+              </>
+            ) : (isLoading && !hardwareStatus) || hardwareStatus === "scan" ? (
+              <Loading />
+            ) : hardwareStatus === "play" ? (
+              browser.i18n.getMessage("keystone_scan")
+            ) : (
+              browser.i18n.getMessage("swap")
+            )}
+          </Button>
+        </Flex>
       </Wrapper>
     </>
   );

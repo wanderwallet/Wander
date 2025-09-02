@@ -583,11 +583,11 @@ export async function createKeystoneFeeTransaction<P extends PoolType, T extends
   tokenIn: T,
   swapId: string,
   feeAmount: string,
-  signer?: KeystoneSigner,
+  signer: KeystoneSigner,
 ): Promise<P extends "aox" | "vento" ? (T extends typeof AR_PROCESS_ID ? Transaction : DataItem) : DataItem> {
   const isARSwap = (poolType === "aox" || poolType === "vento") && tokenIn === AR_PROCESS_ID;
 
-  const tags = getFeeTransactionTags(swapId, !isARSwap);
+  const additionalTags = getFeeTransactionTags(swapId, !isARSwap);
 
   if (isARSwap) {
     const { result: transaction } = await retryWithGateways((arweave) =>
@@ -597,33 +597,28 @@ export async function createKeystoneFeeTransaction<P extends PoolType, T extends
       }),
     );
 
-    tags.forEach((tag) => transaction.addTag(tag.name, tag.value));
+    additionalTags.forEach((tag) => transaction.addTag(tag.name, tag.value));
 
     const result = await signer.signTransaction(transaction);
     const publicKey = Arweave.utils.bufferTob64Url(signer.publicKey);
     transaction.setSignature({ ...result, owner: publicKey });
     return transaction as any;
   } else {
-    if (!signer) {
-      throw new Error("Signer is required for AO transactions");
-    }
-
     const tags = [
       { name: "Variant", value: "ao.TN.1" },
       { name: "Type", value: "Message" },
       { name: "Data-Protocol", value: "ao" },
-      { name: "Action", value: "Transfer" },
       { name: "SDK", value: "aoconnect" },
       { name: "Content-Type", value: "text/plain" },
+      { name: "Action", value: "Transfer" },
       { name: "Recipient", value: WANDER_FEE_RECIPIENT },
       { name: "Quantity", value: feeAmount },
-      ...getFeeTransactionTags(swapId, true),
+      ...additionalTags,
     ];
 
     const anchor = generateAnchor() as unknown as string;
-    const target = tokenIn;
     const data = Math.floor(1000 + Math.random() * 9000).toString();
-    const dataItem = createData(data, signer, { tags, target, anchor });
+    const dataItem = createData(data, signer, { tags, target: tokenIn, anchor });
     const dataItemBuf = dataItem.getRaw();
     const signature = await signer.sign(dataItemBuf);
     dataItem.setSignature(Buffer.from(signature));
@@ -651,15 +646,20 @@ export async function createSwapMessage({
   let dataItemRaw: Buffer;
   let keystoneTx: SwapData["keystoneTx"] | undefined;
   if (keystoneSigner) {
+    const updatedTags = [
+      { name: "Variant", value: "ao.TN.1" },
+      { name: "Type", value: "Message" },
+      { name: "Data-Protocol", value: "ao" },
+      { name: "SDK", value: "aoconnect" },
+      { name: "Content-Type", value: "text/plain" },
+      ...tags,
+    ];
     const data = Math.floor(1000 + Math.random() * 9000).toString();
-    const { id, raw } = await signer({ data, tags, target: process });
+    const { id, raw } = await signer({ data, tags: updatedTags, target: process });
     dataItemRaw = Buffer.from(raw);
 
     const feeTx = await createKeystoneFeeTransaction(poolType, process, id, wanderFee, keystoneSigner);
-    keystoneTx = {
-      signature: feeTx.signature,
-      raw: feeTx.getRaw().toString("base64"),
-    };
+    keystoneTx = { raw: feeTx.getRaw().toString("base64") };
   }
 
   async function sendMessage() {

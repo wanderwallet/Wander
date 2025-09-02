@@ -17,7 +17,6 @@ import { EventType, trackDirect } from "~utils/analytics";
 import { getDefiFeeDetailsForTier } from "~utils/tier/utils";
 import { assertTransferResult, fromTokenBaseUnits, getFeeTransactionTags, toFixed } from "../../swap.utils";
 import Arweave from "arweave";
-import { DataItem } from "@dha-team/arbundles";
 import { WANDER_FEE_RECIPIENT } from "../../swap.constants";
 
 const aoInstance = connect(defaultConfig);
@@ -140,11 +139,6 @@ export async function processWanderFee(swap: SwapData): Promise<boolean> {
           const gateway = await findGateway({ random: true });
           const arweave = new Arweave(gateway);
           const feeTx = arweave.transactions.fromRaw(swap.keystoneTx);
-          feeTx.setSignature({
-            id: swap.keystoneTx.id,
-            signature: swap.keystoneTx.signature,
-            owner: decryptedWallet.publicKey,
-          });
 
           const result = await arweave.transactions.post(feeTx);
 
@@ -152,9 +146,7 @@ export async function processWanderFee(swap: SwapData): Promise<boolean> {
 
           feeTransferId = feeTx.id;
         } else {
-          const dataItem = new DataItem(Buffer.from(swap.keystoneTx.raw, "base64"));
-          const signatureBytes = Buffer.from(swap.keystoneTx.signature, "base64");
-          dataItem.setSignature(signatureBytes);
+          const dataItemRaw = Buffer.from(swap.keystoneTx.raw, "base64");
 
           const response = await fetch("https://mu.ao-testnet.xyz", {
             method: "POST",
@@ -164,7 +156,7 @@ export async function processWanderFee(swap: SwapData): Promise<boolean> {
             },
             redirect: "follow",
             // @ts-ignore
-            body: dataItem.getRaw(),
+            body: dataItemRaw,
           });
 
           if (!response.ok) throw new Error("Failed to post transaction");
