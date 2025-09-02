@@ -42,8 +42,8 @@ export const SwapInput = ({
 
   const formattedBalance = useMemo(() => formatBalance(balance), [balance]);
   const fiatValue = useMemo(() => {
-    if (!value || !price) return "--";
-    return `~${formatFiatBalance(BigNumber(value).times(price), currency)}`;
+    if (!value || !price || isNaN(+value)) return "--";
+    return `~${formatFiatBalance(BigNumber(value || 0).times(price), currency)}`;
   }, [value, price, currency]);
 
   const handleInputChange = (event: React.FormEvent<HTMLInputElement>) => {

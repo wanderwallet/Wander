@@ -71,7 +71,7 @@ export async function getExpectedOutput({
   const minAmountOut = BigNumber(amountOut)
     .multipliedBy(BigNumber(1).minus(slippage || 0))
     .div(100)
-    .toFixed(0, BigNumber.ROUND_FLOOR);
+    .toFixed(0, BigNumber.ROUND_DOWN);
   const poolAmountIn = amountInWithoutWanderFee;
 
   return {

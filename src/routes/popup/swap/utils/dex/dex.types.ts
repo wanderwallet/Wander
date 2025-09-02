@@ -37,7 +37,8 @@ export interface SwapExecutionParams {
 
 export interface SwapExecutionResponse {
   transferId: string;
-  noteSettle?: string;
+  noteSettle?: string; // For Permaswap
+  debitNoticeId?: string; // For Vento vAR -> AR
 }
 
 export interface GetLiquidityParams {
@@ -79,6 +80,8 @@ export interface ReadSwapResult {
   orderId: string;
   swapper?: string;
   noteSettle?: string; // For Permaswap
+  debitNoticeId?: string; // For Vento vAR -> AR
+  isAo?: boolean;
 }
 
 export interface ReadSwapResultResponse {

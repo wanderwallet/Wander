@@ -161,7 +161,7 @@ export async function getExpectedOutput({
   const minAmountOut = BigNumber(amountOut)
     .multipliedBy(BigNumber(1).minus(slippage))
     .div(100)
-    .toFixed(0, BigNumber.ROUND_FLOOR);
+    .toFixed(0, BigNumber.ROUND_DOWN);
   const poolAmountIn = BigNumber(amountInWithoutWanderFee).minus(tokenInFee).toFixed(0, BigNumber.ROUND_DOWN);
 
   return {
@@ -209,7 +209,7 @@ export async function executeSwap({
 
     const { noteId, noteSettle } = await retryWithDelay(
       () => readRequestOrderResult(poolId, requestMessageId),
-      10,
+      20,
       1000,
       (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 30000),
     );

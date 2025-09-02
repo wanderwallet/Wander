@@ -79,7 +79,7 @@ export function SwapCompleteView() {
   if (!swapData) {
     return (
       <>
-        <HeadV2 title={browser.i18n.getMessage("review")} />
+        <HeadV2 title={browser.i18n.getMessage("swap_complete")} />
         <Wrapper>
           <WrapperContent>
             <Flex direction="row" gap={8} align="center" justify="center" style={{ height: "100%" }}>
@@ -122,7 +122,7 @@ export function SwapCompleteView() {
               <TokenLogo size={24} token={sendToken} style={{ flexShrink: 0 }} />
               <TokenValueWithTooltip formattedValue={valueInFormatted} ticker={sendToken?.Ticker} textSize="base" />
             </Flex>
-            <ArrowRight style={{ width: 24, height: 24, color: theme.secondaryText }} />
+            <ArrowRight style={{ width: 24, height: 24, color: theme.secondaryText, flexShrink: 0 }} />
             <Flex direction="row" align="center" gap={4}>
               <TokenLogo size={24} token={receiveToken} style={{ flexShrink: 0 }} />
               <TokenValueWithTooltip formattedValue={valueOutFormatted} ticker={receiveToken?.Ticker} textSize="base" />
@@ -193,7 +193,7 @@ export function SwapCompleteView() {
           </Flex>
         </WrapperContent>
 
-        <Flex direction="column" gap={12}>
+        <Flex direction="column" gap={12} padding="0 24px">
           <Button onClick={() => navigate(PopupPaths.Home)} fullWidth>
             {browser.i18n.getMessage("done")}
           </Button>
@@ -207,7 +207,7 @@ export function SwapCompleteView() {
   );
 }
 
-const Wrapper = styled(Section).attrs({ showPaddingVertical: false })`
+const Wrapper = styled(Section).attrs({ showPaddingVertical: false, showPaddingHorizontal: false })`
   height: calc(100vh - 100px);
   display: flex;
   flex-direction: column;
@@ -224,6 +224,7 @@ const WrapperContent = styled.div`
   flex: 1;
   overflow-y: auto;
   min-height: 0;
+  padding: 0 24px;
 `;
 
 const CrossedOutText = styled(Text).attrs({
