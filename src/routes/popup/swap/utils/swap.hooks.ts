@@ -1,7 +1,7 @@
 import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import { getExpectedOutputFn, getPools, getPriceImpact, getSwapTransaction, processToken, toFixed } from "./swap.utils";
 import { defaultOptions, useAoTokens } from "~tokens/hooks";
-import { useMemo, useCallback, useState, useRef } from "react";
+import { useMemo, useCallback, useState, useRef, useEffect } from "react";
 import { nanoid } from "nanoid";
 import type {
   ParsedSwapTransaction,
@@ -50,6 +50,7 @@ import browser from "webextension-polyfill";
 import { useActiveTier } from "~utils/tier/hooks";
 import { tierNameToId, TierTypes } from "~utils/tier/constants";
 import { retryWithDelay } from "~utils/promises/retry";
+import { sleep } from "~utils/promises/sleep";
 
 const TEN_SECONDS_MS = 10000;
 
@@ -109,7 +110,14 @@ export function usePoolForTokenPair({
     return tokenPools[key] || { botega: [], permaswap: [], aox: [], vento: [] };
   }, [tokenPools, tokenIn, tokenOut]);
 
-  // TODO: Optimize this useAsyncEffect to use requests system
+  const wanderFee = useMemo(() => {
+    if (!amountIn || !wanderFeePercent || isNaN(wanderFeePercent)) return "0";
+    const feeBN = BigNumber(amountIn || "0")
+      .multipliedBy(wanderFeePercent || 0)
+      .dividedBy(100);
+    return feeBN.isNaN() ? "0" : feeBN.toFixed(0, BigNumber.ROUND_DOWN);
+  }, [amountIn, wanderFeePercent]);
+
   useAsyncEffect(async () => {
     // Generate unique request ID to track this specific request
     const requestId = nanoid();
@@ -121,11 +129,13 @@ export function usePoolForTokenPair({
     try {
       if (isLoadingPools) return;
 
-      const noPools = Object.values(pairPools).every((pools) => pools.length === 0);
-      if (!tokenIn || !tokenOut || !slippage || !amountIn || isNaN(wanderFeePercent) || noPools) {
+      const isValidInput = !!(tokenIn && tokenOut && slippage && amountIn && wanderFee);
+      const hasNoPools = Object.values(pairPools).every((pools) => pools.length === 0);
+
+      if (!isValidInput || hasNoPools) {
         setSelectedPoolInfo(null);
         setError(
-          amountIn && tokenIn && tokenOut && noPools ? browser.i18n.getMessage("no_liquidity_pools_found") : null,
+          amountIn && tokenIn && tokenOut && hasNoPools ? browser.i18n.getMessage("no_liquidity_pools_found") : null,
         );
         return;
       }
@@ -133,11 +143,6 @@ export function usePoolForTokenPair({
       setIsLoading(true);
       setError(null);
       setSelectedPoolInfo(null);
-
-      const wanderFee = BigNumber(amountIn)
-        .multipliedBy(wanderFeePercent)
-        .dividedBy(100)
-        .toFixed(0, BigNumber.ROUND_DOWN);
 
       if (isAoxBridgeTokenPair(tokenIn, tokenOut)) {
         const validationError = validateAoxBridgeTransaction(amountIn, wanderFee, aoxBridgeInfo, tokenIn, tokenOut);
@@ -306,17 +311,7 @@ export function usePoolForTokenPair({
         setIsLoading(false);
       }
     }
-  }, [
-    tokenIn,
-    tokenOut,
-    pairPools,
-    slippage,
-    amountIn,
-    aoxBridgeInfo,
-    ventoBridgeInfo,
-    wanderFeePercent,
-    isLoadingPools,
-  ]);
+  }, [tokenIn, tokenOut, pairPools, slippage, amountIn, aoxBridgeInfo, ventoBridgeInfo, wanderFee, isLoadingPools]);
 
   return { selectedPoolInfo, isLoading: isLoadingPools || isLoading, error };
 }
@@ -346,29 +341,23 @@ export function usePoolQuote({
   const [error, setError] = useState<string | null>(null);
   const [selectedPoolInfo, setSelectedPoolInfo] = useState<SelectedPoolInfo | null>(null);
 
+  const wanderFee = useMemo(() => {
+    if (!amountIn || !wanderFeePercent || isNaN(wanderFeePercent)) return "0";
+    const feeBN = BigNumber(amountIn || "0")
+      .multipliedBy(wanderFeePercent || 0)
+      .dividedBy(100);
+    return feeBN.isNaN() ? "0" : feeBN.toFixed(0, BigNumber.ROUND_DOWN);
+  }, [amountIn, wanderFeePercent]);
+
   const fetchPoolQuote = useCallback(async () => {
     try {
-      if (
-        !tokenIn ||
-        !tokenOut ||
-        !slippage ||
-        !amountIn ||
-        !poolId ||
-        !poolType ||
-        isNaN(wanderFeePercent) ||
-        stopFetching
-      ) {
+      if (!tokenIn || !tokenOut || !slippage || !amountIn || !poolId || !poolType || !wanderFee || stopFetching) {
         setSelectedPoolInfo(null);
         setError(null);
         return;
       }
 
       setIsLoading(true);
-
-      const wanderFee = BigNumber(amountIn)
-        .multipliedBy(wanderFeePercent)
-        .dividedBy(100)
-        .toFixed(0, BigNumber.ROUND_DOWN);
 
       const params = {
         tokenIn,
@@ -414,7 +403,7 @@ export function usePoolQuote({
     } finally {
       setIsLoading(false);
     }
-  }, [tokenIn, tokenOut, slippage, amountIn, poolId, poolType, wanderFeePercent]);
+  }, [tokenIn, tokenOut, slippage, amountIn, poolId, poolType, wanderFee]);
 
   useAsyncEffect(async () => {
     if (
@@ -431,26 +420,18 @@ export function usePoolQuote({
       return;
     }
 
-    // Check if enough time has passed since last quote from review screen
-    let timeout: NodeJS.Timeout = undefined;
     const now = Date.now();
     const lastQuoteTime = (await TempTransactionStorage.get<number>("last_swap_quote_timestamp")) || now;
-    const timeSinceLastQuote = now - lastQuoteTime;
+    const waitTime = Math.max(0, TEN_SECONDS_MS - (now - lastQuoteTime));
 
-    // Fetch immediately if enough time passed, otherwise wait remaining time
-    if (timeSinceLastQuote >= TEN_SECONDS_MS) {
-      fetchPoolQuote();
-    } else {
-      timeout = setTimeout(fetchPoolQuote, TEN_SECONDS_MS - timeSinceLastQuote);
+    if (waitTime > 0) {
+      await sleep(waitTime);
     }
 
-    // Set up recurring fetch
-    const interval = setInterval(fetchPoolQuote, TEN_SECONDS_MS);
-
-    return () => {
-      clearInterval(interval);
-      if (timeout) clearTimeout(timeout);
-    };
+    while (true) {
+      await fetchPoolQuote();
+      await sleep(TEN_SECONDS_MS);
+    }
   }, [fetchPoolQuote, tokenIn, tokenOut, slippage, amountIn, poolId, poolType, stopFetching]);
 
   return { selectedPoolInfo, isLoading, error };
