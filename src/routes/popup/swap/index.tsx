@@ -312,7 +312,7 @@ export function SwapView() {
               !!errorMessage ||
               !!poolError ||
               isSwapGated ||
-              isNaN(+valueOut)
+              !+valueOut
             }
             loading={amountIn && isLoading}
             onClick={handleSwap}
