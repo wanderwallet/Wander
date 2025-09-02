@@ -1,7 +1,8 @@
 import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import { getExpectedOutputFn, getPools, getPriceImpact, getSwapTransaction, processToken, toFixed } from "./swap.utils";
 import { defaultOptions, useAoTokens } from "~tokens/hooks";
-import { useMemo, useCallback, useState } from "react";
+import { useMemo, useCallback, useState, useRef } from "react";
+import { nanoid } from "nanoid";
 import type {
   ParsedSwapTransaction,
   PoolType,
@@ -98,6 +99,7 @@ export function usePoolForTokenPair({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedPoolInfo, setSelectedPoolInfo] = useState<SelectedPoolInfo | null>(null);
+  const currentRequestRef = useRef<string | null>(null);
   const { data: aoxBridgeInfo } = useAoxBridgeInfo({ enabled: isAoxBridgeTokenPair(tokenIn, tokenOut) });
   const { data: ventoBridgeInfo } = useVentoBridgeInfo({ enabled: isVentoBridgeTokenPair(tokenIn, tokenOut) });
 
@@ -109,6 +111,13 @@ export function usePoolForTokenPair({
 
   // TODO: Optimize this useAsyncEffect to use requests system
   useAsyncEffect(async () => {
+    // Generate unique request ID to track this specific request
+    const requestId = nanoid();
+    currentRequestRef.current = requestId;
+
+    // TODO: Remove this log
+    log(LOG_GROUP.SWAP, `Getting quote for requestId: ${requestId}`);
+
     try {
       if (isLoadingPools) return;
 
@@ -149,14 +158,16 @@ export function usePoolForTokenPair({
           2,
         );
 
-        setSelectedPoolInfo({
-          poolId: aoxPool.poolId,
-          poolType: aoxPool.poolType,
-          quoteOutput: aoxOutput,
-          priceImpact: "0.00",
-        });
-
-        setError(null);
+        // Validate this response is for the current request
+        if (currentRequestRef.current === requestId) {
+          setSelectedPoolInfo({
+            poolId: aoxPool.poolId,
+            poolType: aoxPool.poolType,
+            quoteOutput: aoxOutput,
+            priceImpact: "0.00",
+          });
+          setError(null);
+        }
 
         return;
       }
@@ -180,14 +191,16 @@ export function usePoolForTokenPair({
           2,
         );
 
-        setSelectedPoolInfo({
-          poolId: ventoPool.poolId,
-          poolType: ventoPool.poolType,
-          quoteOutput: ventoOutput,
-          priceImpact: "0.00",
-        });
-
-        setError(null);
+        // Validate this response is for the current request
+        if (currentRequestRef.current === requestId) {
+          setSelectedPoolInfo({
+            poolId: ventoPool.poolId,
+            poolType: ventoPool.poolType,
+            quoteOutput: ventoOutput,
+            priceImpact: "0.00",
+          });
+          setError(null);
+        }
 
         return;
       }
@@ -213,6 +226,9 @@ export function usePoolForTokenPair({
         retryWithDelay(() => permaswap.getExpectedOutput({ poolId: permaswapPool?.poolId, ...params }), 2),
       ]);
 
+      // Check if request is still current after async DEX operations
+      if (currentRequestRef.current !== requestId) return;
+
       const botegaOutput = botegaResponse.status === "fulfilled" ? botegaResponse.value : null;
       const permaswapOutput = permaswapResponse.status === "fulfilled" ? permaswapResponse.value : null;
 
@@ -227,7 +243,10 @@ export function usePoolForTokenPair({
 
       if (!finalOutput) {
         log(LOG_GROUP.SWAP, "No final output found");
-        setError(browser.i18n.getMessage("unable_to_retrieve_quote"));
+        // Only set error if this is still the current request
+        if (currentRequestRef.current === requestId) {
+          setError(browser.i18n.getMessage("unable_to_retrieve_quote"));
+        }
         return;
       }
 
@@ -245,6 +264,9 @@ export function usePoolForTokenPair({
         );
       }
 
+      // Check if request is still current after liquidity async operation
+      if (currentRequestRef.current !== requestId) return;
+
       if (!liquidity) {
         log(LOG_GROUP.SWAP, "No liquidity found");
         setError(browser.i18n.getMessage("unable_to_retrieve_quote"));
@@ -253,19 +275,36 @@ export function usePoolForTokenPair({
 
       const priceImpact = getPriceImpact(liquidity.reserveIn, liquidity.reserveOut, finalOutput.poolAmountIn);
 
-      setSelectedPoolInfo({
+      // TODO: Remove this log
+      log(LOG_GROUP.SWAP, currentRequestRef.current, requestId, {
         poolId: finalPool.poolId,
         poolType: finalPool.poolType,
         quoteOutput: finalOutput,
         priceImpact,
       });
-      TempTransactionStorage.set("last_swap_quote_timestamp", Date.now());
-      setError(null);
+
+      // Validate this response is for the current request
+      if (currentRequestRef.current === requestId) {
+        setSelectedPoolInfo({
+          poolId: finalPool.poolId,
+          poolType: finalPool.poolType,
+          quoteOutput: finalOutput,
+          priceImpact,
+        });
+        TempTransactionStorage.set("last_swap_quote_timestamp", Date.now());
+        setError(null);
+      }
     } catch (error) {
       log(LOG_GROUP.SWAP, "Error fetching pool for token pair", error);
-      setError(browser.i18n.getMessage("unable_to_retrieve_quote"));
+      // Only set error if this is still the current request
+      if (currentRequestRef.current === requestId) {
+        setError(browser.i18n.getMessage("unable_to_retrieve_quote"));
+      }
     } finally {
-      setIsLoading(false);
+      // Only set loading false if this is still the current request
+      if (currentRequestRef.current === requestId) {
+        setIsLoading(false);
+      }
     }
   }, [
     tokenIn,
