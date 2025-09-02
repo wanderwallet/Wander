@@ -460,16 +460,14 @@ export function useTokensWithPagination(
   const { tokens: poolTokens, isLoading: isPoolsLoading } = useTokens();
   const { tokens: userTokens } = useAoTokens({ type: "asset", hidden: false });
 
+  const poolTokenIds = useMemo(() => new Set(poolTokens.map((token) => token.processId)), [poolTokens]);
+
   const allTokens = useMemo(() => {
     if (tokenSelectorType === "send") {
-      const poolTokenIds = new Set(poolTokens.map((token) => token.processId));
       return userTokens.filter((token) => poolTokenIds.has(token.id) && token.id !== filterTokenId);
     }
-    const tokenToFilter = poolTokens.find((token) => token.processId === filterTokenId);
-    return poolTokens.filter(
-      (token) => token.processId !== filterTokenId && token.poolPartners.has(tokenToFilter.processId),
-    );
-  }, [userTokens, poolTokens, tokenSelectorType, filterTokenId]);
+    return poolTokens.filter((token) => token.processId !== filterTokenId && token.poolPartners.has(filterTokenId));
+  }, [userTokens, poolTokens, tokenSelectorType, filterTokenId, poolTokenIds]);
 
   const filteredTokens = useMemo(() => {
     if (!searchTerm.trim()) return allTokens;
