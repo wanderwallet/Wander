@@ -100,6 +100,8 @@ export function usePoolForTokenPair({
   const { data: aoxBridgeInfo } = useAoxBridgeInfo({ enabled: isAoxBridgeTokenPair(tokenIn, tokenOut) });
   const { data: ventoBridgeInfo } = useVentoBridgeInfo({ enabled: isVentoBridgeTokenPair(tokenIn, tokenOut) });
 
+  console.log(selectedPoolInfo);
+
   const pairPools = useMemo(() => {
     if (!tokenIn || !tokenOut) return { botega: [], permaswap: [], aox: [], vento: [] };
     const key = [tokenIn, tokenOut].sort().join("-");
@@ -120,6 +122,8 @@ export function usePoolForTokenPair({
       }
 
       setIsLoading(true);
+      setError(null);
+      setSelectedPoolInfo(null);
 
       const wanderFee = BigNumber(amountIn)
         .multipliedBy(wanderFeePercent)
