@@ -101,8 +101,6 @@ export function usePoolForTokenPair({
   const { data: aoxBridgeInfo } = useAoxBridgeInfo({ enabled: isAoxBridgeTokenPair(tokenIn, tokenOut) });
   const { data: ventoBridgeInfo } = useVentoBridgeInfo({ enabled: isVentoBridgeTokenPair(tokenIn, tokenOut) });
 
-  console.log(selectedPoolInfo);
-
   const pairPools = useMemo(() => {
     if (!tokenIn || !tokenOut) return { botega: [], permaswap: [], aox: [], vento: [] };
     const key = [tokenIn, tokenOut].sort().join("-");
