@@ -135,7 +135,13 @@ export const SwapInput = ({
 const TokenTag = ({ token, iconColor, onClick }: { token: TokenInfo; iconColor: string; onClick: () => void }) => {
   return (
     <Flex align="center" gap={4} onClick={onClick} style={{ marginTop: 20 }}>
-      <TokenLogo key={token.processId} token={token || ""} name={token.Name || token.Ticker} size={24} />
+      <TokenLogo
+        key={token.processId}
+        token={token || ""}
+        name={token.Name || token.Ticker}
+        size={24}
+        fetchMissingLogo
+      />
       <Text weight="medium" noMargin>
         {token.Ticker}
       </Text>
