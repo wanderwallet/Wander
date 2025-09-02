@@ -140,6 +140,8 @@ export async function getExpectedOutput({
   slippage,
   wanderFee,
 }: GetExpectedOutputParams): Promise<GetExpectedOutputResponse> {
+  if (!poolId) throw new Error("Pool ID is required");
+
   swapper = swapper || (await getActiveAddress());
   const amountInWithoutWanderFee = BigNumber(amountIn).minus(wanderFee).toFixed(0, BigNumber.ROUND_DOWN);
   const response = await aoInstance.dryrun({
