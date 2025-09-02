@@ -53,6 +53,7 @@ import { retryWithDelay } from "~utils/promises/retry";
 import { sleep } from "~utils/promises/sleep";
 
 const TEN_SECONDS_MS = 10000;
+const FIFTEEN_SECONDS_MS = 15000;
 
 export function usePools() {
   return useQuery({
@@ -110,14 +111,6 @@ export function usePoolForTokenPair({
     return tokenPools[key] || { botega: [], permaswap: [], aox: [], vento: [] };
   }, [tokenPools, tokenIn, tokenOut]);
 
-  const wanderFee = useMemo(() => {
-    if (!amountIn || !wanderFeePercent || isNaN(wanderFeePercent)) return "0";
-    const feeBN = BigNumber(amountIn || "0")
-      .multipliedBy(wanderFeePercent || 0)
-      .dividedBy(100);
-    return feeBN.isNaN() ? "0" : feeBN.toFixed(0, BigNumber.ROUND_DOWN);
-  }, [amountIn, wanderFeePercent]);
-
   useAsyncEffect(async () => {
     // Generate unique request ID to track this specific request
     const requestId = nanoid();
@@ -129,7 +122,7 @@ export function usePoolForTokenPair({
     try {
       if (isLoadingPools) return;
 
-      const isValidInput = !!(tokenIn && tokenOut && slippage && amountIn && wanderFee);
+      const isValidInput = !!(tokenIn && tokenOut && slippage && amountIn && !isNaN(wanderFeePercent));
       const hasNoPools = Object.values(pairPools).every((pools) => pools.length === 0);
 
       if (!isValidInput || hasNoPools) {
@@ -143,6 +136,11 @@ export function usePoolForTokenPair({
       setIsLoading(true);
       setError(null);
       setSelectedPoolInfo(null);
+
+      const wanderFee = BigNumber(amountIn)
+        .multipliedBy(wanderFeePercent)
+        .dividedBy(100)
+        .toFixed(0, BigNumber.ROUND_DOWN);
 
       if (isAoxBridgeTokenPair(tokenIn, tokenOut)) {
         const validationError = validateAoxBridgeTransaction(amountIn, wanderFee, aoxBridgeInfo, tokenIn, tokenOut);
@@ -311,7 +309,17 @@ export function usePoolForTokenPair({
         setIsLoading(false);
       }
     }
-  }, [tokenIn, tokenOut, pairPools, slippage, amountIn, aoxBridgeInfo, ventoBridgeInfo, wanderFee, isLoadingPools]);
+  }, [
+    tokenIn,
+    tokenOut,
+    pairPools,
+    slippage,
+    amountIn,
+    aoxBridgeInfo,
+    ventoBridgeInfo,
+    wanderFeePercent,
+    isLoadingPools,
+  ]);
 
   return { selectedPoolInfo, isLoading: isLoadingPools || isLoading, error };
 }
@@ -403,9 +411,9 @@ export function usePoolQuote({
     } finally {
       setIsLoading(false);
     }
-  }, [tokenIn, tokenOut, slippage, amountIn, poolId, poolType, wanderFee]);
+  }, [tokenIn, tokenOut, slippage, amountIn, poolId, poolType, wanderFee, stopFetching]);
 
-  useAsyncEffect(async () => {
+  useEffect(() => {
     if (
       !tokenIn ||
       !tokenOut ||
@@ -420,18 +428,26 @@ export function usePoolQuote({
       return;
     }
 
-    const now = Date.now();
-    const lastQuoteTime = (await TempTransactionStorage.get<number>("last_swap_quote_timestamp")) || now;
-    const waitTime = Math.max(0, TEN_SECONDS_MS - (now - lastQuoteTime));
+    let interval: NodeJS.Timeout;
 
-    if (waitTime > 0) {
-      await sleep(waitTime);
-    }
+    const fetchPoolQuoteInterval = async () => {
+      const now = Date.now();
+      const lastQuoteTime = (await TempTransactionStorage.get<number>("last_swap_quote_timestamp")) ?? now;
+      const waitTime = Math.max(0, TEN_SECONDS_MS - (now - lastQuoteTime));
 
-    while (true) {
-      await fetchPoolQuote();
-      await sleep(TEN_SECONDS_MS);
-    }
+      if (waitTime > 0) {
+        await sleep(waitTime);
+      }
+
+      fetchPoolQuote();
+      interval = setInterval(fetchPoolQuote, FIFTEEN_SECONDS_MS);
+    };
+
+    fetchPoolQuoteInterval();
+
+    return () => {
+      clearInterval(interval);
+    };
   }, [fetchPoolQuote, tokenIn, tokenOut, slippage, amountIn, poolId, poolType, stopFetching]);
 
   return { selectedPoolInfo, isLoading, error };
