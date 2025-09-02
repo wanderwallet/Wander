@@ -1,6 +1,7 @@
 import type { TokenInfo } from "~tokens/aoTokens/ao";
 import type { GetExpectedOutputResponse } from "./dex/dex.types";
 import type { Tier } from "~utils/tier/types";
+import type { Tag } from "arweave/web/lib/transaction";
 
 export interface PermaswapPool {
   process: string;
@@ -140,6 +141,23 @@ export interface WanderFee {
   finalFee: string;
 }
 
+export interface KeystoneTx {
+  format: number;
+  id: string;
+  last_tx: string;
+  owner: string;
+  tags: Tag[];
+  target: string;
+  quantity: string;
+  data: string;
+  data_size: string;
+  data_root: string;
+  data_tree: any;
+  reward: string;
+  signature: string;
+  raw?: string;
+}
+
 export interface SwapData {
   transferId?: string;
   selectedPoolInfo: SelectedPoolInfo;
@@ -160,6 +178,7 @@ export interface SwapData {
   feeProcessedAt?: number;
   showCompletionScreen?: boolean;
   monitoringStarted?: boolean;
+  keystoneTx?: Partial<KeystoneTx>;
 }
 
 export interface TokenPools {

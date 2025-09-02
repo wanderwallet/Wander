@@ -67,7 +67,7 @@ export class KeystoneSigner implements Signer {
   }
 
   submitSignature(signature: string | ReturnType<typeof decodeSignature>) {
-    if (typeof signature === "string") {
+    if (typeof signature === "string" || typeof signature !== "object") {
       const signatureBytes = Buffer.from(signature, "base64");
       this.#_event.emit("submit-signature", signatureBytes);
     } else {

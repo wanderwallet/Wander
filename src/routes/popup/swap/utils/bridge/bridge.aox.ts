@@ -24,11 +24,11 @@ import { retryWithGateways } from "~gateways/wayfinder";
 import browser from "webextension-polyfill";
 import { AR_PROCESS_ID, WAR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 import { createDataItemKeystoneSigner, createDataItemSigner } from "~tokens/aoTokens/ao";
-import type { DecodedTag } from "~api/modules/sign/tags";
 import BigNumber from "bignumber.js";
 import type { AoxBridgeTransactionStatus } from "./bridge.types";
 import type { JWKInterface } from "arweave/web/lib/wallet";
 import type { HardwareWallet } from "~wallets/hardware";
+import { assertTransferResult, createKeystoneFeeTransaction, createSwapMessage } from "../swap.utils";
 
 const FAILED_STATUSES = new Set<AoxBridgeTransactionStatus>(["failed", "submintAosFailed", "notOnChain", "refunded"]);
 
@@ -88,6 +88,7 @@ export async function executeSwap({
   tokenIn,
   amountIn,
   tags = [],
+  wanderFee,
   keystoneSigner,
 }: SwapExecutionParams): Promise<SwapExecutionResponse> {
   let decryptedWallet: DecryptedWallet;
@@ -110,6 +111,7 @@ export async function executeSwap({
     const activeAddress = await getActiveAddress();
 
     let transferId: string;
+    let keystoneTx: SwapExecutionResponse["keystoneTx"];
 
     if (tokenIn === AR_PROCESS_ID) {
       const { result: transaction, arweave } = await retryWithGateways((arweave) =>
@@ -127,6 +129,9 @@ export async function executeSwap({
       if (keystoneSigner) {
         const { id, signature } = await keystoneSigner.signTransaction(transaction);
         transaction.setSignature({ id, signature, owner: (decryptedWallet as HardwareWallet).publicKey });
+
+        const feeTx = await createKeystoneFeeTransaction("aox", tokenIn, transaction.id, wanderFee, keystoneSigner);
+        keystoneTx = feeTx.toJSON();
       } else {
         await arweave.transactions.sign(transaction, keyfile);
       }
@@ -139,7 +144,7 @@ export async function executeSwap({
     } else {
       const signer = keystoneSigner ? createDataItemKeystoneSigner(keystoneSigner) : createDataItemSigner(keyfile);
 
-      transferId = await aoInstance.message({
+      const { keystoneTx: keystoneTx_, sendMessage } = await createSwapMessage({
         process: tokenIn,
         signer,
         tags: [
@@ -149,29 +154,15 @@ export async function executeSwap({
           { name: "Timestamp", value: Date.now().toString() },
           ...tags,
         ],
+        wanderFee,
+        poolType: "aox",
+        keystoneSigner,
       });
 
-      let transferError = "";
+      keystoneTx = keystoneTx_;
+      transferId = await sendMessage();
 
-      try {
-        const { Error, Messages } = await aoInstance.result({ message: transferId, process: tokenIn });
-        if (Error) {
-          transferError = "Failed to unwrap WAR tokens";
-        } else if (Messages.length > 0) {
-          const hasValidTag = Messages.some((message) =>
-            message?.Tags?.some((tag: DecodedTag) => tag.name === "Action" && tag.value === "Burn-Notice"),
-          );
-
-          if (!hasValidTag) {
-            transferError = "Failed to unwrap WAR tokens";
-          }
-        }
-      } catch {}
-
-      if (transferError) {
-        log(LOG_GROUP.SWAP, transferError);
-        throw new Error(transferError);
-      }
+      await assertTransferResult(transferId, tokenIn, ["Burn-Notice"], "Failed to unwrap WAR tokens");
     }
 
     await retryWithDelay(async () => {
@@ -196,7 +187,7 @@ export async function executeSwap({
     // Invalidate transfered token balance
     queryClient.invalidateQueries({ queryKey: ["tokenBalance", tokenIn, activeAddress] });
 
-    return { transferId };
+    return { transferId, keystoneTx };
   } catch (err) {
     log(LOG_GROUP.SWAP, "Error executing swap", err);
     throw err;

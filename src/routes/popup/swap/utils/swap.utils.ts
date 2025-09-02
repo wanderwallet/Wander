@@ -1,4 +1,10 @@
-import { getTagValue, getTagValueMap, type TokenInfo } from "~tokens/aoTokens/ao";
+import {
+  createDataItemKeystoneSigner,
+  createDataItemSigner,
+  getTagValue,
+  getTagValueMap,
+  type TokenInfo,
+} from "~tokens/aoTokens/ao";
 import {
   type SwapData,
   type BotegaPool,
@@ -19,7 +25,7 @@ import {
   WAR_PROCESS_ID,
   WAR_TOKEN_INFO,
 } from "~tokens/aoTokens/ao.constants";
-import { PoolTypeEnum } from "./swap.constants";
+import { PoolTypeEnum, WANDER_FEE_RECIPIENT } from "./swap.constants";
 import type { DefaultTheme } from "styled-components";
 import type { GQLEdgeInterface } from "ar-gql/dist/faces";
 import type GQLResultInterface from "ar-gql/dist/faces";
@@ -36,6 +42,17 @@ import { vento } from "./bridge/bridge.vento";
 import type { GetExpectedOutputParams, ReadSwapResult, SwapExecutionParams } from "./dex/dex.types";
 import { getAoxBridgeTransaction, getVentoBridgeTransaction } from "./bridge/bridge.utils";
 import { getLinkedMessages } from "./dex/dex.utils";
+import { createData, DataItem, type Tag } from "@dha-team/arbundles";
+import type Transaction from "arweave/web/lib/transaction";
+import browser from "webextension-polyfill";
+import { generateAnchor, KeystoneSigner } from "~wallets/hardware/keystone";
+import { retryWithGateways } from "~gateways/wayfinder";
+import Arweave from "arweave/web/common";
+import { connect } from "@permaweb/aoconnect";
+import { defaultConfig } from "~tokens/aoTokens/config";
+import type { DecodedTag } from "~api/modules/sign/tags";
+
+const aoInstance = connect(defaultConfig);
 
 const BOTEGA_POOL_OPTIONS = {
   headers: {
@@ -550,4 +567,171 @@ export function fromTokenBaseUnits<T extends "BigNumber" | "string" = "string">(
   return (returnType === "BigNumber" ? shiftedValue : shiftedValue.toFixed()) as T extends "BigNumber"
     ? BigNumber
     : string;
+}
+
+export function getFeeTransactionTags(swapId: string, isAo: boolean) {
+  const tags = [
+    { name: "Fee-Type", value: "Swap" },
+    { name: "Swap-Tx-Id", value: swapId || "" },
+    { name: "Client", value: "Wander" },
+    { name: "Client-Version", value: browser.runtime.getManifest().version },
+  ];
+
+  if (!isAo) {
+    tags.unshift({ name: "Type", value: "Transfer" });
+  }
+
+  return tags;
+}
+
+export async function createKeystoneFeeTransaction<P extends PoolType, T extends string>(
+  poolType: P,
+  tokenIn: T,
+  swapId: string,
+  feeAmount: string,
+  signer?: KeystoneSigner,
+): Promise<P extends "aox" | "vento" ? (T extends typeof AR_PROCESS_ID ? Transaction : DataItem) : DataItem> {
+  const isARSwap = (poolType === "aox" || poolType === "vento") && tokenIn === AR_PROCESS_ID;
+
+  const tags = getFeeTransactionTags(swapId, !isARSwap);
+
+  if (isARSwap) {
+    const { result: transaction } = await retryWithGateways((arweave) =>
+      arweave.createTransaction({
+        target: WANDER_FEE_RECIPIENT,
+        quantity: feeAmount,
+      }),
+    );
+
+    tags.forEach((tag) => transaction.addTag(tag.name, tag.value));
+
+    const result = await signer.signTransaction(transaction);
+    const publicKey = Arweave.utils.bufferTob64Url(signer.publicKey);
+    transaction.setSignature({ ...result, owner: publicKey });
+    return transaction as any;
+  } else {
+    if (!signer) {
+      throw new Error("Signer is required for AO transactions");
+    }
+
+    const tags = [
+      { name: "Variant", value: "ao.TN.1" },
+      { name: "Type", value: "Message" },
+      { name: "Data-Protocol", value: "ao" },
+      { name: "Action", value: "Transfer" },
+      { name: "SDK", value: "aoconnect" },
+      { name: "Content-Type", value: "text/plain" },
+      { name: "Recipient", value: WANDER_FEE_RECIPIENT },
+      { name: "Quantity", value: feeAmount },
+      ...getFeeTransactionTags(swapId, true),
+    ];
+
+    const anchor = generateAnchor() as unknown as string;
+    const target = tokenIn;
+    const data = Math.floor(1000 + Math.random() * 9000).toString();
+    const dataItem = createData(data, signer, { tags, target, anchor });
+    const dataItemBuf = dataItem.getRaw();
+    const signature = await signer.sign(dataItemBuf);
+    dataItem.setSignature(Buffer.from(signature));
+    return dataItem as any;
+  }
+}
+
+interface CreateAoMessageArgs {
+  poolType: PoolType;
+  process: string;
+  signer: ReturnType<typeof createDataItemSigner> | ReturnType<typeof createDataItemKeystoneSigner>;
+  tags: Tag[];
+  wanderFee: string;
+  keystoneSigner?: KeystoneSigner;
+}
+
+export async function createSwapMessage({
+  poolType,
+  process,
+  signer,
+  tags,
+  wanderFee,
+  keystoneSigner,
+}: CreateAoMessageArgs) {
+  let dataItemRaw: Buffer;
+  let keystoneTx: SwapData["keystoneTx"] | undefined;
+  if (keystoneSigner) {
+    const data = Math.floor(1000 + Math.random() * 9000).toString();
+    const { id, raw } = await signer({ data, tags, target: process });
+    dataItemRaw = Buffer.from(raw);
+
+    const feeTx = await createKeystoneFeeTransaction(poolType, process, id, wanderFee, keystoneSigner);
+    keystoneTx = {
+      signature: feeTx.signature,
+      raw: feeTx.getRaw().toString("base64"),
+    };
+  }
+
+  async function sendMessage() {
+    if (keystoneSigner) {
+      try {
+        const response = await fetch("https://mu.ao-testnet.xyz", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/octet-stream",
+            Accept: "application/json",
+          },
+          redirect: "follow",
+          // @ts-ignore
+          body: dataItemRaw,
+        });
+        if (!response.ok) throw new Error("Failed to post transaction");
+        const result = await response.json();
+        return result.id;
+      } catch (err) {
+        if (err?.name === "RedirectRequested") {
+          throw err;
+        } else {
+          throw new Error(`Error while communicating with MU: ${JSON.stringify(err)}`);
+        }
+      }
+    } else {
+      const dataItemSigner = createDataItemSigner(signer);
+      const transferId = await aoInstance.message({ process, signer: dataItemSigner, tags });
+      return transferId;
+    }
+  }
+
+  return { keystoneTx, sendMessage };
+}
+
+/**
+ * Asserts that a transfer result contains valid Credit/Debit notice tags
+ * @param message - The message ID of the transfer
+ * @param process - The process ID of the transfer
+ * @throws {Error} If the transfer result is missing valid notice tags
+ */
+export async function assertTransferResult(
+  message: string,
+  process: string,
+  validTags = ["Credit-Notice", "Debit-Notice"],
+  errorMessage = "Failed to transfer tokens",
+) {
+  let transferError = "";
+
+  try {
+    const { Error, Messages } = await aoInstance.result({ message, process });
+    if (Error) {
+      transferError = errorMessage;
+    } else if (Messages.length > 0) {
+      const hasValidTag = Messages.some((message) =>
+        message?.Tags?.some((tag: DecodedTag) => tag.name === "Action" && validTags.includes(tag.value)),
+      );
+
+      if (!hasValidTag) {
+        transferError = errorMessage;
+      }
+    }
+  } catch {}
+
+  if (transferError) {
+    log(LOG_GROUP.SWAP, transferError);
+    throw new Error(transferError);
+  }
 }

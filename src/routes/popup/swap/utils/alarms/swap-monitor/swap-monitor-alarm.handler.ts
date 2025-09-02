@@ -45,21 +45,32 @@ async function checkPendingSwaps() {
     (swap) => swap.status !== "completed" && swap.status !== "failed" && !!swap.transferId,
   );
 
-  // Get completed swaps that still need fee processing (only if wallet is unlocked)
-  const completedSwapsNeedingFees = walletUnlocked
-    ? await swapsArray.filter((swap) => swap.status === "completed" && !swap.wanderFeeSent && !!swap.transferId)
-    : [];
+  // Get completed swaps that still need fee processing (only if wallet is unlocked or has keystone tx)
+  const completedSwapsNeedingFees = await swapsArray.filter(
+    (swap) =>
+      swap.status === "completed" && !swap.wanderFeeSent && !!swap.transferId && (walletUnlocked || !!swap.keystoneTx),
+  );
 
   const totalToProcess = pendingSwaps.length + completedSwapsNeedingFees.length;
 
   if (totalToProcess === 0) {
-    log(LOG_GROUP.SWAP, walletUnlocked ? "No swaps to monitor" : "No swaps to monitor (wallet locked)");
+    if (walletUnlocked) {
+      log(LOG_GROUP.SWAP, "No swaps to monitor");
+    } else {
+      log(LOG_GROUP.SWAP, "No swaps to monitor (wallet locked, no keystone transactions)");
+    }
     return;
   }
 
+  const feeProcessingNote = walletUnlocked
+    ? ""
+    : completedSwapsNeedingFees.length > 0
+      ? " (wallet locked - processing keystone transactions only)"
+      : " (wallet locked - no keystone transactions for fee processing)";
+
   log(
     LOG_GROUP.SWAP,
-    `Checking ${pendingSwaps.length} pending swaps and ${completedSwapsNeedingFees.length} swaps needing fee processing${walletUnlocked ? "" : " (wallet locked - skipping fee processing)"}`,
+    `Checking ${pendingSwaps.length} pending swaps and ${completedSwapsNeedingFees.length} swaps needing fee processing${feeProcessingNote}`,
   );
 
   // Check pending swaps for completion (always check status regardless of lock state)
@@ -71,8 +82,8 @@ async function checkPendingSwaps() {
     }
   }
 
-  // Retry fee processing for completed swaps (only if wallet is unlocked)
-  if (walletUnlocked) {
+  // Retry fee processing for completed swaps (wallet unlocked or keystone transactions)
+  if (walletUnlocked || completedSwapsNeedingFees.length > 0) {
     for (const swap of completedSwapsNeedingFees) {
       try {
         await retryFeeProcessing(swap);
@@ -215,7 +226,8 @@ async function handleSwapFailure(swap: SwapData) {
  * Retry fee processing for completed swaps
  */
 async function retryFeeProcessing(swap: SwapData) {
-  log(LOG_GROUP.SWAP, `Retrying fee processing for swap ${swap.transferId}`);
+  const processingType = swap.keystoneTx ? "keystone transaction" : "local transaction";
+  log(LOG_GROUP.SWAP, `Retrying fee processing for swap ${swap.transferId} (${processingType})`);
 
   try {
     // Double-check the current state from storage before processing
@@ -290,10 +302,11 @@ async function scheduleNextSwapMonitorCheck() {
     (swap) => swap.status !== "completed" && swap.status !== "failed" && !!swap.transferId,
   );
 
-  // Only check for fee processing if wallet is unlocked
-  const completedSwapsNeedingFees = walletUnlocked
-    ? await swapsArray.filter((swap) => swap.status === "completed" && !swap.wanderFeeSent && !!swap.transferId)
-    : [];
+  // Only check for fee processing if wallet is unlocked or has keystone tx
+  const completedSwapsNeedingFees = await swapsArray.filter(
+    (swap) =>
+      swap.status === "completed" && !swap.wanderFeeSent && !!swap.transferId && (walletUnlocked || !!swap.keystoneTx),
+  );
 
   const totalToMonitor = pendingSwaps.length + completedSwapsNeedingFees.length;
 
@@ -302,17 +315,22 @@ async function scheduleNextSwapMonitorCheck() {
     await browser.alarms.create(SWAP_MONITOR_ALARM_NAME, {
       when: Date.now() + SWAP_CHECK_INTERVAL_MINUTES * 60 * 1000,
     });
+    const monitoringNote = walletUnlocked
+      ? ""
+      : completedSwapsNeedingFees.length > 0
+        ? " (wallet locked - monitoring keystone transactions)"
+        : " (wallet locked)";
+
     log(
       LOG_GROUP.SWAP,
-      `Next swap check scheduled in ${SWAP_CHECK_INTERVAL_MINUTES} minutes (${pendingSwaps.length} pending, ${completedSwapsNeedingFees.length} needing fees)${walletUnlocked ? "" : " (wallet locked)"}`,
+      `Next swap check scheduled in ${SWAP_CHECK_INTERVAL_MINUTES} minutes (${pendingSwaps.length} pending, ${completedSwapsNeedingFees.length} needing fees)${monitoringNote}`,
     );
   } else {
-    log(
-      LOG_GROUP.SWAP,
-      walletUnlocked
-        ? "No swaps to monitor, stopping monitoring"
-        : "No swaps to monitor (wallet locked), stopping monitoring",
-    );
+    if (walletUnlocked) {
+      log(LOG_GROUP.SWAP, "No swaps to monitor, stopping monitoring");
+    } else {
+      log(LOG_GROUP.SWAP, "No swaps to monitor (wallet locked, no keystone transactions), stopping monitoring");
+    }
   }
 }
 

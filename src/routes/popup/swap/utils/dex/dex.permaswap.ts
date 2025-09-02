@@ -20,6 +20,7 @@ import { retryWithDelay } from "~utils/promises/retry";
 import { freeDecryptedWallet } from "~wallets/encryption";
 import { getLinkedMessages, OrderError } from "./dex.utils";
 import { queryClient } from "~utils/tanstack";
+import { assertTransferResult, createSwapMessage } from "../swap.utils";
 
 const aoInstance = connect(defaultConfig);
 
@@ -186,21 +187,21 @@ export async function executeSwap({
   minAmountOut,
   poolId,
   tags = [],
+  wanderFee,
   keystoneSigner,
 }: SwapExecutionParams): Promise<SwapExecutionResponse> {
   let decryptedWallet: DecryptedWallet;
   try {
     decryptedWallet = await getActiveKeyfile();
 
-    let signer;
+    let signer: ReturnType<typeof createDataItemSigner> | ReturnType<typeof createDataItemKeystoneSigner>;
     if (keystoneSigner) {
       // Hardware wallet case
       signer = createDataItemKeystoneSigner(keystoneSigner);
     } else {
       // Local wallet case
       isLocalWallet(decryptedWallet);
-      const keyfile = decryptedWallet.keyfile;
-      signer = createDataItemSigner(keyfile);
+      signer = createDataItemSigner(decryptedWallet.keyfile);
     }
 
     const requestMessageId = await aoInstance.message({
@@ -224,7 +225,7 @@ export async function executeSwap({
 
     if (!noteId || !noteSettle) throw new Error("Failed to create Permaswap order");
 
-    const transferId = await aoInstance.message({
+    const { keystoneTx, sendMessage } = await createSwapMessage({
       process: tokenIn,
       signer,
       tags: [
@@ -235,13 +236,20 @@ export async function executeSwap({
         { name: "X-FFP-NoteIDs", value: JSON.stringify([noteId]) },
         ...tags,
       ],
+      wanderFee,
+      poolType: "permaswap",
+      keystoneSigner,
     });
+
+    const transferId = await sendMessage();
+
+    await assertTransferResult(transferId, tokenIn);
 
     // Invalidate transfered token balance
     const activeAddress = await getActiveAddress();
     queryClient.invalidateQueries({ queryKey: ["tokenBalance", tokenIn, activeAddress] });
 
-    return { transferId, noteSettle };
+    return { transferId, noteSettle, keystoneTx };
   } catch (err) {
     log(LOG_GROUP.SWAP, "Error executing swap", err);
     throw err;

@@ -28,6 +28,7 @@ import { getLinkedMessages, OrderError } from "../dex/dex.utils";
 import { defaultOptions } from "~tokens/hooks";
 import type { JWKInterface } from "arweave/web/lib/wallet";
 import type { HardwareWallet } from "~wallets/hardware";
+import { assertTransferResult, createKeystoneFeeTransaction, createSwapMessage } from "../swap.utils";
 
 export const VENTO_BRIDGE_ADDRESS = "mFRKcHsO6Tlv2E2wZcrcbv3mmzxzD7vYPbyybI3KCVA";
 
@@ -98,6 +99,7 @@ export async function executeSwap({
   tokenIn,
   amountIn,
   tags = [],
+  wanderFee,
   keystoneSigner,
 }: SwapExecutionParams): Promise<SwapExecutionResponse> {
   let decryptedWallet: DecryptedWallet;
@@ -115,6 +117,7 @@ export async function executeSwap({
 
     let transferId: string;
     let debitNoticeId: string | undefined = undefined;
+    let keystoneTx: SwapExecutionResponse["keystoneTx"];
 
     if (tokenIn === AR_PROCESS_ID) {
       const { result: transaction, arweave } = await retryWithGateways((arweave) =>
@@ -134,6 +137,9 @@ export async function executeSwap({
       if (keystoneSigner) {
         const { id, signature } = await keystoneSigner.signTransaction(transaction);
         transaction.setSignature({ id, signature, owner: (decryptedWallet as HardwareWallet).publicKey });
+
+        const feeTx = await createKeystoneFeeTransaction("vento", tokenIn, transaction.id, wanderFee, keystoneSigner);
+        keystoneTx = feeTx.toJSON();
       } else {
         await arweave.transactions.sign(transaction, keyfile);
       }
@@ -146,7 +152,7 @@ export async function executeSwap({
     } else {
       const signer = keystoneSigner ? createDataItemKeystoneSigner(keystoneSigner) : createDataItemSigner(keyfile);
 
-      transferId = await aoInstance.message({
+      const { keystoneTx: keystoneTx_, sendMessage } = await createSwapMessage({
         process: tokenIn,
         signer,
         tags: [
@@ -155,33 +161,15 @@ export async function executeSwap({
           { name: "Quantity", value: amountIn },
           ...tags,
         ],
+        wanderFee,
+        poolType: "vento",
+        keystoneSigner,
       });
 
-      let transferError = "";
+      keystoneTx = keystoneTx_;
+      transferId = await sendMessage();
 
-      try {
-        const { Error, Messages } = await aoInstance.result({ message: transferId, process: tokenIn });
-        if (Error) {
-          transferError = "Failed to unwrap vAR tokens";
-        } else if (Messages.length > 0) {
-          const hasValidTag = Messages.some((message) =>
-            message?.Tags?.some(
-              (tag: DecodedTag) =>
-                (tag.name === "Event" && tag.value === "Burn") ||
-                (tag.name === "Action" && tag.value === "Debit-Notice"),
-            ),
-          );
-
-          if (!hasValidTag) {
-            transferError = "Failed to unwrap vAR tokens";
-          }
-        }
-      } catch {}
-
-      if (transferError) {
-        log(LOG_GROUP.SWAP, transferError);
-        throw new Error(transferError);
-      }
+      await assertTransferResult(transferId, tokenIn, ["Debit-Notice"], "Failed to bridge token");
 
       debitNoticeId = await retryWithDelay(
         async () => {
@@ -199,7 +187,7 @@ export async function executeSwap({
     // Invalidate transfered token balance
     queryClient.invalidateQueries({ queryKey: ["tokenBalance", tokenIn, activeAddress] });
 
-    return { transferId, debitNoticeId };
+    return { transferId, debitNoticeId, keystoneTx };
   } catch (err) {
     log(LOG_GROUP.SWAP, "Error executing swap", err);
     throw err;

@@ -20,6 +20,7 @@ import { getLinkedMessages, OrderError } from "./dex.utils";
 import { retryWithDelay } from "~utils/promises/retry";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { queryClient } from "~utils/tanstack";
+import { assertTransferResult, createSwapMessage } from "../swap.utils";
 
 /**
  * Fetch the result of a swap message
@@ -95,6 +96,7 @@ export async function executeSwap({
   minAmountOut,
   poolId,
   tags = [],
+  wanderFee,
   keystoneSigner,
 }: SwapExecutionParams): Promise<SwapExecutionResponse> {
   let decryptedWallet: DecryptedWallet;
@@ -103,18 +105,17 @@ export async function executeSwap({
 
     decryptedWallet = await getActiveKeyfile();
 
-    let signer;
+    let signer: ReturnType<typeof createDataItemSigner> | ReturnType<typeof createDataItemKeystoneSigner>;
     if (keystoneSigner) {
       // Hardware wallet case
       signer = createDataItemKeystoneSigner(keystoneSigner);
     } else {
       // Local wallet case
       isLocalWallet(decryptedWallet);
-      const keyfile = decryptedWallet.keyfile;
-      signer = createDataItemSigner(keyfile);
+      signer = createDataItemSigner(decryptedWallet.keyfile);
     }
 
-    const transferId = await aoInstance.message({
+    const { keystoneTx, sendMessage } = await createSwapMessage({
       process: tokenIn,
       signer,
       tags: [
@@ -126,13 +127,20 @@ export async function executeSwap({
         { name: "X-Action", value: "Swap" },
         ...tags,
       ],
+      wanderFee,
+      poolType: "botega",
+      keystoneSigner,
     });
+
+    const transferId = await sendMessage();
+
+    await assertTransferResult(transferId, tokenIn);
 
     // Invalidate transfered token balance
     const activeAddress = await getActiveAddress();
     queryClient.invalidateQueries({ queryKey: ["tokenBalance", tokenIn, activeAddress] });
 
-    return { transferId };
+    return { transferId, keystoneTx };
   } catch (err) {
     log(LOG_GROUP.SWAP, "Error executing swap", err);
     throw err;

@@ -7,7 +7,7 @@ import { TokenLogo } from "~components/popup/TokenLogo";
 import { HorizontalLine } from "~components/HorizontalLine";
 import { AutoTag } from "./components/AutoTag";
 import { WanderFeeTag } from "./components/WanderFeeTag";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { TempTransactionStorage } from "~utils/storage";
 import { formatBalance } from "~utils/format";
 import {
@@ -45,6 +45,7 @@ import { SignType } from "@keystonehq/bc-ur-registry-arweave";
 import Arweave from "arweave";
 import { HARDWARE_WALLET_API_NOT_SUPPORTED_ERR_MSG } from "~utils/wallets/wallets.constants";
 import { AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
+import { PoolTypeEnum } from "./utils/swap.constants";
 
 export function SwapReviewView() {
   const { navigate } = useLocation();
@@ -60,7 +61,7 @@ export function SwapReviewView() {
 
   const { sendToken, receiveToken, wanderFee, slippage, amountIn } = swapData || {};
 
-  const isAo = useMemo(() => sendToken?.processId === AR_PROCESS_ID, [sendToken]);
+  const isAo = useMemo(() => sendToken?.processId !== AR_PROCESS_ID, [sendToken]);
 
   const keystoneInteraction = useMemo(() => {
     const keystoneInteraction: KeystoneInteraction = {
@@ -97,7 +98,7 @@ export function SwapReviewView() {
     amountIn,
     poolId: swapData?.selectedPoolInfo?.poolId,
     poolType: swapData?.selectedPoolInfo?.poolType,
-    stopFetching: isExecutingSwap,
+    stopFetching: isExecutingSwap || !!hardwareStatus,
     wanderFeePercent: +defiFeeDetails.finalFeePercent,
   });
 
@@ -139,10 +140,10 @@ export function SwapReviewView() {
         if (isAo) {
           keystoneSigner.submitSignature(signature);
         } else {
-          keystoneSigner.submitSignature({ id, signature });
+          keystoneSigner.submitSignature({ id, signature } as any);
         }
       } catch (e) {
-        console.log(e);
+        log(LOG_GROUP.SWAP, "Error decoding signature", e);
       }
     },
     [wallet, keystoneSigner, isAo],
@@ -203,7 +204,7 @@ export function SwapReviewView() {
         { name: "X-Amount-Out", value: selectedPoolInfo.quoteOutput.amountOut },
       ];
 
-      const { transferId, noteSettle, debitNoticeId } = await executeSwapFn(poolType, {
+      const { transferId, noteSettle, debitNoticeId, keystoneTx } = await executeSwapFn(poolType, {
         tokenIn: sendToken?.processId,
         tokenOut: receiveToken?.processId,
         amountIn: selectedPoolInfo.quoteOutput.transferAmountIn,
@@ -211,6 +212,7 @@ export function SwapReviewView() {
         poolId: selectedPoolInfo.poolId,
         tags,
         keystoneSigner: wallet?.type === "hardware" ? keystoneSigner : undefined,
+        wanderFee: selectedPoolInfo.quoteOutput.wanderFee,
       });
 
       const updatedSwapData = {
@@ -219,6 +221,7 @@ export function SwapReviewView() {
         transferId,
         noteSettle,
         debitNoticeId,
+        keystoneTx,
         timestamp: Date.now(),
         status: "pending" as const,
         monitoringStarted: true,
@@ -281,7 +284,7 @@ export function SwapReviewView() {
           <WrapperContent>
             <Flex direction="column" gap={8}>
               <Text noMargin style={{ textAlign: "center" }}>
-                {currentTransactionCount}/2
+                {currentTransactionCount}/{selectedPoolInfo?.poolType === PoolTypeEnum.PERMASWAP ? 3 : 2}
               </Text>
               {hardwareStatus === "play" && transactionUR && (
                 <Flex direction="column" align="center" justify="center" textAlign="center" gap={16}>
@@ -403,33 +406,32 @@ export function SwapReviewView() {
           </WrapperContent>
         )}
 
-        <Flex gap={8}>
-          <Button
-            style={{ flex: 1 }}
-            disabled={isExecutingSwap || isLoading || isNetworkFeeLoading}
-            onClick={async () => {
-              if (isExecutingSwap) return;
-
-              if (!hardwareStatus || hardwareStatus === "play") {
-                setHardwareStatus((val) => (val === "play" ? "scan" : "play"));
-              } else {
-                await handleSwap();
-              }
-            }}
-            fullWidth>
-            {isExecutingSwap ? (
-              <>
-                {browser.i18n.getMessage("submitting")} <Loading style={{ marginLeft: 4 }} />
-              </>
-            ) : isLoading ? (
-              <Loading />
-            ) : hardwareStatus === "play" ? (
-              browser.i18n.getMessage("keystone_scan")
-            ) : (
-              browser.i18n.getMessage("swap")
-            )}
-          </Button>
-        </Flex>
+        {hardwareStatus !== "scan" && (
+          <Flex gap={8}>
+            <Button
+              style={{ flex: 1 }}
+              disabled={(isExecutingSwap || isLoading || isNetworkFeeLoading) && !hardwareStatus}
+              onClick={async () => {
+                if (!isExecutingSwap) await handleSwap();
+                else if (!hardwareStatus || hardwareStatus === "play") {
+                  setHardwareStatus((val) => (val === "play" ? "scan" : "play"));
+                }
+              }}
+              fullWidth>
+              {isExecutingSwap && !hardwareStatus ? (
+                <>
+                  {browser.i18n.getMessage("submitting")} <Loading style={{ marginLeft: 4 }} />
+                </>
+              ) : isLoading && !hardwareStatus ? (
+                <Loading />
+              ) : hardwareStatus === "play" ? (
+                browser.i18n.getMessage("keystone_scan")
+              ) : (
+                browser.i18n.getMessage("swap")
+              )}
+            </Button>
+          </Flex>
+        )}
       </Wrapper>
     </>
   );
