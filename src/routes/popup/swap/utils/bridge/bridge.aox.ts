@@ -207,7 +207,12 @@ export async function getLiquidity({ poolId, tokenIn, tokenOut }: GetLiquidityPa
 
 export async function waitForSwapResult(params: ReadSwapResult): Promise<WaitForSwapResultResponse> {
   try {
-    const result = await retryWithDelay(() => readSwapResult(params), 1000, 300000);
+    const result = await retryWithDelay(
+      () => readSwapResult(params),
+      1000,
+      2000,
+      (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    );
 
     return { success: true, result };
   } catch (err) {

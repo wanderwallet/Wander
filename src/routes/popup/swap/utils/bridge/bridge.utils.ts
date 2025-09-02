@@ -12,12 +12,13 @@ import { AR_PROCESS_ID, VAR_PROCESS_ID, WAR_PROCESS_ID } from "~tokens/aoTokens/
 import BigNumber from "bignumber.js";
 import { gql } from "~gateways/api";
 import { retryWithDelay } from "~utils/promises/retry";
-import { SWAP_TXS_QUERY, VENTO_SWAP_QUERY_WITH_CURSOR } from "../dex/dex.constants";
+import { SWAP_TXS_QUERY, VENTO_BURN_DEBIT_NOTICE_QUERY, VENTO_SWAP_QUERY_WITH_CURSOR } from "../dex/dex.constants";
 import { fromTokenBaseUnits, parseSwapTransaction, validateGqlResponse } from "../swap.utils";
 import { goldskyGateway } from "~gateways/gateway";
 import { PoolTypeEnum } from "../swap.constants";
 import type { GQLEdgeInterface } from "ar-gql/dist/faces";
 import browser from "webextension-polyfill";
+import { getTagValue } from "~tokens/aoTokens/ao";
 
 const aoxBridgeTxTypes = new Set(["mint", "burn"]);
 
@@ -49,9 +50,10 @@ export async function getVentoBridgeInfo(): Promise<VentoBridgeInfoResult> {
   const healthInfo = (await healthResponse.json()) as VentoHealthInfo;
 
   const minBridgeAmount = bridgeInfo.MININUM_ARWEAVE_BRIDGE;
+  const bridgeFeeRate = bridgeInfo.FEES.AR;
   const isHealthy = healthInfo.status === "healthy" && healthInfo.apiStatus === 200;
 
-  return { minBridgeAmount, bridge: PoolTypeEnum.VENTO, isHealthy };
+  return { minBridgeAmount, bridge: PoolTypeEnum.VENTO, isHealthy, bridgeFeeRate };
 }
 
 export async function getAoxBridgeTransaction(txId: string) {
@@ -62,18 +64,28 @@ export async function getAoxBridgeTransaction(txId: string) {
   return tx;
 }
 
-export async function getVentoBridgeTransaction(txId: string) {
-  let response: Response;
-  try {
-    response = await fetch(`https://api.ventoswap.com/bridge/status/arweave/${txId}`);
-    if (!response.ok) throw new Error("Failed to fetch bridge transaction");
-  } catch {
-    response = await fetch(`https://api.ventoswap.com/bridge/status/ao/${txId}`);
-    if (!response.ok) throw new Error("Failed to fetch bridge transaction");
-  }
+export async function getVentoBridgeTransaction(txId: string, isAo?: boolean): Promise<VentoBridgeTransactionResponse> {
+  const baseUrl = "https://api.ventoswap.com/bridge/status";
+  const path = isAo === undefined ? "arweave" : isAo ? "ao" : "arweave";
 
-  const tx = (await response.json()) as VentoBridgeTransactionResponse;
-  return tx;
+  try {
+    const response = await fetch(`${baseUrl}/${path}/${txId}`);
+    if (response.ok) {
+      const tx = await response.json();
+      return tx;
+    }
+
+    // Only try ao path if isAo is undefined and first request failed
+    if (isAo === undefined) {
+      const aoResponse = await fetch(`${baseUrl}/ao/${txId}`);
+      if (aoResponse.ok) {
+        const tx = await aoResponse.json();
+        return tx;
+      }
+    }
+  } catch {}
+
+  throw new Error("Failed to fetch bridge transaction");
 }
 
 export function validateAoxBridgeTransaction(
@@ -211,50 +223,81 @@ export async function getAoxBridgeTransactions(address: string, cursor = "0") {
   return result;
 }
 
-export async function getVentoBridgeTransactions(address: string, cursor = "0") {
-  const result = await retryWithDelay(async () => {
+export async function getVentoBridgeTransactions(address: string, cursor = "") {
+  // Get initial transaction data
+  const data = await retryWithDelay(async () => {
     const data = await gql(VENTO_SWAP_QUERY_WITH_CURSOR, { address, after: cursor }, goldskyGateway);
-
     validateGqlResponse(data);
-
-    const edges = data?.data?.transactions?.edges || [];
-    if (edges.length === 0) return { txs: [], hasNextPage: false, cursor };
-
-    cursor = edges[edges.length - 1].cursor;
-    const hasNextPage = data?.data?.transactions?.pageInfo?.hasNextPage || false;
-
-    const txMap = new Map<string, GQLEdgeInterface>();
-
-    for (const edge of edges) {
-      txMap.set(edge.node.id, edge);
-    }
-
-    const finalEdges = [];
-
-    const txIds = Array.from(txMap.keys());
-    const results = await Promise.allSettled(txIds.map(getVentoBridgeTransaction));
-    for (const result of results) {
-      if (result.status === "fulfilled") {
-        const tx = result.value;
-        const swapTx = txMap.get(tx.txId);
-        if (swapTx) {
-          swapTx.node.tags.push(
-            ...[
-              { name: "Bridge-Status", value: tx.status },
-              { name: "To-Quantity", value: tx.outputAmountRaw },
-              { name: "OrderStatus", value: tx.failureReason && tx.failureReason !== "" ? "Error" : "Swapped" },
-            ],
-          );
-          finalEdges.push(swapTx);
-        }
-      }
-    }
-
-    const parsedTransactions = finalEdges.map(parseSwapTransaction).filter(Boolean);
-    return { txs: parsedTransactions, hasNextPage, cursor };
+    return data.data;
   }, 2);
 
-  return result;
+  const edges = data?.transactions?.edges || [];
+  if (edges.length === 0) return { txs: [], hasNextPage: false, cursor };
+
+  // Update cursor and next page info
+  cursor = edges[edges.length - 1].cursor;
+  const hasNextPage = data?.transactions?.pageInfo?.hasNextPage || false;
+
+  // Categorize transactions and build maps
+  const txMap = new Map<string, GQLEdgeInterface>();
+  const burnTxIds: string[] = [];
+  const transferTxIds: string[] = [];
+
+  edges.forEach((edge) => {
+    txMap.set(edge.node.id, edge);
+
+    const actionTag = edge.node.tags.find((tag) => tag.name === "Action");
+    if (actionTag) {
+      if (actionTag.value === "Burn") {
+        burnTxIds.push(edge.node.id);
+      } else if (actionTag.value === "BridgeARToVAR") {
+        transferTxIds.push(edge.node.id);
+      }
+    }
+  });
+
+  // Get debit notice data for burn transactions
+  const debitNoticeData = await retryWithDelay(async () => {
+    const data = await gql(VENTO_BURN_DEBIT_NOTICE_QUERY, { pushedFors: burnTxIds }, goldskyGateway);
+    validateGqlResponse(data);
+    return data.data;
+  }, 2);
+
+  // Map debit notices to burn transactions
+  const debitBurnMap = new Map(
+    (debitNoticeData?.transactions?.edges || []).map((edge) => [
+      edge.node.id,
+      getTagValue("Pushed-For", edge.node.tags),
+    ]),
+  );
+
+  // Get bridge transaction details
+  const txIds = [...debitBurnMap.keys(), ...transferTxIds];
+  const results = await Promise.allSettled(
+    txIds.map((txId) => getVentoBridgeTransaction(txId, debitBurnMap.has(txId))),
+  );
+
+  // Process results and build final transaction list
+  const finalEdges = results
+    .filter((result): result is PromiseFulfilledResult<any> => result.status === "fulfilled")
+    .map((result) => {
+      const tx = result.value;
+      const swapTx = txMap.get(debitBurnMap.get(tx.txId) || tx.txId);
+
+      if (!swapTx) return null;
+
+      swapTx.node.tags.push(
+        { name: "Bridge-Status", value: tx.status },
+        { name: "To-Quantity", value: tx.outputAmountRaw },
+        { name: "OrderStatus", value: tx.failureReason || tx.status === "failed" ? "Error" : "Swapped" },
+      );
+
+      return swapTx;
+    })
+    .filter(Boolean);
+
+  const parsedTransactions = finalEdges.map(parseSwapTransaction).filter(Boolean);
+  return { txs: parsedTransactions, hasNextPage, cursor };
 }
 
 export const AOX_BRIDGE_TOKEN_IDS = new Set<string>([AR_PROCESS_ID, WAR_PROCESS_ID]);

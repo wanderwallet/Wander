@@ -30,7 +30,8 @@ export function TokenSelectorPopup({
       title={browser.i18n.getMessage(tokenSelectorType === "send" ? "you_send" : "you_receive")}
       height="90vh"
       isOpen={openTokenSelector}
-      onClose={() => setOpenTokenSelector(false)}>
+      onClose={() => setOpenTokenSelector(false)}
+      scrollable={false}>
       <TokenSelectorScreen
         onClose={() => setOpenTokenSelector(false)}
         updateToken={handleUpdateToken}
@@ -100,7 +101,7 @@ const TokenSelectorScreen = ({ onClose, updateToken, tokenSelectorType, filterTo
             </Flex>
           ) : (
             <>
-              {tokens.map((token) => (
+              {tokens.map((token, index) => (
                 <Token
                   key={token.processId}
                   type={"asset"}
@@ -117,6 +118,7 @@ const TokenSelectorScreen = ({ onClose, updateToken, tokenSelectorType, filterTo
                   addressSize="sm"
                   fetchMissingLogo
                   isVerified={VERIFIED_TOKENS.has(token.processId)}
+                  balanceTooltipPosition={index === 0 ? "left" : "topEnd"}
                 />
               ))}
               {searchInput.state && tokens.length === 0 && (
@@ -129,6 +131,7 @@ const TokenSelectorScreen = ({ onClose, updateToken, tokenSelectorType, filterTo
             </>
           )}
         </Flex>
+        <Spacer y={1.5} />
       </TokenListContainer>
     </SelectorWrapper>
   );
@@ -142,9 +145,10 @@ const SelectorWrapper = styled.div`
 `;
 
 const TokenListContainer = styled.div`
-  max-height: 60vh;
+  height: 65vh;
   overflow-y: auto;
-  padding-right: 8px;
+  margin: 0 -24px;
+  padding: 0 24px;
 
   &::-webkit-scrollbar {
     width: 4px;

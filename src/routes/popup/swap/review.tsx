@@ -137,7 +137,7 @@ export function SwapReviewView() {
         { name: "X-Amount-Out", value: selectedPoolInfo.quoteOutput.amountOut },
       ];
 
-      const { transferId, noteSettle } = await executeSwapFn(poolType, {
+      const { transferId, noteSettle, debitNoticeId } = await executeSwapFn(poolType, {
         tokenIn: sendToken?.processId,
         tokenOut: receiveToken?.processId,
         amountIn: selectedPoolInfo.quoteOutput.transferAmountIn,
@@ -151,6 +151,7 @@ export function SwapReviewView() {
         selectedPoolInfo,
         transferId,
         noteSettle,
+        debitNoticeId,
         timestamp: Date.now(),
         status: "pending" as const,
         monitoringStarted: true,
@@ -214,7 +215,11 @@ export function SwapReviewView() {
               </Text>
               <Flex direction="row" align="center" gap={4}>
                 <TokenLogo size={24} token={sendToken} />
-                <TokenValueWithTooltip formattedValue={valueInFormatted} ticker={sendToken?.Ticker} />
+                <TokenValueWithTooltip
+                  formattedValue={valueInFormatted}
+                  ticker={sendToken?.Ticker}
+                  tooltipPosition="bottom"
+                />
               </Flex>
             </Flex>
             <Flex direction="column" gap={8}>
@@ -296,10 +301,17 @@ export function SwapReviewView() {
           <Button
             style={{ flex: 1 }}
             disabled={isExecutingSwap || isLoading || isNetworkFeeLoading}
-            loading={isExecutingSwap || isLoading}
             onClick={handleSwap}
             fullWidth>
-            {browser.i18n.getMessage("swap")}
+            {isExecutingSwap ? (
+              <>
+                {browser.i18n.getMessage("submitting")} <Loading style={{ marginLeft: 4 }} />
+              </>
+            ) : isLoading ? (
+              <Loading />
+            ) : (
+              browser.i18n.getMessage("swap")
+            )}
           </Button>
         </Flex>
       </Wrapper>

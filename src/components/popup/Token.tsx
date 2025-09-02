@@ -4,7 +4,7 @@ import { hoverEffect } from "~utils/theme";
 import { type Token } from "~tokens/token";
 import { useStorage } from "~utils/storage";
 import { ExtensionStorage } from "~utils/storage";
-import { Button, Text, Tooltip, type TextProps } from "@arconnect/components-rebrand";
+import { Button, Text, Tooltip, type TextProps, type TooltipProps } from "@arconnect/components-rebrand";
 import useSetting from "~settings/hook";
 import styled from "styled-components";
 import { formatAddress, formatBalance } from "~utils/format";
@@ -168,7 +168,7 @@ export default function Token({ onClick, disableClickEffect, disableCursor, ...p
             ) : (
               <>
                 {showTooltip ? (
-                  <BalanceTooltip content={totalBalance} position="topEnd">
+                  <BalanceTooltip content={totalBalance} position={props.balanceTooltipPosition || "topEnd"}>
                     <NativeBalance>{balance}</NativeBalance>
                   </BalanceTooltip>
                 ) : (
@@ -249,11 +249,11 @@ export const InnerWrapper = styled.div<{ width: string }>`
 `;
 
 const BalanceTooltip = styled(Tooltip)`
-  margin-right: 1rem;
+  margin-right: ${(props) => (props.position === "left" ? "0" : "1rem")};
 `;
 
 const MessageTooltip = styled(Tooltip)`
-  max-width: 290px;
+  max-width: 270px;
 `;
 
 export const LogoAndDetails = styled.div`
@@ -338,4 +338,5 @@ interface Props extends Omit<Token, "balance"> {
   /** If true, fetch missing token logo from cache or ao */
   fetchMissingLogo?: boolean;
   isVerified?: boolean;
+  balanceTooltipPosition?: TooltipProps["position"];
 }
