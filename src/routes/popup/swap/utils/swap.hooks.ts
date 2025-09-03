@@ -115,9 +115,6 @@ export function usePoolForTokenPair({
     // Generate unique request ID to track this specific request
     const requestId = ++currentRequestRef.current;
 
-    // TODO: Remove this log
-    log(LOG_GROUP.SWAP, `Getting quote for requestId: ${requestId}`);
-
     try {
       if (isLoadingPools) return;
 
@@ -276,14 +273,6 @@ export function usePoolForTokenPair({
       }
 
       const priceImpact = getPriceImpact(liquidity.reserveIn, liquidity.reserveOut, finalOutput.poolAmountIn);
-
-      // TODO: Remove this log
-      log(LOG_GROUP.SWAP, currentRequestRef.current, requestId, {
-        poolId: finalPool.poolId,
-        poolType: finalPool.poolType,
-        quoteOutput: finalOutput,
-        priceImpact,
-      });
 
       // Validate this response is for the current request
       if (currentRequestRef.current === requestId) {
