@@ -257,7 +257,9 @@ export function SwapReviewView() {
                 value={
                   <Flex justify="flex-end" align="center" gap={4} textAlign="right" wrap="wrap">
                     {wanderFee?.hasChanged && (
-                      <CrossedOutText style={{ order: 1 }}>{toFixed(wanderFee?.originalFee, 8)}</CrossedOutText>
+                      <CrossedOutText style={{ order: 1 }}>
+                        {toFixed(wanderFee?.originalFee, 8)} {sendToken.Ticker}
+                      </CrossedOutText>
                     )}
                     <Text
                       size="sm"
