@@ -50,6 +50,7 @@ import { useActiveTier } from "~utils/tier/hooks";
 import { tierNameToId, TierTypes } from "~utils/tier/constants";
 import { retryWithDelay } from "~utils/promises/retry";
 import { sleep } from "~utils/promises/sleep";
+import { arweave } from "~utils/agents/utils";
 
 const TEN_SECONDS_MS = 10000;
 const FIFTEEN_SECONDS_MS = 15000;
@@ -642,7 +643,9 @@ export function useARNetworkFee({
     return fee.isNaN() ? "0" : fee.toFixed();
   }, [baseNetworkFee, doubleFee]);
 
-  return { networkFee, isLoading };
+  const networkFeeValue = useMemo(() => arweave.ar.winstonToAr(networkFee || "0"), [networkFee]);
+
+  return { networkFee, networkFeeValue, isLoading };
 }
 
 export function useSavedSwapData() {
@@ -855,8 +858,14 @@ export function useWanderFee({
       return { originalFee: "--", finalFee: "--", hasChanged: false };
     }
 
-    const originalFee = BigNumber(valueIn).multipliedBy(defiFeeDetails.originalFeePercent).dividedBy(100).toFixed();
-    const finalFee = BigNumber(valueIn).multipliedBy(defiFeeDetails.finalFeePercent).dividedBy(100).toFixed();
+    const valueBN = BigNumber(valueIn);
+
+    const originalFee = toFixed(
+      valueBN.multipliedBy(defiFeeDetails.originalFeePercent).dividedBy(100),
+      token.Denomination,
+    );
+
+    const finalFee = toFixed(valueBN.multipliedBy(defiFeeDetails.finalFeePercent).dividedBy(100), token.Denomination);
 
     return {
       hasChanged: defiFeeDetails.feeHasChanged,

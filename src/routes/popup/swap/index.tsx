@@ -38,6 +38,7 @@ import { fromTokenBaseUnits, getPriceImpactColor, toFixed, toTokenBaseUnits } fr
 import { PageType, trackPage } from "~utils/analytics";
 import { TransactionDetailItem } from "./components/TransactionDetailItem";
 import { ErrorIcon } from "./components/ErrorIcon";
+import BigNumber from "bignumber.js";
 
 export function SwapView() {
   const theme = useTheme();
@@ -53,7 +54,11 @@ export function SwapView() {
   const [receiveToken, setReceiveToken] = useSwapReceiveToken();
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [tokenSelectorType, setTokenSelectorType] = useState<TokenSelectorType>("send");
-  const { networkFee, isLoading: isNetworkFeeLoading } = useARNetworkFee({
+  const {
+    networkFee,
+    networkFeeValue,
+    isLoading: isNetworkFeeLoading,
+  } = useARNetworkFee({
     tokenIn: sendToken.processId,
     tokenOut: receiveToken.processId,
     doubleFee: +defiFeeDetails?.finalFeePercent > 0,
@@ -68,12 +73,17 @@ export function SwapView() {
     return toTokenBaseUnits(debouncedValueIn, sendToken.Denomination);
   }, [debouncedValueIn, sendToken]);
 
-  const errorMessage = useMemo(() => {
-    if (!debouncedValueIn || !balanceIn || !sendToken || !receiveToken) return "";
+  const maxValueIn = useMemo(
+    () => (sendToken.processId === AR_PROCESS_ID ? BigNumber(balanceIn).minus(networkFeeValue).toFixed() : balanceIn),
+    [balanceIn, networkFeeValue, sendToken.processId],
+  );
 
-    const state = validateAmount(debouncedValueIn, balanceIn, "0", "token", 1);
+  const errorMessage = useMemo(() => {
+    if (!debouncedValueIn || !balanceIn || !sendToken || !receiveToken || !networkFeeValue) return "";
+
+    const state = validateAmount(debouncedValueIn, balanceIn, networkFeeValue, "token", 1);
     return getErrorMessage(state);
-  }, [debouncedValueIn, balanceIn, sendToken, receiveToken]);
+  }, [debouncedValueIn, balanceIn, sendToken, receiveToken, networkFeeValue]);
 
   const {
     selectedPoolInfo,
@@ -196,18 +206,7 @@ export function SwapView() {
                 setTokenSelectorType("send");
                 setOpenTokenSelector(true);
               }}
-              onMaxClick={() => {
-                if (sendToken.processId === AR_PROCESS_ID) {
-                  const balanceInBaseUnits = toTokenBaseUnits(balanceIn, sendToken.Denomination, "BigNumber");
-                  const finalBalanceIn = fromTokenBaseUnits(
-                    balanceInBaseUnits.minus(networkFee),
-                    sendToken.Denomination,
-                  );
-                  setValueIn(finalBalanceIn);
-                } else {
-                  setValueIn(balanceIn);
-                }
-              }}
+              onMaxClick={() => setValueIn(maxValueIn !== "NaN" ? maxValueIn : "0")}
             />
             <Switch onClick={handleSwitch} isError={!!errorMessage || !!poolError}>
               <ArrowDown style={{ height: 24, width: 24 }} color={theme.primaryText} />
