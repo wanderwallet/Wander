@@ -232,7 +232,7 @@ export function getPriceImpact(reserveIn: string, reserveOut: string, amountIn: 
 
   // Return percentage with 2 decimal places
   const result = priceImpact.toFixed(2);
-  return result === "-0.00" ? "0.00" : result;
+  return result === "-0.00" || result === "NaN" ? "0.00" : result;
 }
 
 export function getProviderName(poolType: PoolType) {
@@ -258,9 +258,9 @@ export function getSwapTime(poolType: PoolType | Provider) {
 }
 
 export function getPriceImpactColor(priceImpact: string, theme: DefaultTheme) {
-  const priceImpactNumber = +priceImpact;
-  if (priceImpactNumber >= 10) return theme.fail;
-  if (priceImpactNumber >= 5) return "#EEBD41";
+  const impact = +priceImpact;
+  if (!impact || Number.isNaN(impact)) return theme.primaryText;
+  return impact > 0 ? theme.success : impact <= -10 ? theme.fail : theme.primaryText;
 }
 
 export function toFixed(value: any, decimals: number, roundingMode: BigNumber.RoundingMode = BigNumber.ROUND_DOWN) {
