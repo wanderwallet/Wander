@@ -11,6 +11,7 @@ import { useMemo } from "react";
 import useSetting from "~settings/hook";
 import { formatFiatBalance } from "~tokens/currency";
 import BigNumber from "bignumber.js";
+import { VERIFIED_TOKENS } from "~tokens/aoTokens/ao.constants";
 
 interface SwapInputProps {
   type: "send" | "receive";
@@ -141,6 +142,8 @@ const TokenTag = ({ token, iconColor, onClick }: { token: TokenInfo; iconColor: 
         name={token.Name || token.Ticker}
         size={24}
         fetchMissingLogo
+        isVerified={VERIFIED_TOKENS.has(token.processId)}
+        verifiedIconSize={12}
       />
       <Text weight="medium" noMargin>
         {token.Ticker}

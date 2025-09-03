@@ -20,7 +20,6 @@ import { NetworkErrorIcon } from "~components/icons/NetworkErrorIcon";
 import { WarningIcon } from "~components/icons/WarningIcon";
 import { DegradedMessage, NetworkErrorMessage } from "~components/popup/tokens/ErrorMessages";
 import { AO_PROCESS_ID, AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
-import VerifiedIcon from "~components/icons/VerifiedIcon";
 import browser from "webextension-polyfill";
 
 export default function Token({ onClick, disableClickEffect, disableCursor, ...props }: Props) {
@@ -114,21 +113,13 @@ export default function Token({ onClick, disableClickEffect, disableCursor, ...p
       {(!aoConfettiShown || ref.current) && AO_PROCESS_ID === props.id && +fractBalance > 0 && <Canvas ref={ref} />}
       <InnerWrapper width={hasActionButton ? "86%" : "100%"} onClick={onClick}>
         <LogoAndDetails>
-          <div style={{ position: "relative", overflow: "visible" }}>
-            <TokenLogo
-              key={props.id}
-              token={tokenInfo}
-              name={props.name || props.ticker}
-              fetchMissingLogo={props.fetchMissingLogo}
-            />
-            {props.isVerified && (
-              <VerifiedIcon
-                style={{ position: "absolute", top: -4, right: -4, height: 16, width: 16, borderRadius: "50%" }}
-                color="#6B57F9"
-                checkmarkColor="#fff"
-              />
-            )}
-          </div>
+          <TokenLogo
+            key={props.id}
+            token={tokenInfo}
+            name={props.name || props.ticker}
+            fetchMissingLogo={props.fetchMissingLogo}
+            isVerified={props.isVerified}
+          />
           <div>
             <div style={{ display: "flex", gap: "0.5rem" }}>
               <TokenName>{props.name || props.ticker || "???"}</TokenName>
