@@ -645,7 +645,9 @@ export async function createSwapMessage({
 }: CreateAoMessageArgs) {
   let dataItemRaw: Buffer;
   let keystoneTx: SwapData["keystoneTx"] | undefined;
-  if (keystoneSigner) {
+  const isKeystoneSigner = !!keystoneSigner;
+  const hasWanderFee = +wanderFee > 0;
+  if (isKeystoneSigner && hasWanderFee) {
     const updatedTags = [
       { name: "Variant", value: "ao.TN.1" },
       { name: "Type", value: "Message" },
@@ -663,7 +665,7 @@ export async function createSwapMessage({
   }
 
   async function sendMessage() {
-    if (keystoneSigner) {
+    if (isKeystoneSigner && hasWanderFee) {
       try {
         const response = await fetch("https://mu.ao-testnet.xyz", {
           method: "POST",
@@ -686,11 +688,14 @@ export async function createSwapMessage({
         }
       }
     } else {
-      const dataItemSigner = createDataItemSigner(signer);
-      const transferId = await aoInstance.message({ process, signer: dataItemSigner, tags });
+      const transferId = await aoInstance.message({ process, signer, tags });
       return transferId;
     }
   }
+
+  // If there is a keystone signer but no wander fee, set the keystoneTx to an empty object
+  // since there's no fee to send
+  keystoneTx = isKeystoneSigner && !hasWanderFee ? {} : keystoneTx;
 
   return { keystoneTx, sendMessage };
 }

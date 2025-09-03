@@ -108,7 +108,11 @@ export function SwapReviewView() {
     return selectedPoolInfoQuote || swapData?.selectedPoolInfo;
   }, [selectedPoolInfoQuote, swapData?.selectedPoolInfo]);
 
-  const totalTransactionCount = selectedPoolInfo?.poolType === PoolTypeEnum.PERMASWAP ? 3 : 2;
+  const totalTransactionCount = useMemo(() => {
+    const baseCount = selectedPoolInfo?.poolType === PoolTypeEnum.PERMASWAP ? 2 : 1;
+    const hasFee = +wanderFee?.finalFee > 0;
+    return baseCount + Number(hasFee);
+  }, [selectedPoolInfo?.poolType, wanderFee?.finalFee]);
 
   const rate = useSwapRate({ selectedPoolInfo, sendToken, receiveToken, amountIn });
 
@@ -426,8 +430,7 @@ export function SwapReviewView() {
               }
             }}
             fullWidth>
-            {(isExecutingSwap && !hardwareStatus) ||
-            (hardwareStatus === "scan" && submissionCount === totalTransactionCount) ? (
+            {isExecutingSwap && (!hardwareStatus || submissionCount === totalTransactionCount) ? (
               <>
                 {browser.i18n.getMessage("submitting")} <Loading style={{ marginLeft: 4 }} />
               </>
