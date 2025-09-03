@@ -1,7 +1,7 @@
 import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import { getExpectedOutputFn, getPools, getPriceImpact, getSwapTransaction, processToken, toFixed } from "./swap.utils";
 import { defaultOptions, useAoTokens } from "~tokens/hooks";
-import { useMemo, useCallback, useState } from "react";
+import { useMemo, useCallback, useState, useRef, useEffect } from "react";
 import type {
   ParsedSwapTransaction,
   PoolType,
@@ -49,8 +49,11 @@ import browser from "webextension-polyfill";
 import { useActiveTier } from "~utils/tier/hooks";
 import { tierNameToId, TierTypes } from "~utils/tier/constants";
 import { retryWithDelay } from "~utils/promises/retry";
+import { sleep } from "~utils/promises/sleep";
+import { arweave } from "~utils/agents/utils";
 
 const TEN_SECONDS_MS = 10000;
+const FIFTEEN_SECONDS_MS = 15000;
 
 export function usePools() {
   return useQuery({
@@ -98,6 +101,7 @@ export function usePoolForTokenPair({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedPoolInfo, setSelectedPoolInfo] = useState<SelectedPoolInfo | null>(null);
+  const currentRequestRef = useRef<number>(0);
   const { data: aoxBridgeInfo } = useAoxBridgeInfo({ enabled: isAoxBridgeTokenPair(tokenIn, tokenOut) });
   const { data: ventoBridgeInfo } = useVentoBridgeInfo({ enabled: isVentoBridgeTokenPair(tokenIn, tokenOut) });
 
@@ -107,16 +111,20 @@ export function usePoolForTokenPair({
     return tokenPools[key] || { botega: [], permaswap: [], aox: [], vento: [] };
   }, [tokenPools, tokenIn, tokenOut]);
 
-  // TODO: Optimize this useAsyncEffect to use requests system
   useAsyncEffect(async () => {
+    // Generate unique request ID to track this specific request
+    const requestId = ++currentRequestRef.current;
+
     try {
       if (isLoadingPools) return;
 
-      const noPools = Object.values(pairPools).every((pools) => pools.length === 0);
-      if (!tokenIn || !tokenOut || !slippage || !amountIn || isNaN(wanderFeePercent) || noPools) {
+      const isValidInput = !!(tokenIn && tokenOut && slippage && amountIn && !isNaN(wanderFeePercent));
+      const hasNoPools = Object.values(pairPools).every((pools) => pools.length === 0);
+
+      if (!isValidInput || hasNoPools) {
         setSelectedPoolInfo(null);
         setError(
-          amountIn && tokenIn && tokenOut && noPools ? browser.i18n.getMessage("no_liquidity_pools_found") : null,
+          amountIn && tokenIn && tokenOut && hasNoPools ? browser.i18n.getMessage("no_liquidity_pools_found") : null,
         );
         return;
       }
@@ -149,14 +157,16 @@ export function usePoolForTokenPair({
           2,
         );
 
-        setSelectedPoolInfo({
-          poolId: aoxPool.poolId,
-          poolType: aoxPool.poolType,
-          quoteOutput: aoxOutput,
-          priceImpact: "0.00",
-        });
-
-        setError(null);
+        // Validate this response is for the current request
+        if (currentRequestRef.current === requestId) {
+          setSelectedPoolInfo({
+            poolId: aoxPool.poolId,
+            poolType: aoxPool.poolType,
+            quoteOutput: aoxOutput,
+            priceImpact: "0.00",
+          });
+          setError(null);
+        }
 
         return;
       }
@@ -180,14 +190,16 @@ export function usePoolForTokenPair({
           2,
         );
 
-        setSelectedPoolInfo({
-          poolId: ventoPool.poolId,
-          poolType: ventoPool.poolType,
-          quoteOutput: ventoOutput,
-          priceImpact: "0.00",
-        });
-
-        setError(null);
+        // Validate this response is for the current request
+        if (currentRequestRef.current === requestId) {
+          setSelectedPoolInfo({
+            poolId: ventoPool.poolId,
+            poolType: ventoPool.poolType,
+            quoteOutput: ventoOutput,
+            priceImpact: "0.00",
+          });
+          setError(null);
+        }
 
         return;
       }
@@ -213,6 +225,9 @@ export function usePoolForTokenPair({
         retryWithDelay(() => permaswap.getExpectedOutput({ poolId: permaswapPool?.poolId, ...params }), 2),
       ]);
 
+      // Check if request is still current after async DEX operations
+      if (currentRequestRef.current !== requestId) return;
+
       const botegaOutput = botegaResponse.status === "fulfilled" ? botegaResponse.value : null;
       const permaswapOutput = permaswapResponse.status === "fulfilled" ? permaswapResponse.value : null;
 
@@ -227,7 +242,10 @@ export function usePoolForTokenPair({
 
       if (!finalOutput) {
         log(LOG_GROUP.SWAP, "No final output found");
-        setError(browser.i18n.getMessage("unable_to_retrieve_quote"));
+        // Only set error if this is still the current request
+        if (currentRequestRef.current === requestId) {
+          setError(browser.i18n.getMessage("unable_to_retrieve_quote"));
+        }
         return;
       }
 
@@ -245,6 +263,9 @@ export function usePoolForTokenPair({
         );
       }
 
+      // Check if request is still current after liquidity async operation
+      if (currentRequestRef.current !== requestId) return;
+
       if (!liquidity) {
         log(LOG_GROUP.SWAP, "No liquidity found");
         setError(browser.i18n.getMessage("unable_to_retrieve_quote"));
@@ -253,19 +274,28 @@ export function usePoolForTokenPair({
 
       const priceImpact = getPriceImpact(liquidity.reserveIn, liquidity.reserveOut, finalOutput.poolAmountIn);
 
-      setSelectedPoolInfo({
-        poolId: finalPool.poolId,
-        poolType: finalPool.poolType,
-        quoteOutput: finalOutput,
-        priceImpact,
-      });
-      TempTransactionStorage.set("last_swap_quote_timestamp", Date.now());
-      setError(null);
+      // Validate this response is for the current request
+      if (currentRequestRef.current === requestId) {
+        setSelectedPoolInfo({
+          poolId: finalPool.poolId,
+          poolType: finalPool.poolType,
+          quoteOutput: finalOutput,
+          priceImpact,
+        });
+        TempTransactionStorage.set("last_swap_quote_timestamp", Date.now());
+        setError(null);
+      }
     } catch (error) {
       log(LOG_GROUP.SWAP, "Error fetching pool for token pair", error);
-      setError(browser.i18n.getMessage("unable_to_retrieve_quote"));
+      // Only set error if this is still the current request
+      if (currentRequestRef.current === requestId) {
+        setError(browser.i18n.getMessage("unable_to_retrieve_quote"));
+      }
     } finally {
-      setIsLoading(false);
+      // Only set loading false if this is still the current request
+      if (currentRequestRef.current === requestId) {
+        setIsLoading(false);
+      }
     }
   }, [
     tokenIn,
@@ -307,29 +337,23 @@ export function usePoolQuote({
   const [error, setError] = useState<string | null>(null);
   const [selectedPoolInfo, setSelectedPoolInfo] = useState<SelectedPoolInfo | null>(null);
 
+  const wanderFee = useMemo(() => {
+    if (!amountIn || !wanderFeePercent || isNaN(wanderFeePercent)) return "0";
+    const feeBN = BigNumber(amountIn || "0")
+      .multipliedBy(wanderFeePercent || 0)
+      .dividedBy(100);
+    return feeBN.isNaN() ? "0" : feeBN.toFixed(0, BigNumber.ROUND_DOWN);
+  }, [amountIn, wanderFeePercent]);
+
   const fetchPoolQuote = useCallback(async () => {
     try {
-      if (
-        !tokenIn ||
-        !tokenOut ||
-        !slippage ||
-        !amountIn ||
-        !poolId ||
-        !poolType ||
-        isNaN(wanderFeePercent) ||
-        stopFetching
-      ) {
+      if (!tokenIn || !tokenOut || !slippage || !amountIn || !poolId || !poolType || !wanderFee || stopFetching) {
         setSelectedPoolInfo(null);
         setError(null);
         return;
       }
 
       setIsLoading(true);
-
-      const wanderFee = BigNumber(amountIn)
-        .multipliedBy(wanderFeePercent)
-        .dividedBy(100)
-        .toFixed(0, BigNumber.ROUND_DOWN);
 
       const params = {
         tokenIn,
@@ -375,9 +399,9 @@ export function usePoolQuote({
     } finally {
       setIsLoading(false);
     }
-  }, [tokenIn, tokenOut, slippage, amountIn, poolId, poolType, wanderFeePercent]);
+  }, [tokenIn, tokenOut, slippage, amountIn, poolId, poolType, wanderFee, stopFetching]);
 
-  useAsyncEffect(async () => {
+  useEffect(() => {
     if (
       !tokenIn ||
       !tokenOut ||
@@ -392,25 +416,25 @@ export function usePoolQuote({
       return;
     }
 
-    // Check if enough time has passed since last quote from review screen
-    let timeout: NodeJS.Timeout = undefined;
-    const now = Date.now();
-    const lastQuoteTime = (await TempTransactionStorage.get<number>("last_swap_quote_timestamp")) || now;
-    const timeSinceLastQuote = now - lastQuoteTime;
+    let interval: NodeJS.Timeout;
 
-    // Fetch immediately if enough time passed, otherwise wait remaining time
-    if (timeSinceLastQuote >= TEN_SECONDS_MS) {
+    const fetchPoolQuoteInterval = async () => {
+      const now = Date.now();
+      const lastQuoteTime = (await TempTransactionStorage.get<number>("last_swap_quote_timestamp")) ?? now;
+      const waitTime = Math.max(0, TEN_SECONDS_MS - (now - lastQuoteTime));
+
+      if (waitTime > 0) {
+        await sleep(waitTime);
+      }
+
       fetchPoolQuote();
-    } else {
-      timeout = setTimeout(fetchPoolQuote, TEN_SECONDS_MS - timeSinceLastQuote);
-    }
+      interval = setInterval(fetchPoolQuote, FIFTEEN_SECONDS_MS);
+    };
 
-    // Set up recurring fetch
-    const interval = setInterval(fetchPoolQuote, TEN_SECONDS_MS);
+    fetchPoolQuoteInterval();
 
     return () => {
       clearInterval(interval);
-      if (timeout) clearTimeout(timeout);
     };
   }, [fetchPoolQuote, tokenIn, tokenOut, slippage, amountIn, poolId, poolType, stopFetching]);
 
@@ -559,8 +583,16 @@ export function useSwapSlippage() {
   return useStorage({ key: "swap_selected_slippage", instance: ExtensionStorage }, 0.5);
 }
 
-export function useARNetworkFee({ tokenIn, tokenOut }: { tokenIn: string; tokenOut: string }) {
-  const [networkFee, setNetworkFee] = useState<string>("0");
+export function useARNetworkFee({
+  tokenIn,
+  tokenOut,
+  doubleFee = true,
+}: {
+  tokenIn: string;
+  tokenOut: string;
+  doubleFee?: boolean;
+}) {
+  const [baseNetworkFee, setBaseNetworkFee] = useState<string>("0");
   const isAoxBridge = useMemo(() => tokenIn === AR_PROCESS_ID && tokenOut === WAR_PROCESS_ID, [tokenIn, tokenOut]);
   const { data: aoxBridgeInfo, isLoading: isBridgeInfoLoading } = useAoxBridgeInfo({
     enabled: isAoxBridge,
@@ -574,7 +606,7 @@ export function useARNetworkFee({ tokenIn, tokenOut }: { tokenIn: string; tokenO
       tokenIn !== AR_PROCESS_ID ||
       (isAoxBridge && (!aoxBridgeInfo || isBridgeInfoLoading))
     ) {
-      setNetworkFee("0");
+      setBaseNetworkFee("0");
       return;
     }
 
@@ -585,17 +617,24 @@ export function useARNetworkFee({ tokenIn, tokenOut }: { tokenIn: string; tokenO
         arweave.transactions.getPrice(0, isAoxBridge ? aoxBridgeInfo.arToken.locker : VENTO_BRIDGE_ADDRESS),
       );
 
-      // twice the network fee to account for the wander fee to be paid
-      setNetworkFee(BigNumber(txPrice).multipliedBy(2).toFixed());
+      setBaseNetworkFee(txPrice);
     } catch (error) {
       log(LOG_GROUP.SWAP, "Error calculating network fee:", error);
-      setNetworkFee("0");
+      setBaseNetworkFee("0");
     } finally {
       setIsLoading(false);
     }
   }, [tokenIn, tokenOut, aoxBridgeInfo, isAoxBridge]);
 
-  return { networkFee, isLoading };
+  const networkFee = useMemo(() => {
+    // twice the network fee if doubleFee is true to account for the wander fee to be paid
+    const fee = BigNumber(baseNetworkFee || "0").multipliedBy(doubleFee ? 2 : 1);
+    return fee.isNaN() ? "0" : fee.toFixed();
+  }, [baseNetworkFee, doubleFee]);
+
+  const networkFeeValue = useMemo(() => arweave.ar.winstonToAr(networkFee || "0"), [networkFee]);
+
+  return { networkFee, networkFeeValue, isLoading };
 }
 
 export function useSavedSwapData() {
@@ -808,8 +847,14 @@ export function useWanderFee({
       return { originalFee: "--", finalFee: "--", hasChanged: false };
     }
 
-    const originalFee = BigNumber(valueIn).multipliedBy(defiFeeDetails.originalFeePercent).dividedBy(100).toFixed();
-    const finalFee = BigNumber(valueIn).multipliedBy(defiFeeDetails.finalFeePercent).dividedBy(100).toFixed();
+    const valueBN = BigNumber(valueIn);
+
+    const originalFee = toFixed(
+      valueBN.multipliedBy(defiFeeDetails.originalFeePercent).dividedBy(100),
+      token.Denomination,
+    );
+
+    const finalFee = toFixed(valueBN.multipliedBy(defiFeeDetails.finalFeePercent).dividedBy(100), token.Denomination);
 
     return {
       hasChanged: defiFeeDetails.feeHasChanged,
