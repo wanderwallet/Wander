@@ -49,6 +49,7 @@ export function SwapReviewView() {
   const { networkFee, isLoading: isNetworkFeeLoading } = useARNetworkFee({
     tokenIn: sendToken?.processId,
     tokenOut: receiveToken?.processId,
+    doubleFee: +wanderFee?.finalFee > 0,
   });
 
   const { selectedPoolInfo: selectedPoolInfoQuote, isLoading } = usePoolQuote({

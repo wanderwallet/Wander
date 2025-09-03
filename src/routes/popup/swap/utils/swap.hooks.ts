@@ -593,8 +593,16 @@ export function useSwapSlippage() {
   return useStorage({ key: "swap_selected_slippage", instance: ExtensionStorage }, 0.5);
 }
 
-export function useARNetworkFee({ tokenIn, tokenOut }: { tokenIn: string; tokenOut: string }) {
-  const [networkFee, setNetworkFee] = useState<string>("0");
+export function useARNetworkFee({
+  tokenIn,
+  tokenOut,
+  doubleFee = true,
+}: {
+  tokenIn: string;
+  tokenOut: string;
+  doubleFee?: boolean;
+}) {
+  const [baseNetworkFee, setBaseNetworkFee] = useState<string>("0");
   const isAoxBridge = useMemo(() => tokenIn === AR_PROCESS_ID && tokenOut === WAR_PROCESS_ID, [tokenIn, tokenOut]);
   const { data: aoxBridgeInfo, isLoading: isBridgeInfoLoading } = useAoxBridgeInfo({
     enabled: isAoxBridge,
@@ -608,7 +616,7 @@ export function useARNetworkFee({ tokenIn, tokenOut }: { tokenIn: string; tokenO
       tokenIn !== AR_PROCESS_ID ||
       (isAoxBridge && (!aoxBridgeInfo || isBridgeInfoLoading))
     ) {
-      setNetworkFee("0");
+      setBaseNetworkFee("0");
       return;
     }
 
@@ -619,15 +627,20 @@ export function useARNetworkFee({ tokenIn, tokenOut }: { tokenIn: string; tokenO
         arweave.transactions.getPrice(0, isAoxBridge ? aoxBridgeInfo.arToken.locker : VENTO_BRIDGE_ADDRESS),
       );
 
-      // twice the network fee to account for the wander fee to be paid
-      setNetworkFee(BigNumber(txPrice).multipliedBy(2).toFixed());
+      setBaseNetworkFee(txPrice);
     } catch (error) {
       log(LOG_GROUP.SWAP, "Error calculating network fee:", error);
-      setNetworkFee("0");
+      setBaseNetworkFee("0");
     } finally {
       setIsLoading(false);
     }
   }, [tokenIn, tokenOut, aoxBridgeInfo, isAoxBridge]);
+
+  const networkFee = useMemo(() => {
+    // twice the network fee if doubleFee is true to account for the wander fee to be paid
+    const fee = BigNumber(baseNetworkFee || "0").multipliedBy(doubleFee ? 2 : 1);
+    return fee.isNaN() ? "0" : fee.toFixed();
+  }, [baseNetworkFee, doubleFee]);
 
   return { networkFee, isLoading };
 }

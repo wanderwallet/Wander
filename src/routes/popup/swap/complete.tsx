@@ -40,6 +40,7 @@ export function SwapCompleteView() {
   const { networkFee } = useARNetworkFee({
     tokenIn: sendToken?.processId,
     tokenOut: receiveToken?.processId,
+    doubleFee: +wanderFee?.finalFee > 0,
   });
 
   const rate = useSwapRate({ selectedPoolInfo, sendToken, receiveToken, amountIn });

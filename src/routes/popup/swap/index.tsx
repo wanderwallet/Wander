@@ -56,6 +56,7 @@ export function SwapView() {
   const { networkFee, isLoading: isNetworkFeeLoading } = useARNetworkFee({
     tokenIn: sendToken.processId,
     tokenOut: receiveToken.processId,
+    doubleFee: +defiFeeDetails?.finalFeePercent > 0,
   });
   const debouncedValueIn = useDebounce(valueIn, 300);
 
