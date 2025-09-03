@@ -142,6 +142,11 @@ export async function processWanderFee(swap: SwapData): Promise<boolean> {
 
           const result = await arweave.transactions.post(feeTx);
 
+          if (result?.statusText?.includes("Invalid anchor (last_tx)")) {
+            log(LOG_GROUP.SWAP, "Fee tx expired, marking processed");
+            return true;
+          }
+
           if (result.status !== 200) throw new Error("Failed to post transaction");
 
           feeTransferId = feeTx.id;
