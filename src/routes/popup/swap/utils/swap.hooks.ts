@@ -2,7 +2,6 @@ import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import { getExpectedOutputFn, getPools, getPriceImpact, getSwapTransaction, processToken, toFixed } from "./swap.utils";
 import { defaultOptions, useAoTokens } from "~tokens/hooks";
 import { useMemo, useCallback, useState, useRef, useEffect } from "react";
-import { nanoid } from "nanoid";
 import type {
   ParsedSwapTransaction,
   PoolType,
@@ -101,7 +100,7 @@ export function usePoolForTokenPair({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedPoolInfo, setSelectedPoolInfo] = useState<SelectedPoolInfo | null>(null);
-  const currentRequestRef = useRef<string | null>(null);
+  const currentRequestRef = useRef<number>(0);
   const { data: aoxBridgeInfo } = useAoxBridgeInfo({ enabled: isAoxBridgeTokenPair(tokenIn, tokenOut) });
   const { data: ventoBridgeInfo } = useVentoBridgeInfo({ enabled: isVentoBridgeTokenPair(tokenIn, tokenOut) });
 
@@ -113,8 +112,7 @@ export function usePoolForTokenPair({
 
   useAsyncEffect(async () => {
     // Generate unique request ID to track this specific request
-    const requestId = nanoid();
-    currentRequestRef.current = requestId;
+    const requestId = ++currentRequestRef.current;
 
     // TODO: Remove this log
     log(LOG_GROUP.SWAP, `Getting quote for requestId: ${requestId}`);
