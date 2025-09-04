@@ -58,7 +58,7 @@ export function SwapReviewView() {
   const [transactionUR, setTransactionUR] = useState<UR>();
   const [hardwareStatus, setHardwareStatus] = useState<"play" | "scan">();
   const [currentTransactionCount, setCurrentTransactionCount] = useState(0);
-  const [submissionCount, setSubmissionCount] = useState(0);
+  const [transactionsSubmitted, setTransactionsSubmitted] = useState<Set<string>>(new Set());
 
   const { sendToken, receiveToken, wanderFee, slippage, amountIn } = swapData || {};
 
@@ -150,7 +150,7 @@ export function SwapReviewView() {
         } else {
           keystoneSigner.submitSignature({ id, signature } as any);
         }
-        setSubmissionCount((prev) => prev + 1);
+        setTransactionsSubmitted((prev) => prev.add(id));
       } catch (e) {
         log(LOG_GROUP.SWAP, "Error decoding signature", e);
       }
@@ -257,6 +257,7 @@ export function SwapReviewView() {
       setHardwareStatus(null);
       setCurrentTransactionCount(0);
       setTransactionUR(null);
+      setTransactionsSubmitted(new Set());
     }
   }
 
@@ -430,7 +431,7 @@ export function SwapReviewView() {
               }
             }}
             fullWidth>
-            {isExecutingSwap && (!hardwareStatus || submissionCount === totalTransactionCount) ? (
+            {isExecutingSwap && (!hardwareStatus || transactionsSubmitted.size === totalTransactionCount) ? (
               <>
                 {browser.i18n.getMessage("submitting")} <Loading style={{ marginLeft: 4 }} />
               </>
