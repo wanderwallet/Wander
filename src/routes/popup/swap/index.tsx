@@ -150,11 +150,16 @@ export function SwapView() {
   async function handleSwap() {
     if (!selectedPoolInfo) return;
 
+    const [sendTokenLogo, receiveTokenLogo] = await Promise.all([
+      sendToken.Logo || (await fetchTokenByProcessId(sendToken.processId, true))?.Logo || "",
+      receiveToken.Logo || (await fetchTokenByProcessId(receiveToken.processId, true))?.Logo || "",
+    ]);
+
     const swapData = {
       selectedPoolInfo,
       slippage,
-      sendToken,
-      receiveToken,
+      sendToken: { ...sendToken, Logo: sendTokenLogo },
+      receiveToken: { ...receiveToken, Logo: receiveTokenLogo },
       wanderFee,
       amountIn,
       swapper: activeAddress,
