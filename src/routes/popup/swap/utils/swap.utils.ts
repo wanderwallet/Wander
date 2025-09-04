@@ -14,6 +14,7 @@ import {
   type Pool,
   type PoolType,
   type Provider,
+  type SelectedPoolInfo,
 } from "./swap.types";
 import BigNumber from "bignumber.js";
 import { BOTEGA_API_KEY, BOTEGA_SUPABASE_URL } from "./data-source/data-source.constants";
@@ -39,7 +40,12 @@ import { aox } from "./bridge/bridge.aox";
 import { botega } from "./dex/dex.botega";
 import { permaswap } from "./dex/dex.permaswap";
 import { vento } from "./bridge/bridge.vento";
-import type { GetExpectedOutputParams, ReadSwapResult, SwapExecutionParams } from "./dex/dex.types";
+import type {
+  GetExpectedOutputParams,
+  GetExpectedOutputResponse,
+  ReadSwapResult,
+  SwapExecutionParams,
+} from "./dex/dex.types";
 import { getAoxBridgeTransaction, getVentoBridgeTransaction } from "./bridge/bridge.utils";
 import { getLinkedMessages } from "./dex/dex.utils";
 import { createData, DataItem, type Tag } from "@dha-team/arbundles";
@@ -451,6 +457,122 @@ export const swapsArray = createStorageArray<SwapData>("swaps", {
   uniqueKey: "transferId",
 });
 
+const getSwapStatus = (status?: string): ParsedSwapTransaction["status"] => {
+  switch (status) {
+    case "pending":
+      return "Pending";
+    case "completed":
+      return "Completed";
+    case "failed":
+      return "Failed";
+    default:
+      return "Pending";
+  }
+};
+
+export function calculateRate(
+  selectedPoolInfo: SelectedPoolInfo,
+  sendToken: TokenInfo,
+  receiveToken: TokenInfo,
+  amountIn: string,
+): string {
+  if (!selectedPoolInfo?.quoteOutput || !sendToken || !receiveToken || !amountIn) return "--";
+
+  const valueIn = BigNumber(amountIn).shiftedBy(-sendToken.Denomination);
+  const valueOut = BigNumber(selectedPoolInfo.quoteOutput.amountOut || "0").shiftedBy(-receiveToken.Denomination);
+
+  const valueOutForUnitValueIn = valueOut.dividedBy(valueIn);
+  return `1 ${sendToken.Ticker} ≈ ${toFixed(valueOutForUnitValueIn, 8)} ${receiveToken.Ticker}`;
+}
+
+export function calculateNetworkProviderFee(
+  selectedPoolInfo: SelectedPoolInfo,
+  sendToken: TokenInfo,
+  receiveToken: TokenInfo,
+  networkFee: string,
+): string {
+  if (!selectedPoolInfo?.quoteOutput || !sendToken || !receiveToken) return "--";
+
+  let tokenInFee = BigNumber(selectedPoolInfo.quoteOutput.tokenInFee || "0");
+  let tokenOutFee = BigNumber(selectedPoolInfo.quoteOutput.tokenOutFee || "0");
+
+  if (selectedPoolInfo.poolType === "aox" || selectedPoolInfo.poolType === "vento") {
+    if (sendToken.processId === AR_PROCESS_ID) {
+      tokenInFee = tokenInFee.plus(networkFee);
+    } else {
+      tokenOutFee = tokenOutFee.plus(networkFee);
+    }
+  }
+
+  const formatFee = (amount: BigNumber, token: TokenInfo) =>
+    `${toFixed(amount.shiftedBy(-token.Denomination), 8)} ${token.Ticker}`;
+
+  if (tokenInFee.isZero() && tokenOutFee.isZero()) {
+    return `0 ${sendToken.Ticker}`;
+  }
+
+  const fees = [];
+  if (!tokenInFee.isZero()) {
+    fees.push(formatFee(tokenInFee, sendToken));
+  }
+
+  if (!tokenOutFee.isZero()) {
+    fees.push(formatFee(tokenOutFee, receiveToken));
+  }
+
+  return fees.join(" + ");
+}
+
+/**
+ * Converts SwapData to ParsedSwapTransaction format
+ * This allows stored swap data to be displayed in the same format as fetched transactions
+ *
+ * @param swapData - The SwapData object to convert
+ * @returns ParsedSwapTransaction - Formatted transaction object compatible with UI components
+ */
+export function convertSwapDataToParsedTransaction(swapData: SwapData): ParsedSwapTransaction {
+  const {
+    selectedPoolInfo,
+    sendToken,
+    receiveToken,
+    wanderFee,
+    slippage,
+    amountIn,
+    timestamp,
+    status,
+    networkFee = "0",
+  } = swapData;
+  const { quoteOutput, priceImpact, poolType } = selectedPoolInfo;
+
+  return {
+    txId: swapData.transferId || `swap-${timestamp || Date.now()}`,
+    isAo: sendToken.processId !== AR_PROCESS_ID,
+    rate: calculateRate(selectedPoolInfo, sendToken, receiveToken, amountIn),
+    timestamp: timestamp || Date.now(),
+    provider: getProviderName(poolType) || "Botega",
+    networkProviderFee: calculateNetworkProviderFee(selectedPoolInfo, sendToken, receiveToken, networkFee),
+    wanderFee: wanderFee?.finalFee || "0",
+    slippage: slippage.toString(),
+    priceImpact: priceImpact || "0",
+    tokenIn: sendToken,
+    tokenOut: receiveToken,
+    amountIn: amountIn || "0",
+    amountOut: quoteOutput?.amountOut || "0",
+    status: getSwapStatus(status),
+  };
+}
+
+/**
+ * Converts an array of SwapData to ParsedSwapTransaction array
+ * Filters out invalid entries and sorts by timestamp (newest first)
+ */
+export function convertSwapsArrayToParsedTransactions(swaps: SwapData[]): ParsedSwapTransaction[] {
+  return swaps
+    .filter((swap) => swap && swap.selectedPoolInfo && swap.sendToken && swap.receiveToken)
+    .map(convertSwapDataToParsedTransaction)
+    .sort(sortTransactionsByTimestamp);
+}
+
 export function executeSwapFn(poolType: PoolType, params: SwapExecutionParams) {
   switch (poolType) {
     case PoolTypeEnum.BOTEGA:
@@ -733,4 +855,10 @@ export async function assertTransferResult(
     log(LOG_GROUP.SWAP, transferError);
     throw new Error(transferError);
   }
+}
+
+export function sortTransactionsByTimestamp(a: ParsedSwapTransaction, b: ParsedSwapTransaction) {
+  const timestampA = a.timestamp || Number.MAX_SAFE_INTEGER;
+  const timestampB = b.timestamp || Number.MAX_SAFE_INTEGER;
+  return timestampB - timestampA;
 }

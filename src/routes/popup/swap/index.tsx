@@ -161,6 +161,7 @@ export function SwapView() {
       sendToken: { ...sendToken, Logo: sendTokenLogo },
       receiveToken: { ...receiveToken, Logo: receiveTokenLogo },
       wanderFee,
+      networkFee,
       amountIn,
       swapper: activeAddress,
       tier: defiFeeDetails.tier,

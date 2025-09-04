@@ -17,7 +17,7 @@ import { TokenLogo } from "~components/popup/TokenLogo";
 import { PageType, trackPage } from "~utils/analytics";
 
 export function SwapHistoryView() {
-  const { transactions, loading, hasNextPage, fetchTransactions } = useSwapTransactions();
+  const { transactions, loading, hasNextPage, fetchNextPage } = useSwapTransactions();
 
   useEffect(() => {
     trackPage(PageType.SWAP_HISTORY);
@@ -49,7 +49,7 @@ export function SwapHistoryView() {
             disabled={!hasNextPage || loading}
             style={{ alignSelf: "center", marginTop: "5px" }}
             loading={loading}
-            onClick={() => fetchTransactions()}>
+            onClick={() => fetchNextPage()}>
             {browser.i18n.getMessage("load_more")}...
           </Button>
         )}

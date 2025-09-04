@@ -1,5 +1,16 @@
 import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
-import { getExpectedOutputFn, getPools, getPriceImpact, getSwapTransaction, processToken, toFixed } from "./swap.utils";
+import {
+  getExpectedOutputFn,
+  getPools,
+  getPriceImpact,
+  getSwapTransaction,
+  processToken,
+  toFixed,
+  convertSwapsArrayToParsedTransactions,
+  calculateNetworkProviderFee,
+  calculateRate,
+  sortTransactionsByTimestamp,
+} from "./swap.utils";
 import { defaultOptions, useAoTokens } from "~tokens/hooks";
 import { useMemo, useCallback, useState, useRef, useEffect } from "react";
 import type {
@@ -679,12 +690,6 @@ interface TransactionPage {
   nextPageParam?: PageParam;
 }
 
-const sortTransactionsByTimestamp = (a: ParsedSwapTransaction, b: ParsedSwapTransaction) => {
-  const timestampA = a.timestamp || Number.MAX_SAFE_INTEGER;
-  const timestampB = b.timestamp || Number.MAX_SAFE_INTEGER;
-  return timestampB - timestampA;
-};
-
 const hasChangedCursor = (newCursor: string, oldCursor: string) => newCursor !== oldCursor;
 
 const hasNextPageData = (data: any, newCursor: string, oldCursor: string) =>
@@ -692,6 +697,7 @@ const hasNextPageData = (data: any, newCursor: string, oldCursor: string) =>
 
 export const useSwapTransactions = () => {
   const activeAddress = useActiveAddress();
+  const [swaps = []] = useStorage<SwapData[]>({ key: "swaps", instance: ExtensionStorage }, []);
 
   const { data, fetchNextPage, hasNextPage, isLoading, isFetching, isFetchingNextPage } =
     useInfiniteQuery<TransactionPage>({
@@ -781,34 +787,29 @@ export const useSwapTransactions = () => {
       ...defaultOptions,
     });
 
+  const recentSwaps = useMemo(() => convertSwapsArrayToParsedTransactions(swaps), [swaps]);
+
   const transactions = useMemo(() => {
-    if (!data?.pages) return [];
+    if (!data?.pages?.length && !recentSwaps.length) return [];
+    if (!data?.pages?.length) return recentSwaps;
 
     const seenIds = new Set<string>();
-    return data.pages
-      .flatMap((page) => page.transactions)
+    const allTransactions = [...data.pages.flatMap((page) => page.transactions), ...recentSwaps];
+
+    return allTransactions
       .filter((tx) => {
-        if (seenIds.has(tx.txId)) return false;
+        const isDuplicate = seenIds.has(tx.txId);
         seenIds.add(tx.txId);
-        return true;
+        return !isDuplicate;
       })
       .sort(sortTransactionsByTimestamp);
-  }, [data]);
-
-  const count = useMemo(() => {
-    if (!data?.pages) return { current: 0, actual: 0 };
-    return {
-      current: transactions.length,
-      actual: data.pages.reduce((sum, page) => sum + page.actualCount, 0),
-    };
-  }, [data, transactions]);
+  }, [data?.pages, recentSwaps]);
 
   return {
     transactions,
     loading: isLoading || isFetching || isFetchingNextPage,
     hasNextPage: !!hasNextPage,
-    count,
-    fetchTransactions: fetchNextPage,
+    fetchNextPage,
   };
 };
 
@@ -875,38 +876,10 @@ export function useProviderNetworkFee({
   receiveToken: TokenInfo;
   networkFee: string;
 }) {
-  return useMemo(() => {
-    if (!selectedPoolInfo?.quoteOutput || !sendToken || !receiveToken) return "--";
-
-    let tokenInFee = BigNumber(selectedPoolInfo.quoteOutput.tokenInFee || "0");
-    let tokenOutFee = BigNumber(selectedPoolInfo.quoteOutput.tokenOutFee || "0");
-
-    if (selectedPoolInfo.poolType === "aox" || selectedPoolInfo.poolType === "vento") {
-      if (sendToken.processId === AR_PROCESS_ID) {
-        tokenInFee = tokenInFee.plus(networkFee);
-      } else {
-        tokenOutFee = tokenOutFee.plus(networkFee);
-      }
-    }
-
-    const formatFee = (amount: BigNumber, token: TokenInfo) =>
-      `${toFixed(amount.shiftedBy(-token.Denomination), 8)} ${token.Ticker}`;
-
-    if (tokenInFee.isZero() && tokenOutFee.isZero()) {
-      return `0 ${sendToken.Ticker}`;
-    }
-
-    const fees = [];
-    if (!tokenInFee.isZero()) {
-      fees.push(formatFee(tokenInFee, sendToken));
-    }
-
-    if (!tokenOutFee.isZero()) {
-      fees.push(formatFee(tokenOutFee, receiveToken));
-    }
-
-    return fees.join(" + ");
-  }, [selectedPoolInfo, sendToken, receiveToken, networkFee]);
+  return useMemo(
+    () => calculateNetworkProviderFee(selectedPoolInfo, sendToken, receiveToken, networkFee),
+    [selectedPoolInfo, sendToken, receiveToken, networkFee],
+  );
 }
 
 export function useSwapRate({
@@ -920,15 +893,10 @@ export function useSwapRate({
   receiveToken: TokenInfo;
   amountIn: string;
 }) {
-  return useMemo(() => {
-    if (!selectedPoolInfo?.quoteOutput || !sendToken || !receiveToken || !amountIn) return "--";
-
-    const valueIn = BigNumber(amountIn).shiftedBy(-sendToken.Denomination);
-    const valueOut = BigNumber(selectedPoolInfo.quoteOutput.amountOut || "0").shiftedBy(-receiveToken.Denomination);
-
-    const valueOutForUnitValueIn = valueOut.dividedBy(valueIn);
-    return `1 ${sendToken.Ticker} ≈ ${toFixed(valueOutForUnitValueIn, 8)} ${receiveToken.Ticker}`;
-  }, [selectedPoolInfo, sendToken, receiveToken, amountIn]);
+  return useMemo(
+    () => calculateRate(selectedPoolInfo, sendToken, receiveToken, amountIn),
+    [selectedPoolInfo, sendToken, receiveToken, amountIn],
+  );
 }
 
 export function useIsSwapGated() {

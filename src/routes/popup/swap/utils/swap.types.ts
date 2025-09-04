@@ -164,6 +164,7 @@ export interface SwapData {
   sendToken: TokenInfo;
   receiveToken: TokenInfo;
   wanderFee: WanderFee;
+  networkFee: string;
   slippage: number;
   amountIn: string;
   swapper: string;
