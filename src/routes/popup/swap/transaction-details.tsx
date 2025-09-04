@@ -118,7 +118,7 @@ export function SwapTransactionDetailsView({ params: { id } }: SwapTransactionDe
                     {browser.i18n.getMessage("you_send")}
                   </Text>
                   <Flex direction="row" align="center" gap={4}>
-                    <TokenLogo size={24} token={transaction.tokenIn} />
+                    <TokenLogo size={24} token={transaction.tokenIn} fetchMissingLogo />
                     <TokenValueWithTooltip formattedValue={valueInFormatted} ticker={transaction.tokenIn.Ticker} />
                   </Flex>
                 </Flex>
@@ -127,7 +127,7 @@ export function SwapTransactionDetailsView({ params: { id } }: SwapTransactionDe
                     {browser.i18n.getMessage("you_receive")}
                   </Text>
                   <Flex direction="row" align="center" gap={4}>
-                    <TokenLogo size={24} token={transaction.tokenOut} />
+                    <TokenLogo size={24} token={transaction.tokenOut} fetchMissingLogo />
                     <TokenValueWithTooltip formattedValue={valueOutFormatted} ticker={transaction.tokenOut.Ticker} />
                   </Flex>
                 </Flex>

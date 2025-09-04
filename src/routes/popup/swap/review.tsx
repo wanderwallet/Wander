@@ -215,7 +215,7 @@ export function SwapReviewView() {
                 {browser.i18n.getMessage("you_send")}
               </Text>
               <Flex direction="row" align="center" gap={4}>
-                <TokenLogo size={24} token={sendToken} />
+                <TokenLogo size={24} token={sendToken} fetchMissingLogo />
                 <TokenValueWithTooltip
                   formattedValue={valueInFormatted}
                   ticker={sendToken?.Ticker}
@@ -228,7 +228,7 @@ export function SwapReviewView() {
                 {browser.i18n.getMessage("you_receive")}
               </Text>
               <Flex direction="row" align="center" gap={4}>
-                <TokenLogo size={24} token={receiveToken} />
+                <TokenLogo size={24} token={receiveToken} fetchMissingLogo />
                 <TokenValueWithTooltip formattedValue={valueOutFormatted} ticker={receiveToken?.Ticker} />
               </Flex>
             </Flex>

@@ -122,8 +122,18 @@ const SwapHistoryListItem = ({ tx }: SwapHistoryListItemProps) => {
       hideSquircle={true}
       icon={
         <Flex direction="row" style={{ width: 32, position: "relative" }}>
-          <TokenLogo token={tx.tokenIn} size={24} style={{ position: "absolute", top: -17, left: 2 }} />
-          <TokenLogo token={tx.tokenOut} size={24} style={{ position: "absolute", bottom: -17, right: -6 }} />
+          <TokenLogo
+            token={tx.tokenIn}
+            size={24}
+            style={{ position: "absolute", top: -17, left: 2 }}
+            fetchMissingLogo
+          />
+          <TokenLogo
+            token={tx.tokenOut}
+            size={24}
+            style={{ position: "absolute", bottom: -17, right: -6 }}
+            fetchMissingLogo
+          />
         </Flex>
       }
       active
