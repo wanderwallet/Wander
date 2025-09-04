@@ -172,15 +172,19 @@ export const fetchTokenByProcessId = async (processId: string, onlyCache = false
     return tokenInfo;
   }
 
-  if (!flpTokens?.length) {
-    flpTokens = queryClient.getQueryState<FlpTokenInfo[]>(["fair-launch-tokens"])?.data || [];
-  }
+  try {
+    if (!flpTokens?.length) {
+      const queryState = queryClient.getQueryState<FlpTokenInfo[]>(["fair-launch-tokens"]);
+      flpTokens = queryState?.data || [];
+    }
 
-  const flpToken = flpTokens.find((token) => token.processId === processId);
-  if (flpToken) {
-    tokenInfoMap.set(processId, flpToken);
-    return flpToken;
-  }
+    const flpToken = flpTokens.find((token) => token.processId === processId);
+    if (flpToken) {
+      const { autoClaim, flpId, ...tokenInfo } = flpToken;
+      tokenInfoMap.set(processId, tokenInfo);
+      return tokenInfo;
+    }
+  } catch {}
 
   if (onlyCache) return null;
 
