@@ -72,7 +72,7 @@ export async function getExpectedOutput({
   const protocolFeeQuantity = getTagValue("Protocol-Fee-Quantity", tags) || "0";
   const tokenInFee = BigNumber(lpFeeQuantity).plus(protocolFeeQuantity).toFixed(0, BigNumber.ROUND_DOWN);
   const minAmountOut = BigNumber(amountOut)
-    .multipliedBy(BigNumber(1).minus(slippage || 0))
+    .multipliedBy(BigNumber(100).minus(slippage || 0))
     .div(100)
     .toFixed(0, BigNumber.ROUND_DOWN);
   const poolAmountIn = amountInWithoutWanderFee;

@@ -162,7 +162,7 @@ export async function getExpectedOutput({
   const tokenInFee = BigNumber(issuerFeeQuantity).plus(poolFeeQuantity).toFixed(0, BigNumber.ROUND_DOWN);
   const tokenOutFee = BigNumber(holderFeeQuantity).toFixed(0, BigNumber.ROUND_DOWN);
   const minAmountOut = BigNumber(amountOut)
-    .multipliedBy(BigNumber(1).minus(slippage))
+    .multipliedBy(BigNumber(100).minus(slippage))
     .div(100)
     .toFixed(0, BigNumber.ROUND_DOWN);
   const poolAmountIn = BigNumber(amountInWithoutWanderFee).minus(tokenInFee).toFixed(0, BigNumber.ROUND_DOWN);

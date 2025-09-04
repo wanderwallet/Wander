@@ -217,7 +217,7 @@ export function SwapReviewView() {
         tokenIn: sendToken?.processId,
         tokenOut: receiveToken?.processId,
         amountIn: selectedPoolInfo.quoteOutput.transferAmountIn,
-        minAmountOut: selectedPoolInfo.quoteOutput.amountOut,
+        minAmountOut: selectedPoolInfo.quoteOutput.minAmountOut,
         poolId: selectedPoolInfo.poolId,
         tags,
         keystoneSigner: wallet?.type === "hardware" ? keystoneSigner : undefined,
