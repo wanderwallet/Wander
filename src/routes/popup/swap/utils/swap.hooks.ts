@@ -787,7 +787,10 @@ export const useSwapTransactions = () => {
       ...defaultOptions,
     });
 
-  const recentSwaps = useMemo(() => convertSwapsArrayToParsedTransactions(swaps), [swaps]);
+  const recentSwaps = useMemo(
+    () => convertSwapsArrayToParsedTransactions(swaps, activeAddress),
+    [swaps, activeAddress],
+  );
 
   const transactions = useMemo(() => {
     if (!data?.pages?.length && !recentSwaps.length) return [];

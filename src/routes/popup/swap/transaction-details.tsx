@@ -119,7 +119,11 @@ export function SwapTransactionDetailsView({ params: { id } }: SwapTransactionDe
                   </Text>
                   <Flex direction="row" align="center" gap={4}>
                     <TokenLogo size={24} token={transaction.tokenIn} fetchMissingLogo />
-                    <TokenValueWithTooltip formattedValue={valueInFormatted} ticker={transaction.tokenIn.Ticker} />
+                    <TokenValueWithTooltip
+                      formattedValue={valueInFormatted}
+                      ticker={transaction.tokenIn.Ticker}
+                      tooltipPosition="bottom"
+                    />
                   </Flex>
                 </Flex>
                 <Flex direction="column" gap={8}>
@@ -150,7 +154,12 @@ export function SwapTransactionDetailsView({ params: { id } }: SwapTransactionDe
                   />
                   <TransactionDetailItem
                     title={browser.i18n.getMessage("wander_fee")}
-                    value={`${transaction.wanderFee} ${transaction.tokenIn.Ticker}`}
+                    valueColor={transaction.wanderFee === "0" && "#9787FF"}
+                    value={
+                      transaction.wanderFee === "0"
+                        ? browser.i18n.getMessage("free")
+                        : `${transaction.wanderFee} ${transaction.tokenIn.Ticker}`
+                    }
                   />
                   <TransactionDetailItem title={browser.i18n.getMessage("slippage")} value={transaction.slippage} />
                   <TransactionDetailItem

@@ -29,7 +29,7 @@ export function SwapHistoryView() {
 
       <Wrapper>
         <Flex gap={12} direction="column">
-          {transactions.length > 0 ? (
+          {!loading && transactions.length > 0 ? (
             transactions.map((tx, index) => <SwapHistoryListItem key={`${tx.txId}-${index}`} tx={tx} />)
           ) : (
             <Empty>

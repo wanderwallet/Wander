@@ -40,12 +40,7 @@ import { aox } from "./bridge/bridge.aox";
 import { botega } from "./dex/dex.botega";
 import { permaswap } from "./dex/dex.permaswap";
 import { vento } from "./bridge/bridge.vento";
-import type {
-  GetExpectedOutputParams,
-  GetExpectedOutputResponse,
-  ReadSwapResult,
-  SwapExecutionParams,
-} from "./dex/dex.types";
+import type { GetExpectedOutputParams, ReadSwapResult, SwapExecutionParams } from "./dex/dex.types";
 import { getAoxBridgeTransaction, getVentoBridgeTransaction } from "./bridge/bridge.utils";
 import { getLinkedMessages } from "./dex/dex.utils";
 import { createData, DataItem, type Tag } from "@dha-team/arbundles";
@@ -303,7 +298,9 @@ export function parseSwapTransaction(transaction: GQLEdgeInterface): ParsedSwapT
     const getTagValue = (name: string): string => tagValueMap.get(name) || "";
 
     // Parse basic transaction data
-    const timestamp = node.block?.timestamp ? node.block.timestamp * 1000 : Date.now();
+    // @ts-ignore
+    const blockTimestamp = node.block?.timestamp || node?.ingested_at;
+    const timestamp = blockTimestamp ? blockTimestamp * 1000 : Date.now();
     const pushedFor = getTagValue("Pushed-For");
     const txId = pushedFor || node.id;
     const isAo = getTagValue("Data-Protocol") === "ao";
@@ -328,7 +325,7 @@ export function parseSwapTransaction(transaction: GQLEdgeInterface): ParsedSwapT
     const tokenOut = JSON.parse(getTagValue("X-Token-Out"));
 
     const isError = action === "Order-Error" || (orderStatus && orderStatus !== "Swapped");
-    const isPending = bridgeStatus && bridgeStatus !== "success" && bridgeStatus !== "filled";
+    const isPending = orderStatus === "Pending" || (bridgeStatus && !["success", "filled"].includes(bridgeStatus));
     const status = isError ? "Failed" : isPending ? "Pending" : "Completed";
 
     return {
@@ -566,9 +563,9 @@ export function convertSwapDataToParsedTransaction(swapData: SwapData): ParsedSw
  * Converts an array of SwapData to ParsedSwapTransaction array
  * Filters out invalid entries and sorts by timestamp (newest first)
  */
-export function convertSwapsArrayToParsedTransactions(swaps: SwapData[]): ParsedSwapTransaction[] {
+export function convertSwapsArrayToParsedTransactions(swaps: SwapData[], swapper: string): ParsedSwapTransaction[] {
   return swaps
-    .filter((swap) => swap && swap.selectedPoolInfo && swap.sendToken && swap.receiveToken)
+    .filter((swap) => swap && swap.selectedPoolInfo && swap.sendToken && swap.receiveToken && swap.swapper === swapper)
     .map(convertSwapDataToParsedTransaction)
     .sort(sortTransactionsByTimestamp);
 }
