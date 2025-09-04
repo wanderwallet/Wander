@@ -7,7 +7,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useTheme } from "styled-components";
 import { Flex } from "~components/common/Flex";
 import { SwapInput } from "./components/SwapInput";
-import { type TokenInfo } from "~tokens/aoTokens/ao";
+import { fetchTokenByProcessId, type TokenInfo } from "~tokens/aoTokens/ao";
 import { DisclosureButton, DisclosureContent } from "~routes/popup/swap/components/Disclosure";
 import { SlippageInputButton } from "./components/SlippageInputButton";
 import {
@@ -150,11 +150,16 @@ export function SwapView() {
   async function handleSwap() {
     if (!selectedPoolInfo) return;
 
+    const [sendTokenLogo, receiveTokenLogo] = await Promise.all([
+      sendToken.Logo || (await fetchTokenByProcessId(sendToken.processId, true))?.Logo || "",
+      receiveToken.Logo || (await fetchTokenByProcessId(receiveToken.processId, true))?.Logo || "",
+    ]);
+
     const swapData = {
       selectedPoolInfo,
       slippage,
-      sendToken,
-      receiveToken,
+      sendToken: { ...sendToken, Logo: sendTokenLogo },
+      receiveToken: { ...receiveToken, Logo: receiveTokenLogo },
       wanderFee,
       amountIn,
       swapper: activeAddress,
