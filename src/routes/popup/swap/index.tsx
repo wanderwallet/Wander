@@ -7,7 +7,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useTheme } from "styled-components";
 import { Flex } from "~components/common/Flex";
 import { SwapInput } from "./components/SwapInput";
-import { type TokenInfo } from "~tokens/aoTokens/ao";
+import { fetchTokenByProcessId, type TokenInfo } from "~tokens/aoTokens/ao";
 import { DisclosureButton, DisclosureContent } from "~routes/popup/swap/components/Disclosure";
 import { SlippageInputButton } from "./components/SlippageInputButton";
 import {
@@ -38,6 +38,7 @@ import { fromTokenBaseUnits, getPriceImpactColor, toFixed, toTokenBaseUnits } fr
 import { PageType, trackPage } from "~utils/analytics";
 import { TransactionDetailItem } from "./components/TransactionDetailItem";
 import { ErrorIcon } from "./components/ErrorIcon";
+import BigNumber from "bignumber.js";
 
 export function SwapView() {
   const theme = useTheme();
@@ -53,9 +54,14 @@ export function SwapView() {
   const [receiveToken, setReceiveToken] = useSwapReceiveToken();
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [tokenSelectorType, setTokenSelectorType] = useState<TokenSelectorType>("send");
-  const { networkFee, isLoading: isNetworkFeeLoading } = useARNetworkFee({
+  const {
+    networkFee,
+    networkFeeValue,
+    isLoading: isNetworkFeeLoading,
+  } = useARNetworkFee({
     tokenIn: sendToken.processId,
     tokenOut: receiveToken.processId,
+    doubleFee: +defiFeeDetails?.finalFeePercent > 0,
   });
   const debouncedValueIn = useDebounce(valueIn, 300);
 
@@ -67,12 +73,17 @@ export function SwapView() {
     return toTokenBaseUnits(debouncedValueIn, sendToken.Denomination);
   }, [debouncedValueIn, sendToken]);
 
-  const errorMessage = useMemo(() => {
-    if (!debouncedValueIn || !balanceIn || !sendToken || !receiveToken) return "";
+  const maxValueIn = useMemo(
+    () => (sendToken.processId === AR_PROCESS_ID ? BigNumber(balanceIn).minus(networkFeeValue).toFixed() : balanceIn),
+    [balanceIn, networkFeeValue, sendToken.processId],
+  );
 
-    const state = validateAmount(debouncedValueIn, balanceIn, "0", "token", 1);
+  const errorMessage = useMemo(() => {
+    if (!debouncedValueIn || !balanceIn || !sendToken || !receiveToken || !networkFeeValue) return "";
+
+    const state = validateAmount(debouncedValueIn, balanceIn, networkFeeValue, "token", 1);
     return getErrorMessage(state);
-  }, [debouncedValueIn, balanceIn, sendToken, receiveToken]);
+  }, [debouncedValueIn, balanceIn, sendToken, receiveToken, networkFeeValue]);
 
   const {
     selectedPoolInfo,
@@ -139,12 +150,18 @@ export function SwapView() {
   async function handleSwap() {
     if (!selectedPoolInfo) return;
 
+    const [sendTokenLogo, receiveTokenLogo] = await Promise.all([
+      sendToken.Logo || (await fetchTokenByProcessId(sendToken.processId, true))?.Logo || "",
+      receiveToken.Logo || (await fetchTokenByProcessId(receiveToken.processId, true))?.Logo || "",
+    ]);
+
     const swapData = {
       selectedPoolInfo,
       slippage,
-      sendToken,
-      receiveToken,
+      sendToken: { ...sendToken, Logo: sendTokenLogo },
+      receiveToken: { ...receiveToken, Logo: receiveTokenLogo },
       wanderFee,
+      networkFee,
       amountIn,
       swapper: activeAddress,
       tier: defiFeeDetails.tier,
@@ -195,18 +212,7 @@ export function SwapView() {
                 setTokenSelectorType("send");
                 setOpenTokenSelector(true);
               }}
-              onMaxClick={() => {
-                if (sendToken.processId === AR_PROCESS_ID) {
-                  const balanceInBaseUnits = toTokenBaseUnits(balanceIn, sendToken.Denomination, "BigNumber");
-                  const finalBalanceIn = fromTokenBaseUnits(
-                    balanceInBaseUnits.minus(networkFee),
-                    sendToken.Denomination,
-                  );
-                  setValueIn(finalBalanceIn);
-                } else {
-                  setValueIn(balanceIn);
-                }
-              }}
+              onMaxClick={() => setValueIn(maxValueIn !== "NaN" ? maxValueIn : "0")}
             />
             <Switch onClick={handleSwitch} isError={!!errorMessage || !!poolError}>
               <ArrowDown style={{ height: 24, width: 24 }} color={theme.primaryText} />

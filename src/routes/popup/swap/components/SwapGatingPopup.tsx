@@ -62,8 +62,8 @@ export const SwapGatingPopup = ({ isOpen, setOpen }) => {
         <Flex direction="column" gap={32} width="100%" boxSizing="border-box" style={{ marginTop: 16 }}>
           <TierProgress activeTier={activeTier} highlightTierLabel={slide.tierName} />
           <Flex direction="column" gap={8} width="100%">
-            {tierBenefits.map((benefit) => (
-              <Flex direction="row" gap={8} align="center">
+            {tierBenefits.map((benefit, index) => (
+              <Flex key={`benefit-${index}`} direction="row" gap={8} align="center">
                 <StarIcon tier={slide.tierName} />
                 <TierBenefitText>
                   {benefit.title} {benefit.subtitle && <span>{benefit.subtitle}</span>}

@@ -35,7 +35,7 @@ export async function initializeSwapMonitoring() {
  * Check for completed or failed swaps that need to show completion screen
  * Returns the swap data of the first swap that should be shown
  */
-export async function checkForCompletedSwapToShow(): Promise<SwapData | null> {
+export async function checkForFinishedSwapToShow(): Promise<SwapData | null> {
   try {
     // Find the first swap that needs to show completion screen (completed OR failed)
     const swapToShow = await swapsArray.find(

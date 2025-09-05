@@ -1,4 +1,10 @@
-import { getTagValue, getTagValueMap, type TokenInfo } from "~tokens/aoTokens/ao";
+import {
+  createDataItemKeystoneSigner,
+  createDataItemSigner,
+  getTagValue,
+  getTagValueMap,
+  type TokenInfo,
+} from "~tokens/aoTokens/ao";
 import {
   type SwapData,
   type BotegaPool,
@@ -8,6 +14,7 @@ import {
   type Pool,
   type PoolType,
   type Provider,
+  type SelectedPoolInfo,
 } from "./swap.types";
 import BigNumber from "bignumber.js";
 import { BOTEGA_API_KEY, BOTEGA_SUPABASE_URL } from "./data-source/data-source.constants";
@@ -19,7 +26,7 @@ import {
   WAR_PROCESS_ID,
   WAR_TOKEN_INFO,
 } from "~tokens/aoTokens/ao.constants";
-import { PoolTypeEnum } from "./swap.constants";
+import { PoolTypeEnum, WANDER_FEE_RECIPIENT } from "./swap.constants";
 import type { DefaultTheme } from "styled-components";
 import type { GQLEdgeInterface } from "ar-gql/dist/faces";
 import type GQLResultInterface from "ar-gql/dist/faces";
@@ -36,6 +43,17 @@ import { vento } from "./bridge/bridge.vento";
 import type { GetExpectedOutputParams, ReadSwapResult, SwapExecutionParams } from "./dex/dex.types";
 import { getAoxBridgeTransaction, getVentoBridgeTransaction } from "./bridge/bridge.utils";
 import { getLinkedMessages } from "./dex/dex.utils";
+import { createData, DataItem, type Tag } from "@dha-team/arbundles";
+import type Transaction from "arweave/web/lib/transaction";
+import browser from "webextension-polyfill";
+import { generateAnchor, KeystoneSigner } from "~wallets/hardware/keystone";
+import { retryWithGateways } from "~gateways/wayfinder";
+import Arweave from "arweave/web/common";
+import { connect } from "@permaweb/aoconnect";
+import { defaultConfig } from "~tokens/aoTokens/config";
+import type { DecodedTag } from "~api/modules/sign/tags";
+
+const aoInstance = connect(defaultConfig);
 
 const BOTEGA_POOL_OPTIONS = {
   headers: {
@@ -232,7 +250,7 @@ export function getPriceImpact(reserveIn: string, reserveOut: string, amountIn: 
 
   // Return percentage with 2 decimal places
   const result = priceImpact.toFixed(2);
-  return result === "-0.00" ? "0.00" : result;
+  return result === "-0.00" || result === "NaN" ? "0.00" : result;
 }
 
 export function getProviderName(poolType: PoolType) {
@@ -258,9 +276,9 @@ export function getSwapTime(poolType: PoolType | Provider) {
 }
 
 export function getPriceImpactColor(priceImpact: string, theme: DefaultTheme) {
-  const priceImpactNumber = +priceImpact;
-  if (priceImpactNumber >= 10) return theme.fail;
-  if (priceImpactNumber >= 5) return "#EEBD41";
+  const impact = +priceImpact;
+  if (!impact || Number.isNaN(impact)) return theme.primaryText;
+  return impact > 0 ? theme.success : impact <= -10 ? theme.fail : theme.primaryText;
 }
 
 export function toFixed(value: any, decimals: number, roundingMode: BigNumber.RoundingMode = BigNumber.ROUND_DOWN) {
@@ -280,7 +298,9 @@ export function parseSwapTransaction(transaction: GQLEdgeInterface): ParsedSwapT
     const getTagValue = (name: string): string => tagValueMap.get(name) || "";
 
     // Parse basic transaction data
-    const timestamp = node.block?.timestamp ? node.block.timestamp * 1000 : Date.now();
+    // @ts-ignore
+    const blockTimestamp = node.block?.timestamp || node?.ingested_at;
+    const timestamp = blockTimestamp ? blockTimestamp * 1000 : Date.now();
     const pushedFor = getTagValue("Pushed-For");
     const txId = pushedFor || node.id;
     const isAo = getTagValue("Data-Protocol") === "ao";
@@ -305,7 +325,7 @@ export function parseSwapTransaction(transaction: GQLEdgeInterface): ParsedSwapT
     const tokenOut = JSON.parse(getTagValue("X-Token-Out"));
 
     const isError = action === "Order-Error" || (orderStatus && orderStatus !== "Swapped");
-    const isPending = bridgeStatus && bridgeStatus !== "success" && bridgeStatus !== "filled";
+    const isPending = orderStatus === "Pending" || (bridgeStatus && !["success", "filled"].includes(bridgeStatus));
     const status = isError ? "Failed" : isPending ? "Pending" : "Completed";
 
     return {
@@ -434,6 +454,122 @@ export const swapsArray = createStorageArray<SwapData>("swaps", {
   uniqueKey: "transferId",
 });
 
+const getSwapStatus = (status?: string): ParsedSwapTransaction["status"] => {
+  switch (status) {
+    case "pending":
+      return "Pending";
+    case "completed":
+      return "Completed";
+    case "failed":
+      return "Failed";
+    default:
+      return "Pending";
+  }
+};
+
+export function calculateRate(
+  selectedPoolInfo: SelectedPoolInfo,
+  sendToken: TokenInfo,
+  receiveToken: TokenInfo,
+  amountIn: string,
+): string {
+  if (!selectedPoolInfo?.quoteOutput || !sendToken || !receiveToken || !amountIn) return "--";
+
+  const valueIn = BigNumber(amountIn).shiftedBy(-sendToken.Denomination);
+  const valueOut = BigNumber(selectedPoolInfo.quoteOutput.amountOut || "0").shiftedBy(-receiveToken.Denomination);
+
+  const valueOutForUnitValueIn = valueOut.dividedBy(valueIn);
+  return `1 ${sendToken.Ticker} ≈ ${toFixed(valueOutForUnitValueIn, 8)} ${receiveToken.Ticker}`;
+}
+
+export function calculateNetworkProviderFee(
+  selectedPoolInfo: SelectedPoolInfo,
+  sendToken: TokenInfo,
+  receiveToken: TokenInfo,
+  networkFee: string,
+): string {
+  if (!selectedPoolInfo?.quoteOutput || !sendToken || !receiveToken) return "--";
+
+  let tokenInFee = BigNumber(selectedPoolInfo.quoteOutput.tokenInFee || "0");
+  let tokenOutFee = BigNumber(selectedPoolInfo.quoteOutput.tokenOutFee || "0");
+
+  if (selectedPoolInfo.poolType === "aox" || selectedPoolInfo.poolType === "vento") {
+    if (sendToken.processId === AR_PROCESS_ID) {
+      tokenInFee = tokenInFee.plus(networkFee);
+    } else {
+      tokenOutFee = tokenOutFee.plus(networkFee);
+    }
+  }
+
+  const formatFee = (amount: BigNumber, token: TokenInfo) =>
+    `${toFixed(amount.shiftedBy(-token.Denomination), 8)} ${token.Ticker}`;
+
+  if (tokenInFee.isZero() && tokenOutFee.isZero()) {
+    return `0 ${sendToken.Ticker}`;
+  }
+
+  const fees = [];
+  if (!tokenInFee.isZero()) {
+    fees.push(formatFee(tokenInFee, sendToken));
+  }
+
+  if (!tokenOutFee.isZero()) {
+    fees.push(formatFee(tokenOutFee, receiveToken));
+  }
+
+  return fees.join(" + ");
+}
+
+/**
+ * Converts SwapData to ParsedSwapTransaction format
+ * This allows stored swap data to be displayed in the same format as fetched transactions
+ *
+ * @param swapData - The SwapData object to convert
+ * @returns ParsedSwapTransaction - Formatted transaction object compatible with UI components
+ */
+export function convertSwapDataToParsedTransaction(swapData: SwapData): ParsedSwapTransaction {
+  const {
+    selectedPoolInfo,
+    sendToken,
+    receiveToken,
+    wanderFee,
+    slippage,
+    amountIn,
+    timestamp,
+    status,
+    networkFee = "0",
+  } = swapData;
+  const { quoteOutput, priceImpact, poolType } = selectedPoolInfo;
+
+  return {
+    txId: swapData.transferId || `swap-${timestamp || Date.now()}`,
+    isAo: sendToken.processId !== AR_PROCESS_ID,
+    rate: calculateRate(selectedPoolInfo, sendToken, receiveToken, amountIn),
+    timestamp: timestamp || Date.now(),
+    provider: getProviderName(poolType) || "Botega",
+    networkProviderFee: calculateNetworkProviderFee(selectedPoolInfo, sendToken, receiveToken, networkFee),
+    wanderFee: wanderFee?.finalFee || "0",
+    slippage: slippage.toString(),
+    priceImpact: priceImpact || "0",
+    tokenIn: sendToken,
+    tokenOut: receiveToken,
+    amountIn: amountIn || "0",
+    amountOut: quoteOutput?.amountOut || "0",
+    status: getSwapStatus(status),
+  };
+}
+
+/**
+ * Converts an array of SwapData to ParsedSwapTransaction array
+ * Filters out invalid entries and sorts by timestamp (newest first)
+ */
+export function convertSwapsArrayToParsedTransactions(swaps: SwapData[], swapper: string): ParsedSwapTransaction[] {
+  return swaps
+    .filter((swap) => swap && swap.selectedPoolInfo && swap.sendToken && swap.receiveToken && swap.swapper === swapper)
+    .map(convertSwapDataToParsedTransaction)
+    .sort(sortTransactionsByTimestamp);
+}
+
 export function executeSwapFn(poolType: PoolType, params: SwapExecutionParams) {
   switch (poolType) {
     case PoolTypeEnum.BOTEGA:
@@ -544,4 +680,182 @@ export function fromTokenBaseUnits<T extends "BigNumber" | "string" = "string">(
   return (returnType === "BigNumber" ? shiftedValue : shiftedValue.toFixed()) as T extends "BigNumber"
     ? BigNumber
     : string;
+}
+
+export function getFeeTransactionTags(swapId: string, isAo: boolean) {
+  const tags = [
+    { name: "Fee-Type", value: "Swap" },
+    { name: "Swap-Tx-Id", value: swapId || "" },
+    { name: "Client", value: "Wander" },
+    { name: "Client-Version", value: browser.runtime.getManifest().version },
+  ];
+
+  if (!isAo) {
+    tags.unshift({ name: "Type", value: "Transfer" });
+  }
+
+  return tags;
+}
+
+export async function createKeystoneFeeTransaction<P extends PoolType, T extends string>(
+  poolType: P,
+  tokenIn: T,
+  swapId: string,
+  feeAmount: string,
+  signer: KeystoneSigner,
+): Promise<P extends "aox" | "vento" ? (T extends typeof AR_PROCESS_ID ? Transaction : DataItem) : DataItem> {
+  const isARSwap = (poolType === "aox" || poolType === "vento") && tokenIn === AR_PROCESS_ID;
+
+  const additionalTags = getFeeTransactionTags(swapId, !isARSwap);
+
+  if (isARSwap) {
+    const { result: transaction } = await retryWithGateways((arweave) =>
+      arweave.createTransaction({
+        target: WANDER_FEE_RECIPIENT,
+        quantity: feeAmount,
+      }),
+    );
+
+    additionalTags.forEach((tag) => transaction.addTag(tag.name, tag.value));
+
+    const result = await signer.signTransaction(transaction);
+    const publicKey = Arweave.utils.bufferTob64Url(signer.publicKey);
+    transaction.setSignature({ ...result, owner: publicKey });
+    return transaction as any;
+  } else {
+    const tags = [
+      { name: "Variant", value: "ao.TN.1" },
+      { name: "Type", value: "Message" },
+      { name: "Data-Protocol", value: "ao" },
+      { name: "SDK", value: "aoconnect" },
+      { name: "Content-Type", value: "text/plain" },
+      { name: "Action", value: "Transfer" },
+      { name: "Recipient", value: WANDER_FEE_RECIPIENT },
+      { name: "Quantity", value: feeAmount },
+      ...additionalTags,
+    ];
+
+    const anchor = generateAnchor() as unknown as string;
+    const data = Math.floor(1000 + Math.random() * 9000).toString();
+    const dataItem = createData(data, signer, { tags, target: tokenIn, anchor });
+    const dataItemBuf = dataItem.getRaw();
+    const signature = await signer.sign(dataItemBuf);
+    dataItem.setSignature(Buffer.from(signature));
+    return dataItem as any;
+  }
+}
+
+interface CreateAoMessageArgs {
+  poolType: PoolType;
+  process: string;
+  signer: ReturnType<typeof createDataItemSigner> | ReturnType<typeof createDataItemKeystoneSigner>;
+  tags: Tag[];
+  wanderFee: string;
+  keystoneSigner?: KeystoneSigner;
+}
+
+export async function createSwapMessage({
+  poolType,
+  process,
+  signer,
+  tags,
+  wanderFee,
+  keystoneSigner,
+}: CreateAoMessageArgs) {
+  let dataItemRaw: Buffer;
+  let keystoneTx: SwapData["keystoneTx"] | undefined;
+  const isKeystoneSigner = !!keystoneSigner;
+  const hasWanderFee = +wanderFee > 0;
+  if (isKeystoneSigner && hasWanderFee) {
+    const updatedTags = [
+      { name: "Variant", value: "ao.TN.1" },
+      { name: "Type", value: "Message" },
+      { name: "Data-Protocol", value: "ao" },
+      { name: "SDK", value: "aoconnect" },
+      { name: "Content-Type", value: "text/plain" },
+      ...tags,
+    ];
+    const data = Math.floor(1000 + Math.random() * 9000).toString();
+    const { id, raw } = await signer({ data, tags: updatedTags, target: process });
+    dataItemRaw = Buffer.from(raw);
+
+    const feeTx = await createKeystoneFeeTransaction(poolType, process, id, wanderFee, keystoneSigner);
+    keystoneTx = { raw: feeTx.getRaw().toString("base64") };
+  }
+
+  async function sendMessage() {
+    if (isKeystoneSigner && hasWanderFee) {
+      try {
+        const response = await fetch("https://mu.ao-testnet.xyz", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/octet-stream",
+            Accept: "application/json",
+          },
+          redirect: "follow",
+          // @ts-ignore
+          body: dataItemRaw,
+        });
+        if (!response.ok) throw new Error("Failed to post transaction");
+        const result = await response.json();
+        return result.id;
+      } catch (err) {
+        if (err?.name === "RedirectRequested") {
+          throw err;
+        } else {
+          throw new Error(`Error while communicating with MU: ${JSON.stringify(err)}`);
+        }
+      }
+    } else {
+      const transferId = await aoInstance.message({ process, signer, tags });
+      return transferId;
+    }
+  }
+
+  // If there is a keystone signer but no wander fee, set the keystoneTx to an empty object
+  // since there's no fee to send
+  keystoneTx = isKeystoneSigner && !hasWanderFee ? {} : keystoneTx;
+
+  return { keystoneTx, sendMessage };
+}
+
+/**
+ * Asserts that a transfer result contains valid Credit/Debit notice tags
+ * @param message - The message ID of the transfer
+ * @param process - The process ID of the transfer
+ * @throws {Error} If the transfer result is missing valid notice tags
+ */
+export async function assertTransferResult(
+  message: string,
+  process: string,
+  validTags = ["Credit-Notice", "Debit-Notice"],
+  errorMessage = "Failed to transfer tokens",
+) {
+  let transferError = "";
+
+  try {
+    const { Error, Messages } = await aoInstance.result({ message, process });
+    if (Error) {
+      transferError = errorMessage;
+    } else if (Messages.length > 0) {
+      const hasValidTag = Messages.some((message) =>
+        message?.Tags?.some((tag: DecodedTag) => tag.name === "Action" && validTags.includes(tag.value)),
+      );
+
+      if (!hasValidTag) {
+        transferError = errorMessage;
+      }
+    }
+  } catch {}
+
+  if (transferError) {
+    log(LOG_GROUP.SWAP, transferError);
+    throw new Error(transferError);
+  }
+}
+
+export function sortTransactionsByTimestamp(a: ParsedSwapTransaction, b: ParsedSwapTransaction) {
+  const timestampA = a.timestamp || Number.MAX_SAFE_INTEGER;
+  const timestampB = b.timestamp || Number.MAX_SAFE_INTEGER;
+  return timestampB - timestampA;
 }
