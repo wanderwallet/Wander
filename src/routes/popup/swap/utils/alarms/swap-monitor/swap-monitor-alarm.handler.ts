@@ -14,6 +14,7 @@ import { getAoTokens } from "~tokens";
 
 const SWAP_MONITOR_ALARM_NAME = "swap-monitor";
 const SWAP_CHECK_INTERVAL_MS = 120_000;
+const MIN_TIME_BEFORE_RESTART_MS = 30000;
 let isSwapMonitoringActive = false;
 
 // Intervals for DEX swaps: 10s, 30s, 60s, 120s
@@ -361,7 +362,7 @@ export async function startSwapMonitoring(forceRestart: boolean = false) {
 
   if (existingAlarm && forceRestart) {
     const timeUntilNextCheck = existingAlarm.scheduledTime - Date.now();
-    if (timeUntilNextCheck > 30000 && !isSwapMonitoringActive) {
+    if (timeUntilNextCheck > MIN_TIME_BEFORE_RESTART_MS && !isSwapMonitoringActive) {
       log(LOG_GROUP.SWAP, "Force restarting swap monitoring (existing alarm will be cleared)");
       await browser.alarms.clear(SWAP_MONITOR_ALARM_NAME);
     } else {
