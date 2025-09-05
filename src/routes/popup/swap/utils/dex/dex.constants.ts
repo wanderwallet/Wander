@@ -1,45 +1,15 @@
-export const PERMASWAP_ORDERBOOK = "rKpOUxssKxgfXQOpaCq22npHno6oRw66L3kZeoo_Ndk" as const;
-export const BOTEGA_AMM_FACTORY = "3XBGLrygs11K63F_7mldWz4veNx6Llg6hI2yZs8LKHo" as const;
-
-export const BOTEGA_SWAP_CONFIRMATION_QUERY_WITH_CURSOR = `
-query($address: String!, $after: String) {
-  transactions(
-    first: 10,
-    tags: [
-      {name: "Data-Protocol", values: ["ao"]},
-      {name: "Action", values: ["Order-Confirmation", "Order-Error"]},
-      { name: "X-Client", values: ["Wander"]},
-      { name: "X-Type", values: ["Swap"]} 
-    ],
-    recipients: [$address],
-    after: $after
-  ) {
-    pageInfo {
-      hasNextPage
-    }
-    edges {
-      cursor
-      node {
-        id
-        recipient
-        owner { address }
-        block { timestamp, height }
-        tags { name, value }
-      }
-    }
-  }
-}`;
-
-export const PERMASWAP_SWAP_QUERY_WITH_CURSOR = `
-query($address: String!, $after: String) {
+export const DEX_SWAP_QUERY_WITH_CURSOR = `
+query($address: String!, $provider: String!, $after: String) {
   transactions(
     first: 10,
     tags: [
       {name: "Data-Protocol", values: ["ao"]},
       {name: "Action", values: ["Transfer"]},
       { name: "X-Client", values: ["Wander"]},
-      { name: "X-Type", values: ["Swap"]} 
+      { name: "X-Type", values: ["Swap"]},
+      { name: "X-Provider", values: [$provider] },
     ],
+    sort: INGESTED_AT_DESC,
     owners: [$address],
     after: $after
   ) {
@@ -50,6 +20,33 @@ query($address: String!, $after: String) {
       cursor
       node {
         id
+        ingested_at
+        recipient
+        owner { address }
+        block { timestamp, height }
+        tags { name, value }
+      }
+    }
+  }
+}`;
+
+export const BOTEGA_SWAP_CONFIRMATION_QUERY = `
+query($address: String!, $pushedFors: [String!]!) {
+  transactions(
+    first: 100,
+    tags: [
+      { name: "Data-Protocol", values: ["ao"]},
+      { name: "Action", values: ["Order-Confirmation", "Order-Error"]},
+      { name: "X-Client", values: ["Wander"]},
+      { name: "X-Type", values: ["Swap"]},
+      { name: "Relay-To", values: [$address] },
+      { name: "Pushed-For", values: $pushedFors },
+    ],
+  ) {
+    edges {
+      node {
+        id
+        ingested_at
         recipient
         owner { address }
         block { timestamp, height }
@@ -71,34 +68,9 @@ query($address: String!, $pushedFors: [String!]!) {
     ],
   ) {
     edges {
-      cursor
       node {
         id
-        recipient
-        owner { address }
-        block { timestamp, height }
-        tags { name, value }
-      }
-    }
-  }
-}`;
-
-export const SWAP_TRANSFER_QUERY = `
-query($address: String!, $pushedFors: [String!]!) {
-  transactions(
-    first: 10,
-    tags: [
-      {name: "Data-Protocol", values: ["ao"]},
-      {name: "Action", values: ["Transfer"]},
-      { name: "X-Client", values: ["Wander"]},
-      { name: "X-Type", values: ["Swap"]},
-      { name: "Pushed-For", values: $pushedFors },
-    ],
-    owners: [$address],
-  ) {
-    edges {
-      node {
-        id
+        ingested_at
         recipient
         owner { address }
         block { timestamp, height }
@@ -121,6 +93,7 @@ query($txId: ID!) {
     edges {
       node {
         id
+        ingested_at
         recipient
         owner { address }
         block { timestamp, height }
@@ -144,6 +117,7 @@ query($txId: ID!) {
     edges {
       node {
         id
+        ingested_at
         recipient
         owner { address }
         block { timestamp, height }
@@ -166,6 +140,7 @@ query($pushedFor: String!) {
     edges {
       node {
         id
+        ingested_at
         recipient
         owner { address }
         block { timestamp, height }
@@ -188,6 +163,7 @@ query($txIds: [ID!]!) {
     edges {
       node {
         id
+        ingested_at
         recipient
         owner { address }
         block { timestamp, height }
@@ -206,6 +182,7 @@ query($address: String!, $after: String) {
       { name: "X-Type", values: ["Swap"]},
       { name: "X-Provider", values: ["Vento"] },
     ],
+    sort: INGESTED_AT_DESC,
     owners: [$address],
     after: $after
   ) {
@@ -216,6 +193,7 @@ query($address: String!, $after: String) {
       cursor
       node {
         id
+        ingested_at
         recipient
         owner { address }
         block { timestamp, height }
@@ -238,6 +216,7 @@ query($pushedFors: [String!]!) {
     edges {
       node {
         id
+        ingested_at
         recipient
         owner { address }
         block { timestamp, height }

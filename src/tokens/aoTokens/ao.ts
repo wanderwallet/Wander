@@ -27,8 +27,10 @@ import {
   WAR_PROCESS_ID,
 } from "~tokens/aoTokens/ao.constants";
 import type { Token } from "~tokens/token";
+import type { FlpTokenInfo } from "~utils/fair_launch/fair_launch.types";
 
 export let tokens: TokenInfo[] = null;
+export let flpTokens: FlpTokenInfo[] = null;
 export let tokenInfoMap = new Map<string, TokenInfo | Token>();
 
 export type AoInstance = ReturnType<typeof connect>;
@@ -149,10 +151,11 @@ async function fetchTokenInfo(processId: string) {
   }
 }
 
-export const fetchTokenByProcessId = async (processId: string): Promise<TokenInfo | null> => {
-  if (tokenInfoMap.has(processId)) {
-    return tokenInfoMap.get(processId) as TokenInfo;
-  }
+export const fetchTokenByProcessId = async (processId: string, onlyCache = false): Promise<TokenInfo | null> => {
+  if (!processId) return null;
+
+  const cached = tokenInfoMap.get(processId);
+  if (cached) return cached as TokenInfo;
 
   if (!tokens) {
     const [aoTokens, aoTokensCache] = await Promise.all([
@@ -163,13 +166,27 @@ export const fetchTokenByProcessId = async (processId: string): Promise<TokenInf
     tokens = [...(aoTokens || []), ...(aoTokensCache || [])];
   }
 
-  if (!processId) return null;
-
   const tokenInfo = tokens.find((token) => token.processId === processId);
   if (tokenInfo) {
     tokenInfoMap.set(processId, tokenInfo);
     return tokenInfo;
   }
+
+  try {
+    if (!flpTokens?.length) {
+      const queryState = queryClient.getQueryState<FlpTokenInfo[]>(["fair-launch-tokens"]);
+      flpTokens = queryState?.data || [];
+    }
+
+    const flpToken = flpTokens.find((token) => token.processId === processId);
+    if (flpToken) {
+      const { autoClaim, flpId, ...tokenInfo } = flpToken;
+      tokenInfoMap.set(processId, tokenInfo);
+      return tokenInfo;
+    }
+  } catch {}
+
+  if (onlyCache) return null;
 
   return fetchTokenInfo(processId);
 };
@@ -288,7 +305,7 @@ export const flattenTags = (tags: Tag[]) =>
   );
 
 export const createDataItemSigner =
-  (wallet: any) =>
+  (jwkOrSigner: any) =>
   async ({
     data,
     tags = [],
@@ -300,7 +317,7 @@ export const createDataItemSigner =
     target?: string;
     anchor?: string;
   }): Promise<{ id: string; raw: ArrayBuffer }> => {
-    const signer = new ArweaveSigner(wallet);
+    const signer = jwkOrSigner instanceof ArweaveSigner ? jwkOrSigner : new ArweaveSigner(jwkOrSigner);
     const dataItem = createData(data, signer, { tags, target, anchor });
 
     await dataItem.sign(signer);

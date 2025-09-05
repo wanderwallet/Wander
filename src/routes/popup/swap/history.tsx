@@ -17,7 +17,7 @@ import { TokenLogo } from "~components/popup/TokenLogo";
 import { PageType, trackPage } from "~utils/analytics";
 
 export function SwapHistoryView() {
-  const { transactions, loading, hasNextPage, fetchTransactions } = useSwapTransactions();
+  const { transactions, loading, hasNextPage, fetchNextPage } = useSwapTransactions();
 
   useEffect(() => {
     trackPage(PageType.SWAP_HISTORY);
@@ -49,7 +49,7 @@ export function SwapHistoryView() {
             disabled={!hasNextPage || loading}
             style={{ alignSelf: "center", marginTop: "5px" }}
             loading={loading}
-            onClick={() => fetchTransactions()}>
+            onClick={() => fetchNextPage()}>
             {browser.i18n.getMessage("load_more")}...
           </Button>
         )}
@@ -122,8 +122,18 @@ const SwapHistoryListItem = ({ tx }: SwapHistoryListItemProps) => {
       hideSquircle={true}
       icon={
         <Flex direction="row" style={{ width: 32, position: "relative" }}>
-          <TokenLogo token={tx.tokenIn} size={24} style={{ position: "absolute", top: -17, left: 2 }} />
-          <TokenLogo token={tx.tokenOut} size={24} style={{ position: "absolute", bottom: -17, right: -6 }} />
+          <TokenLogo
+            token={tx.tokenIn}
+            size={24}
+            style={{ position: "absolute", top: -17, left: 2 }}
+            fetchMissingLogo
+          />
+          <TokenLogo
+            token={tx.tokenOut}
+            size={24}
+            style={{ position: "absolute", bottom: -17, right: -6 }}
+            fetchMissingLogo
+          />
         </Flex>
       }
       active

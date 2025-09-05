@@ -1,5 +1,7 @@
 import type { dryrun } from "@permaweb/aoconnect";
 import type { Tag } from "~utils/agents/types";
+import type { KeystoneSigner } from "~wallets/hardware/keystone";
+import type { SwapData } from "../swap.types";
 
 export interface GetExpectedOutputParams {
   poolId: string;
@@ -30,15 +32,18 @@ export interface SwapExecutionParams {
   amountIn: string;
   minAmountOut: string;
   poolId: string;
+  wanderFee: string;
   slippage?: number;
   deadline?: number;
   tags?: Tag[];
+  keystoneSigner?: KeystoneSigner | null;
 }
 
 export interface SwapExecutionResponse {
   transferId: string;
   noteSettle?: string; // For Permaswap
   debitNoticeId?: string; // For Vento vAR -> AR
+  keystoneTx?: Partial<SwapData["keystoneTx"]>;
 }
 
 export interface GetLiquidityParams {
