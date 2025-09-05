@@ -237,7 +237,7 @@ export async function executeSwap({
       (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 30000),
     );
 
-    if (!noteId || !noteSettle) throw new Error("Failed to create Permaswap order");
+    if (!noteId || !noteSettle) throw new OrderError(browser.i18n.getMessage("swap_error_permaswap_order"));
 
     const { keystoneTx, sendMessage } = await createSwapMessage({
       process: tokenIn,
