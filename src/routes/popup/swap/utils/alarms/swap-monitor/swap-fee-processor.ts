@@ -6,21 +6,26 @@ import { connect } from "@permaweb/aoconnect";
 import { defaultConfig } from "~tokens/aoTokens/config";
 import { queryClient } from "~utils/tanstack";
 import { defaultOptions } from "~tokens/hooks";
-import { createDataItemSigner, fetchTokenBalance, getBotegaPrice } from "~tokens/aoTokens/ao";
-import { isLocalWallet } from "~utils/assertions";
+import { createDataItemSigner, fetchTokenBalance, getBotegaPrice, getTagValue } from "~tokens/aoTokens/ao";
 import { isWalletUnlocked } from "~wallets/auth";
-import { AO_PROCESS_ID, AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
+import { AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 import { Mutex } from "~utils/mutex";
 import BigNumber from "bignumber.js";
-import browser from "webextension-polyfill";
-import { retryWithGateways } from "~gateways/wayfinder";
-import type { DecodedTag } from "~api/modules/sign/tags";
+import { findGateway, retryWithGateways } from "~gateways/wayfinder";
 import { getSetting } from "~settings";
 import { EventType, trackDirect } from "~utils/analytics";
 import { getDefiFeeDetailsForTier } from "~utils/tier/utils";
-import { fromTokenBaseUnits, toFixed } from "../../swap.utils";
-
-const WANDER_FEE_RECIPIENT = "CDoilQgKg6Pmp4Q0LJ4d84VXRgB3Ay9pIJ_SA617cVk";
+import {
+  assertTransferResult,
+  fromTokenBaseUnits,
+  getFeeTransactionTags,
+  toFixed,
+  validateGqlResponse,
+} from "../../swap.utils";
+import Arweave from "arweave";
+import { WANDER_FEE_RECIPIENT } from "../../swap.constants";
+import { gql } from "~gateways/api";
+import { retryWithDelay } from "~utils/promises/retry";
 
 const aoInstance = connect(defaultConfig);
 
@@ -58,12 +63,6 @@ export async function processWanderFee(swap: SwapData): Promise<boolean> {
       return false;
     }
 
-    const isUnlocked = await isWalletUnlocked();
-    if (!isUnlocked) {
-      log(LOG_GROUP.SWAP, "Wallet is not unlocked");
-      return false;
-    }
-
     // Skip if no fee to process
     const feeValue = extractFeeValue(swap.wanderFee.finalFee);
     if (!feeValue || feeValue.isZero()) {
@@ -71,13 +70,21 @@ export async function processWanderFee(swap: SwapData): Promise<boolean> {
       return true;
     }
 
+    const isAlreadyProcessed = await checkIfWanderFeeAlreadyProcessed(swap);
+    if (isAlreadyProcessed) {
+      log(LOG_GROUP.SWAP, "Wander fee already processed");
+      return true;
+    }
+
     let decryptedWallet: DecryptedWallet;
     try {
       decryptedWallet = await getKeyfile(swap.swapper);
-      isLocalWallet(decryptedWallet);
 
-      const keyfile = decryptedWallet.keyfile;
-      const signer = createDataItemSigner(keyfile);
+      const isUnlocked = await isWalletUnlocked();
+      if (!isUnlocked && !swap.keystoneTx) {
+        log(LOG_GROUP.SWAP, "Wallet is not unlocked");
+        return false;
+      }
 
       // Convert fee amount to the token's base units
       const quantity = feeValue.shiftedBy(swap.sendToken.Denomination).toFixed(0, BigNumber.ROUND_DOWN);
@@ -102,72 +109,81 @@ export async function processWanderFee(swap: SwapData): Promise<boolean> {
 
       let feeTransferId: string;
 
-      const tags = [
-        { name: "Type", value: "Transfer" },
-        { name: "Fee-Type", value: "Swap" },
-        { name: "Swap-Tx-Id", value: swap.transferId || "" },
-        { name: "Client", value: "Wander" },
-        { name: "Client-Version", value: browser.runtime.getManifest().version },
-      ];
+      const poolType = swap.selectedPoolInfo.poolType;
+      const isARSwap = (poolType === "aox" || poolType === "vento") && swap.sendToken.processId === AR_PROCESS_ID;
 
-      const isARSwap =
-        (swap.selectedPoolInfo.poolType === "aox" || swap.selectedPoolInfo.poolType === "vento") &&
-        swap.sendToken.processId === AR_PROCESS_ID;
+      const tags = getFeeTransactionTags(swap.transferId, !isARSwap);
 
-      if (isARSwap) {
-        const { result: transaction, arweave } = await retryWithGateways((arweave) =>
-          arweave.createTransaction({
-            target: WANDER_FEE_RECIPIENT,
-            quantity,
-          }),
-        );
+      if (decryptedWallet.type === "local") {
+        const keyfile = decryptedWallet.keyfile;
 
-        tags.forEach((tag) => transaction.addTag(tag.name, tag.value));
+        if (isARSwap) {
+          const { result: transaction, arweave } = await retryWithGateways((arweave) =>
+            arweave.createTransaction({
+              target: WANDER_FEE_RECIPIENT,
+              quantity,
+            }),
+          );
 
-        await arweave.transactions.sign(transaction, keyfile);
-        const result = await arweave.transactions.post(transaction);
+          tags.forEach((tag) => transaction.addTag(tag.name, tag.value));
 
-        if (result.status !== 200) throw new Error("Failed to post transaction");
+          await arweave.transactions.sign(transaction, keyfile);
+          const result = await arweave.transactions.post(transaction);
 
-        feeTransferId = transaction.id;
-      } else {
-        feeTransferId = await aoInstance.message({
-          process: swap.sendToken.processId,
-          signer,
-          tags: [
-            { name: "Action", value: "Transfer" },
-            { name: "Recipient", value: WANDER_FEE_RECIPIENT },
-            { name: "Quantity", value: quantity },
-            ...tags,
-          ],
-        });
+          if (result.status !== 200) throw new Error("Failed to post transaction");
 
-        let transferError = "";
-
-        try {
-          const { Error, Messages } = await aoInstance.result({
-            message: feeTransferId,
+          feeTransferId = transaction.id;
+        } else {
+          const signer = createDataItemSigner(keyfile);
+          feeTransferId = await aoInstance.message({
             process: swap.sendToken.processId,
+            signer,
+            tags: [
+              { name: "Action", value: "Transfer" },
+              { name: "Recipient", value: WANDER_FEE_RECIPIENT },
+              { name: "Quantity", value: quantity },
+              ...tags,
+            ],
           });
-          if (Error) {
-            transferError = "Failed to send fee";
-          } else if (Messages.length > 0) {
-            const hasValidTag = Messages.some((message) =>
-              message?.Tags?.some(
-                (tag: DecodedTag) =>
-                  tag.name === "Action" && (tag.value === "Credit-Notice" || tag.value === "Debit-Notice"),
-              ),
-            );
 
-            if (!hasValidTag) {
-              transferError = "Failed to send fee";
-            }
+          await assertTransferResult(feeTransferId, swap.sendToken.processId);
+        }
+      } else {
+        if (isARSwap) {
+          const gateway = await findGateway({ random: true });
+          const arweave = new Arweave(gateway);
+          const feeTx = arweave.transactions.fromRaw(swap.keystoneTx);
+
+          const result = await arweave.transactions.post(feeTx);
+
+          if (result?.statusText?.includes("Invalid anchor (last_tx)")) {
+            log(LOG_GROUP.SWAP, "Fee tx expired, marking processed");
+            return true;
           }
-        } catch {}
 
-        if (transferError) {
-          log(LOG_GROUP.SWAP, transferError);
-          throw new Error(transferError);
+          if (result.status !== 200) throw new Error("Failed to post transaction");
+
+          feeTransferId = feeTx.id;
+        } else {
+          const dataItemRaw = Buffer.from(swap.keystoneTx.raw, "base64");
+
+          const response = await fetch("https://mu.ao-testnet.xyz", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/octet-stream",
+              Accept: "application/json",
+            },
+            redirect: "follow",
+            // @ts-ignore
+            body: dataItemRaw,
+          });
+
+          if (!response.ok) throw new Error("Failed to post transaction");
+          const result = await response.json();
+
+          feeTransferId = result.id;
+
+          await assertTransferResult(feeTransferId, swap.sendToken.processId);
         }
       }
 
@@ -294,5 +310,63 @@ export async function trackSwapAnalytics(swap: SwapData, status: "Success" | "Fa
     await trackDirect(EventType.SWAP_COMPLETED, swapCompletedData);
   } catch (error) {
     log(LOG_GROUP.SWAP, "Error tracking swap analytics", error);
+  }
+}
+
+function getSwapFeeQuery(isAo: boolean) {
+  return `
+query($swapTxId: String!) {
+  transactions(
+    first: 1,
+    tags: [
+      ${isAo ? `{ name: "Data-Protocol", values: ["ao"] },` : ""}
+      { name: "Fee-Type", values: ["Swap"] },
+      { name: "Swap-Tx-Id", values: [$swapTxId] },
+      { name: "Client", values: ["Wander"] },
+    ],
+  ) {
+    edges {
+      node {
+        id
+        ingested_at
+        recipient
+        owner { address }
+        block { timestamp, height }
+        tags { name, value }
+      }
+    }
+  }
+}`;
+}
+
+async function checkIfWanderFeeAlreadyProcessed(swap: SwapData): Promise<boolean> {
+  try {
+    const isAo = swap.sendToken.processId !== AR_PROCESS_ID;
+    const result = await retryWithDelay(
+      async () => {
+        const gateway = await findGateway({ random: true });
+        const result = await gql(getSwapFeeQuery(isAo), { swapTxId: swap.transferId }, gateway);
+        validateGqlResponse(result);
+        return result;
+      },
+      2,
+      1000,
+    );
+
+    const tx = result?.data?.transactions?.edges[0]?.node;
+    const txId = tx?.id;
+    if (!txId) return false;
+
+    const recipient = getTagValue("Recipient", tx?.tags || []);
+    if (recipient !== WANDER_FEE_RECIPIENT && tx?.recipient !== WANDER_FEE_RECIPIENT) return false;
+
+    if (isAo) {
+      await assertTransferResult(txId, swap.sendToken.processId);
+    }
+
+    return true;
+  } catch (error) {
+    log(LOG_GROUP.SWAP, "Error checking if wander fee already processed", error);
+    return false;
   }
 }

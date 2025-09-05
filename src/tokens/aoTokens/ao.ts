@@ -305,7 +305,7 @@ export const flattenTags = (tags: Tag[]) =>
   );
 
 export const createDataItemSigner =
-  (wallet: any) =>
+  (jwkOrSigner: any) =>
   async ({
     data,
     tags = [],
@@ -317,7 +317,7 @@ export const createDataItemSigner =
     target?: string;
     anchor?: string;
   }): Promise<{ id: string; raw: ArrayBuffer }> => {
-    const signer = new ArweaveSigner(wallet);
+    const signer = jwkOrSigner instanceof ArweaveSigner ? jwkOrSigner : new ArweaveSigner(jwkOrSigner);
     const dataItem = createData(data, signer, { tags, target, anchor });
 
     await dataItem.sign(signer);

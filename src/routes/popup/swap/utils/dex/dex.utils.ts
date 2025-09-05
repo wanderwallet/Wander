@@ -4,10 +4,9 @@ import { gql } from "~gateways/api";
 import type { AoMessage } from "./dex.types";
 import { retryWithDelay } from "~utils/promises/retry";
 import {
-  BOTEGA_SWAP_CONFIRMATION_QUERY_WITH_CURSOR,
+  BOTEGA_SWAP_CONFIRMATION_QUERY,
+  DEX_SWAP_QUERY_WITH_CURSOR,
   PERMASWAP_SWAP_CONFIRMATION_QUERY,
-  PERMASWAP_SWAP_QUERY_WITH_CURSOR,
-  SWAP_TRANSFER_QUERY,
 } from "./dex.constants";
 import { getTagValue } from "~tokens/aoTokens/ao";
 import { parseSwapTransaction, validateGqlResponse } from "../swap.utils";
@@ -188,96 +187,87 @@ export async function getLinkedMessages(
 
 export async function getBotegaTransactions(address: string, cursor = "") {
   const result = await retryWithDelay(async () => {
-    const data = await gql(BOTEGA_SWAP_CONFIRMATION_QUERY_WITH_CURSOR, { address, after: cursor }, goldskyGateway);
-
-    // validate the response
+    const data = await gql(DEX_SWAP_QUERY_WITH_CURSOR, { address, after: cursor, provider: "Botega" }, goldskyGateway);
     validateGqlResponse(data);
-
-    const edges = data?.data?.transactions?.edges || [];
-    if (edges.length === 0) return { txs: [], hasNextPage: false, cursor };
-
-    cursor = edges[edges.length - 1].cursor;
-    const hasNextPage = data?.data?.transactions?.pageInfo?.hasNextPage || false;
-
-    let successfulTxs = [];
-    let failedTxs = [];
-
-    for (const edge of edges) {
-      const tags = edge.node.tags || [];
-      const action = getTagValue("Action", tags);
-      if (action === "Order-Confirmation") {
-        successfulTxs.push(edge);
-      } else {
-        failedTxs.push(edge);
-      }
-    }
-
-    if (failedTxs.length > 0) {
-      const pushedFors = failedTxs.map((e) => e.node.id);
-      const swapTransferResult = await retryWithDelay(async () => {
-        const data = await gql(SWAP_TRANSFER_QUERY, { address, pushedFors }, goldskyGateway);
-
-        // validate the response
-        validateGqlResponse(data);
-
-        return data;
-      }, 2);
-
-      const swapTransferTxs = swapTransferResult?.data?.transactions?.edges || [];
-      const allTxs = [...successfulTxs, ...swapTransferTxs];
-      const parsedTransactions = allTxs.map(parseSwapTransaction).filter(Boolean);
-      return { txs: parsedTransactions, hasNextPage, cursor };
-    }
-
-    const parsedTransactions = successfulTxs.map(parseSwapTransaction).filter(Boolean);
-    return { txs: parsedTransactions, hasNextPage, cursor };
+    return data.data;
   }, 2);
 
-  return result;
+  const edges = result?.transactions?.edges || [];
+  if (edges.length === 0) return { txs: [], hasNextPage: false, cursor };
+
+  cursor = edges[edges.length - 1].cursor;
+  const hasNextPage = result?.transactions?.pageInfo?.hasNextPage || false;
+
+  const pushedFors = edges.map((e) => e.node.id);
+  const swapTransferResult = await retryWithDelay(async () => {
+    const data = await gql(BOTEGA_SWAP_CONFIRMATION_QUERY, { address, pushedFors }, goldskyGateway);
+    validateGqlResponse(data);
+    return data.data;
+  }, 2);
+
+  const swapResultMap = new Map<string, string>();
+  const swapResultTxs = swapTransferResult?.transactions?.edges || [];
+  for (const edge of swapResultTxs) {
+    const pushedFor = getTagValue("Pushed-For", edge.node.tags);
+    const action = getTagValue("Action", edge.node.tags);
+    swapResultMap.set(pushedFor, action);
+  }
+
+  edges.forEach((e) => {
+    const pushedFor = e.node.id;
+    const action = swapResultMap.get(pushedFor);
+    if (action) {
+      e.node.tags.push({ name: "Action", value: action });
+    } else {
+      e.node.tags.push({ name: "OrderStatus", value: "Pending" });
+    }
+  });
+
+  const parsedTransactions = edges.map(parseSwapTransaction).filter(Boolean);
+  return { txs: parsedTransactions, hasNextPage, cursor };
 }
 
 export async function getPermaswapTransactions(address: string, cursor = "") {
   const result = await retryWithDelay(async () => {
-    const data = await gql(PERMASWAP_SWAP_QUERY_WITH_CURSOR, { address, after: cursor }, goldskyGateway);
+    const data = await gql(
+      DEX_SWAP_QUERY_WITH_CURSOR,
+      { address, after: cursor, provider: "Permaswap" },
+      goldskyGateway,
+    );
+    validateGqlResponse(data);
+    return data.data;
+  }, 2);
 
-    // validate the response
+  const edges = result?.transactions?.edges || [];
+  if (edges.length === 0) return { txs: [], hasNextPage: false, cursor };
+
+  cursor = edges[edges.length - 1].cursor;
+  const hasNextPage = result?.transactions?.pageInfo?.hasNextPage || false;
+
+  const txMap = new Map<string, GQLEdgeInterface>();
+
+  for (const edge of edges) {
+    txMap.set(edge.node.id, edge);
+  }
+
+  const pushedFors = Array.from(txMap.keys());
+  const orderNotices = await retryWithDelay(async () => {
+    const data = await gql(PERMASWAP_SWAP_CONFIRMATION_QUERY, { address, pushedFors }, goldskyGateway);
     validateGqlResponse(data);
 
     const edges = data?.data?.transactions?.edges || [];
-    if (edges.length === 0) return { txs: [], hasNextPage: false, cursor };
-
-    cursor = edges[edges.length - 1].cursor;
-    const hasNextPage = data?.data?.transactions?.pageInfo?.hasNextPage || false;
-
-    const txMap = new Map<string, GQLEdgeInterface>();
-
     for (const edge of edges) {
-      txMap.set(edge.node.id, edge);
+      const tags = edge?.node?.tags || [];
+      const pushedFor = getTagValue("Pushed-For", tags);
+      const swapTx = txMap.get(pushedFor);
+      if (swapTx) {
+        edge.node.tags.push(...swapTx.node.tags);
+      }
     }
 
-    const pushedFors = Array.from(txMap.keys());
-    const orderNotices = await retryWithDelay(async () => {
-      const data = await gql(PERMASWAP_SWAP_CONFIRMATION_QUERY, { address, pushedFors }, goldskyGateway);
-
-      // validate the response
-      validateGqlResponse(data);
-
-      const edges = data?.data?.transactions?.edges || [];
-      for (const edge of edges) {
-        const tags = edge?.node?.tags || [];
-        const pushedFor = getTagValue("Pushed-For", tags);
-        const swapTx = txMap.get(pushedFor);
-        if (swapTx) {
-          edge.node.tags.push(...swapTx.node.tags);
-        }
-      }
-
-      return edges;
-    }, 2);
-
-    const parsedTransactions = orderNotices.map(parseSwapTransaction).filter(Boolean);
-    return { txs: parsedTransactions, hasNextPage, cursor };
+    return edges;
   }, 2);
 
-  return result;
+  const parsedTransactions = orderNotices.map(parseSwapTransaction).filter(Boolean);
+  return { txs: parsedTransactions, hasNextPage, cursor };
 }

@@ -176,51 +176,49 @@ export function validateVentoBridgeTransaction(
 }
 
 export async function getAoxBridgeTransactions(address: string, cursor = "0") {
-  const result = await retryWithDelay(async () => {
+  const result = await retryWithDelay<AoxBridgeTransactionResponse>(async () => {
     const data = await fetch(`https://api.aox.xyz/txs?address=${address}&count=10&cursor=${cursor}`);
     if (!data.ok) throw new Error("Failed to fetch bridge transaction");
-
-    const { txs, hasNextPage } = (await data.json()) as AoxBridgeTransactionResponse;
-
-    if (txs.length === 0) return { txs: [], hasNextPage, cursor };
-
-    cursor = txs[txs.length - 1].rawId.toString();
-
-    const arweaveTxs = txs.filter((tx) => tx.chainType === "arweave" && aoxBridgeTxTypes.has(tx.txType));
-
-    const txMap = new Map<string, AoxBridgeTransaction>();
-
-    for (const tx of arweaveTxs) {
-      txMap.set(tx.txId, tx);
-    }
-
-    const txIds = Array.from(txMap.keys());
-    const transactions = await retryWithDelay(async () => {
-      const data = await gql(SWAP_TXS_QUERY, { txIds }, goldskyGateway);
-
-      validateGqlResponse(data);
-
-      const edges = data?.data?.transactions?.edges || [];
-      for (const edge of edges) {
-        const swapTx = txMap.get(edge.node.id);
-        if (swapTx) {
-          edge.node.tags.push(
-            ...[
-              { name: "Bridge-Status", value: swapTx.status },
-              { name: "To-Quantity", value: swapTx.quantity },
-            ],
-          );
-        }
-      }
-
-      return edges;
-    }, 2);
-
-    const parsedTransactions = transactions.map(parseSwapTransaction).filter(Boolean);
-    return { txs: parsedTransactions, hasNextPage, cursor };
+    return data.json();
   }, 2);
 
-  return result;
+  const { txs, hasNextPage } = result;
+  if (txs.length === 0) return { txs: [], hasNextPage, cursor };
+
+  cursor = txs[txs.length - 1].rawId.toString();
+
+  const arweaveTxs = txs.filter((tx) => tx.chainType === "arweave" && aoxBridgeTxTypes.has(tx.txType));
+
+  const txMap = new Map<string, AoxBridgeTransaction>();
+
+  for (const tx of arweaveTxs) {
+    txMap.set(tx.txId, tx);
+  }
+
+  const txIds = Array.from(txMap.keys());
+  const transactions = await retryWithDelay(async () => {
+    const data = await gql(SWAP_TXS_QUERY, { txIds }, goldskyGateway);
+
+    validateGqlResponse(data);
+
+    const edges = data?.data?.transactions?.edges || [];
+    for (const edge of edges) {
+      const swapTx = txMap.get(edge.node.id);
+      if (swapTx) {
+        edge.node.tags.push(
+          ...[
+            { name: "Bridge-Status", value: swapTx.status },
+            { name: "To-Quantity", value: swapTx.quantity },
+          ],
+        );
+      }
+    }
+
+    return edges;
+  }, 2);
+
+  const parsedTransactions = transactions.map(parseSwapTransaction).filter(Boolean);
+  return { txs: parsedTransactions, hasNextPage, cursor };
 }
 
 export async function getVentoBridgeTransactions(address: string, cursor = "") {
