@@ -793,8 +793,7 @@ export const useSwapTransactions = () => {
   );
 
   const transactions = useMemo(() => {
-    if (!data?.pages?.length && !recentSwaps.length) return [];
-    if (!data?.pages?.length) return recentSwaps;
+    if (!data?.pages?.length) return [];
 
     const seenIds = new Set<string>();
     const allTransactions = [...data.pages.flatMap((page) => page.transactions), ...recentSwaps];
