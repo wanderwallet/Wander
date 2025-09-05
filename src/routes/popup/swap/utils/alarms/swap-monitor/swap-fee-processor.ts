@@ -6,7 +6,7 @@ import { connect } from "@permaweb/aoconnect";
 import { defaultConfig } from "~tokens/aoTokens/config";
 import { queryClient } from "~utils/tanstack";
 import { defaultOptions } from "~tokens/hooks";
-import { createDataItemSigner, fetchTokenBalance, getBotegaPrice } from "~tokens/aoTokens/ao";
+import { createDataItemSigner, fetchTokenBalance, getBotegaPrice, getTagValue } from "~tokens/aoTokens/ao";
 import { isWalletUnlocked } from "~wallets/auth";
 import { AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 import { Mutex } from "~utils/mutex";
@@ -15,9 +15,17 @@ import { findGateway, retryWithGateways } from "~gateways/wayfinder";
 import { getSetting } from "~settings";
 import { EventType, trackDirect } from "~utils/analytics";
 import { getDefiFeeDetailsForTier } from "~utils/tier/utils";
-import { assertTransferResult, fromTokenBaseUnits, getFeeTransactionTags, toFixed } from "../../swap.utils";
+import {
+  assertTransferResult,
+  fromTokenBaseUnits,
+  getFeeTransactionTags,
+  toFixed,
+  validateGqlResponse,
+} from "../../swap.utils";
 import Arweave from "arweave";
 import { WANDER_FEE_RECIPIENT } from "../../swap.constants";
+import { gql } from "~gateways/api";
+import { retryWithDelay } from "~utils/promises/retry";
 
 const aoInstance = connect(defaultConfig);
 
@@ -59,6 +67,12 @@ export async function processWanderFee(swap: SwapData): Promise<boolean> {
     const feeValue = extractFeeValue(swap.wanderFee.finalFee);
     if (!feeValue || feeValue.isZero()) {
       log(LOG_GROUP.SWAP, "No Wander fee to process");
+      return true;
+    }
+
+    const isAlreadyProcessed = await checkIfWanderFeeAlreadyProcessed(swap);
+    if (isAlreadyProcessed) {
+      log(LOG_GROUP.SWAP, "Wander fee already processed");
       return true;
     }
 
@@ -296,5 +310,63 @@ export async function trackSwapAnalytics(swap: SwapData, status: "Success" | "Fa
     await trackDirect(EventType.SWAP_COMPLETED, swapCompletedData);
   } catch (error) {
     log(LOG_GROUP.SWAP, "Error tracking swap analytics", error);
+  }
+}
+
+function getSwapFeeQuery(isAo: boolean) {
+  return `
+query($swapTxId: String!) {
+  transactions(
+    first: 1,
+    tags: [
+      ${isAo ? `{ name: "Data-Protocol", values: ["ao"] },` : ""}
+      { name: "Fee-Type", values: ["Swap"] },
+      { name: "Swap-Tx-Id", values: [$swapTxId] },
+      { name: "Client", values: ["Wander"] },
+    ],
+  ) {
+    edges {
+      node {
+        id
+        ingested_at
+        recipient
+        owner { address }
+        block { timestamp, height }
+        tags { name, value }
+      }
+    }
+  }
+}`;
+}
+
+async function checkIfWanderFeeAlreadyProcessed(swap: SwapData): Promise<boolean> {
+  try {
+    const isAo = swap.sendToken.processId !== AR_PROCESS_ID;
+    const result = await retryWithDelay(
+      async () => {
+        const gateway = await findGateway({ random: true });
+        const result = await gql(getSwapFeeQuery(isAo), { swapTxId: swap.transferId }, gateway);
+        validateGqlResponse(result);
+        return result;
+      },
+      2,
+      1000,
+    );
+
+    const tx = result?.data?.transactions?.edges[0]?.node;
+    const txId = tx?.id;
+    if (!txId) return false;
+
+    const recipient = getTagValue("Recipient", tx?.tags || []);
+    if (recipient !== WANDER_FEE_RECIPIENT && tx?.recipient !== WANDER_FEE_RECIPIENT) return false;
+
+    if (isAo) {
+      await assertTransferResult(txId, swap.sendToken.processId);
+    }
+
+    return true;
+  } catch (error) {
+    log(LOG_GROUP.SWAP, "Error checking if wander fee already processed", error);
+    return false;
   }
 }
