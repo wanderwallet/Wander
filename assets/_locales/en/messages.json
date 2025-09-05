@@ -4390,6 +4390,10 @@
     "message": "Swap error. Please try again.",
     "description": "Generic error message shown when a swap transaction fails" 
   },
+  "swap_error_increase_slippage": {
+    "message": "Swap error. Increase slippage and try again.",
+    "description": "Error message shown when a swap transaction fails due to invalid amount out"
+  },
   "free": {
     "message": "Free!",
     "description": "Free text"

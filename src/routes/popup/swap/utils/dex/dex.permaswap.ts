@@ -21,6 +21,7 @@ import { freeDecryptedWallet } from "~wallets/encryption";
 import { getLinkedMessages, OrderError } from "./dex.utils";
 import { queryClient } from "~utils/tanstack";
 import { assertTransferResult, createSwapMessage } from "../swap.utils";
+import browser from "webextension-polyfill";
 
 const aoInstance = connect(defaultConfig);
 
@@ -217,6 +218,17 @@ export async function executeSwap({
         { name: "AmountOut", value: minAmountOut },
       ],
     });
+
+    try {
+      const result = await aoInstance.result({ process: poolId, message: requestMessageId });
+      const tags = result?.Messages?.[0]?.Tags || [];
+      const error = getTagValue("Error", tags);
+      if (error?.trim() === "err_invalid_amount_out") {
+        throw new OrderError(browser.i18n.getMessage("swap_error_increase_slippage"));
+      }
+    } catch (err) {
+      if (err instanceof OrderError) throw err;
+    }
 
     const { noteId, noteSettle } = await retryWithDelay(
       () => readRequestOrderResult(poolId, requestMessageId),
