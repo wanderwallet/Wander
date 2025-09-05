@@ -1,5 +1,5 @@
 import { connect } from "@permaweb/aoconnect";
-import { createDataItemSigner, getTagValue } from "~tokens/aoTokens/ao";
+import { createDataItemKeystoneSigner, createDataItemSigner, getTagValue } from "~tokens/aoTokens/ao";
 import { defaultConfig } from "~tokens/aoTokens/config";
 import { getActiveAddress, getActiveKeyfile, type DecryptedWallet } from "~wallets";
 import BigNumber from "bignumber.js";
@@ -20,6 +20,8 @@ import { retryWithDelay } from "~utils/promises/retry";
 import { freeDecryptedWallet } from "~wallets/encryption";
 import { getLinkedMessages, OrderError } from "./dex.utils";
 import { queryClient } from "~utils/tanstack";
+import { assertTransferResult, createSwapMessage } from "../swap.utils";
+import browser from "webextension-polyfill";
 
 const aoInstance = connect(defaultConfig);
 
@@ -161,7 +163,7 @@ export async function getExpectedOutput({
   const tokenInFee = BigNumber(issuerFeeQuantity).plus(poolFeeQuantity).toFixed(0, BigNumber.ROUND_DOWN);
   const tokenOutFee = BigNumber(holderFeeQuantity).toFixed(0, BigNumber.ROUND_DOWN);
   const minAmountOut = BigNumber(amountOut)
-    .multipliedBy(BigNumber(1).minus(slippage))
+    .multipliedBy(BigNumber(100).minus(slippage))
     .div(100)
     .toFixed(0, BigNumber.ROUND_DOWN);
   const poolAmountIn = BigNumber(amountInWithoutWanderFee).minus(tokenInFee).toFixed(0, BigNumber.ROUND_DOWN);
@@ -188,14 +190,22 @@ export async function executeSwap({
   minAmountOut,
   poolId,
   tags = [],
+  wanderFee,
+  keystoneSigner,
 }: SwapExecutionParams): Promise<SwapExecutionResponse> {
   let decryptedWallet: DecryptedWallet;
   try {
     decryptedWallet = await getActiveKeyfile();
-    isLocalWallet(decryptedWallet);
-    const keyfile = decryptedWallet.keyfile;
 
-    const signer = createDataItemSigner(keyfile);
+    let signer: ReturnType<typeof createDataItemSigner> | ReturnType<typeof createDataItemKeystoneSigner>;
+    if (keystoneSigner) {
+      // Hardware wallet case
+      signer = createDataItemKeystoneSigner(keystoneSigner);
+    } else {
+      // Local wallet case
+      isLocalWallet(decryptedWallet);
+      signer = createDataItemSigner(decryptedWallet.keyfile);
+    }
 
     const requestMessageId = await aoInstance.message({
       process: poolId,
@@ -209,6 +219,17 @@ export async function executeSwap({
       ],
     });
 
+    try {
+      const result = await aoInstance.result({ process: poolId, message: requestMessageId });
+      const tags = result?.Messages?.[0]?.Tags || [];
+      const error = getTagValue("Error", tags);
+      if (error?.trim() === "err_invalid_amount_out") {
+        throw new OrderError(browser.i18n.getMessage("swap_error_increase_slippage"));
+      }
+    } catch (err) {
+      if (err instanceof OrderError) throw err;
+    }
+
     const { noteId, noteSettle } = await retryWithDelay(
       () => readRequestOrderResult(poolId, requestMessageId),
       20,
@@ -216,9 +237,9 @@ export async function executeSwap({
       (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 30000),
     );
 
-    if (!noteId || !noteSettle) throw new Error("Failed to create Permaswap order");
+    if (!noteId || !noteSettle) throw new OrderError(browser.i18n.getMessage("swap_error_permaswap_order"));
 
-    const transferId = await aoInstance.message({
+    const { keystoneTx, sendMessage } = await createSwapMessage({
       process: tokenIn,
       signer,
       tags: [
@@ -229,19 +250,26 @@ export async function executeSwap({
         { name: "X-FFP-NoteIDs", value: JSON.stringify([noteId]) },
         ...tags,
       ],
+      wanderFee,
+      poolType: "permaswap",
+      keystoneSigner,
     });
+
+    const transferId = await sendMessage();
+
+    await assertTransferResult(transferId, tokenIn);
 
     // Invalidate transfered token balance
     const activeAddress = await getActiveAddress();
     queryClient.invalidateQueries({ queryKey: ["tokenBalance", tokenIn, activeAddress] });
 
-    return { transferId, noteSettle };
+    return { transferId, noteSettle, keystoneTx };
   } catch (err) {
     log(LOG_GROUP.SWAP, "Error executing swap", err);
     throw err;
   } finally {
     // Clean up keyfile from memory
-    if (decryptedWallet && decryptedWallet.type !== "hardware") {
+    if (decryptedWallet && decryptedWallet.type !== "hardware" && !keystoneSigner) {
       freeDecryptedWallet(decryptedWallet.keyfile);
     }
   }
