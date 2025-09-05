@@ -4351,7 +4351,7 @@
       "description": "Swap error text"
     },
     "swap_error_increase_slippage": {
-      "message": "交换错误。请增加滑点并再试一次。",
+      "message": "兑换失败，原因是价格发生了变化。请尝试再次进行，并提高滑点。",
       "description": "Error message shown when a swap transaction fails due to invalid amount out"
     },
     "free": {
