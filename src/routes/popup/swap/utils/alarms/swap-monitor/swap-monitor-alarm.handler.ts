@@ -424,8 +424,8 @@ async function scheduleNextSwapMonitorCheck() {
 
   // Continue monitoring if there are pending swaps OR (completed swaps needing fee processing AND wallet is unlocked)
   if (totalToMonitor > 0) {
-    // Calculate the next check interval based on pending swaps
-    const nextCheckInterval = calculateNextCheckInterval(pendingSwaps);
+    // Calculate the next check interval based on all swaps that need monitoring
+    const nextCheckInterval = calculateNextCheckInterval([...pendingSwaps, ...completedSwapsNeedingFees]);
 
     await browser.alarms.create(SWAP_MONITOR_ALARM_NAME, { when: Date.now() + nextCheckInterval });
     const monitoringNote = walletUnlocked
