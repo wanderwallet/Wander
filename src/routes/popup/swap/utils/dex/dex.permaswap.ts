@@ -21,6 +21,7 @@ import { freeDecryptedWallet } from "~wallets/encryption";
 import { getLinkedMessages, OrderError } from "./dex.utils";
 import { queryClient } from "~utils/tanstack";
 import { assertTransferResult, createSwapMessage } from "../swap.utils";
+import browser from "webextension-polyfill";
 
 const aoInstance = connect(defaultConfig);
 
@@ -162,7 +163,7 @@ export async function getExpectedOutput({
   const tokenInFee = BigNumber(issuerFeeQuantity).plus(poolFeeQuantity).toFixed(0, BigNumber.ROUND_DOWN);
   const tokenOutFee = BigNumber(holderFeeQuantity).toFixed(0, BigNumber.ROUND_DOWN);
   const minAmountOut = BigNumber(amountOut)
-    .multipliedBy(BigNumber(1).minus(slippage))
+    .multipliedBy(BigNumber(100).minus(slippage))
     .div(100)
     .toFixed(0, BigNumber.ROUND_DOWN);
   const poolAmountIn = BigNumber(amountInWithoutWanderFee).minus(tokenInFee).toFixed(0, BigNumber.ROUND_DOWN);
@@ -218,6 +219,17 @@ export async function executeSwap({
       ],
     });
 
+    try {
+      const result = await aoInstance.result({ process: poolId, message: requestMessageId });
+      const tags = result?.Messages?.[0]?.Tags || [];
+      const error = getTagValue("Error", tags);
+      if (error?.trim() === "err_invalid_amount_out") {
+        throw new OrderError(browser.i18n.getMessage("swap_error_increase_slippage"));
+      }
+    } catch (err) {
+      if (err instanceof OrderError) throw err;
+    }
+
     const { noteId, noteSettle } = await retryWithDelay(
       () => readRequestOrderResult(poolId, requestMessageId),
       20,
@@ -225,7 +237,7 @@ export async function executeSwap({
       (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 30000),
     );
 
-    if (!noteId || !noteSettle) throw new Error("Failed to create Permaswap order");
+    if (!noteId || !noteSettle) throw new OrderError(browser.i18n.getMessage("swap_error_permaswap_order"));
 
     const { keystoneTx, sendMessage } = await createSwapMessage({
       process: tokenIn,

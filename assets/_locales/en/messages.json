@@ -4387,8 +4387,16 @@
     "description": "Network/Provider fee text"
   },
   "swap_error": {
-    "message": "Swap error. Please try again.",
+    "message": "Swap failed. Please try again.",
     "description": "Generic error message shown when a swap transaction fails" 
+  },
+  "swap_error_increase_slippage": {
+    "message": "Swap failed due to a price change. Try again increasing slippage.",
+    "description": "Error message shown when a swap transaction fails due to invalid amount out"
+  },
+  "swap_error_permaswap_order": {
+    "message": "Failed to create permaswap order. Please try again.",
+    "description": "Error shown when permaswap order creation fails"
   },
   "free": {
     "message": "Free!",

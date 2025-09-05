@@ -21,7 +21,7 @@ import { scheduleSwapExecution } from "~utils/agents/swap";
 import { WandAnnouncementPopup } from "~components/popup/home/WandAnnouncementPopup";
 import { AnnouncementsCarousel } from "./swap/components/AnnouncementsCarousel";
 import { SwapAnnouncementPopup } from "./swap/components/SwapAnnouncementPopup";
-import { checkForCompletedSwapToShow } from "./swap/utils/swap.progress";
+import { checkForFinishedSwapToShow } from "./swap/utils/swap.progress";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
 
 export function HomeView() {
@@ -120,14 +120,18 @@ export function HomeView() {
   }, [wallet, announcement]);
 
   useAsyncEffect(async () => {
-    // Check for completed swaps to show on popup open
+    // Check for finished swaps to show on popup open
     try {
-      const completedSwap = await checkForCompletedSwapToShow();
+      const completedSwap = await checkForFinishedSwapToShow();
       if (completedSwap) {
-        navigate(PopupPaths.SwapComplete);
+        if (completedSwap.status === "completed") {
+          navigate(PopupPaths.SwapComplete);
+        } else {
+          navigate(PopupPaths.SwapFailed);
+        }
       }
     } catch (error) {
-      console.error("Error checking for completed swaps:", error);
+      console.error("Error checking for finished swaps:", error);
     }
   }, [navigate]);
 

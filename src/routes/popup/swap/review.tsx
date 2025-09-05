@@ -43,9 +43,9 @@ import AnimatedQRPlayer from "~components/hardware/AnimatedQRPlayer";
 import { Spacer } from "~components/embed";
 import { SignType } from "@keystonehq/bc-ur-registry-arweave";
 import Arweave from "arweave";
-import { HARDWARE_WALLET_API_NOT_SUPPORTED_ERR_MSG } from "~utils/wallets/wallets.constants";
 import { AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 import { PoolTypeEnum } from "./utils/swap.constants";
+import { OrderError } from "./utils/dex/dex.utils";
 
 export function SwapReviewView() {
   const { navigate } = useLocation();
@@ -100,7 +100,7 @@ export function SwapReviewView() {
     amountIn,
     poolId: swapData?.selectedPoolInfo?.poolId,
     poolType: swapData?.selectedPoolInfo?.poolType,
-    stopFetching: isExecutingSwap || !!hardwareStatus,
+    stopFetching: isExecutingSwap,
     wanderFeePercent: +defiFeeDetails.finalFeePercent,
   });
 
@@ -217,7 +217,7 @@ export function SwapReviewView() {
         tokenIn: sendToken?.processId,
         tokenOut: receiveToken?.processId,
         amountIn: selectedPoolInfo.quoteOutput.transferAmountIn,
-        minAmountOut: selectedPoolInfo.quoteOutput.amountOut,
+        minAmountOut: selectedPoolInfo.quoteOutput.minAmountOut,
         poolId: selectedPoolInfo.poolId,
         tags,
         keystoneSigner: wallet?.type === "hardware" ? keystoneSigner : undefined,
@@ -239,19 +239,13 @@ export function SwapReviewView() {
       await swapsArray.push(updatedSwapData);
 
       // Start background monitoring
-      await startSwapMonitoring();
+      await startSwapMonitoring(true);
 
       navigate(PopupPaths.SwapProgress);
     } catch (err) {
       log(LOG_GROUP.SWAP, "Error executing swap", err);
-      const errorMessage = err instanceof Error ? err.message : "Swap error. Please try again.";
-      setToast({
-        type: "error",
-        content: errorMessage.includes(HARDWARE_WALLET_API_NOT_SUPPORTED_ERR_MSG)
-          ? browser.i18n.getMessage("wallet_hardware_unsupported")
-          : browser.i18n.getMessage("swap_error"),
-        duration: 2400,
-      });
+      const errorMessage = err instanceof OrderError ? err.message : browser.i18n.getMessage("swap_error");
+      setToast({ type: "error", content: errorMessage, duration: 2400 });
     } finally {
       setIsExecutingSwap(false);
       setHardwareStatus(null);

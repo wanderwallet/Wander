@@ -164,6 +164,7 @@ export interface SwapData {
   sendToken: TokenInfo;
   receiveToken: TokenInfo;
   wanderFee: WanderFee;
+  networkFee: string;
   slippage: number;
   amountIn: string;
   swapper: string;
@@ -179,6 +180,8 @@ export interface SwapData {
   showCompletionScreen?: boolean;
   monitoringStarted?: boolean;
   keystoneTx?: Partial<KeystoneTx>;
+  checkAttempts?: number; // Status check attempts count
+  lastCheckTime?: number; // Last check timestamp
 }
 
 export interface TokenPools {

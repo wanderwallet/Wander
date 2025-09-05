@@ -4347,8 +4347,16 @@
       "description": "Network/Provider fee text"
     },
     "swap_error": {
-      "message": "交换错误。请再试一次。",
+      "message": "交换失败。请再试一次。",
       "description": "Swap error text"
+    },
+    "swap_error_increase_slippage": {
+      "message": "兑换失败，原因是价格发生了变化。请尝试再次进行，并提高滑点。",
+      "description": "Error message shown when a swap transaction fails due to invalid amount out"
+    },
+    "swap_error_permaswap_order": {
+      "message": "创建 permaswap 订单失败。请再试一次。",
+      "description": "Error shown when permaswap order creation fails"
     },
     "free": {
       "message": "免费！",
