@@ -180,6 +180,8 @@ export interface SwapData {
   showCompletionScreen?: boolean;
   monitoringStarted?: boolean;
   keystoneTx?: Partial<KeystoneTx>;
+  checkAttempts?: number; // Status check attempts count
+  lastCheckTime?: number; // Last check timestamp
 }
 
 export interface TokenPools {

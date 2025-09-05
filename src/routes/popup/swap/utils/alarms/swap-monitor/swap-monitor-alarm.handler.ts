@@ -5,7 +5,6 @@ import { queryClient } from "~utils/tanstack";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import type { SwapData } from "../../swap.types";
 import { processWanderFee, cleanupFeeProcessingMutex, trackSwapAnalytics } from "./swap-fee-processor";
-// import { sendSwapNotification } from "./swap-notifications";
 import { OrderError } from "../../dex/dex.utils";
 import { isWalletUnlocked } from "~wallets/auth";
 import { AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
@@ -14,7 +13,17 @@ import { ExtensionStorage } from "~utils/storage";
 import { getAoTokens } from "~tokens";
 
 const SWAP_MONITOR_ALARM_NAME = "swap-monitor";
-const SWAP_CHECK_INTERVAL_MINUTES = 2; // Check every 2 minutes
+const SWAP_CHECK_INTERVAL_MS = 120_000;
+const MIN_TIME_BEFORE_RESTART_MS = 30000;
+let isSwapMonitoringActive = false;
+
+// Intervals for DEX swaps: 10s, 30s, 60s, 120s
+const DEX_SWAP_CHECK_INTERVALS = [
+  10_000, // 1st interval: 10 seconds
+  30_000, // 2nd interval: 30 seconds
+  60_000, // 3rd interval: 60 seconds
+  120_000, // 4th+ interval: 120 seconds
+];
 
 /**
  * Background alarm handler for monitoring ongoing swaps.
@@ -22,6 +31,7 @@ const SWAP_CHECK_INTERVAL_MINUTES = 2; // Check every 2 minutes
  */
 export async function handleSwapMonitorAlarm(alarmInfo?: Alarms.Alarm) {
   if (alarmInfo?.name !== SWAP_MONITOR_ALARM_NAME) return;
+  isSwapMonitoringActive = true;
 
   try {
     await checkPendingSwaps();
@@ -30,7 +40,9 @@ export async function handleSwapMonitorAlarm(alarmInfo?: Alarms.Alarm) {
   }
 
   // Schedule next check
-  await scheduleNextSwapMonitorCheck();
+  await scheduleNextSwapMonitorCheck().finally(() => {
+    isSwapMonitoringActive = false;
+  });
 }
 
 /**
@@ -95,6 +107,37 @@ async function checkPendingSwaps() {
 }
 
 /**
+ * Get the check interval for a swap
+ * @param swap The swap data
+ */
+function getCheckInterval(swap: SwapData): number {
+  const poolType = swap.selectedPoolInfo.poolType;
+  const isDexSwap = poolType === "botega" || poolType === "permaswap";
+
+  // Non-DEX swaps: always 2 minutes
+  if (!isDexSwap) return SWAP_CHECK_INTERVAL_MS;
+
+  // DEX swaps: escalating intervals based on attempt count
+  const attempts = swap.checkAttempts || 0;
+  const intervalIndex = Math.min(attempts - 1, DEX_SWAP_CHECK_INTERVALS.length - 1);
+
+  return DEX_SWAP_CHECK_INTERVALS[intervalIndex];
+}
+
+/**
+ * Check if enough time has passed since the last check for this swap
+ */
+function shouldCheckSwapNow(swap: SwapData): boolean {
+  // First check - always allow immediately
+  if (!swap.lastCheckTime) return true;
+
+  const nextInterval = getCheckInterval(swap);
+  const timeSinceLastCheck = Date.now() - swap.lastCheckTime;
+
+  return timeSinceLastCheck >= nextInterval;
+}
+
+/**
  * Check the status of a single swap and process accordingly
  */
 async function checkSingleSwap(swap: SwapData) {
@@ -109,6 +152,45 @@ async function checkSingleSwap(swap: SwapData) {
     return;
   }
 
+  // Check if swap is a DEX swap
+  const isDexSwap = poolType === "botega" || poolType === "permaswap";
+
+  // Check if enough time has passed since the last check
+  if (!shouldCheckSwapNow(swap)) {
+    log(LOG_GROUP.SWAP, `Skipping ${isDexSwap ? "DEX" : "Bridge"} swap ${swap.transferId} - waiting for next check`);
+    return;
+  }
+
+  // Update check attempts and last check time
+  const updatedSwap = {
+    ...swap,
+    checkAttempts: (swap.checkAttempts || 0) + 1,
+    lastCheckTime: Date.now(),
+  };
+
+  // Update the swap in storage with new check metadata
+  await swapsArray.updateWhere(
+    (s) => s.transferId === swap.transferId,
+    (s) => ({
+      ...s,
+      checkAttempts: updatedSwap.checkAttempts,
+      lastCheckTime: updatedSwap.lastCheckTime,
+    }),
+  );
+
+  // Show next check timing for DEX swaps
+  let nextCheckMessage = "";
+  if (isDexSwap) {
+    const intervalMs = getCheckInterval(updatedSwap);
+    const intervalSeconds = Math.round(intervalMs / 1000);
+    nextCheckMessage = `, next check in ${intervalSeconds}s`;
+  }
+
+  log(
+    LOG_GROUP.SWAP,
+    `Checking ${isDexSwap ? "DEX" : "Bridge"} swap ${swap.transferId} (attempt ${updatedSwap.checkAttempts}${nextCheckMessage})`,
+  );
+
   try {
     const result = await readSwapResultFn(poolType, {
       orderId: swap.transferId,
@@ -118,19 +200,19 @@ async function checkSingleSwap(swap: SwapData) {
       isAo: swap.sendToken?.processId !== AR_PROCESS_ID,
     });
     const expectedOutput = swap.selectedPoolInfo.quoteOutput.amountOut;
-    swap.selectedPoolInfo.quoteOutput.amountOut = result?.amountOut || expectedOutput;
-    await handleSwapSuccess(swap);
+    updatedSwap.selectedPoolInfo.quoteOutput.amountOut = result?.amountOut || expectedOutput;
+    await handleSwapSuccess(updatedSwap);
   } catch (error) {
     if (error instanceof OrderError) {
-      await handleSwapFailure(swap);
+      await handleSwapFailure(updatedSwap);
     } else {
       // If there's an error checking status, treat as potential failure after timeout
-      const swapAge = Date.now() - (swap.timestamp || Date.now());
+      const swapAge = Date.now() - (updatedSwap.timestamp || Date.now());
       const SWAP_TIMEOUT_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
       if (swapAge > SWAP_TIMEOUT_MS) {
-        log(LOG_GROUP.SWAP, `Swap ${swap.transferId} timed out with error after 7 days`, error);
-        await handleSwapFailure(swap);
+        log(LOG_GROUP.SWAP, `Swap ${updatedSwap.transferId} timed out with error after 7 days`, error);
+        await handleSwapFailure(updatedSwap);
       }
     }
   }
@@ -279,8 +361,19 @@ export async function startSwapMonitoring(forceRestart: boolean = false) {
   }
 
   if (existingAlarm && forceRestart) {
-    log(LOG_GROUP.SWAP, "Force restarting swap monitoring (existing alarm will be cleared)");
-    await browser.alarms.clear(SWAP_MONITOR_ALARM_NAME);
+    const timeUntilNextCheck = existingAlarm.scheduledTime - Date.now();
+    if (timeUntilNextCheck > MIN_TIME_BEFORE_RESTART_MS && !isSwapMonitoringActive) {
+      log(LOG_GROUP.SWAP, "Force restarting swap monitoring (existing alarm will be cleared)");
+      await browser.alarms.clear(SWAP_MONITOR_ALARM_NAME);
+    } else {
+      log(LOG_GROUP.SWAP, "Skipping restart - next check is too soon");
+      return;
+    }
+  }
+
+  if (isSwapMonitoringActive) {
+    log(LOG_GROUP.SWAP, "Swap monitoring is already active, skipping restart");
+    return;
   }
 
   // Schedule immediate check
@@ -289,6 +382,25 @@ export async function startSwapMonitoring(forceRestart: boolean = false) {
   });
 
   log(LOG_GROUP.SWAP, "Swap monitoring started");
+}
+
+/**
+ * Calculate the next check interval needed for all swaps
+ */
+function calculateNextCheckInterval(pendingSwaps: SwapData[]): number {
+  let shortestInterval = SWAP_CHECK_INTERVAL_MS; // Default 2 minutes in ms
+
+  for (const swap of pendingSwaps) {
+    const poolType = swap.selectedPoolInfo.poolType;
+    const isDexSwap = poolType === "botega" || poolType === "permaswap";
+
+    if (isDexSwap) {
+      const interval = getCheckInterval(swap);
+      shortestInterval = Math.min(shortestInterval, interval);
+    }
+  }
+
+  return shortestInterval;
 }
 
 /**
@@ -312,18 +424,21 @@ async function scheduleNextSwapMonitorCheck() {
 
   // Continue monitoring if there are pending swaps OR (completed swaps needing fee processing AND wallet is unlocked)
   if (totalToMonitor > 0) {
-    await browser.alarms.create(SWAP_MONITOR_ALARM_NAME, {
-      when: Date.now() + SWAP_CHECK_INTERVAL_MINUTES * 60 * 1000,
-    });
+    // Calculate the next check interval based on all swaps that need monitoring
+    const nextCheckInterval = calculateNextCheckInterval([...pendingSwaps, ...completedSwapsNeedingFees]);
+
+    await browser.alarms.create(SWAP_MONITOR_ALARM_NAME, { when: Date.now() + nextCheckInterval });
     const monitoringNote = walletUnlocked
       ? ""
       : completedSwapsNeedingFees.length > 0
         ? " (wallet locked - monitoring keystone transactions)"
         : " (wallet locked)";
 
+    const nextCheckIntervalSeconds = Math.round(nextCheckInterval / 1000);
+
     log(
       LOG_GROUP.SWAP,
-      `Next swap check scheduled in ${SWAP_CHECK_INTERVAL_MINUTES} minutes (${pendingSwaps.length} pending, ${completedSwapsNeedingFees.length} needing fees)${monitoringNote}`,
+      `Next swap check scheduled in ${nextCheckIntervalSeconds} seconds (${pendingSwaps.length} pending, ${completedSwapsNeedingFees.length} needing fees)${monitoringNote}`,
     );
   } else {
     if (walletUnlocked) {

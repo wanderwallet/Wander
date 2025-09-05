@@ -239,7 +239,7 @@ export function SwapReviewView() {
       await swapsArray.push(updatedSwapData);
 
       // Start background monitoring
-      await startSwapMonitoring();
+      await startSwapMonitoring(true);
 
       navigate(PopupPaths.SwapProgress);
     } catch (err) {
