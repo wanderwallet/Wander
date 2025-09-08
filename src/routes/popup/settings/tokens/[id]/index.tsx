@@ -135,7 +135,7 @@ const Wrapper = styled.div`
   flex-direction: column;
   justify-content: space-between;
   padding: 0 1rem;
-  height: calc(100vh - 80px);
+  height: calc(100vh - 100px);
 `;
 
 const TokenAddress = styled(Text).attrs({

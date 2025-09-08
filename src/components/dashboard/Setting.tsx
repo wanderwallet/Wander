@@ -125,7 +125,7 @@ export function SettingDashboardView({ setting }: SettingDashboardViewProps) {
               </SearchWrapper>
             </>
           )}
-          <RadioWrapper hidePadding={!showSearchInput}>
+          <RadioWrapper>
             {setting?.options &&
               setting.options.filter(filterSearchResults).map((option, i) => {
                 if (setting.name === "gateways") {
@@ -162,11 +162,10 @@ export function SettingDashboardView({ setting }: SettingDashboardViewProps) {
   }
 }
 
-export const RadioWrapper = styled.div<{ hidePadding?: boolean }>`
+export const RadioWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  ${(props) => !props.hidePadding && `padding: 1.5rem 0;`}
 `;
 
 export const Radio = styled(Squircle).attrs((props) => ({
@@ -209,9 +208,10 @@ export const RadioItem = styled.div`
 
 const SearchWrapper = styled.div`
   position: sticky;
-  top: 0;
-  left: 0;
-  right: 0;
+  inset: -32px 0 auto;
   z-index: 20;
   background-color: ${(props) => props.theme.cardBackground};
+  margin-top: -32px;
+  padding-top: 32px;
+  padding-bottom: 24px;
 `;

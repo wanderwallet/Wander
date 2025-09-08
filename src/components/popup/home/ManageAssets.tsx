@@ -42,7 +42,13 @@ export function ManageAssets({ open, close }: Props) {
   }, [tokens, searchInput.state]);
 
   return (
-    <SliderMenu hasHeader={true} title={browser.i18n.getMessage("manage_asset_list")} isOpen={open} onClose={close}>
+    <SliderMenu
+      height="90vh"
+      scrollable={false}
+      hasHeader={true}
+      title={browser.i18n.getMessage("manage_asset_list")}
+      isOpen={open}
+      onClose={close}>
       <Container>
         <Input sizeVariant="small" fullWidth variant="search" placeholder="Search asset" {...searchInput.bindings} />
         <TokensList>
@@ -96,6 +102,9 @@ const TokensList = styled(Section)`
   flex-direction: column;
   gap: 1rem;
   padding: 0;
+  flex: 1;
+  overflow-y: auto;
+  max-height: 50vh;
 `;
 
 const ManageButton = styled.a.attrs({

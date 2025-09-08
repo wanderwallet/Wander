@@ -122,7 +122,7 @@ export function ContactsDashboardView({ isQuickSetting }: ContactsDashboardViewP
     <Wrapper>
       <SearchWrapper small={isQuickSetting}>
         <SearchInput
-          small={isQuickSetting}
+          sizeVariant={isQuickSetting ? "small" : "normal"}
           placeholder={browser.i18n.getMessage("search_contacts")}
           {...searchInput.bindings}
           sticky

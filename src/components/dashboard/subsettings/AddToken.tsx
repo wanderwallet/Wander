@@ -167,5 +167,5 @@ const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  height: 100%;
+  height: calc(100vh - 100px);
 `;

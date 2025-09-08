@@ -245,12 +245,12 @@ export function WalletSettingsDashboardView({ params: { address } }: WalletSetti
             </Button>
           </>
         }>
-        <CenterText size="3xl" noMargin>
+        <CenterText size="3xl" style={{ whiteSpace: "nowrap" }} noMargin>
           {browser.i18n.getMessage("remove_wallet_modal_title")}
         </CenterText>
-        <Spacer y={0.55} />
+        <Spacer y={1} />
         <CenterText noMargin>{browser.i18n.getMessage("remove_wallet_modal_content")}</CenterText>
-        <Spacer y={0.75} />
+        <Spacer y={1} />
       </Modal>
       <Modal
         {...exportModal.bindings}
@@ -261,6 +261,7 @@ export function WalletSettingsDashboardView({ params: { address } }: WalletSetti
           </Button>
         }>
         <CenterText size="xl">{browser.i18n.getMessage("export_wallet_modal_title")}</CenterText>
+        <Spacer y={1} />
         <Input
           type="password"
           placeholder={browser.i18n.getMessage("password")}
