@@ -89,7 +89,7 @@ export function ApplicationsView() {
           />
         </SearchWrapper>
         <Spacer y={1} />
-        <SettingsList>
+        <SettingsList style={{ maxHeight: "73vh", overflowY: "auto" }}>
           {apps.filter(filterSearchResults).map((app, i) => (
             <AppListItem
               small
@@ -128,10 +128,6 @@ const Wrapper = styled.div`
 `;
 
 const SearchWrapper = styled.div`
-  position: sticky;
-  top: 0;
-  left: 0;
-  right: 0;
   z-index: 20;
 `;
 

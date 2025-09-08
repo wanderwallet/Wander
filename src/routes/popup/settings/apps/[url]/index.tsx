@@ -1,6 +1,4 @@
 import { InputWithBtn, InputWrapper } from "~components/arlocal/InputWrapper";
-import { defaultAllowance } from "~applications/allowance";
-import { InformationIcon } from "@iconicicons/react";
 import { useEffect, useMemo, useState } from "react";
 import { IconButton } from "~components/IconButton";
 import { removeApp } from "~applications";
@@ -11,7 +9,6 @@ import {
   SelectV2,
   Spacer,
   Text,
-  TooltipV2,
   useInput,
   useModal,
   useToasts,
@@ -20,14 +17,11 @@ import { concatGatewayURL, urlToGateway } from "~gateways/utils";
 import Application from "~applications/application";
 import browser from "webextension-polyfill";
 import styled from "styled-components";
-import Arweave from "arweave";
 import { defaultGateway, suggestedGateways, testnets } from "~gateways/gateway";
 import HeadV2 from "~components/popup/HeadV2";
-import { ToggleSwitch } from "~components/ToggleSwitch";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import { useLocation } from "~wallets/router/router.utils";
 import Checkbox from "~components/Checkbox";
-import { ErrorTypes } from "~utils/error/error.utils";
 import { LoadingView } from "~components/page/common/loading/loading.view";
 import { signPolicyOptions } from "~applications/permissions";
 
@@ -43,7 +37,6 @@ export function AppSettingsView({ params: { url } }: AppSettingsViewProps) {
   // app settings
   const app = new Application(decodeURIComponent(url));
   const [settings, updateSettings] = app.hook();
-  const arweave = new Arweave(defaultGateway);
 
   // allowance spent qty
 
@@ -242,7 +235,6 @@ export function AppSettingsView({ params: { url } }: AppSettingsViewProps) {
           <SelectV2
             small
             onChange={(e) => {
-              // @ts-expect-error
               if (e.target.value === "custom") {
                 return setEditingCustom(true);
               }
@@ -250,7 +242,6 @@ export function AppSettingsView({ params: { url } }: AppSettingsViewProps) {
               setEditingCustom(false);
               updateSettings((val) => ({
                 ...val,
-                // @ts-expect-error
                 gateway: urlToGateway(e.target.value),
               }));
             }}
@@ -282,7 +273,7 @@ export function AppSettingsView({ params: { url } }: AppSettingsViewProps) {
                   />
                 </InputWrapper>
                 <IconButton
-                  secondary
+                  variant="secondary"
                   onClick={() => {
                     updateSettings((val) => ({
                       ...val,
@@ -307,7 +298,6 @@ export function AppSettingsView({ params: { url } }: AppSettingsViewProps) {
             onChange={(e) =>
               updateSettings((val) => ({
                 ...val,
-                // @ts-expect-error
                 bundler: e.target.value,
               }))
             }
@@ -365,7 +355,7 @@ const Wrapper = styled.div`
   flex-direction: column;
   justify-content: space-between;
   padding: 0 1rem;
-  height: calc(100vh - 80px);
+  height: calc(100vh - 100px);
 `;
 
 const TitleV1 = styled(Text).attrs({
