@@ -28,9 +28,15 @@ import { getActiveKeyfile, type DecryptedWallet } from "~wallets";
 import { freeDecryptedWallet } from "~wallets/encryption";
 import { useActiveAddress, useActiveWallet } from "~wallets/hooks";
 import type { NameServiceProfile } from "./types";
+import { useActiveTier } from "~utils/tier/hooks";
+import { tierNameToId, TierTypes } from "~utils/tier/constants";
 
 export const LANDING_PAGE_TXID = "oork_YifB3-JQQZg8EgMPQJytua_QCHKNmMqt5kmnCo";
 export const DEFAULT_ANT_LOGO = "Sie_26dvgyok0PZD_-iQAFOhOd5YxDTkczOLoqTTL_A";
+
+// ArNS purchase disabled for lower tiers until Sept 30th 2025 GMT
+const ARNS_PURCHASE_DISABLED_FOR_LOWER_TIERS = Date.now() < Date.parse("2025-09-30T00:00:00+00:00");
+const RESERVE_TIER_ID = 3;
 
 // Query client for ArNS profile caching
 export const ARNS_QUERY_CLIENT = new QueryClient({
@@ -454,4 +460,13 @@ export function useArioBalance() {
   }, [arioBalanceString]);
 
   return arioBalance;
+}
+
+export function useIsArNSPurchaseGated() {
+  const { data: activeTier } = useActiveTier();
+
+  return useMemo(() => {
+    const tierId = tierNameToId[activeTier?.tier || TierTypes.Core];
+    return tierId > RESERVE_TIER_ID && ARNS_PURCHASE_DISABLED_FOR_LOWER_TIERS;
+  }, [activeTier?.tier]);
 }

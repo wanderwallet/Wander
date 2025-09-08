@@ -31,7 +31,7 @@ export default function ArNSBanner({ activeAddress }: ArNSBannerProps) {
   }
 
   useEffect(() => {
-    if (activeAddress && nameServiceProfile) {
+    if (activeAddress) {
       if (isArNSNameProfile(nameServiceProfile)) {
         setShowBanner(false);
       } else {

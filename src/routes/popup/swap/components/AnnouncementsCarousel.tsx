@@ -13,6 +13,8 @@ import type { WanderRoutePath } from "~wallets/router/router.types";
 import { SwapIcon } from "./SwapIcon";
 import { AgentIcon } from "./AgentIcon";
 import { useIsSwapGated } from "../utils/swap.hooks";
+import { ArioIcon } from "~components/embed";
+import { useIsArNSPurchaseGated } from "~lib/arns";
 
 const stars = defaultStars.toSpliced(1, 1);
 
@@ -63,10 +65,17 @@ const swapData = {
   href: "/swap",
 };
 
+const arnsData = {
+  icon: <ArioIcon style={{ height: 24, width: 24 }} />,
+  title: browser.i18n.getMessage("get_your_arns_name"),
+  href: "/arns",
+};
+
 export function AnnouncementsCarousel() {
   const theme = useTheme();
   const [isOpen, setOpen] = useState(false);
   const isSwapGated = useIsSwapGated();
+  const isArNSPurchaseGated = useIsArNSPurchaseGated();
 
   const handleOnClose = () => {
     ExtensionStorage.set(ANNOUNCEMENTS_CAROUSEL_SHOWN, true);
@@ -80,9 +89,10 @@ export function AnnouncementsCarousel() {
 
   const carouselData = useMemo(() => {
     const swapUpdatedData = { ...swapData, disabled: isSwapGated };
+    const arnsUpdatedData = { ...arnsData, disabled: isArNSPurchaseGated };
 
-    return [swapUpdatedData, agentData, earnData];
-  }, [isSwapGated]);
+    return [swapUpdatedData, agentData, earnData, arnsUpdatedData];
+  }, [isSwapGated, isArNSPurchaseGated]);
 
   if (!isOpen) return null;
 

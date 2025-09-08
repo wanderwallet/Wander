@@ -3728,6 +3728,18 @@
     "message": "Swaps have officially arrived in Wander! 🎉<br/><br/>Reserve, Edge, and Prime members can start using the new Swap feature today, directly from the Wander dashboard.<br/><br/>Core & Select members won't have to wait long! Access opens September 15th. Mark your calendars and get ready to swap!",
     "description": "Announcement 7 body"
   },
+  "announcement_8_title": {
+    "message": "Purchase your ArNS Name",
+    "description": "Announcement 8 title"
+  },
+  "announcement_8_description": {
+    "message": "Wander has integrated the ability to purchase ArNS names",
+    "description": "Announcement 8 description"
+  },
+  "announcement_8_body": {
+    "message": "Wander has partnered with [Ar.io](https://ar.io) to enable users to purchase their ArNS name directly in Wander!",
+    "description": "Announcement 8 body"
+  },
   "swipe_to_learn_more": {
     "message": "Swipe to learn more",
     "description": "Swipe to learn more text"
@@ -4405,5 +4417,9 @@
   "submitting": {
     "message": "Submitting",
     "description": "Submitting text"
+  },
+  "get_your_arns_name": {
+    "message": "Get your ArNS name!",
+    "description": "Get your ArNS Name text"
   }
 }
