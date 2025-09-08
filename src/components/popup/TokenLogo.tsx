@@ -3,10 +3,11 @@ import { Image } from "~components/common/Image/Image";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { getUserAvatar } from "~lib/avatar";
 import type { Token } from "~tokens/token";
-import type { TokenInfo } from "~tokens/aoTokens/ao";
+import { fetchTokenByProcessId, type TokenInfo } from "~tokens/aoTokens/ao";
 import { FULL_HISTORY, useGateway } from "~gateways/wayfinder";
 import { concatGatewayURL } from "~gateways/utils";
 import { AR_PROCESS_ID, AR_LOGO } from "~tokens/aoTokens/ao.constants";
+import VerifiedIcon from "~components/icons/VerifiedIcon";
 
 import tokenPlaceholder from "url:/assets/images/tokens/loading-token.svg?no-inline";
 import arLogoLight from "url:/assets/ar/ar-logo-light.svg";
@@ -78,9 +79,26 @@ export interface TokenLogoProps {
   size?: number;
 
   style?: React.CSSProperties;
+
+  /** If true, fetch missing token logo from cache or ao */
+  fetchMissingLogo?: boolean;
+
+  /** If true, show the verified icon */
+  isVerified?: boolean;
+
+  /** Size of the verified icon. Defaults to 16 */
+  verifiedIconSize?: number;
 }
 
-export function TokenLogo({ token: tokenProp, name, size = 40, style }: TokenLogoProps) {
+export function TokenLogo({
+  token: tokenProp,
+  name,
+  size = 40,
+  style,
+  fetchMissingLogo,
+  isVerified,
+  verifiedIconSize = 16,
+}: TokenLogoProps) {
   const gateway = useGateway(FULL_HISTORY);
 
   const token = useMemo(() => {
@@ -138,7 +156,15 @@ export function TokenLogo({ token: tokenProp, name, size = 40, style }: TokenLog
     // Load the token logo from Arweave using its transaction ID.
 
     try {
-      const logoSrc = await getUserAvatar(typeof token === "object" ? token.defaultLogo : token);
+      let tokenLogo = typeof token === "object" ? token.defaultLogo : token;
+      if (!tokenLogo && token?.id && fetchMissingLogo) {
+        try {
+          const tokenInfo = await fetchTokenByProcessId(token.id);
+          tokenLogo = tokenInfo.Logo;
+        } catch {}
+      }
+
+      const logoSrc = await getUserAvatar(tokenLogo);
 
       if (!logoSrc)
         throw new Error(`Could not load logo for ${typeof token === "object" ? token.defaultLogo : token}.`);
@@ -149,14 +175,14 @@ export function TokenLogo({ token: tokenProp, name, size = 40, style }: TokenLog
 
       // TODO: Also show the error state / fallback if there's an error loading the token info on the parent component.
     }
-  }, [token]);
+  }, [token, fetchMissingLogo]);
 
   const title = process.env.NODE_ENV === "development" ? `token=${JSON.stringify(token)}, name="${name}"` : undefined;
 
   const alt =
     typeof token === "object" ? `${name || token.name || token.ticker || "Token"} logo` : `${name || "token"} logo`;
 
-  return isAr(token) ? (
+  const imageElement = isAr(token) ? (
     <Image
       src={arLogoLight}
       srcDark={arLogoDark}
@@ -182,5 +208,25 @@ export function TokenLogo({ token: tokenProp, name, size = 40, style }: TokenLog
       style={style}
       onError={() => setHasError(true)}
     />
+  );
+
+  if (!isVerified) return imageElement;
+
+  return (
+    <div style={{ position: "relative", overflow: "visible" }}>
+      {imageElement}
+      <VerifiedIcon
+        style={{
+          position: "absolute",
+          top: -4,
+          right: -4,
+          height: verifiedIconSize,
+          width: verifiedIconSize,
+          borderRadius: "50%",
+        }}
+        color="#6B57F9"
+        checkmarkColor="#fff"
+      />
+    </div>
   );
 }

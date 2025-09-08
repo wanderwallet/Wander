@@ -3114,8 +3114,12 @@
         "message": "滑点",
         "description": "Slippage text"
     },
-    "slippage_description": {
+    "sell_slippage_description": {
         "message": "如果价格变化超过滑点百分比，您的出售将被取消。",
+        "description": "Slippage description"
+    },
+    "swap_slippage_description": {
+        "message": "如果价格变化超过滑点百分比，您的交易将被取消。",
         "description": "Slippage description"
     },
     "auto": {
@@ -3134,13 +3138,25 @@
         "message": "您的代理们",
         "description": "Your agents text"
     },
-    "slippage_cannot_be_less_than_0_5": {
-        "message": "滑点不能小于0.5%",
-        "description": "Slippage cannot be less than 0.5% text"
+    "slippage_cannot_be_less_than": {
+        "message": "滑点不能小于$MIN_SLIPPAGE$%",
+        "description": "Slippage cannot be less than 0.5% text",
+        "placeholders": {
+            "min_slippage": {
+                "content": "$1",
+                "example": "0.5"
+            }
+        }
     },
-    "slippage_cannot_be_greater_than_10": {
-        "message": "滑点不能大于10%",
-        "description": "Slippage cannot be greater than 10% text"
+    "slippage_cannot_be_greater_than": {
+        "message": "滑点不能大于$MAX_SLIPPAGE$%",
+        "description": "Slippage cannot be greater than 10% text",
+        "placeholders": {
+            "max_slippage": {
+                "content": "$1",
+                "example": "10"
+            }
+        }
     },
     "select_running_dates": {
         "message": "选择运行日期",
@@ -3660,6 +3676,18 @@
         "message": "WNDR 代币持有者获得 StarGrid 战斗策略的即时访问权限。连接你的 Wander 钱包，完成验证并解锁访问权限。立即在 [StarGrid](https://stargrid.ar.io) 上尝试",
         "description": "Announcement 6 body"
     },
+    "announcement_7_title": {
+        "message": "交换功能上线了！ 🚀",
+        "description": "Announcement 7 title"
+    },
+    "announcement_7_description": {
+        "message": "Reserve、Edge 和 Prime 会员抢先体验",
+        "description": "Announcement 7 description"
+    },
+    "announcement_7_body": {
+        "message": "交换功能正式登陆 Wander！🎉<br/><br/>Reserve、Edge 和 Prime 会员今天就可以直接从 Wander 仪表板开始使用全新的交换功能。<br/><br/>Core 和 Select 会员不用等太久！9月15日开放访问。标记您的日历，准备好交换吧！",
+        "description": "Announcement 7 body"
+    },
     "swipe_to_learn_more": {
       "message": "滑动了解更多",
       "description": "Swipe to learn more text"
@@ -4050,10 +4078,14 @@
       "message": "委托信息已保存",
       "description": "Delegation info saved text"
     },
-    "delegation_info_save_failed": {
-      "message": "委托信息保存失败",
-      "description": "Delegation info save failed text"
-    },
+      "delegation_info_save_failed": {
+    "message": "委托信息保存失败",
+    "description": "Delegation info save failed text"
+  },
+  "swap_execution_failed": {
+    "message": "交换执行失败",
+    "description": "Error message when swap execution fails"
+  },
     "flp_claim_success": {
       "message": "领取成功",
       "description": "Fair Launch claim success text"
@@ -4126,9 +4158,29 @@
       "message": "暂无活动",
       "description": "No activity yet text"
     },
+    "token_swaps_available_now": {
+      "message": "代币交换现已可用！",
+      "description": "Token swaps available now text"
+    },
+    "earn_wndr_tokens": {
+      "message": "赚取 $$WNDR 代币",
+      "description": "Earn $WNDR Tokens text"
+    },
     "agents_syncing": {
       "message": "代理同步中",
       "description": "Agents syncing text"
+    },
+    "you_send": {
+      "message": "你发送",
+      "description": "You send text"
+    },
+    "you_receive": {
+      "message": "你接收",
+      "description": "You receive text"
+    },
+    "swap": {
+      "message": "交换",
+      "description": "Swap text"
     },
     "stargrid_battle_pass": {
       "message": "StarGrid 战斗通行证",
@@ -4141,5 +4193,177 @@
     "days": {
       "message": "天",
       "description": "Days text"
+    },
+    "unlock_tier_to_use_feature": {
+      "message": "解锁 $TIER$ 以使用此功能",
+      "description": "Unlock tier to use feature text",
+      "placeholders": {
+        "tier": {
+          "content": "$1",
+          "example": "Tier 1"
+        }
+      }
+    },
+    "swap_gating_reserve_tier_benefits_1": {
+      "message": "某些费用降低 25%",
+      "description": "Swap gating reserve tier benefits 1 text"
+    },
+    "swap_gating_reserve_tier_benefits_2": {
+      "message": "完全访问所有功能",
+      "description": "Swap gating reserve tier benefits 2 text"
+    },
+    "swap_gating_reserve_tier_benefits_2_subtitle": {
+      "message": "（某些高级功能需要更高的等级）",
+      "description": "Swap gating reserve tier benefits 2 subtitle text"
+    },
+    "search_token": {
+      "message": "搜索代币",
+      "description": "Search token text"
+    },
+    "no_tokens_found": {
+      "message": "没有找到代币",
+      "description": "No tokens found text"
+    },
+    "swap_complete": {
+      "message": "交换完成",
+      "description": "Swap complete text"
+    },
+    "swap_success": {
+      "message": "交换成功！",
+      "description": "Swap success text"
+    },
+    "transactions_details": {
+      "message": "交易详情",
+      "description": "Transactions details text"
+    },
+    "rate": {
+      "message": "费率",
+      "description": "Rate text"
+    },
+    "provider": {
+      "message": "提供者",
+      "description": "Provider text"
+    },
+    "est_swap_time": {
+      "message": "预计交换时间",
+      "description": "Est. Swap Time text"
+    },
+    "price_impact": {
+      "message": "价格影响",
+      "description": "Price Impact text"
+    },
+    "swap_not_completed": {
+      "message": "交换未完成",
+      "description": "Swap not completed text"
+    },
+    "swap_not_completed_description": {
+      "message": "看起来出了点问题，请再试一次。",
+      "description": "Swap not completed description text"
+    },
+    "swap_history": {
+      "message": "交换历史",
+      "description": "Swap history text"
+    },
+    "swap_in_progress": {
+      "message": "交换进行中",
+      "description": "Swap in progress text"
+    },
+    "swap_in_progress_description": {
+      "message": "你的交换正在进行中。这可能需要 $TIME$ 完成。",
+      "description": "Swap in progress description text",
+      "placeholders": {
+        "time": {
+          "content": "$1",
+          "example": "30-60 minutes"
+        }
+      }
+    },
+    "between_30_60_minutes": {
+      "message": "30-60 分钟",
+      "description": "Between 30-60 minutes text"
+    },
+    "a_few_minutes": {
+      "message": "几分钟",
+      "description": "A few minutes text"
+    },
+    "no_liquidity_pools_found": {
+      "message": "没有找到流动性池",
+      "description": "No liquidity pools found for this token pair text"
+    },
+    "unable_to_retrieve_quote": {
+      "message": "无法获取报价",
+      "description": "Unable to retrieve quote text"
+    },
+    "bridge_temporarily_closed": {
+      "message": "桥接暂时关闭。请稍后再试",
+      "description": "Bridge temporarily closed text"
+    },
+    "amount_too_low": {
+      "message": "金额太低。最低要求：$MIN$",
+      "description": "Amount too low text",
+      "placeholders": {
+        "min": {
+          "content": "$1",
+          "example": "0.000000000001"
+        }
+      }
+    },
+    "amount_too_high": {
+      "message": "金额太高。最高允许：$MAX$",
+      "description": "Amount too high text",
+      "placeholders": {
+        "max": {
+          "content": "$1",
+          "example": "0.000000000001"
+        }
+      }
+    },
+    "amount_exceeds_per_transaction_limit": {
+      "message": "金额超过每笔交易限制。最高允许：$MAX$",
+      "description": "Amount exceeds per-transaction limit text",
+      "placeholders": {
+        "max": {
+          "content": "$1",
+          "example": "0.000000000001"
+        }
+      }
+    },
+    "daily_limit_reached": {
+      "message": "每日限额已达到。剩余配额今日：$MAX$",
+      "description": "Daily limit reached text",
+      "placeholders": {
+        "max": {
+          "content": "$1",
+          "example": "0.000000000001"
+        }
+      }
+    },
+    "swap_announcement_title": {
+      "message": "在几秒钟内交换资产",
+      "description": "Swap announcement title text"
+    },
+    "network_provider_fee": {
+      "message": "网络/提供者费用",
+      "description": "Network/Provider fee text"
+    },
+    "swap_error": {
+      "message": "交换失败。请再试一次。",
+      "description": "Swap error text"
+    },
+    "swap_error_increase_slippage": {
+      "message": "兑换失败，原因是价格发生了变化。请尝试再次进行，并提高滑点。",
+      "description": "Error message shown when a swap transaction fails due to invalid amount out"
+    },
+    "swap_error_permaswap_order": {
+      "message": "创建 permaswap 订单失败。请再试一次。",
+      "description": "Error shown when permaswap order creation fails"
+    },
+    "free": {
+      "message": "免费！",
+      "description": "Free text"
+    },
+    "submitting": {
+      "message": "提交中",
+      "description": "Submitting text"
     }
 }

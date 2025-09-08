@@ -190,10 +190,12 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
       if (unpartitionedStateStatus === prevUnpartitionedStateStatus) return;
 
+      const coverElement = document.getElementById("cover");
+
       // If the user is authenticated and the storage permissions changes, we sign them out and reload the page:
 
       if (authStatus !== "noAuth") {
-        // TODO: Show cover.
+        if (coverElement) coverElement.removeAttribute("aria-hidden");
 
         await signOut(false).catch((err) => {
           console.warn("Error signing out: ", err);
@@ -211,7 +213,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
       if (!hasSupabaseAuthToken) return;
 
-      // TODO: Show cover.
+      if (coverElement) coverElement.removeAttribute("aria-hidden");
 
       window.location.reload();
     }
@@ -1201,13 +1203,18 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
       initEmbeddedWallet(session);
 
-      if (authProviderType && user && session) {
-        setEmbeddedContextAuth(({ authStatus }) => ({
-          authStatus: authStatus === "unknown" || authStatus === "authError" ? "authLoading" : authStatus,
-          authProviderType,
-          user,
-          session,
-        }));
+      if (accessToken) {
+        setEmbeddedContextAuth(({ authStatus }) => {
+          return {
+            authStatus:
+              authStatus === "unknown" || authStatus === "authError" || authStatus === "noAuth"
+                ? "authLoading"
+                : authStatus,
+            authProviderType,
+            user,
+            session,
+          };
+        });
       } else {
         const anonSession = await createAnonSession();
 

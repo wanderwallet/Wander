@@ -5,7 +5,7 @@ import {
   SignType,
 } from "@keystonehq/bc-ur-registry-arweave";
 import type { SignatureOptions } from "arweave/web/lib/crypto/crypto-interface";
-import type Transaction from "arweave/web/lib/transaction";
+import Transaction from "arweave/web/lib/transaction";
 import type { UR } from "@ngraveio/bc-ur";
 import Arweave from "arweave";
 import { defaultGateway } from "~gateways/gateway";
@@ -54,9 +54,25 @@ export class KeystoneSigner implements Signer {
     });
   }
 
-  submitSignature(signature: string) {
-    const signatureBytes = Buffer.from(signature, "base64");
-    this.#_event.emit("submit-signature", signatureBytes);
+  async signTransaction(transaction: Transaction, _opts?: any): Promise<ReturnType<typeof decodeSignature>> {
+    const publicKey = Arweave.utils.bufferTob64Url(this.publicKey);
+    const ur = await transactionToUR(transaction, this.mfp, publicKey);
+
+    return new Promise(async (resolve) => {
+      this.interaction.display(ur);
+      this.#_event.once("submit-signature", (signature) => {
+        resolve(signature);
+      });
+    });
+  }
+
+  submitSignature(signature: string | ReturnType<typeof decodeSignature>) {
+    if (typeof signature === "string" || typeof signature !== "object") {
+      const signatureBytes = Buffer.from(signature, "base64");
+      this.#_event.emit("submit-signature", signatureBytes);
+    } else {
+      this.#_event.emit("submit-signature", signature);
+    }
   }
 }
 

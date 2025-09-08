@@ -91,6 +91,7 @@ export const TiersPopup = ({ isOpen, setOpen }) => {
         showDots={true}
         showNavigationArrows={true}
         options={{ loop: false }}
+        showSlideEdges={true}
       />
     </SliderMenu>
   );

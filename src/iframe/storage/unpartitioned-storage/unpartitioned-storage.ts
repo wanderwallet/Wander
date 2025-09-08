@@ -71,6 +71,7 @@ export class EnhancedStorage implements Storage {
       console.warn(
         "UnpartitionedStorage.requestStorageAccessAndInitializeStorage() should only be called from within an iframe. Regular, partitioned state will be used.",
       );
+
       return;
     }
 
@@ -80,6 +81,7 @@ export class EnhancedStorage implements Storage {
       // @ts-expect-error - Newer API with types may not be recognized by TypeScript
       const handle = await document.requestStorageAccess({
         [this.storageType]: true,
+        cookies: true,
       });
 
       // @ts-expect-error - Newer API may not be recognized by TypeScript
@@ -251,6 +253,7 @@ export class EnhancedStorage implements Storage {
 
   /**
    * Handle the case when unpartitioned storage access is denied or unavailable
+
    */
   protected dispatchUnpartitionedStateStatusChange(
     unpartitionedStateStatusOrError: UnpartitionedStateStatus | Error,

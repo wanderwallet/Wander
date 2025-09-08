@@ -1,15 +1,23 @@
 import React, { useEffect } from "react";
 
-// TODO: Handle component mount/unmount.
-
 export function useAsyncEffect<R>(fn: () => Promise<void | (() => void)>, deps: React.DependencyList) {
   useEffect(() => {
+    let isMounted = true;
     let cleanupFn: undefined | (() => void);
 
     fn().then((res) => {
-      cleanupFn = typeof res === "function" ? res : undefined;
+      // set cleanup function if mounted
+      if (isMounted) {
+        cleanupFn = typeof res === "function" ? res : undefined;
+      } else if (typeof res === "function") {
+        // call immediately if unmounted before async finished
+        res();
+      }
     });
 
-    return cleanupFn;
+    return () => {
+      isMounted = false;
+      cleanupFn?.();
+    };
   }, deps);
 }
