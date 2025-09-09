@@ -26,6 +26,7 @@ import { useIsArNSPurchaseGated } from "~lib/arns";
 import { useNameServiceProfile } from "~lib/nameservice";
 import { decodeDomainToASCII } from "~routes/popup/arns/utils";
 import { SwapGatingPopup } from "~routes/popup/swap/components/SwapGatingPopup";
+import { EventType, trackEvent } from "~utils/analytics";
 import { formatAddress, truncateMiddle } from "~utils/format";
 import { ExtensionStorage, useStorage } from "~utils/storage";
 import { removeWallet, type StoredWallet } from "~wallets";
@@ -209,7 +210,12 @@ export function WalletView({ params: { address } }: WalletViewProps) {
               hideSquircle
               showArrow={!isArnGated}
               active={isArnGated}
-              onClick={() => !isArnGated && navigate(PopupPaths.ArNSManage)}
+              onClick={() => {
+                if (!isArnGated) {
+                  trackEvent(EventType.ARNS_MANAGE_BUTTON, {});
+                  navigate(PopupPaths.ArNSManage);
+                }
+              }}
             />
             {isArnGated && (
               <DisabledTag>

@@ -14,7 +14,9 @@ import { SwapIcon } from "./SwapIcon";
 import { AgentIcon } from "./AgentIcon";
 import { useIsSwapGated } from "../utils/swap.hooks";
 import { ArioIcon } from "~components/embed";
-import { useIsArNSPurchaseGated } from "~lib/arns";
+import { useHasArnsNames, useIsArNSPurchaseGated } from "~lib/arns";
+import { useActiveAddress } from "~wallets/hooks";
+import { PopupPaths } from "~wallets/router/popup/popup.routes";
 
 const stars = defaultStars.toSpliced(1, 1);
 
@@ -27,9 +29,7 @@ interface AgentSlide {
   disabled?: boolean;
 }
 
-const renderSlide = (slide: AgentSlide, onClose: () => void) => {
-  const { navigate } = useLocation();
-
+const renderSlide = (slide: AgentSlide, onClose: () => void, navigate: (href: WanderRoutePath) => void) => {
   return (
     <AnimatedStarContainer
       stars={stars}
@@ -74,8 +74,11 @@ const arnsData = {
 export function AnnouncementsCarousel() {
   const theme = useTheme();
   const [isOpen, setOpen] = useState(false);
+  const activeAddress = useActiveAddress();
+  const hasArnsNames = useHasArnsNames();
   const isSwapGated = useIsSwapGated();
   const isArNSPurchaseGated = useIsArNSPurchaseGated();
+  const { navigate } = useLocation();
 
   const handleOnClose = () => {
     ExtensionStorage.set(ANNOUNCEMENTS_CAROUSEL_SHOWN, true);
@@ -89,17 +92,25 @@ export function AnnouncementsCarousel() {
 
   const carouselData = useMemo(() => {
     const swapUpdatedData = { ...swapData, disabled: isSwapGated };
-    const arnsUpdatedData = { ...arnsData, disabled: isArNSPurchaseGated };
 
-    return [swapUpdatedData, agentData, earnData, arnsUpdatedData];
-  }, [isSwapGated, isArNSPurchaseGated]);
+    const items = [swapUpdatedData, agentData, earnData];
 
-  if (!isOpen) return null;
+    if (!hasArnsNames) {
+      const arnsHref = isArNSPurchaseGated ? `/quick-settings/wallets/${activeAddress}` : PopupPaths.ArNSPurchaseStart;
+      const arnsUpdatedData = { ...arnsData, href: arnsHref };
+
+      items.push(arnsUpdatedData);
+    }
+
+    return items;
+  }, [isSwapGated, isArNSPurchaseGated, activeAddress, hasArnsNames]);
+
+  if (!isOpen || !carouselData?.length) return null;
 
   return (
     <Carousel
       slides={carouselData}
-      renderSlide={(slide) => renderSlide(slide as AgentSlide, handleOnClose)}
+      renderSlide={(slide) => renderSlide(slide as AgentSlide, handleOnClose, navigate)}
       showDots={true}
       showNavigationArrows={true}
       slideNavigationGap={8}

@@ -7,6 +7,8 @@ import { useLocation } from "~wallets/router/router.utils";
 import { RegisteringCard } from "./RegisteringCard";
 import type { PurchaseType } from "./types";
 import browser from "webextension-polyfill";
+import { useEffect } from "react";
+import { trackPage, PageType } from "~utils/analytics";
 
 export interface ArNSPurchaseErrorParams {
   name: string;
@@ -17,6 +19,10 @@ export type ArNSPurchaseErrorProps = CommonRouteProps<ArNSPurchaseErrorParams>;
 
 export const ArNSPurchaseErrorView = ({ params: { name, purchaseType, purchaseYears } }: ArNSPurchaseErrorProps) => {
   const { navigate, back } = useLocation();
+
+  useEffect(() => {
+    trackPage(PageType.ARNS_PURCHASE_ERROR);
+  }, []);
 
   return (
     <div

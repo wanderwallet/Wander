@@ -1,5 +1,5 @@
 import { Button, Text } from "@arconnect/components-rebrand";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Flex } from "~components/common/Flex";
 import { ArioIcon } from "~components/embed";
 import HeadV2 from "~components/popup/HeadV2";
@@ -21,6 +21,7 @@ import { decodeDomainToASCII, lowerCaseDomain } from "./utils";
 import { queryClient } from "~utils/tanstack";
 import browser from "webextension-polyfill";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
+import { trackPage, PageType } from "~utils/analytics";
 
 export interface ArNSConfirmPurchaseViewParams {
   name: string;
@@ -75,6 +76,10 @@ export const ArNSConfirmPurchaseView = ({
       setTransactionState(undefined);
     }
   };
+
+  useEffect(() => {
+    trackPage(PageType.ARNS_PURCHASE_CONFIRM);
+  }, []);
 
   return (
     <Flex direction="column" height="100vh">

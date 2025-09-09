@@ -9,6 +9,8 @@ import { useLocation } from "~wallets/router/router.utils";
 import { LinkExternal02 } from "@untitled-ui/icons-react";
 import { decodeDomainToASCII } from "../utils";
 import browser from "webextension-polyfill";
+import { useEffect } from "react";
+import { trackPage, PageType } from "~utils/analytics";
 
 export interface ArNSPrimaryNameSuccessParams {
   name: string;
@@ -18,6 +20,10 @@ export type ArNSPrimaryNameSuccessProps = CommonRouteProps<ArNSPrimaryNameSucces
 
 export const ArNSPrimaryNameSuccessView = ({ params: { name, transactionId } }: ArNSPrimaryNameSuccessProps) => {
   const { navigate, back } = useLocation();
+
+  useEffect(() => {
+    trackPage(PageType.ARNS_SET_PRIMARY_NAME_SUCCESS);
+  }, []);
 
   return (
     <div

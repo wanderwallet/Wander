@@ -2,13 +2,14 @@ import { useEffect, useState } from "react";
 import styled, { useTheme } from "styled-components";
 import { useLocation } from "~wallets/router/router.utils";
 import { ArioIcon } from "~components/embed";
-import { isArNSNameProfile } from "~lib/arns";
+import { isArNSNameProfile, useHasArnsNames, useIsArNSPurchaseGated } from "~lib/arns";
 import { useNameServiceProfile } from "~lib/nameservice";
 import { ExtensionStorage } from "~utils/storage";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import browser from "webextension-polyfill";
 import { type DisplayTheme, Text } from "@arconnect/components-rebrand";
 import { ExitButton } from "~components/ExitButton";
+import { EventType, trackEvent } from "~utils/analytics";
 
 interface ArNSBannerProps {
   activeAddress: string;
@@ -18,12 +19,18 @@ export default function ArNSBanner({ activeAddress }: ArNSBannerProps) {
   const theme = useTheme();
   const [showBanner, setShowBanner] = useState(false);
   const { navigate } = useLocation();
+  const isArnsGated = useIsArNSPurchaseGated();
+  const hasArnsNames = useHasArnsNames();
 
   const { data: nameServiceProfile } = useNameServiceProfile(activeAddress);
 
   const handleRegisterClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    navigate(PopupPaths.ArNSPurchaseStart);
+    if (isArnsGated) {
+      navigate(PopupPaths.Wallet, { params: { address: activeAddress } });
+    } else {
+      navigate(PopupPaths.ArNSPurchaseStart);
+    }
   };
 
   async function hideBanner() {
@@ -43,9 +50,7 @@ export default function ArNSBanner({ activeAddress }: ArNSBannerProps) {
     }
   }, [activeAddress, nameServiceProfile]);
 
-  if (!activeAddress || !showBanner) {
-    return null;
-  }
+  if (!activeAddress || !showBanner || hasArnsNames) return null;
 
   return (
     <Banner displayTheme={theme.displayTheme} show={showBanner}>

@@ -451,6 +451,7 @@ const ARIO_TOKEN_INFO: TokenInfo = {
   Denomination: 6,
   processId: ARIO_PROCESS_ID,
 };
+
 export function useArioBalance() {
   const activeWallet = useActiveWallet();
 
@@ -470,4 +471,11 @@ export function useIsArNSPurchaseGated() {
     const tierId = tierNameToId[activeTier?.tier || TierTypes.Core];
     return tierId > RESERVE_TIER_ID && ARNS_PURCHASE_DISABLED_FOR_LOWER_TIERS;
   }, [activeTier?.tier]);
+}
+
+export function useHasArnsNames() {
+  const address = useActiveAddress();
+  const { data: arnsRecords = [] } = useArNSRecordsForAddress({ address });
+
+  return useMemo(() => arnsRecords?.length > 0, [arnsRecords]);
 }

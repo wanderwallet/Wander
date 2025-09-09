@@ -1,5 +1,5 @@
 import { Button, Text } from "@arconnect/components-rebrand";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Flex } from "~components/common/Flex";
 import HeadV2 from "~components/popup/HeadV2";
 import {
@@ -22,6 +22,7 @@ import { mARIOToken } from "@ar.io/sdk/web";
 import { queryClient } from "~utils/tanstack";
 import browser from "webextension-polyfill";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
+import { trackPage, PageType } from "~utils/analytics";
 
 export interface ArNSConfirmSetPrimaryNameViewParams {
   name: string;
@@ -94,6 +95,10 @@ export const ArNSConfirmSetPrimaryNameView = ({ params: { name } }: ArNSConfirmS
       setTransactionState(undefined);
     }
   };
+
+  useEffect(() => {
+    trackPage(PageType.ARNS_SET_PRIMARY_NAME);
+  }, []);
 
   return (
     <Flex direction="column" height="100vh">

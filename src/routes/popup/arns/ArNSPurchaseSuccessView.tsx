@@ -10,6 +10,8 @@ import type { PurchaseType } from "./types";
 import { LinkExternal02 } from "@untitled-ui/icons-react";
 import { decodeDomainToASCII, encodeDomainToASCII } from "./utils";
 import browser from "webextension-polyfill";
+import { useEffect } from "react";
+import { trackPage, PageType } from "~utils/analytics";
 
 export interface ArNSPurchaseSuccessParams {
   name: string;
@@ -23,6 +25,10 @@ export const ArNSPurchaseSuccessView = ({
   params: { name, purchaseType, purchaseYears, transactionId },
 }: ArNSPurchaseSuccessProps) => {
   const { navigate } = useLocation();
+
+  useEffect(() => {
+    trackPage(PageType.ARNS_PURCHASE_SUCCESS);
+  }, []);
 
   return (
     <div

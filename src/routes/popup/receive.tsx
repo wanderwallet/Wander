@@ -12,8 +12,7 @@ import { useActiveWallet } from "~wallets/hooks";
 import { CopyToClipboard } from "~components/CopyToClipboard";
 import { QRCodeWrapper } from "~components/QRCodeWrapper";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
-import { useNameServiceProfile } from "~lib/nameservice";
-import { isArNSNameProfile } from "~lib/arns";
+import { useHasArnsNames, useIsArNSPurchaseGated } from "~lib/arns";
 
 interface ReceiveViewProps extends CommonRouteProps {
   walletName?: string;
@@ -24,6 +23,8 @@ export function ReceiveView({ walletName, walletAddress }: ReceiveViewProps) {
   const { navigate } = useLocation();
   const theme = useTheme();
 
+  const isArnsGated = useIsArNSPurchaseGated();
+
   const wallet = useActiveWallet();
 
   const [copied, setCopied] = useState(false);
@@ -32,11 +33,7 @@ export function ReceiveView({ walletName, walletAddress }: ReceiveViewProps) {
 
   const effectiveWalletName = useMemo(() => walletName || wallet?.nickname, [walletName, wallet]);
 
-  const { data: nameServiceProfile } = useNameServiceProfile(effectiveAddress);
-
-  const showArNSCTA = useMemo(() => {
-    return nameServiceProfile ? !isArNSNameProfile(nameServiceProfile) : true;
-  }, [nameServiceProfile]);
+  const hasArnsNames = useHasArnsNames();
 
   //segment
   useEffect(() => {
@@ -73,7 +70,7 @@ export function ReceiveView({ walletName, walletAddress }: ReceiveViewProps) {
             <Text size="lg" weight="semibold" style={{ wordBreak: "break-all", textAlign: "center" }} noMargin>
               {effectiveWalletName}
             </Text>
-            {showArNSCTA && (
+            {!hasArnsNames && (
               <button
                 style={{
                   color: theme.displayTheme === "dark" ? "#9787FF" : "#6B57F9",
@@ -82,7 +79,13 @@ export function ReceiveView({ walletName, walletAddress }: ReceiveViewProps) {
                   margin: 0,
                   fontSize: "1rem",
                 }}
-                onClick={() => navigate(PopupPaths.ArNSPurchaseStart)}>
+                onClick={() => {
+                  if (isArnsGated) {
+                    navigate(PopupPaths.Wallet, { params: { address: effectiveAddress } });
+                  } else {
+                    navigate(PopupPaths.ArNSPurchaseStart);
+                  }
+                }}>
                 {browser.i18n.getMessage("get_your_arns_name")}
               </button>
             )}

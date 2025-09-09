@@ -5,6 +5,8 @@ import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import { useLocation } from "~wallets/router/router.utils";
 import browser from "webextension-polyfill";
+import { useEffect } from "react";
+import { trackPage, PageType } from "~utils/analytics";
 
 export interface ArNSPrimaryNameErrorParams {
   name: string;
@@ -13,6 +15,10 @@ export type ArNSPrimaryNameErrorProps = CommonRouteProps<ArNSPrimaryNameErrorPar
 
 export const ArNSPrimaryNameErrorView = ({ params: { name } }: ArNSPrimaryNameErrorProps) => {
   const { navigate, back } = useLocation();
+
+  useEffect(() => {
+    trackPage(PageType.ARNS_SET_PRIMARY_NAME_ERROR);
+  }, []);
 
   return (
     <div

@@ -14,6 +14,7 @@ import { useLocation } from "~wallets/router/router.utils";
 import { formatArio, lowerCaseDomain } from "./utils";
 import browser from "webextension-polyfill";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
+import { trackPage, PageType } from "~utils/analytics";
 
 // Types
 type SearchState = "ready" | "searching" | "found" | "notFound" | "error";
@@ -143,6 +144,10 @@ export const ArNSNameSearchView = () => {
 
     search();
   }, [debouncedSearchTerm]);
+
+  useEffect(() => {
+    trackPage(PageType.ARNS_PURCHASE_SEARCH);
+  }, []);
 
   const handleRegister = (name: string) => {
     navigate(`/arns/purchase-name/${name}`);

@@ -10,6 +10,7 @@ import { Flex } from "~components/common/Flex";
 import { Wander2Icon, ArioIcon } from "~components/embed";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import browser from "webextension-polyfill";
+import { trackPage, PageType } from "~utils/analytics";
 
 const Content = styled.main`
   padding: 1.5rem;
@@ -64,12 +65,12 @@ export const ArNSPurchaseStartView = () => {
   const activeAddress = useActiveAddress();
 
   useEffect(() => {
-    // trackPage(PageType.HOME); // Using HOME as a fallback since PURCHASE_START doesn't exist
+    trackPage(PageType.ARNS_HOME);
   }, []);
 
   return (
     <Flex direction="column" height="100vh">
-      <HeadV2 title="Purchase ArNS" />
+      <HeadV2 title={browser.i18n.getMessage("purchase_arns")} />
 
       <Content>
         <LogoContainer>

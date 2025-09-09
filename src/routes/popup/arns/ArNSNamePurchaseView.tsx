@@ -1,6 +1,6 @@
 import { Button, Card, Text } from "@arconnect/components-rebrand";
 import { MinusIcon, PlusIcon } from "@iconicicons/react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
 import { Flex } from "~components/common/Flex";
 import HeadV2 from "~components/popup/HeadV2";
@@ -10,6 +10,7 @@ import { useLocation } from "~wallets/router/router.utils";
 import type { PurchaseType } from "./types";
 import { formatArio } from "./utils";
 import browser from "webextension-polyfill";
+import { trackPage, PageType } from "~utils/analytics";
 
 export interface ArNSNamePurchaseViewParams {
   name: string;
@@ -35,9 +36,13 @@ export const ArNSNamePurchaseView = ({ params: { name } }: ArNSNamePurchaseViewP
     return new Date(Date.now() + purchaseYears * 365 * 24 * 60 * 60 * 1000).toLocaleDateString();
   }, [purchaseYears]);
 
+  useEffect(() => {
+    trackPage(PageType.ARNS_PURCHASE);
+  }, []);
+
   return (
     <Flex direction="column" height="100vh">
-      <HeadV2 title="Purchase ArNS" />
+      <HeadV2 title={browser.i18n.getMessage("purchase_arns")} />
       <RegisteringCard>
         <Text weight="medium" noMargin variant="secondary" size="xs">
           {browser.i18n.getMessage("registering")}

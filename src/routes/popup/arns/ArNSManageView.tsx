@@ -12,6 +12,8 @@ import { useLocation } from "~wallets/router/router.utils";
 import { decodeDomainToASCII } from "./utils";
 import browser from "webextension-polyfill";
 import { useActiveAddress } from "~wallets/hooks";
+import { useEffect } from "react";
+import { trackPage, PageType } from "~utils/analytics";
 
 const Content = styled.main`
   padding: 0 1.5rem 1.5rem 1.5rem;
@@ -37,6 +39,10 @@ export const ArNSManageView = () => {
   const { data: arnsRecords, isFetching, isError, refetch } = useArNSRecordsForAddress({ address: activeAddress });
 
   const { data: profile, isFetching: isProfileFetching } = useNameServiceProfile(activeAddress);
+
+  useEffect(() => {
+    trackPage(PageType.ARNS_MANAGE);
+  }, []);
 
   return (
     <Flex direction="column" height="100vh">
