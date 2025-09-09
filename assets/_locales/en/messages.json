@@ -4625,5 +4625,9 @@
   "set_as_primary_name": {
     "message": "Set as Primary Name",
     "description": "Set as Primary Name text"
+  },
+  "register_now": {
+    "message": "Register now",
+    "description": "Register now text"
   }
 }

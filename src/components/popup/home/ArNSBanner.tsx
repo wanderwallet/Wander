@@ -1,5 +1,3 @@
-import type { DisplayTheme } from "@arconnect/components";
-import { CloseIcon } from "@iconicicons/react";
 import { useEffect, useState } from "react";
 import styled, { useTheme } from "styled-components";
 import { useLocation } from "~wallets/router/router.utils";
@@ -8,6 +6,9 @@ import { isArNSNameProfile } from "~lib/arns";
 import { useNameServiceProfile } from "~lib/nameservice";
 import { ExtensionStorage } from "~utils/storage";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
+import browser from "webextension-polyfill";
+import { type DisplayTheme, Text } from "@arconnect/components-rebrand";
+import { ExitButton } from "~components/ExitButton";
 
 interface ArNSBannerProps {
   activeAddress: string;
@@ -49,10 +50,13 @@ export default function ArNSBanner({ activeAddress }: ArNSBannerProps) {
   return (
     <Banner displayTheme={theme.displayTheme} show={showBanner}>
       <ArioIcon width="24px" height="24px" />
-      <h4>
-        Get your ArNS Name! <a onClick={handleRegisterClick}>Register Now</a>
-      </h4>
-      <Close onClick={hideBanner} />
+      <Text style={{ display: "flex", alignItems: "center", gap: "8px" }} weight="medium" noMargin>
+        {browser.i18n.getMessage("get_your_arns_name")}!{" "}
+        <a style={{ fontWeight: 600 }} onClick={handleRegisterClick}>
+          {browser.i18n.getMessage("register_now")}
+        </a>
+      </Text>
+      <ExitButton style={{ height: 24, width: 24 }} onClick={hideBanner} />
     </Banner>
   );
 }
@@ -67,34 +71,9 @@ const Banner = styled.div<{ displayTheme: DisplayTheme; show: boolean }>`
   padding: 0.75rem;
   position: relative;
   flex-direction: row;
-  color: #ffffff;
   overflow: hidden;
-  background: rgba(42, 34, 96, 1);
+  background: ${({ displayTheme }) => (displayTheme === "dark" ? "rgba(42, 34, 96, 1)" : "#E3E1FA")};
   justify-content: center;
   align-items: center;
   gap: 8px;
-  h4 {
-    font-weight: 500;
-    font-size: 0.8rem !important;
-    margin: 0;
-    padding: 0;
-    font-size: inherit;
-  }
-`;
-
-const Close = styled(CloseIcon)`
-  z-index: 1;
-  font-size: 1.3rem;
-  width: 1em;
-  height: 1em;
-  cursor: pointer;
-  transition: all 0.23s ease-in-out;
-
-  &:hover {
-    opacity: 0.85;
-  }
-
-  &:active {
-    transform: scale(0.95) translateY(-50%);
-  }
 `;

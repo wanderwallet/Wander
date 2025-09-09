@@ -39,7 +39,6 @@ export type WalletViewProps = CommonRouteProps<WalletViewParams>;
 export function WalletView({ params: { address } }: WalletViewProps) {
   const { navigate } = useLocation();
 
-  const [isRecoveryModalOpen, setIsRecoveryModalOpen] = useState(false);
   const [editName, setEditName] = useState(false);
   const [open, setOpen] = useState(false);
 

@@ -2,7 +2,7 @@ import { Section, Text } from "@arconnect/components-rebrand";
 import { CopyIcon } from "@iconicicons/react";
 import { QRCodeSVG } from "qrcode.react";
 import browser from "webextension-polyfill";
-import styled from "styled-components";
+import styled, { useTheme } from "styled-components";
 import { useEffect, useState, useMemo } from "react";
 import { PageType, trackPage } from "~utils/analytics";
 import HeadV2 from "~components/popup/HeadV2";
@@ -22,6 +22,7 @@ interface ReceiveViewProps extends CommonRouteProps {
 
 export function ReceiveView({ walletName, walletAddress }: ReceiveViewProps) {
   const { navigate } = useLocation();
+  const theme = useTheme();
 
   const wallet = useActiveWallet();
 
@@ -69,20 +70,20 @@ export function ReceiveView({ walletName, walletAddress }: ReceiveViewProps) {
             flex: 1,
           }}>
           <div>
-            <Text size="lg" weight="semibold" style={{ textAlign: "center" }} noMargin>
+            <Text size="lg" weight="semibold" style={{ wordBreak: "break-all", textAlign: "center" }} noMargin>
               {effectiveWalletName}
             </Text>
             {showArNSCTA && (
               <button
                 style={{
-                  color: "rgba(151, 135, 255, 1)",
+                  color: theme.displayTheme === "dark" ? "#9787FF" : "#6B57F9",
                   cursor: "pointer",
                   paddingTop: ".5rem",
                   margin: 0,
                   fontSize: "1rem",
                 }}
                 onClick={() => navigate(PopupPaths.ArNSPurchaseStart)}>
-                Get your ArNS Name
+                {browser.i18n.getMessage("get_your_arns_name")}
               </button>
             )}
           </div>

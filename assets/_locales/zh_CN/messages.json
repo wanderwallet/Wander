@@ -4585,5 +4585,9 @@
     "set_as_primary_name": {
       "message": "设置为主名称",
       "description": "Set as Primary Name text"
+    },
+    "register_now": {
+      "message": "立即注册",
+      "description": "Register now text"
     }
 }

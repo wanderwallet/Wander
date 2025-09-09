@@ -284,6 +284,7 @@ const WalletName = styled(Text).attrs({
   align-items: center;
   gap: 0.45rem;
   font-weight: 600;
+  word-break: break-all;
 `;
 
 const HardwareWalletIcon = styled.img.attrs({

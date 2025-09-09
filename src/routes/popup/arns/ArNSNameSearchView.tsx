@@ -153,7 +153,7 @@ export const ArNSNameSearchView = () => {
       <HeadV2 title={browser.i18n.getMessage("purchase_arns")} />
       <Flex direction="column" padding="0 1.5rem" flex={1}>
         <SearchWrapper>
-          <Text>{browser.i18n.getMessage("search_for_an_arns_name")}</Text>
+          <Text weight="medium">{browser.i18n.getMessage("search_for_an_arns_name")}</Text>
           <SearchInput
             sizeVariant="small"
             placeholder={browser.i18n.getMessage("search_arns")}
@@ -170,8 +170,12 @@ export const ArNSNameSearchView = () => {
 
         {searchState === "ready" && (
           <Flex gap="0.5rem" direction="column" align="center" textAlign="center" flex={1} justify="center">
-            <ArioIcon />
-            <Text>{browser.i18n.getMessage("enter_arns_name_to_search")}</Text>
+            <IconWrapper>
+              <ArioIcon />
+            </IconWrapper>
+            <Text size="lg" weight="medium" noMargin>
+              {browser.i18n.getMessage("enter_arns_name_to_search")}
+            </Text>
           </Flex>
         )}
 
@@ -199,7 +203,7 @@ export const ArNSNameSearchView = () => {
               <SvgSuccessCheckSimple />
             </Flex>
             <ResultCard direction="column" gap="1rem">
-              <Flex gap="0.5rem">
+              <Flex gap="0.5rem" align="center">
                 <Flex direction="column" gap="0.2rem" style={{ textAlign: "left", minWidth: 0 }} flex={1}>
                   <Text
                     size="base"
@@ -250,4 +254,15 @@ const SearchWrapper = styled(Flex).attrs({
   left: 0;
   right: 0;
   z-index: 20;
+`;
+
+const IconWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 16px 18px 16px;
+  width: 72px;
+  border-radius: 150px;
+  background: ${({ theme }) => theme.surfaceTertiary};
+  box-sizing: border-box;
 `;
