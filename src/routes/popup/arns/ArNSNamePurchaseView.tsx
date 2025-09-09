@@ -9,6 +9,7 @@ import type { CommonRouteProps } from "~wallets/router/router.types";
 import { useLocation } from "~wallets/router/router.utils";
 import type { PurchaseType } from "./types";
 import { formatArio } from "./utils";
+import browser from "webextension-polyfill";
 
 export interface ArNSNamePurchaseViewParams {
   name: string;
@@ -39,7 +40,7 @@ export const ArNSNamePurchaseView = ({ params: { name } }: ArNSNamePurchaseViewP
       <HeadV2 title="Purchase ArNS" />
       <RegisteringCard>
         <Text noMargin variant="secondary" size="2xs">
-          REGISTERING
+          {browser.i18n.getMessage("registering")}
         </Text>
         <Text size="lg" weight="semibold" style={{ wordBreak: "break-all", textAlign: "center" }}>
           ar://{name}
@@ -48,12 +49,12 @@ export const ArNSNamePurchaseView = ({ params: { name } }: ArNSNamePurchaseViewP
       <div style={{ margin: "0 2rem", display: "grid", gridTemplateColumns: "1fr 1fr" }}>
         <TabButton onClick={() => setPurchaseType("lease")} $selected={purchaseType === "lease"}>
           <Text weight="semibold" variant={purchaseType === "lease" ? "primary" : "secondary"}>
-            Lease
+            {browser.i18n.getMessage("lease")}
           </Text>
         </TabButton>
         <TabButton onClick={() => setPurchaseType("permabuy")} $selected={purchaseType === "permabuy"}>
           <Text weight="semibold" variant={purchaseType === "permabuy" ? "primary" : "secondary"}>
-            Purchase
+            {browser.i18n.getMessage("purchase")}
           </Text>
         </TabButton>
       </div>
@@ -70,10 +71,10 @@ export const ArNSNamePurchaseView = ({ params: { name } }: ArNSNamePurchaseViewP
           </CircleButton>
           <div>
             <Text size="2xl" weight="semibold">
-              {purchaseYears} {purchaseYears == 1 ? "Year" : "Years"}
+              {purchaseYears} {purchaseYears == 1 ? browser.i18n.getMessage("year") : browser.i18n.getMessage("years")}
             </Text>
             <Text variant="secondary" size="xs">
-              Until {untilDateString}
+              {browser.i18n.getMessage("until")} {untilDateString}
             </Text>
           </div>
           <CircleButton onClick={() => setPurchaseYears(Math.min(5, purchaseYears + 1))}>
@@ -84,13 +85,13 @@ export const ArNSNamePurchaseView = ({ params: { name } }: ArNSNamePurchaseViewP
       {purchaseType === "permabuy" && (
         <Flex direction="column" style={{ margin: "0 1.5rem" }} textAlign="center" padding="2rem">
           <Text size="2xl" weight="semibold">
-            Permanent
+            {browser.i18n.getMessage("permanent")}
           </Text>
         </Flex>
       )}
       <RegisteringCard style={{ margin: "0 1.5rem" }}>
         <Flex style={{ width: "100%" }}>
-          <Text style={{ textAlign: "left", flexGrow: 1, fontSize: "1rem" }}>Price</Text>
+          <Text style={{ textAlign: "left", flexGrow: 1, fontSize: "1rem" }}>{browser.i18n.getMessage("price")}</Text>
           <Text style={{ fontSize: "1rem", fontWeight: 500 }}>
             {totalFeeString} {ticker}
           </Text>
@@ -105,12 +106,12 @@ export const ArNSNamePurchaseView = ({ params: { name } }: ArNSNamePurchaseViewP
           fullWidth
           disabled={arioBalance == undefined || totalFee == undefined || totalFee > arioBalance}>
           {arioBalance == undefined
-            ? "Loading balance..."
+            ? browser.i18n.getMessage("loading_balance")
             : totalFee == undefined
-              ? "Calculating fee..."
+              ? browser.i18n.getMessage("calculating_fee")
               : totalFee > arioBalance
-                ? "Insufficient balance"
-                : "Next"}
+                ? browser.i18n.getMessage("insufficient_balance")
+                : browser.i18n.getMessage("next")}
         </Button>
       </div>
     </Flex>

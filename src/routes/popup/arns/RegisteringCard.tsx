@@ -3,6 +3,7 @@ import { Flex } from "~components/common/Flex";
 import { Line } from "../purchase";
 import { CardContainer } from "./CardContainer";
 import type { PurchaseType } from "./types";
+import browser from "webextension-polyfill";
 
 interface RegisteringCardProps {
   name: string;
@@ -15,7 +16,7 @@ export const RegisteringCard: React.FC<RegisteringCardProps> = ({ name, purchase
   return (
     <CardContainer style={style}>
       <Text noMargin variant="secondary" size="2xs">
-        REGISTERING
+        {browser.i18n.getMessage("registering")}
       </Text>
       <Text size="lg" weight="semibold" style={{ wordBreak: "break-all", textAlign: "center" }}>
         ar://{name}
@@ -23,10 +24,12 @@ export const RegisteringCard: React.FC<RegisteringCardProps> = ({ name, purchase
       <Line style={{ margin: ".25rem 0" }} />
       <Flex width="100%">
         <Text size="sm" variant="secondary" style={{ textAlign: "left", flexGrow: 1 }}>
-          Registration Period
+          {browser.i18n.getMessage("registration_period")}
         </Text>
         <Text size="sm" weight="semibold">
-          {purchaseType === "lease" ? `Lease (${purchaseYears} ${purchaseYears === 1 ? "Year" : "Years"})` : "Buy (∞)"}
+          {purchaseType === "lease"
+            ? `${browser.i18n.getMessage("lease")} (${purchaseYears} ${purchaseYears === 1 ? browser.i18n.getMessage("year") : browser.i18n.getMessage("years")})`
+            : `${browser.i18n.getMessage("buy")} (∞)`}
         </Text>
       </Flex>
     </CardContainer>

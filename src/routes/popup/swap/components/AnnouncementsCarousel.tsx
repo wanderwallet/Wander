@@ -67,7 +67,7 @@ const swapData = {
 
 const arnsData = {
   icon: <ArioIcon style={{ height: 24, width: 24 }} />,
-  title: browser.i18n.getMessage("get_your_arns_name"),
+  title: `${browser.i18n.getMessage("get_your_arns_name")}!`,
   href: "/arns",
 };
 

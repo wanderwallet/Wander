@@ -9,6 +9,7 @@ import { Text } from "@arconnect/components-rebrand";
 import { Flex } from "~components/common/Flex";
 import { Wander2Icon, ArioIcon } from "~components/embed";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
+import browser from "webextension-polyfill";
 
 const Content = styled.main`
   padding: 1.5rem;
@@ -77,10 +78,10 @@ export const ArNSPurchaseStartView = () => {
           <ArioIcon />
         </LogoContainer>
 
-        <SectionTitle>Get your ArNS name</SectionTitle>
+        <SectionTitle>{browser.i18n.getMessage("get_your_arns_name")}</SectionTitle>
 
         <Text style={{ textAlign: "center", color: "var(--color-font-body)", padding: "0 1rem" }}>
-          ArNS (Arweave Name Service) gives you a human-readable name for your Arweave wallet and content.
+          {browser.i18n.getMessage("arns_purchase_description")}
         </Text>
 
         <Text
@@ -91,17 +92,17 @@ export const ArNSPurchaseStartView = () => {
             marginTop: "1rem",
             marginBottom: "1rem",
           }}>
-          Instead of sharing a long wallet address, you can use your ArNS name:
+          {browser.i18n.getMessage("arns_purchase_description_2")}
         </Text>
 
         <Flex gap="0.5rem" direction="column">
           <FieldContainer>
-            <FieldLabel>Wallet address:</FieldLabel>
+            <FieldLabel>{browser.i18n.getMessage("arns_wallet_address")}:</FieldLabel>
             <FieldValue>{formatAddress(activeAddress || "", 4)}</FieldValue>
           </FieldContainer>
 
           <FieldContainer>
-            <FieldLabel>ArNS name:</FieldLabel>
+            <FieldLabel>{browser.i18n.getMessage("arns_name")}:</FieldLabel>
             <FieldValue>ar://yourname</FieldValue>
           </FieldContainer>
         </Flex>
@@ -115,13 +116,13 @@ export const ArNSPurchaseStartView = () => {
             margin: 0,
             fontSize: "1rem",
           }}>
-          Learn More
+          {browser.i18n.getMessage("learn_more")}
         </button>
 
         <div style={{ flexGrow: 1 }} />
 
         <Button fullWidth onClick={() => navigate(PopupPaths.ArNSPurchaseNameSearch)}>
-          Search for a name
+          {browser.i18n.getMessage("search_for_a_name")}
         </Button>
       </Content>
     </Flex>

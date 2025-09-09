@@ -4419,7 +4419,211 @@
     "description": "Submitting text"
   },
   "get_your_arns_name": {
-    "message": "Get your ArNS name!",
+    "message": "Get your ArNS name",
     "description": "Get your ArNS Name text"
+  },
+  "manage_arns": {
+    "message": "Manage ArNS",
+    "description": "Manage ArNS text"
+  },
+  "set_primary_name": {
+    "message": "Set Primary Name",
+    "description": "Set Primary Name text"
+  },
+  "loading_balance": {
+    "message": "Loading balance...",
+    "description": "Loading balance text"
+  },
+  "processing_transactions": {
+    "message": "Processing transactions...",
+    "description": "Processing transactions text"
+  },
+  "cost": {
+    "message": "Cost",
+    "description": "Cost text"
+  },
+  "something_went_wrong": {
+    "message": "Something went wrong",
+    "description": "Something went wrong text"
+  },
+  "arns_name_purchase_error": {
+    "message": "An error occured trying to purchase your ArNS name, please try again.",
+    "description": "arns name purchase error text"
+  },
+  "see_transaction_details": {
+    "message": "See transaction details",
+    "description": "See transaction details text"
+  },
+  "primary_name_set": {
+    "message": "Primary name set!",
+    "description": "Primary name set text"
+  },
+  "your_arns_names": {
+    "message": "Your ArNS Names",
+    "description": "Your ArNS Names text"
+  },
+  "unable_to_load_arns_records": {
+    "message": "Unable to load ArNS records",
+    "description": "Unable to load ArNS records text"
+  },
+  "leased": {
+    "message": "Leased",
+    "description": "Leased text"
+  },
+  "permanent": {
+    "message": "Permanent",
+    "description": "Permanent text"
+  },
+  "buy_another_domain": {
+    "message": "Buy another domain",
+    "description": "Buy another domain text"
+  },
+  "advanced_management": {
+    "message": "Advanced Management",
+    "description": "Advanced Management text"
+  },
+  "registering": {
+    "message": "Registering",
+    "description": "Registering text"
+  },
+  "lease": {
+    "message": "Lease",
+    "description": "Lease text"
+  },
+  "purchase": {
+    "message": "Purchase",
+    "description": "Purchase text"
+  },
+  "year": {
+    "message": "Year",
+    "description": "Year text"
+  },
+  "years": {
+    "message": "Years",
+    "description": "Years text"
+  },
+  "until": {
+    "message": "Until",
+    "description": "Until text"
+  },
+  "calculating_fee": {
+    "message": "Calculating fee...",
+    "description": "Calculating fee text"
+  },
+  "purchase_arns": {
+    "message": "Purchase ArNS",
+    "description": "Purchase ArNS text"
+  },
+  "search_for_an_arns_name": {
+    "message": "Search for an ArNS Name",
+    "description": "Search for an ArNS Name text"
+  },
+  "search_arns": {
+    "message": "Search ArNS",
+    "description": "Search ArNS text"
+  },
+  "enter_arns_name_to_search": {
+    "message": "Enter an ArNS name to search for its availability",
+    "description": "Enter an ArNS name to search for its availability text"
+  },
+  "searching": {
+    "message": "Searching...",
+    "description": "Searching text"
+  },
+  "register": {
+    "message": "Register",
+    "description": "Register text"
+  },
+  "arns_search_error": {
+    "message": "An error occurred while searching for the ArNS name. Please try again.",
+    "description": "ArNS search error text"
+  },
+  "has_already_been_registered": {
+    "message": "has already been registered",
+    "description": "Has already been registered text"
+  },
+  "is_available": {
+    "message": "is available!",
+    "description": "Is available text"
+  },
+  "arns_name_max_length": {
+    "message": "Maximum length for names is 51 characters.",
+    "description": "ArNS name max length text"
+  },
+  "arns_name_only_letters_numbers_and_hyphens": {
+    "message": "Name can only contain letters, numbers, and hyphens.",
+    "description": "ArNS name only letters numbers and hyphens text"
+  },
+  "arns_name_cannot_start_or_end_with_hyphen": {
+    "message": "Name cannot start or end with a hyphen.",
+    "description": "ArNS name cannot start or end with hyphen text"
+  },
+  "arns_name_cannot_be_www": {
+    "message": "Name cannot be 'www'.",
+    "description": "ArNS name cannot be www text"
+  },
+  "one_year_lease_fee": {
+    "message": "$FEE$ $TICKER$ for 1 year; OR",
+    "placeholders": {
+      "fee": {
+        "content": "$1",
+        "example": "1000"
+      },
+      "ticker": {
+        "content": "$2",
+        "example": "ARIO"
+      }
+    },
+    "description": "One year lease fee text"
+  },
+  "permabuy_fee": {
+    "message": "$FEE$ $TICKER$ to permabuy",
+    "placeholders": {
+      "fee": {
+        "content": "$1",
+        "example": "1000"
+      },
+      "ticker": {
+        "content": "$2",
+        "example": "ARIO"
+      }
+    },
+    "description": "Permabuy fee text"
+  },
+  "search_for_a_name": {
+    "message": "Search for a name",
+    "description": "Search for a name text"
+  },
+  "arns_purchase_description": {
+    "message": "ArNS (Arweave Name Service) gives you a human-readable name for your Arweave wallet and content.",
+    "description": "ArNS description text"
+  },
+  "arns_purchase_description_2": {
+    "message": "Instead of sharing a long wallet address, you can use your ArNS name:",
+    "description": "ArNS description 2 text"
+  },
+  "arns_wallet_address": {
+    "message": "Wallet address",
+    "description": "Wallet address text"
+  },
+  "arns_name": {
+    "message": "ArNS name",
+    "description": "ArNS name text"
+  },
+  "name_registered": {
+    "message": "Name registered!",
+    "description": "Name registered text"
+  },
+  "registration_period": {
+    "message": "Registration Period",
+    "description": "Registration period text"
+  },
+  "is_now_registered_to_this_wallet": {
+    "message": "is now registered to this wallet.",
+    "description": "Is now registered to this wallet text"
+  },
+  "set_as_primary_name": {
+    "message": "Set as Primary Name",
+    "description": "Set as Primary Name text"
   }
 }

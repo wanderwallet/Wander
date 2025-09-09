@@ -20,6 +20,8 @@ import { sleep } from "~utils/promises/sleep";
 import { decodeDomainToASCII, formatArio } from "../utils";
 import { mARIOToken } from "@ar.io/sdk/web";
 import { queryClient } from "~utils/tanstack";
+import browser from "webextension-polyfill";
+import { log, LOG_GROUP } from "~utils/log/log.utils";
 
 export interface ArNSConfirmSetPrimaryNameViewParams {
   name: string;
@@ -37,6 +39,7 @@ export const ArNSConfirmSetPrimaryNameView = ({ params: { name } }: ArNSConfirmS
   const costDetailsArio = useMemo(() => {
     return costDetails ? new mARIOToken(costDetails.tokenCost).toARIO().valueOf() : undefined;
   }, [costDetails]);
+
   const formattedCost = useMemo(() => {
     return costDetails ? formatArio(costDetailsArio) : undefined;
   }, [costDetailsArio]);
@@ -50,12 +53,12 @@ export const ArNSConfirmSetPrimaryNameView = ({ params: { name } }: ArNSConfirmS
   const handleConfirmSetPrimaryName = async () => {
     try {
       setProcessingTransaction(true);
-      setTransactionState("Processing transactions...");
+      setTransactionState(browser.i18n.getMessage("processing_transactions"));
 
       const result = await setPrimaryName({
         name,
         transactionListener: (transactionState) => {
-          console.log("transaction state received: ", transactionState);
+          log(LOG_GROUP.ARNS, "transaction state received: ", transactionState);
           setTransactionState(transactionState);
         },
       });
@@ -84,7 +87,7 @@ export const ArNSConfirmSetPrimaryNameView = ({ params: { name } }: ArNSConfirmS
         navigate(`/arns/primary-name-error/${name}`);
       }
     } catch (error) {
-      console.log(error);
+      log(LOG_GROUP.ARNS, "error: ", error);
       navigate(`/arns/primary-name-error/${name}`);
     } finally {
       setProcessingTransaction(false);
@@ -94,10 +97,10 @@ export const ArNSConfirmSetPrimaryNameView = ({ params: { name } }: ArNSConfirmS
 
   return (
     <Flex direction="column" height="100vh">
-      <HeadV2 title="Confirm Transaction" />
+      <HeadV2 title={browser.i18n.getMessage("confirm_transaction")} />
       <CardContainer style={{ margin: "1.5rem" }}>
         <Text variant="secondary" size="2xs">
-          SET PRIMARY NAME
+          {browser.i18n.getMessage("set_primary_name")}
         </Text>
         <Text size="xl" weight="semibold" style={{ wordBreak: "break-all", textAlign: "center" }}>
           {decodeDomainToASCII(name)}
@@ -105,7 +108,7 @@ export const ArNSConfirmSetPrimaryNameView = ({ params: { name } }: ArNSConfirmS
       </CardContainer>
       <Flex style={{ justifyContent: "space-between", margin: "0 2rem" }}>
         <Text variant="secondary" size="sm">
-          Cost
+          {browser.i18n.getMessage("cost")}
         </Text>
         <Text size="sm" style={{ textAlign: "right" }}>
           {formattedCost ?? "..."} {ticker}
@@ -118,10 +121,10 @@ export const ArNSConfirmSetPrimaryNameView = ({ params: { name } }: ArNSConfirmS
           fullWidth
           disabled={processingTransaction || !costDetails || !arioBalance || arioBalance < costDetailsArio}>
           {arioBalance == undefined
-            ? "Loading balance..."
+            ? browser.i18n.getMessage("loading_balance")
             : arioBalance < costDetailsArio
-              ? "Insufficient balance"
-              : "Confirm"}
+              ? browser.i18n.getMessage("insufficient_balance")
+              : browser.i18n.getMessage("confirm")}
         </Button>
       </div>
       {processingTransaction && (

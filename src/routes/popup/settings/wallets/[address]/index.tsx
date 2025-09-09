@@ -196,7 +196,7 @@ export function WalletView({ params: { address } }: WalletViewProps) {
           />
 
           <ListItem
-            title={"Manage ArNS"}
+            title={browser.i18n.getMessage("manage_arns")}
             style={{ flexShrink: 0 }}
             titleStyle={{ fontSize: 18, fontWeight: 500 }}
             icon={<ArioIcon width="24px" height="24px" />}

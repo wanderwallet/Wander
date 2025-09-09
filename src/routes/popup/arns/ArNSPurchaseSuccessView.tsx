@@ -9,6 +9,7 @@ import { useLocation } from "~wallets/router/router.utils";
 import type { PurchaseType } from "./types";
 import { LinkExternal02 } from "@untitled-ui/icons-react";
 import { decodeDomainToASCII, encodeDomainToASCII } from "./utils";
+import browser from "webextension-polyfill";
 
 export interface ArNSPurchaseSuccessParams {
   name: string;
@@ -37,27 +38,29 @@ export const ArNSPurchaseSuccessView = ({
         <SuccessCheckIcon />
       </Flex>
       <Text size="lg" weight="semibold" style={{ margin: "0.5rem", textAlign: "center" }}>
-        Name registered!
+        {browser.i18n.getMessage("name_registered")}
       </Text>
 
       <Text size="lg" style={{ wordBreak: "break-all", textAlign: "center" }}>
         ar://{decodeDomainToASCII(name)}
       </Text>
       <Text variant="secondary" style={{ textAlign: "center" }}>
-        is now registered to this wallet.
+        {browser.i18n.getMessage("is_now_registered_to_this_wallet")}
       </Text>
 
       <RegisteringCard>
         <Text size="sm" variant="secondary" style={{ textAlign: "left", flexGrow: 1 }}>
-          Registration Period
+          {browser.i18n.getMessage("registration_period")}
         </Text>
         <Text size="sm" weight="semibold">
-          {purchaseType === "lease" ? `Lease (${purchaseYears} ${purchaseYears == 1 ? "Year" : "Years"})` : `Buy (∞)`}
+          {purchaseType === "lease"
+            ? `${browser.i18n.getMessage("lease")} (${purchaseYears} ${purchaseYears == 1 ? browser.i18n.getMessage("year") : browser.i18n.getMessage("years")})`
+            : `${browser.i18n.getMessage("buy")} (∞)`}
         </Text>
       </RegisteringCard>
       <Flex style={{ justifyContent: "space-between" }}>
         <Text variant="secondary" size="sm">
-          Transaction ID
+          {browser.i18n.getMessage("transaction_id")}
         </Text>
         <Text size="sm" style={{ textAlign: "right" }}>
           {truncateMiddle(transactionId, 13)}
@@ -71,7 +74,7 @@ export const ArNSPurchaseSuccessView = ({
         style={{ margin: "1rem 0", textDecoration: "none" }}>
         <Flex gap="0.25rem">
           <Text size="sm" style={{ color: "rgba(151, 135, 255, 1)" }}>
-            See transaction details
+            {browser.i18n.getMessage("see_transaction_details")}
           </Text>
           <Text>
             <LinkExternal02 width=".75rem" height=".75rem" />
@@ -88,7 +91,7 @@ export const ArNSPurchaseSuccessView = ({
               navigate(PopupPaths.ArNSConfirmSetPrimaryName, { params: { name: encodeDomainToASCII(name) } });
             }}
             fullWidth>
-            Set as Primary Name
+            {browser.i18n.getMessage("set_as_primary_name")}
           </Button>
           <Button
             variant="secondary"
@@ -97,10 +100,10 @@ export const ArNSPurchaseSuccessView = ({
               navigate(PopupPaths.ArNSManage);
             }}
             fullWidth>
-            Manage ArNS
+            {browser.i18n.getMessage("manage_arns")}
           </Button>
           <Button variant="secondary" onClick={() => navigate(PopupPaths.Home)} fullWidth>
-            Go to dashboard
+            {browser.i18n.getMessage("go_to_dashboard")}
           </Button>
         </Flex>
       </div>

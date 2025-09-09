@@ -1,6 +1,5 @@
 import { Button } from "@arconnect/components-rebrand";
-import { Card, Text } from "@arconnect/components-rebrand";
-import styled from "styled-components";
+import { Text } from "@arconnect/components-rebrand";
 import { Flex } from "~components/common/Flex";
 import { SuccessCheckIcon } from "~components/embed";
 import { truncateMiddle } from "~utils/format";
@@ -9,6 +8,7 @@ import type { CommonRouteProps } from "~wallets/router/router.types";
 import { useLocation } from "~wallets/router/router.utils";
 import { LinkExternal02 } from "@untitled-ui/icons-react";
 import { decodeDomainToASCII } from "../utils";
+import browser from "webextension-polyfill";
 
 export interface ArNSPrimaryNameSuccessParams {
   name: string;
@@ -33,7 +33,7 @@ export const ArNSPrimaryNameSuccessView = ({ params: { name, transactionId } }: 
         <SuccessCheckIcon />
       </Flex>
       <Text size="lg" weight="semibold" style={{ margin: "0.5rem", textAlign: "center" }}>
-        Primary name set!
+        {browser.i18n.getMessage("primary_name_set")}
       </Text>
 
       <Text size="lg" style={{ wordBreak: "break-all", textAlign: "center" }}>
@@ -42,7 +42,7 @@ export const ArNSPrimaryNameSuccessView = ({ params: { name, transactionId } }: 
 
       <Flex style={{ justifyContent: "space-between", marginTop: "2rem" }}>
         <Text variant="secondary" size="sm">
-          Transaction ID
+          {browser.i18n.getMessage("transaction_id")}
         </Text>
         <Text size="sm" style={{ textAlign: "right" }}>
           {truncateMiddle(transactionId, 13)}
@@ -56,7 +56,7 @@ export const ArNSPrimaryNameSuccessView = ({ params: { name, transactionId } }: 
         style={{ margin: "1rem 0", textDecoration: "none" }}>
         <Flex gap="0.25rem">
           <Text size="sm" style={{ color: "rgba(151, 135, 255, 1)" }}>
-            See transaction details
+            {browser.i18n.getMessage("see_transaction_details")}
           </Text>
           <Text>
             <LinkExternal02 width=".75rem" height=".75rem" />
@@ -73,24 +73,13 @@ export const ArNSPrimaryNameSuccessView = ({ params: { name, transactionId } }: 
               back();
             }}
             fullWidth>
-            Manage ArNS
+            {browser.i18n.getMessage("manage_arns")}
           </Button>
           <Button variant="secondary" onClick={() => navigate(PopupPaths.Home)} fullWidth>
-            Go to dashboard
+            {browser.i18n.getMessage("go_to_dashboard")}
           </Button>
         </Flex>
       </div>
     </div>
   );
 };
-
-const RegisteringCard = styled(Card)`
-  display: flex;
-  flex-direction: row;
-  padding: 1rem;
-  margin: 1rem 0;
-  background: ${(props) => props.theme.surfaceSecondary};
-  border-radius: 12px;
-  gap: 0.5rem;
-  justify-content: space-between;
-`;

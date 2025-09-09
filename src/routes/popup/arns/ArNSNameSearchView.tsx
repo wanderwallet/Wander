@@ -12,6 +12,8 @@ import { WanderLoading } from "~routes/welcome/WanderLoading";
 import { useDebounce } from "~wallets/hooks";
 import { useLocation } from "~wallets/router/router.utils";
 import { formatArio, lowerCaseDomain } from "./utils";
+import browser from "webextension-polyfill";
+import { log, LOG_GROUP } from "~utils/log/log.utils";
 
 // Types
 type SearchState = "ready" | "searching" | "found" | "notFound" | "error";
@@ -48,13 +50,13 @@ const validateArNSName = (name: string) => {
   const safeDomain = lowerCaseDomain(name.trim());
 
   if (safeDomain.length > 51) {
-    return "Maximum length for names is 51 characters.";
+    return browser.i18n.getMessage("arns_name_max_length");
   } else if (!/^[a-zA-Z0-9-]*$/.test(safeDomain)) {
-    return "Name can only contain letters, numbers, and hyphens.";
+    return browser.i18n.getMessage("arns_name_only_letters_numbers_and_hyphens");
   } else if (/^-|-$/g.test(safeDomain)) {
-    return "Name cannot start or end with a hyphen.";
+    return browser.i18n.getMessage("arns_name_cannot_start_or_end_with_hyphen");
   } else if (safeDomain === "www") {
-    return "Name cannot be 'www'.";
+    return browser.i18n.getMessage("arns_name_cannot_be_www");
   }
 
   return undefined;
@@ -124,7 +126,7 @@ export const ArNSNameSearchView = () => {
           const registrationFees = await getRegistrationFees();
 
           if (!registrationFees) {
-            setErrorMessage("An error occurred while searching for the ArNS name. Please try again.");
+            setErrorMessage(browser.i18n.getMessage("arns_search_error"));
             setSearchState("error");
           } else {
             const fees = registrationFees[lowerCaseDomain(debouncedSearchTerm).length.toString()];
@@ -133,8 +135,8 @@ export const ArNSNameSearchView = () => {
           }
         }
       } catch (error: any) {
-        console.error(error);
-        setErrorMessage("An error occurred while searching for the ArNS name. Please try again.");
+        log(LOG_GROUP.ARNS, "ArNS search error: ", error);
+        setErrorMessage(browser.i18n.getMessage("arns_search_error"));
         setSearchState("error");
       }
     };
@@ -148,11 +150,16 @@ export const ArNSNameSearchView = () => {
 
   return (
     <Flex direction="column" height="100vh">
-      <HeadV2 title="Purchase ArNS" />
+      <HeadV2 title={browser.i18n.getMessage("purchase_arns")} />
       <Flex direction="column" padding="0 1.5rem" flex={1}>
         <SearchWrapper>
-          <Text>Search for an ArNS Name</Text>
-          <SearchInput small placeholder={"Search ArNS"} autoFocus={true} {...searchInput.bindings} />
+          <Text>{browser.i18n.getMessage("search_for_an_arns_name")}</Text>
+          <SearchInput
+            sizeVariant="small"
+            placeholder={browser.i18n.getMessage("search_arns")}
+            autoFocus={true}
+            {...searchInput.bindings}
+          />
         </SearchWrapper>
         {errorMessage && (
           <Text variant="secondary" size="xs" style={{ textAlign: "center", color: "red", marginTop: "0.5rem" }}>
@@ -164,26 +171,21 @@ export const ArNSNameSearchView = () => {
         {searchState === "ready" && (
           <Flex gap="0.5rem" direction="column" align="center" textAlign="center" flex={1} justify="center">
             <ArioIcon />
-            <Text>Enter an ArNS name to search for its availability</Text>
+            <Text>{browser.i18n.getMessage("enter_arns_name_to_search")}</Text>
           </Flex>
         )}
 
         {searchState === "searching" && (
           <StatusContainer>
             <WanderLoading />
-            <StatusDescription>Searching...</StatusDescription>
+            <StatusDescription>{browser.i18n.getMessage("searching")}</StatusDescription>
           </StatusContainer>
         )}
 
         {searchState === "found" && (
           <Text variant="secondary" style={{ textAlign: "center" }}>
-            <span
-              style={{
-                color: "rgba(151, 135, 255, 1)",
-              }}>
-              {debouncedSearchTerm}
-            </span>{" "}
-            has already been registered
+            <span style={{ color: "rgba(151, 135, 255, 1)" }}>{debouncedSearchTerm}</span>{" "}
+            {browser.i18n.getMessage("has_already_been_registered")}
           </Text>
         )}
 
@@ -191,13 +193,8 @@ export const ArNSNameSearchView = () => {
           <Flex gap="0.5rem" direction="column" flex={1} align="center" textAlign="center">
             <Flex gap="0.5rem" padding="0.5rem">
               <Text style={{ wordBreak: "break-word" }}>
-                <span
-                  style={{
-                    color: "rgba(151, 135, 255, 1)",
-                  }}>
-                  {debouncedSearchTerm}
-                </span>{" "}
-                is available!
+                <span style={{ color: "rgba(151, 135, 255, 1)" }}>{debouncedSearchTerm}</span>{" "}
+                {browser.i18n.getMessage("is_available")}
               </Text>
               <SvgSuccessCheckSimple />
             </Flex>
@@ -226,15 +223,15 @@ export const ArNSNameSearchView = () => {
                 </Flex>
                 <Flex direction="column" gap="0.2rem">
                   <Text size="xs" variant="secondary" style={{ textWrap: "nowrap", textAlign: "right" }}>
-                    {formattedFees?.oneYearLeaseFee} {ticker} for 1 year; OR{" "}
+                    {browser.i18n.getMessage("one_year_lease_fee", [formattedFees?.oneYearLeaseFee, ticker])}{" "}
                   </Text>
                   <Text size="xs" variant="secondary" style={{ textWrap: "nowrap", textAlign: "right" }}>
-                    {formattedFees?.permabuyFee} {ticker} to permabuy
+                    {browser.i18n.getMessage("permabuy_fee", [formattedFees?.permabuyFee, ticker])}
                   </Text>
                 </Flex>
               </Flex>
               <Button onClick={() => handleRegister(debouncedSearchTerm)} fullWidth>
-                Register
+                {browser.i18n.getMessage("register")}
               </Button>
             </ResultCard>
           </Flex>
