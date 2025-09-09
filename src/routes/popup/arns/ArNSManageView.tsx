@@ -139,7 +139,7 @@ export const ArNSManageView = () => {
 
 const ManageCard = styled(Card)`
   background: ${(props) => props.theme.surfaceSecondary};
-  border-radius: 12px;
+  border-radius: 8px;
   padding: 0;
 `;
 

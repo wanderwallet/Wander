@@ -17,7 +17,7 @@ export const RegisteringCard: React.FC<RegisteringCardProps> = ({ name, purchase
       <Text noMargin variant="secondary" size="2xs">
         REGISTERING
       </Text>
-      <Text size="lg" weight="semibold" style={{ wordBreak: "break-all" }}>
+      <Text size="lg" weight="semibold" style={{ wordBreak: "break-all", textAlign: "center" }}>
         ar://{name}
       </Text>
       <Line style={{ margin: ".25rem 0" }} />

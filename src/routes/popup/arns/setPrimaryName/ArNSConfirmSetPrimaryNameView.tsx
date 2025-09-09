@@ -99,7 +99,7 @@ export const ArNSConfirmSetPrimaryNameView = ({ params: { name } }: ArNSConfirmS
         <Text variant="secondary" size="2xs">
           SET PRIMARY NAME
         </Text>
-        <Text size="xl" weight="semibold">
+        <Text size="xl" weight="semibold" style={{ wordBreak: "break-all", textAlign: "center" }}>
           {decodeDomainToASCII(name)}
         </Text>
       </CardContainer>

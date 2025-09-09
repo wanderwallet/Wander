@@ -2,11 +2,8 @@ import { useLocation } from "~wallets/router/router.utils";
 import { useEffect } from "react";
 import styled from "styled-components";
 import { Button } from "@arconnect/components-rebrand";
-import { PageType, trackPage } from "~utils/analytics";
 import HeadV2 from "~components/popup/HeadV2";
-import { useStorage } from "~utils/storage";
-import { ExtensionStorage } from "~utils/storage";
-import { useActiveWallet } from "~wallets/hooks";
+import { useActiveAddress } from "~wallets/hooks";
 import { formatAddress } from "~utils/format";
 import { Text } from "@arconnect/components-rebrand";
 import { Flex } from "~components/common/Flex";
@@ -63,14 +60,10 @@ const FieldValue = styled.div`
 
 export const ArNSPurchaseStartView = () => {
   const { navigate } = useLocation();
-  const wallet = useActiveWallet();
-  const [activeAddress] = useStorage<string>({
-    key: "active_address",
-    instance: ExtensionStorage,
-  });
+  const activeAddress = useActiveAddress();
 
   useEffect(() => {
-    trackPage(PageType.HOME); // Using HOME as a fallback since PURCHASE_START doesn't exist
+    // trackPage(PageType.HOME); // Using HOME as a fallback since PURCHASE_START doesn't exist
   }, []);
 
   return (

@@ -41,7 +41,7 @@ export const ArNSNamePurchaseView = ({ params: { name } }: ArNSNamePurchaseViewP
         <Text noMargin variant="secondary" size="2xs">
           REGISTERING
         </Text>
-        <Text size="lg" weight="semibold" style={{ wordBreak: "break-all" }}>
+        <Text size="lg" weight="semibold" style={{ wordBreak: "break-all", textAlign: "center" }}>
           ar://{name}
         </Text>
       </RegisteringCard>

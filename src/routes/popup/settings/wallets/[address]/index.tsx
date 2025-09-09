@@ -138,6 +138,8 @@ export function WalletView({ params: { address } }: WalletViewProps) {
             display: "flex",
             flexDirection: "column",
             gap: "1.5rem",
+            overflowY: "auto",
+            maxHeight: "calc(100vh - 160px)",
           }}>
           {!editName ? (
             <div
@@ -195,6 +197,7 @@ export function WalletView({ params: { address } }: WalletViewProps) {
 
           <ListItem
             title={"Manage ArNS"}
+            style={{ flexShrink: 0 }}
             titleStyle={{ fontSize: 18, fontWeight: 500 }}
             icon={<ArioIcon width="24px" height="24px" />}
             hideSquircle
@@ -246,6 +249,7 @@ export function WalletView({ params: { address } }: WalletViewProps) {
                 onClick={() => navigate(`/quick-settings/wallets/${address}/qr`)}
               />
               <ListItem
+                style={{ position: "relative" }}
                 title={browser.i18n.getMessage("export_keyfile")}
                 titleStyle={{ fontSize: 18, fontWeight: 500 }}
                 icon={<Icon color="primary" as={Download01} />}
@@ -254,7 +258,7 @@ export function WalletView({ params: { address } }: WalletViewProps) {
                     style={{
                       cursor: "pointer",
                       position: "absolute",
-                      right: "44%",
+                      right: "43%",
                       marginTop: "5px",
                     }}>
                     <Tooltip
@@ -356,11 +360,13 @@ export function WalletView({ params: { address } }: WalletViewProps) {
 
 const Wrapper = styled(Section).attrs({
   showPaddingVertical: false,
+  showPaddingHorizontal: false,
 })`
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   height: calc(100vh - 100px);
+  padding: 0 24px;
 `;
 
 const WalletName = styled(Text).attrs({
@@ -371,6 +377,7 @@ const WalletName = styled(Text).attrs({
   display: flex;
   align-items: center;
   gap: 0.45rem;
+  word-break: break-all;
 `;
 
 const HardwareWalletIcon = styled.img.attrs({
