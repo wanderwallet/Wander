@@ -3,7 +3,14 @@ import { useState } from "react";
 import { Flex } from "~components/common/Flex";
 import { ArioIcon } from "~components/embed";
 import HeadV2 from "~components/popup/HeadV2";
-import { ARIO_PROCESS_ID, ARNS_QUERY_CLIENT, purchaseArNSName, useRegistrationFee, useTicker } from "~lib/arns";
+import {
+  ARIO_PROCESS_ID,
+  ARNS_QUERY_CLIENT,
+  purchaseArNSName,
+  useIsArNSPurchaseGated,
+  useRegistrationFee,
+  useTicker,
+} from "~lib/arns";
 import { useActiveAddress } from "~wallets/hooks";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import { useLocation } from "~wallets/router/router.utils";
@@ -26,6 +33,7 @@ export const ArNSConfirmPurchaseView = ({
   params: { name, purchaseType, purchaseYears },
 }: ArNSConfirmPurchaseViewProps) => {
   const { data: ticker } = useTicker();
+  const isArnGated = useIsArNSPurchaseGated();
 
   const { data: totalFee } = useRegistrationFee(name, purchaseType, purchaseYears);
   const [processingTransaction, setProcessingTransaction] = useState<boolean>(false);
@@ -86,7 +94,7 @@ export const ArNSConfirmPurchaseView = ({
       </Flex>
       <div style={{ flex: 1 }}></div>
       <div style={{ margin: "1.5rem" }}>
-        <Button onClick={handleConfirmPurchase} fullWidth disabled={processingTransaction || !totalFee}>
+        <Button onClick={handleConfirmPurchase} fullWidth disabled={processingTransaction || !totalFee || isArnGated}>
           {browser.i18n.getMessage("confirm")}
         </Button>
       </div>

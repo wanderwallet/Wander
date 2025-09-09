@@ -220,7 +220,7 @@ export default function WalletSwitcher({ open, close }: Props) {
                   setActiveAddress(wallet.address);
                   setToast({
                     type: "success",
-                    content: browser.i18n.getMessage("switchedToWallet", [wallet.name]),
+                    content: browser.i18n.getMessage("switchedToWallet", [truncateMiddle(wallet.name, 28)]),
                     duration: 1100,
                   });
                   close();

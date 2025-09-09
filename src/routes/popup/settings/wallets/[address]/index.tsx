@@ -20,9 +20,12 @@ import { HorizontalLine } from "~components/HorizontalLine";
 import { LoadingView } from "~components/page/common/loading/loading.view";
 import HeadV2 from "~components/popup/HeadV2";
 import { BackupSeedphraseWarning } from "~components/popup/settings/BackupSeedphraseWarning";
+import { TierGatedTag } from "~components/popup/tier/TierGatedTag";
 import SliderMenu from "~components/SliderMenu";
+import { useIsArNSPurchaseGated } from "~lib/arns";
 import { useNameServiceProfile } from "~lib/nameservice";
 import { decodeDomainToASCII } from "~routes/popup/arns/utils";
+import { SwapGatingPopup } from "~routes/popup/swap/components/SwapGatingPopup";
 import { formatAddress, truncateMiddle } from "~utils/format";
 import { ExtensionStorage, useStorage } from "~utils/storage";
 import { removeWallet, type StoredWallet } from "~wallets";
@@ -38,9 +41,11 @@ export type WalletViewProps = CommonRouteProps<WalletViewParams>;
 
 export function WalletView({ params: { address } }: WalletViewProps) {
   const { navigate } = useLocation();
+  const isArnGated = useIsArNSPurchaseGated();
 
   const [editName, setEditName] = useState(false);
   const [open, setOpen] = useState(false);
+  const [isGatingOpen, setIsGatingOpen] = useState(false);
 
   const theme = useTheme();
 
@@ -194,15 +199,24 @@ export function WalletView({ params: { address } }: WalletViewProps) {
             iconSize={24}
           />
 
-          <ListItem
-            title={browser.i18n.getMessage("manage_arns")}
-            style={{ flexShrink: 0 }}
-            titleStyle={{ fontSize: 18, fontWeight: 500 }}
-            icon={<ArioIcon width="24px" height="24px" />}
-            hideSquircle
-            showArrow
-            onClick={() => navigate(PopupPaths.ArNSManage)}
-          />
+          <div style={{ position: "relative" }}>
+            <ListItem
+              disabled={isArnGated}
+              title={browser.i18n.getMessage("manage_arns")}
+              style={{ flexShrink: 0 }}
+              titleStyle={{ fontSize: 18, fontWeight: 500 }}
+              icon={<ArioIcon width="24px" height="24px" />}
+              hideSquircle
+              showArrow={!isArnGated}
+              active={isArnGated}
+              onClick={() => !isArnGated && navigate(PopupPaths.ArNSManage)}
+            />
+            {isArnGated && (
+              <DisabledTag>
+                <TierGatedTag onClick={() => setIsGatingOpen((prev) => !prev)} />
+              </DisabledTag>
+            )}
+          </div>
           <HorizontalLine />
           {!isSeedphraseBackedUp && <BackupSeedphraseWarning />}
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
@@ -352,6 +366,7 @@ export function WalletView({ params: { address } }: WalletViewProps) {
             </div>
           </Section>
         </SliderMenu>
+        <SwapGatingPopup isOpen={isGatingOpen} setOpen={setIsGatingOpen} />
       </Wrapper>
     </>
   );
@@ -427,4 +442,11 @@ const Icon = styled(Cube01)<{ color?: "primary" | "secondary" | "tertiary" }>`
   height: 24px;
   width: 24px;
   color: ${({ theme, color }) => (color ? theme[`${color}Text`] : theme.primaryText)};
+`;
+
+const DisabledTag = styled.div`
+  position: absolute;
+  top: -8px;
+  right: 0px;
+  z-index: 2;
 `;

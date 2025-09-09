@@ -39,7 +39,7 @@ export const ArNSNamePurchaseView = ({ params: { name } }: ArNSNamePurchaseViewP
     <Flex direction="column" height="100vh">
       <HeadV2 title="Purchase ArNS" />
       <RegisteringCard>
-        <Text noMargin variant="secondary" size="2xs">
+        <Text weight="medium" noMargin variant="secondary" size="xs">
           {browser.i18n.getMessage("registering")}
         </Text>
         <Text size="lg" weight="semibold" style={{ wordBreak: "break-all", textAlign: "center" }}>

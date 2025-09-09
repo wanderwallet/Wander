@@ -30,6 +30,7 @@ import { useActiveAddress, useActiveWallet } from "~wallets/hooks";
 import type { NameServiceProfile } from "./types";
 import { useActiveTier } from "~utils/tier/hooks";
 import { tierNameToId, TierTypes } from "~utils/tier/constants";
+import { log, LOG_GROUP } from "~utils/log/log.utils";
 
 export const LANDING_PAGE_TXID = "oork_YifB3-JQQZg8EgMPQJytua_QCHKNmMqt5kmnCo";
 export const DEFAULT_ANT_LOGO = "Sie_26dvgyok0PZD_-iQAFOhOd5YxDTkczOLoqTTL_A";
@@ -311,18 +312,18 @@ export async function purchaseArNSName({
       {
         onSigningProgress: (step, payload) => {
           if (step === "spawning-ant") {
-            console.log("Spawning ant:", payload);
+            log(LOG_GROUP.ARNS, "Spawning ant:", payload);
             transactionListener("Spawning ANT...");
           } else if (step === "registering-ant") {
-            console.log("Registering ant:", payload);
+            log(LOG_GROUP.ARNS, "Registering ant:", payload);
             transactionListener("Registering ANT...");
           } else if (step === "verifying-state") {
-            console.log("Verifying state:", payload);
+            log(LOG_GROUP.ARNS, "Verifying state:", payload);
             transactionListener("Verifying ANT state...");
           } else if (step === "buying-name") {
             transactionListener("Purchasing name...");
           } else {
-            console.log("Unknown step:", step);
+            log(LOG_GROUP.ARNS, "Unknown step:", step);
           }
         },
       },

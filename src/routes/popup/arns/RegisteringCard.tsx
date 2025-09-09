@@ -15,7 +15,7 @@ interface RegisteringCardProps {
 export const RegisteringCard: React.FC<RegisteringCardProps> = ({ name, purchaseType, purchaseYears = 1, style }) => {
   return (
     <CardContainer style={style}>
-      <Text noMargin variant="secondary" size="2xs">
+      <Text weight="medium" noMargin variant="secondary" size="xs">
         {browser.i18n.getMessage("registering")}
       </Text>
       <Text size="lg" weight="semibold" style={{ wordBreak: "break-all", textAlign: "center" }}>

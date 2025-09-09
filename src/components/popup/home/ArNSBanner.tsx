@@ -56,7 +56,7 @@ export default function ArNSBanner({ activeAddress }: ArNSBannerProps) {
           {browser.i18n.getMessage("register_now")}
         </a>
       </Text>
-      <ExitButton style={{ height: 24, width: 24 }} onClick={hideBanner} />
+      <ExitButton color={theme.input.placeholder.default} style={{ height: 24, width: 24 }} onClick={hideBanner} />
     </Banner>
   );
 }
