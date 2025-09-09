@@ -31,7 +31,7 @@ export function ReceiveView({ walletName, walletAddress }: ReceiveViewProps) {
 
   const effectiveWalletName = useMemo(() => walletName || wallet?.nickname, [walletName, wallet]);
 
-  const nameServiceProfile = useNameServiceProfile(effectiveAddress);
+  const { data: nameServiceProfile } = useNameServiceProfile(effectiveAddress);
 
   const showArNSCTA = useMemo(() => {
     return nameServiceProfile ? !isArNSNameProfile(nameServiceProfile) : true;
