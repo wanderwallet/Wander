@@ -2,7 +2,7 @@ import { Section, Text } from "@arconnect/components-rebrand";
 import { CopyIcon } from "@iconicicons/react";
 import { QRCodeSVG } from "qrcode.react";
 import browser from "webextension-polyfill";
-import styled from "styled-components";
+import styled, { useTheme } from "styled-components";
 import { useEffect, useState, useMemo } from "react";
 import { PageType, trackPage } from "~utils/analytics";
 import HeadV2 from "~components/popup/HeadV2";
@@ -11,6 +11,9 @@ import { useLocation } from "~wallets/router/router.utils";
 import { useActiveWallet } from "~wallets/hooks";
 import { CopyToClipboard } from "~components/CopyToClipboard";
 import { QRCodeWrapper } from "~components/QRCodeWrapper";
+import { PopupPaths } from "~wallets/router/popup/popup.routes";
+import { useHasArnsNames, useIsArNSPurchaseGated } from "~lib/arns";
+import { ExtensionStorage } from "~utils/storage";
 
 interface ReceiveViewProps extends CommonRouteProps {
   walletName?: string;
@@ -19,6 +22,9 @@ interface ReceiveViewProps extends CommonRouteProps {
 
 export function ReceiveView({ walletName, walletAddress }: ReceiveViewProps) {
   const { navigate } = useLocation();
+  const theme = useTheme();
+
+  const isArnsGated = useIsArNSPurchaseGated();
 
   const wallet = useActiveWallet();
 
@@ -27,6 +33,8 @@ export function ReceiveView({ walletName, walletAddress }: ReceiveViewProps) {
   const effectiveAddress = useMemo(() => walletAddress || wallet?.address, [walletAddress, wallet]);
 
   const effectiveWalletName = useMemo(() => walletName || wallet?.nickname, [walletName, wallet]);
+
+  const hasArnsNames = useHasArnsNames();
 
   //segment
   useEffect(() => {
@@ -59,9 +67,32 @@ export function ReceiveView({ walletName, walletAddress }: ReceiveViewProps) {
             justifyContent: "center",
             flex: 1,
           }}>
-          <Text size="lg" weight="semibold" noMargin>
-            {effectiveWalletName}
-          </Text>
+          <div>
+            <Text size="lg" weight="semibold" style={{ wordBreak: "break-all", textAlign: "center" }} noMargin>
+              {effectiveWalletName}
+            </Text>
+            {!hasArnsNames && (
+              <button
+                style={{
+                  color: theme.displayTheme === "dark" ? "#9787FF" : "#6B57F9",
+                  cursor: "pointer",
+                  paddingTop: ".5rem",
+                  margin: 0,
+                  fontSize: "1rem",
+                }}
+                onClick={async () => {
+                  if (isArnsGated) {
+                    navigate(PopupPaths.Wallet, { params: { address: effectiveAddress } });
+                  } else {
+                    const isShown = await ExtensionStorage.get<boolean>("arns_purchase_start_shown");
+                    const path = isShown ? PopupPaths.ArNSPurchaseNameSearch : PopupPaths.ArNSPurchaseStart;
+                    navigate(path);
+                  }
+                }}>
+                {browser.i18n.getMessage("get_your_arns_name")}
+              </button>
+            )}
+          </div>
           <QRCodeWrapper>
             <QRCodeSVG fgColor="#fff" bgColor="transparent" size={176} value={effectiveAddress ?? ""} />
           </QRCodeWrapper>

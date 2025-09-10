@@ -17,7 +17,6 @@ import { CACHE_API } from "~constants/api";
 import Arweave from "arweave";
 import { queryClient } from "~utils/tanstack";
 import {
-  ARIO_PROCESS_ID,
   USDA_PROCESS_ID,
   WNDR_PROCESS_ID,
   Id,
@@ -27,6 +26,7 @@ import {
   WAR_PROCESS_ID,
 } from "~tokens/aoTokens/ao.constants";
 import type { Token } from "~tokens/token";
+import { ARIO_MAINNET_PROCESS_ID, ARIO_TESTNET_PROCESS_ID } from "@ar.io/sdk/web";
 import type { FlpTokenInfo } from "~utils/fair_launch/fair_launch.types";
 
 export let tokens: TokenInfo[] = null;
@@ -58,7 +58,10 @@ const { dryrun: customDryrun } = connect({ CU_URL: "https://cu.ardrive.io" });
 const { dryrun: wARDryrun } = connect({ CU_URL: "https://ao.arweave.asia" });
 
 const getDryrunForProcess = (processId: string) => {
-  return processId === ARIO_PROCESS_ID || processId === USDA_PROCESS_ID || processId === WNDR_PROCESS_ID
+  return processId === ARIO_MAINNET_PROCESS_ID ||
+    processId === ARIO_TESTNET_PROCESS_ID ||
+    processId === USDA_PROCESS_ID ||
+    processId === WNDR_PROCESS_ID
     ? { dryrunFn: customDryrun, isCustomDryrun: true }
     : processId === WAR_PROCESS_ID
       ? { dryrunFn: wARDryrun, isCustomDryrun: true }

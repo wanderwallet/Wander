@@ -10,23 +10,21 @@ import {
   useToasts,
 } from "@arconnect/components-rebrand";
 import { CopyIcon, DownloadIcon, TrashIcon } from "@iconicicons/react";
-import { InputWithBtn, InputWrapper } from "~components/arlocal/InputWrapper";
-import { removeWallet, type StoredWallet } from "~wallets";
-import { useEffect, useMemo, useState } from "react";
-import { useStorage } from "~utils/storage";
-import { IconButton } from "~components/IconButton";
-import { decryptWallet, freeDecryptedWallet } from "~wallets/encryption";
-import { ExtensionStorage } from "~utils/storage";
-import { downloadKeyfile } from "~utils/file";
+import copy from "copy-to-clipboard";
+import { useEffect, useMemo } from "react";
+import styled from "styled-components";
 import keystoneLogo from "url:/assets/hardware/keystone.png";
 import browser from "webextension-polyfill";
-import styled from "styled-components";
-import copy from "copy-to-clipboard";
-import { formatAddress } from "~utils/format";
-import type { CommonRouteProps } from "~wallets/router/router.types";
+import { InputWithBtn, InputWrapper } from "~components/arlocal/InputWrapper";
+import { IconButton } from "~components/IconButton";
 import { LoadingView } from "~components/page/common/loading/loading.view";
-import { getNameServiceProfile } from "~lib/nameservice";
-import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import { useNameServiceProfile } from "~lib/nameservice";
+import { downloadKeyfile } from "~utils/file";
+import { formatAddress } from "~utils/format";
+import { ExtensionStorage, useStorage } from "~utils/storage";
+import { removeWallet, type StoredWallet } from "~wallets";
+import { decryptWallet, freeDecryptedWallet } from "~wallets/encryption";
+import type { CommonRouteProps } from "~wallets/router/router.types";
 
 export interface WalletSettingsDashboardViewParams {
   address: string;
@@ -51,26 +49,19 @@ export function WalletSettingsDashboardView({ params: { address } }: WalletSetti
   const { setToast } = useToasts();
 
   // name service name
-  const [nameServiceName, setNameServiceName] = useState<string>();
-
-  useAsyncEffect(async () => {
-    if (!wallet) return;
-
-    const nameServiceProfile = await getNameServiceProfile(wallet.address);
-    setNameServiceName(nameServiceProfile?.name);
-  }, [wallet?.address]);
+  const { data: nameServiceProfile } = useNameServiceProfile(wallet?.address);
 
   // wallet name input
   const walletNameInput = useInput();
 
   useEffect(() => {
     if (!wallet) return;
-    walletNameInput.setState(nameServiceName || wallet.nickname);
-  }, [wallet, nameServiceName]);
+    walletNameInput.setState(nameServiceProfile?.name || wallet.nickname);
+  }, [wallet, nameServiceProfile]);
 
   // update nickname function
   async function updateNickname() {
-    if (!!nameServiceName) return;
+    if (!!nameServiceProfile) return;
 
     // check name
     const newName = walletNameInput.state;
@@ -159,7 +150,7 @@ export function WalletSettingsDashboardView({ params: { address } }: WalletSetti
       <div>
         <Spacer y={0.45} />
         <WalletName>
-          {nameServiceName || wallet.nickname}
+          {nameServiceProfile?.name || wallet.nickname}
           {wallet.type === "hardware" && (
             <Tooltip content={wallet.api.slice(0, 1).toUpperCase() + wallet.api.slice(1)} position="bottom">
               <HardwareWalletIcon src={wallet.api === "keystone" ? keystoneLogo : undefined} />
@@ -194,14 +185,14 @@ export function WalletSettingsDashboardView({ params: { address } }: WalletSetti
               type="text"
               placeholder={browser.i18n.getMessage("edit_wallet_name")}
               fullWidth
-              disabled={!!nameServiceName}
+              disabled={!!nameServiceProfile}
             />
           </InputWrapper>
-          <IconButton onClick={updateNickname} disabled={!!nameServiceName}>
+          <IconButton onClick={updateNickname} disabled={!!nameServiceProfile}>
             Save
           </IconButton>
         </InputWithBtn>
-        {!!nameServiceName && <Warning>{browser.i18n.getMessage("cannot_edit_with_name_service")}</Warning>}
+        {!!nameServiceProfile && <Warning>{browser.i18n.getMessage("cannot_edit_with_name_service")}</Warning>}
       </div>
       <div>
         <Button fullWidth onClick={() => exportModal.setOpen(true)} disabled={wallet.type === "hardware"}>
@@ -294,6 +285,7 @@ const WalletName = styled(Text).attrs({
   align-items: center;
   gap: 0.45rem;
   font-weight: 600;
+  word-break: break-all;
 `;
 
 const HardwareWalletIcon = styled.img.attrs({
