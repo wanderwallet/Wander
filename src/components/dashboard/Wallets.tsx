@@ -50,7 +50,7 @@ export function WalletsDashboardView() {
   const { data: nameServiceProfiles } = useNameServiceProfiles(wallets.map((w) => w.address));
 
   // ans shortcuts
-  const findProfile = (address: string) => nameServiceProfiles.find((profile) => profile.address === address);
+  const findProfile = (address: string) => nameServiceProfiles?.find((profile) => profile.address === address);
 
   const gateway = useGateway(FULL_HISTORY);
 

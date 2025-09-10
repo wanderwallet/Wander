@@ -21,7 +21,7 @@ import { decodeDomainToASCII, lowerCaseDomain } from "./utils";
 import { queryClient } from "~utils/tanstack";
 import browser from "webextension-polyfill";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
-import { trackPage, PageType } from "~utils/analytics";
+import { trackPage, PageType, trackEvent, EventType } from "~utils/analytics";
 
 export interface ArNSConfirmPurchaseViewParams {
   name: string;
@@ -67,9 +67,22 @@ export const ArNSConfirmPurchaseView = ({
       });
       await queryClient.invalidateQueries({ queryKey: ["tokenBalance", ARIO_PROCESS_ID, activeAddress] });
 
+      trackEvent(EventType.ARNS_PURCHASE_SUCCESS, {
+        name,
+        purchaseType,
+        purchaseYears,
+      });
+
       navigate(`/arns/purchase-success/${name}/${purchaseType}/${purchaseYears}/${result.transactionId}`);
     } catch (error) {
       log(LOG_GROUP.ARNS, "error: ", error);
+
+      trackEvent(EventType.ARNS_PURCHASE_ERROR, {
+        name,
+        purchaseType,
+        purchaseYears,
+      });
+
       navigate(`/arns/purchase-error/${name}/${purchaseType}/${purchaseYears}`);
     } finally {
       setProcessingTransaction(false);

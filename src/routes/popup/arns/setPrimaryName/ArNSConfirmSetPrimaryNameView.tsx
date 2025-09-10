@@ -22,7 +22,7 @@ import { mARIOToken } from "@ar.io/sdk/web";
 import { queryClient } from "~utils/tanstack";
 import browser from "webextension-polyfill";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
-import { trackPage, PageType } from "~utils/analytics";
+import { trackPage, PageType, trackEvent, EventType } from "~utils/analytics";
 
 export interface ArNSConfirmSetPrimaryNameViewParams {
   name: string;
@@ -83,12 +83,17 @@ export const ArNSConfirmSetPrimaryNameView = ({ params: { name } }: ArNSConfirmS
           queryKey: ["name-service-profiles"],
         });
         await queryClient.invalidateQueries({ queryKey: ["tokenBalance", ARIO_PROCESS_ID, wallet.address] });
+
+        trackEvent(EventType.ARNS_SET_PRIMARY_NAME_SUCCESS, { name });
+
         navigate(`/arns/primary-name-success/${name}/${result.transactionId}`);
       } else {
+        trackEvent(EventType.ARNS_SET_PRIMARY_NAME_ERROR, { name });
         navigate(`/arns/primary-name-error/${name}`);
       }
     } catch (error) {
       log(LOG_GROUP.ARNS, "error: ", error);
+      trackEvent(EventType.ARNS_SET_PRIMARY_NAME_ERROR, { name });
       navigate(`/arns/primary-name-error/${name}`);
     } finally {
       setProcessingTransaction(false);
