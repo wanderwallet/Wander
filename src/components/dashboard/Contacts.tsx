@@ -133,9 +133,10 @@ export function ContactsDashboardView({ isQuickSetting }: ContactsDashboardViewP
       </SearchWrapper>
       <Spacer y={1} />
       <Title>{browser.i18n.getMessage("your_contacts")}</Title>
-      <SettingsList>
+      <Spacer y={0.5} />
+      <SettingsList style={{ flex: 1, overflowY: "auto", minHeight: 0 }}>
         {Object.entries(groupedContacts).map(([letter, contacts]) => {
-          const filteredContacts = contacts.filter(filterSearchResults);
+          const filteredContacts = (contacts as SettingsContactData[]).filter(filterSearchResults);
 
           if (filteredContacts.length === 0) {
             return null;
@@ -155,6 +156,7 @@ export function ContactsDashboardView({ isQuickSetting }: ContactsDashboardViewP
                       profileIcon={contact.profileIcon}
                       active={activeContact === contact.address}
                       onClick={() => handleContactClick(contact.address)}
+                      style={{ flexShrink: 0 }}
                     />
                   )}
                   {/* Address only contacts */}
@@ -166,6 +168,7 @@ export function ContactsDashboardView({ isQuickSetting }: ContactsDashboardViewP
                       profileIcon={contact.profileIcon}
                       active={activeContact === contact.address}
                       onClick={() => handleContactClick(contact.address)}
+                      style={{ flexShrink: 0 }}
                     />
                   )}
                 </React.Fragment>
@@ -173,7 +176,6 @@ export function ContactsDashboardView({ isQuickSetting }: ContactsDashboardViewP
             </React.Fragment>
           );
         })}
-        <Spacer y={1} />
       </SettingsList>
     </Wrapper>
   );
@@ -189,6 +191,12 @@ interface SettingsContactData {
 
 const Wrapper = styled.div`
   position: relative;
+  min-height: 0;
+  overflow: hidden;
+  height: calc(100vh - 100px);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
 `;
 
 const LetterHeader = styled.div`
@@ -196,12 +204,8 @@ const LetterHeader = styled.div`
 `;
 
 const SearchWrapper = styled.div<{ small?: boolean }>`
-  position: sticky;
   display: grid;
   gap: 8px;
-  top: 0;
-  left: 0;
-  right: 0;
   z-index: 20;
   grid-template-columns: auto auto;
   ${(props) => !props.small && `background-color: rgb(${props.theme.cardBackground})`}

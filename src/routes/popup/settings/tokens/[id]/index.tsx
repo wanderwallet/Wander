@@ -68,7 +68,9 @@ export function TokenSettingsView({ params: { id } }: TokenSettingsProps) {
   return (
     <>
       <HeadV2
-        title={token?.name?.length <= 15 ? token.name : token.ticker}
+        title={
+          (token?.name?.length <= 15 ? token.name : token.ticker) || (token.type === "asset" ? "Asset" : "Collectible")
+        }
         back={() => navigate("/quick-settings/tokens")}
       />
       <Wrapper>
