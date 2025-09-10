@@ -117,15 +117,15 @@ interface SettingsAppData {
 
 const Wrapper = styled.div`
   position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  min-height: 0;
 `;
 
 const SearchWrapper = styled.div`
-  position: sticky;
-  top: 0;
-  left: 0;
-  right: 0;
   z-index: 20;
-  background-color: rgb(${(props) => props.theme.cardBackground});
 `;
 
 const NoAppsText = styled(Text)`
