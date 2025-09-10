@@ -244,7 +244,9 @@ export function PurchaseView() {
           <SliderMenu
             title={browser.i18n.getMessage("currency")}
             isOpen={showCurrencySelector}
-            onClose={closeCurrencySelector}>
+            onClose={closeCurrencySelector}
+            scrollable={false}
+            height="90vh">
             <CurrencySelectorScreen
               onClose={closeCurrencySelector}
               updateCurrency={handleUpdateCurrency}
@@ -387,10 +389,10 @@ const CurrencySelectorScreen = ({
 
   return (
     <SelectorWrapper>
-      <div style={{ paddingBottom: "18px" }}>
+      <div>
         <Input placeholder="Search currency" fullWidth variant="search" sizeVariant="small" {...searchInput.bindings} />
       </div>
-      <Flex direction="column" gap={8}>
+      <Flex direction="column" gap={8} style={{ overflowY: "auto", height: "100%", flex: 1 }}>
         {filteredCurrencies.map((currency, index) => {
           return (
             <ListItem
@@ -399,6 +401,7 @@ const CurrencySelectorScreen = ({
               title={currency.symbol}
               subtitle={currency.name}
               hideSquircle
+              style={{ flexShrink: 0 }}
               icon={
                 <Image
                   src={currency.logo}
@@ -438,7 +441,13 @@ const Wrapper = styled(Section).attrs({ showPaddingVertical: false })`
 const Top = styled.div``;
 
 const SelectorWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
   width: 100%;
+  height: 100%;
+  min-height: 0;
 `;
 
 const Switch = styled.button`

@@ -394,7 +394,7 @@ export function SendView({ params: { id } }: SendViewProps) {
 }
 
 const Wrapper = styled(Section)`
-  height: calc(100vh - 100px);
+  height: 100%;
   padding-top: 0px;
   display: flex;
   flex-direction: column;

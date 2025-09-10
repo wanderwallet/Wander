@@ -74,17 +74,14 @@ export function ManageAssets({ open, close }: Props) {
             />
           ))}
         </TokensList>
-        <ManageButton
-          as={Button}
+        <Button
           fullWidth
-          // TODO: The base should be iframe.html for the extension and some domain for the iframe.
-          href="#/quick-settings/tokens"
           onClick={(e) => {
             e.preventDefault();
             navigate("/quick-settings/tokens/new");
           }}>
           {browser.i18n.getMessage("import_assets")}
-        </ManageButton>
+        </Button>
       </Container>
     </SliderMenu>
   );
@@ -95,6 +92,7 @@ const Container = styled.div`
   flex-direction: column;
   height: 100%;
   gap: 1.5rem;
+  min-height: 0;
 `;
 
 const TokensList = styled(Section)`
@@ -104,10 +102,4 @@ const TokensList = styled(Section)`
   padding: 0;
   flex: 1;
   overflow-y: auto;
-  max-height: 50vh;
 `;
-
-const ManageButton = styled.a.attrs({
-  rel: "noopener noreferrer",
-  target: "_blank",
-})``;
