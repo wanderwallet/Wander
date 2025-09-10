@@ -1,7 +1,7 @@
 import { Button, Input, Select, Spacer, Text, useInput, useToasts } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
 import { useEffect, useState } from "react";
-import { getTokenInfo, type TokenInfo } from "~tokens/aoTokens/ao";
+import { fetchTokenByProcessId, type TokenInfo } from "~tokens/aoTokens/ao";
 import styled from "styled-components";
 import { isAddress } from "~utils/assertions";
 import { getAoTokens } from "~tokens";
@@ -63,6 +63,8 @@ export function AddTokenDashboardView({ isQuickSetting }: AddTokenDashboardViewP
 
   useEffect(() => {
     const fetchTokenInfo = async () => {
+      if (!targetInput.state) return;
+
       try {
         setLoading(true);
         //TODO double check
@@ -70,22 +72,21 @@ export function AddTokenDashboardView({ isQuickSetting }: AddTokenDashboardViewP
 
         const foundToken = defaultTokens.find((t) => t.processId === targetInput.state);
 
-        const token = foundToken || (await getTokenInfo(targetInput.state));
+        const token = foundToken || (await fetchTokenByProcessId(targetInput.state));
         setToken(token);
-        setLoading(false);
       } catch (err) {
         setToken(null);
-        setLoading(false);
         console.log("err", err);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
     fetchTokenInfo();
   }, [targetInput.state, tokenType]);
 
   return (
     <Wrapper>
-      <div>
+      <div style={{ overflowY: "auto" }}>
         {!isQuickSetting && (
           <>
             <Spacer y={0.45} />
@@ -133,7 +134,7 @@ export function AddTokenDashboardView({ isQuickSetting }: AddTokenDashboardViewP
         )}
       </div>
       <ActionBar>
-        <Button fullWidth disabled={!token || loading} onClick={onImportToken}>
+        <Button fullWidth loading={loading} disabled={!token || loading} onClick={onImportToken}>
           Add Token
         </Button>
       </ActionBar>
@@ -168,4 +169,5 @@ const Wrapper = styled.div`
   flex-direction: column;
   justify-content: space-between;
   height: calc(100vh - 100px);
+  gap: 1rem;
 `;
