@@ -127,6 +127,7 @@ const Wrapper = styled.div`
   justify-content: space-between;
   padding: 0 1rem;
   height: calc(100vh - 100px);
+  overflow: hidden;
 `;
 
 const Label = styled.p`
@@ -145,5 +146,5 @@ const TokensList = styled.div`
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-  max-height: 65vh;
+  height: calc(100vh - 216px);
 `;
