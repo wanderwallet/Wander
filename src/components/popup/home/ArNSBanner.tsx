@@ -24,12 +24,14 @@ export default function ArNSBanner({ activeAddress }: ArNSBannerProps) {
 
   const { data: nameServiceProfile } = useNameServiceProfile(activeAddress);
 
-  const handleRegisterClick = (e: React.MouseEvent) => {
+  const handleRegisterClick = async (e: React.MouseEvent) => {
     e.preventDefault();
     if (isArnsGated) {
       navigate(PopupPaths.Wallet, { params: { address: activeAddress } });
     } else {
-      navigate(PopupPaths.ArNSPurchaseStart);
+      const isShown = await ExtensionStorage.get<boolean>("arns_purchase_start_shown");
+      const path = isShown ? PopupPaths.ArNSPurchaseNameSearch : PopupPaths.ArNSPurchaseStart;
+      navigate(path);
     }
   };
 

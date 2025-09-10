@@ -6,8 +6,7 @@ import { Carousel } from "~components/Carousel";
 import { useTheme } from "styled-components";
 import { ArrowNarrowLeft, ArrowNarrowRight, CurrencyDollarCircle } from "@untitled-ui/icons-react";
 import { defaultStars, AnimatedStarContainer } from "~components/common/AnimatedStarContainer";
-import { useAsyncEffect } from "~utils/react/useAsyncEffect";
-import { ExtensionStorage } from "~utils/storage";
+import { ExtensionStorage, useStorage } from "~utils/storage";
 import { useLocation } from "~wallets/router/router.utils";
 import type { WanderRoutePath } from "~wallets/router/router.types";
 import { SwapIcon } from "./SwapIcon";
@@ -73,22 +72,21 @@ const arnsData = {
 
 export function AnnouncementsCarousel() {
   const theme = useTheme();
-  const [isOpen, setOpen] = useState(false);
+  const [isOpen, setOpen] = useState(true);
   const activeAddress = useActiveAddress();
   const hasArnsNames = useHasArnsNames();
   const isSwapGated = useIsSwapGated();
   const isArNSPurchaseGated = useIsArNSPurchaseGated();
   const { navigate } = useLocation();
+  const [isArnsPurchaseStartShown] = useStorage<boolean>({
+    key: "arns_purchase_start_shown",
+    instance: ExtensionStorage,
+  });
 
   const handleOnClose = () => {
     ExtensionStorage.set(ANNOUNCEMENTS_CAROUSEL_SHOWN, true);
     setOpen(false);
   };
-
-  useAsyncEffect(async () => {
-    const storedValue = await ExtensionStorage.get<boolean>(ANNOUNCEMENTS_CAROUSEL_SHOWN);
-    setOpen(!(storedValue ?? false));
-  }, []);
 
   const carouselData = useMemo(() => {
     const swapUpdatedData = { ...swapData, disabled: isSwapGated };
@@ -96,14 +94,19 @@ export function AnnouncementsCarousel() {
     const items = [swapUpdatedData, agentData, earnData];
 
     if (!hasArnsNames) {
-      const arnsHref = isArNSPurchaseGated ? `/quick-settings/wallets/${activeAddress}` : PopupPaths.ArNSPurchaseStart;
+      const arnsHref = isArNSPurchaseGated
+        ? `/quick-settings/wallets/${activeAddress}`
+        : isArnsPurchaseStartShown
+          ? PopupPaths.ArNSPurchaseNameSearch
+          : PopupPaths.ArNSPurchaseStart;
+
       const arnsUpdatedData = { ...arnsData, href: arnsHref };
 
       items.push(arnsUpdatedData);
     }
 
     return items;
-  }, [isSwapGated, isArNSPurchaseGated, activeAddress, hasArnsNames]);
+  }, [isSwapGated, isArNSPurchaseGated, activeAddress, hasArnsNames, isArnsPurchaseStartShown]);
 
   if (!isOpen || !carouselData?.length) return null;
 

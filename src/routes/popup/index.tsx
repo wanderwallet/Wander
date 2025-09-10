@@ -33,6 +33,7 @@ export function HomeView() {
   const [isOpen, setOpen] = useState(false);
   const [isWandAnnouncementOpen, setWandAnnouncementOpen] = useState(false);
   const [isSwapAnnouncementOpen, setSwapAnnouncementOpen] = useState(false);
+  const [isAnnouncementsCarouselOpen, setAnnouncementsCarouselOpen] = useState(false);
 
   const [announcement, _] = useStorage<boolean>({
     key: "show_announcement",
@@ -114,12 +115,14 @@ export function HomeView() {
       setLoggedIn(true);
     }
 
-    const [wandAnnouncementShown, swapAnnouncementShown] = await Promise.all([
+    const [wandAnnouncementShown, swapAnnouncementShown, announcementsCarouselShown] = await Promise.all([
       ExtensionStorage.get<boolean>("wander_announcement_shown").then((val) => val ?? false),
       ExtensionStorage.get<boolean>("swap_announcement_shown").then((val) => val ?? false),
+      ExtensionStorage.get<boolean>("announcements_carousel_shown").then((val) => val ?? false),
     ]);
     setWandAnnouncementOpen(!wandAnnouncementShown);
     setSwapAnnouncementOpen(!swapAnnouncementShown);
+    setAnnouncementsCarouselOpen(!announcementsCarouselShown);
 
     // WALLET.TYPE JUST FOR KEYSTONE POPUP
     setOpen(announcement && wallet?.type === "hardware");
@@ -156,7 +159,7 @@ export function HomeView() {
       <HomeContent>
         <Balance />
         <WalletActions />
-        <AnnouncementsCarousel />
+        {isAnnouncementsCarouselOpen && <AnnouncementsCarousel />}
         <CreateWanderAgentCTA />
         <Tabs />
       </HomeContent>

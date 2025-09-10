@@ -11,6 +11,7 @@ import { Wander2Icon, ArioIcon } from "~components/embed";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import browser from "webextension-polyfill";
 import { trackPage, PageType } from "~utils/analytics";
+import { ExtensionStorage } from "~utils/storage";
 
 const Content = styled.main`
   padding: 1.5rem;
@@ -63,6 +64,11 @@ const FieldValue = styled.div`
 export const ArNSPurchaseStartView = () => {
   const { navigate } = useLocation();
   const activeAddress = useActiveAddress();
+
+  async function handleSearchClick() {
+    await ExtensionStorage.set("arns_purchase_start_shown", true);
+    navigate(PopupPaths.ArNSPurchaseNameSearch);
+  }
 
   useEffect(() => {
     trackPage(PageType.ARNS_HOME);
@@ -122,7 +128,7 @@ export const ArNSPurchaseStartView = () => {
 
         <div style={{ flexGrow: 1 }} />
 
-        <Button fullWidth onClick={() => navigate(PopupPaths.ArNSPurchaseNameSearch)}>
+        <Button fullWidth onClick={handleSearchClick}>
           {browser.i18n.getMessage("search_for_a_name")}
         </Button>
       </Content>

@@ -2,7 +2,6 @@ import { Card, Text } from "@arconnect/components-rebrand";
 import { PlusIcon } from "@iconicicons/react";
 import { LinkExternal02, Star01, RefreshCw01 } from "@untitled-ui/icons-react";
 import styled, { keyframes, css } from "styled-components";
-
 import { Flex } from "~components/common/Flex";
 import HeadV2 from "~components/popup/HeadV2";
 import { useArNSRecordsForAddress } from "~lib/arns";
@@ -12,8 +11,9 @@ import { useLocation } from "~wallets/router/router.utils";
 import { decodeDomainToASCII } from "./utils";
 import browser from "webextension-polyfill";
 import { useActiveAddress } from "~wallets/hooks";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { trackPage, PageType } from "~utils/analytics";
+import { ExtensionStorage } from "~utils/storage";
 
 const Content = styled.main`
   padding: 0 1.5rem 1.5rem 1.5rem;
@@ -40,6 +40,20 @@ export const ArNSManageView = () => {
 
   const { data: profile, isFetching: isProfileFetching } = useNameServiceProfile(activeAddress);
 
+  const sortedArnsRecords = useMemo(() => {
+    const decodedRecords = arnsRecords?.map((record) => ({
+      ...record,
+      decodedName: decodeDomainToASCII(record.name),
+    }));
+
+    return decodedRecords?.sort((a, b) => {
+      // Put profile name at the top
+      if (profile?.name === a.decodedName) return -1;
+      if (profile?.name === b.decodedName) return 1;
+      return a.decodedName.localeCompare(b.decodedName);
+    });
+  }, [arnsRecords, profile?.name]);
+
   useEffect(() => {
     trackPage(PageType.ARNS_MANAGE);
   }, []);
@@ -63,8 +77,8 @@ export const ArNSManageView = () => {
               <Text>{browser.i18n.getMessage("your_arns_names")}</Text>
               <SpinningRefreshIcon $isFetching={isFetching} onClick={() => refetch()} />
             </Flex>
-            {!!arnsRecords &&
-              arnsRecords.map((arnsRecord) => (
+            {!!sortedArnsRecords &&
+              sortedArnsRecords.map((arnsRecord) => (
                 <ManageCard
                   key={arnsRecord.name}
                   style={{
@@ -72,23 +86,23 @@ export const ArNSManageView = () => {
                   }}>
                   <Flex direction="row" gap="0.5rem" style={{ alignItems: "center" }}>
                     <StarToggle
-                      $selected={profile?.name === decodeDomainToASCII(arnsRecord.name)}
+                      $selected={profile?.name === arnsRecord.decodedName}
                       onClick={() => {
-                        if (profile?.name !== decodeDomainToASCII(arnsRecord.name)) {
+                        if (profile?.name !== arnsRecord.decodedName) {
                           navigate(PopupPaths.ArNSConfirmSetPrimaryName, { params: { name: arnsRecord.name } });
                         }
                       }}
                     />
                     <Flex direction="column" style={{ flex: 1, minWidth: 0 }}>
                       <Text style={{ textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap" }}>
-                        {decodeDomainToASCII(arnsRecord.name)}
+                        {arnsRecord.decodedName}
                       </Text>
                       <Text
                         size="xs"
                         variant="secondary"
                         style={{ textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap" }}>
                         arns://
-                        {decodeDomainToASCII(arnsRecord.name)}
+                        {arnsRecord.decodedName}
                       </Text>
                     </Flex>
                     {arnsRecord.type === "lease" && (
@@ -110,7 +124,13 @@ export const ArNSManageView = () => {
           </>
         )}
         <ManageCard>
-          <button onClick={() => navigate(PopupPaths.ArNSPurchaseStart)} style={{ cursor: "pointer", width: "100%" }}>
+          <button
+            onClick={async () => {
+              const isShown = await ExtensionStorage.get<boolean>("arns_purchase_start_shown");
+              const path = isShown ? PopupPaths.ArNSPurchaseNameSearch : PopupPaths.ArNSPurchaseStart;
+              navigate(path);
+            }}
+            style={{ cursor: "pointer", width: "100%" }}>
             <Flex direction="row" gap="0.5rem" padding="0.5rem">
               <PlusIcon width="24px" height="24px" />
               <Text>{browser.i18n.getMessage("buy_another_domain")}</Text>

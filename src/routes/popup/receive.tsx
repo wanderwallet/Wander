@@ -13,6 +13,7 @@ import { CopyToClipboard } from "~components/CopyToClipboard";
 import { QRCodeWrapper } from "~components/QRCodeWrapper";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import { useHasArnsNames, useIsArNSPurchaseGated } from "~lib/arns";
+import { ExtensionStorage } from "~utils/storage";
 
 interface ReceiveViewProps extends CommonRouteProps {
   walletName?: string;
@@ -79,11 +80,13 @@ export function ReceiveView({ walletName, walletAddress }: ReceiveViewProps) {
                   margin: 0,
                   fontSize: "1rem",
                 }}
-                onClick={() => {
+                onClick={async () => {
                   if (isArnsGated) {
                     navigate(PopupPaths.Wallet, { params: { address: effectiveAddress } });
                   } else {
-                    navigate(PopupPaths.ArNSPurchaseStart);
+                    const isShown = await ExtensionStorage.get<boolean>("arns_purchase_start_shown");
+                    const path = isShown ? PopupPaths.ArNSPurchaseNameSearch : PopupPaths.ArNSPurchaseStart;
+                    navigate(path);
                   }
                 }}>
                 {browser.i18n.getMessage("get_your_arns_name")}
