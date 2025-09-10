@@ -1,5 +1,5 @@
 import { Button, Text } from "@arconnect/components-rebrand";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Flex } from "~components/common/Flex";
 import { ArioIcon } from "~components/embed";
 import HeadV2 from "~components/popup/HeadV2";
@@ -22,6 +22,10 @@ import { queryClient } from "~utils/tanstack";
 import browser from "webextension-polyfill";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { trackPage, PageType, trackEvent, EventType } from "~utils/analytics";
+import { useTokenPrice } from "~tokens/hooks";
+import useSetting from "~settings/hook";
+import { formatFiatBalance } from "~tokens/currency";
+import BigNumber from "bignumber.js";
 
 export interface ArNSConfirmPurchaseViewParams {
   name: string;
@@ -38,6 +42,10 @@ export const ArNSConfirmPurchaseView = ({
 
   const { data: totalFee } = useRegistrationFee(name, purchaseType, purchaseYears);
   const [processingTransaction, setProcessingTransaction] = useState<boolean>(false);
+
+  const [currency = "USD"] = useSetting("currency");
+  const { price = 0 } = useTokenPrice(ARIO_PROCESS_ID, currency);
+  const fiatTotalFee = useMemo(() => BigNumber(totalFee || 0).times(price || 0), [totalFee, price]);
 
   const [transactionState, setTransactionState] = useState<string | undefined>();
 
@@ -103,12 +111,19 @@ export const ArNSConfirmPurchaseView = ({
         purchaseType={purchaseType}
         purchaseYears={purchaseYears}
       />
-      <Flex style={{ margin: "1rem" }} justify="center" align="center" gap=".25rem">
-        <Text size="2xl" weight="semibold" style={{ textAlign: "center" }}>
-          {totalFee ?? "..."}
-        </Text>
-        <Text>{ticker}</Text>
-        <ArioIcon width=".75rem" height=".75rem" />
+      <Flex direction="column" style={{ margin: "1rem" }} justify="center" align="center" gap="0.5rem">
+        <Flex justify="center" align="baseline" gap=".25rem">
+          <Text size="2xl" weight="semibold" style={{ textAlign: "center" }}>
+            {totalFee ?? "..."}
+          </Text>
+          <Text>{ticker}</Text>
+          <ArioIcon width=".75rem" height=".75rem" />
+        </Flex>
+        {fiatTotalFee.gt(0) && (
+          <Text size="sm" variant="secondary" weight="medium" noMargin>
+            {formatFiatBalance(fiatTotalFee, currency)}
+          </Text>
+        )}
       </Flex>
       <div style={{ flex: 1 }}></div>
       <div style={{ margin: "1.5rem" }}>

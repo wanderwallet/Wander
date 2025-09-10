@@ -1,7 +1,6 @@
 import { Button } from "@arconnect/components-rebrand";
 import { Text } from "@arconnect/components-rebrand";
 import { Flex } from "~components/common/Flex";
-import { SuccessCheckIcon } from "~components/embed";
 import { truncateMiddle } from "~utils/format";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import type { CommonRouteProps } from "~wallets/router/router.types";
@@ -11,6 +10,7 @@ import { decodeDomainToASCII } from "../utils";
 import browser from "webextension-polyfill";
 import { useEffect } from "react";
 import { trackPage, PageType } from "~utils/analytics";
+import { ArNSSuccessIcon } from "../ArNSSuccessIcon";
 
 export interface ArNSPrimaryNameSuccessParams {
   name: string;
@@ -36,7 +36,7 @@ export const ArNSPrimaryNameSuccessView = ({ params: { name, transactionId } }: 
         boxSizing: "border-box",
       }}>
       <Flex justify="center" align="center">
-        <SuccessCheckIcon />
+        <ArNSSuccessIcon />
       </Flex>
       <Text size="lg" weight="semibold" style={{ margin: "0.5rem", textAlign: "center" }}>
         {browser.i18n.getMessage("primary_name_set")}

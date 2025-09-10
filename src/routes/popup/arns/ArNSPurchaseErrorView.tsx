@@ -1,6 +1,5 @@
 import { Button, Text } from "@arconnect/components-rebrand";
 import { Flex } from "~components/common/Flex";
-import { WarningCircledIcon } from "~components/embed";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import { useLocation } from "~wallets/router/router.utils";
@@ -9,6 +8,7 @@ import type { PurchaseType } from "./types";
 import browser from "webextension-polyfill";
 import { useEffect } from "react";
 import { trackPage, PageType } from "~utils/analytics";
+import { ErrorIcon } from "../swap/components/ErrorIcon";
 
 export interface ArNSPurchaseErrorParams {
   name: string;
@@ -36,7 +36,7 @@ export const ArNSPurchaseErrorView = ({ params: { name, purchaseType, purchaseYe
       }}>
       <Flex direction="column" justify="center" align="stretch" style={{ flex: 1, margin: 0 }}>
         <Flex justify="center" align="center">
-          <WarningCircledIcon />
+          <ErrorIcon />
         </Flex>
         <Text size="lg" weight="semibold" style={{ margin: "0.5rem", textAlign: "center" }}>
           {browser.i18n.getMessage("something_went_wrong")}
