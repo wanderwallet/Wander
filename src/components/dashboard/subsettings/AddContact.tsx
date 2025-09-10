@@ -340,7 +340,7 @@ export function AddContactDashboardView({ isQuickSetting }: AddContactDashboardV
         />
       </div>
       <>
-        <Footer>
+        <Footer style={{ padding: "24px 0" }}>
           <Button fullWidth onClick={saveNewContact} disabled={areFieldsEmpty()}>
             {browser.i18n.getMessage(isQuickSetting ? "save_contact" : "save_new_contact")}
           </Button>

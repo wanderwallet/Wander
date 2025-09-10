@@ -87,7 +87,7 @@ export function ApplicationsDashboardView() {
         <SearchInput placeholder={browser.i18n.getMessage("search_apps")} {...searchInput.bindings} />
       </SearchWrapper>
       <Spacer y={1} />
-      <SettingsList>
+      <SettingsList style={{ overflowY: "auto", height: "100%" }}>
         {apps.filter(filterSearchResults).map((app, i) => (
           <AppListItem
             name={app.name}

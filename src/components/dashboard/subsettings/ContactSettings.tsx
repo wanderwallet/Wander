@@ -397,7 +397,7 @@ export function ContactSettingsDashboardView({
         />
       </div>
 
-      <Footer>
+      <Footer style={{ padding: "24px 0" }}>
         {editable ? (
           <Button fullWidth onClick={saveContact} disabled={areFieldsEmpty()}>
             {browser.i18n.getMessage("save_changes")}
