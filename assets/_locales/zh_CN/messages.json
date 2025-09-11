@@ -3697,7 +3697,7 @@
         "description": "Announcement 8 description"
     },
     "announcement_8_body": {
-        "message": "Wander 已与 [Ar.io](https://ar.io) 合作，使用户能够直接在 Wander 中购买他们的 ArNS 名称！.<br/><br/> [获取 ArNS](/quick-settings/wallets/active){button,fullWidth=true}",
+        "message": "Wander 已与 [Ar.io](https://ar.io) 合作，使用户可以直接在 Wander! 中购买他们的 ArNS 名称。<br/><br/>Reserve、Edge 和 Prime 会员今天就可以开始使用全新的 ArNS 功能。<br/><br/>Core 和 Select 会员也无需等待太久！访问权限将于 9 月 30 日开放。请记下日期，准备好购买您的 ArNS 名称吧！<br/><br/>[获取 ArNS](/quick-settings/wallets/active){button,fullWidth=true}",
         "description": "Announcement 8 body"
     },
     "swipe_to_learn_more": {
