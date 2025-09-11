@@ -124,6 +124,11 @@ export async function getTokenInfo(id: string): Promise<TokenInfo> {
         "Cache-Control": "public, max-age=3600", // 1 hour
       },
     });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch token info");
+    }
+
     const data = await response.json();
 
     return { ...data.tokenInfo, processId: id };
