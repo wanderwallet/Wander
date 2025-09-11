@@ -87,7 +87,7 @@ export default function HeadV2({
     instance: ExtensionStorage,
   });
 
-  const nameServiceProfile = useNameServiceProfile(activeAddress);
+  const { data: nameServiceProfile } = useNameServiceProfile(activeAddress);
 
   // wallet switcher open
   const [isOpen, setOpen] = useState(false);

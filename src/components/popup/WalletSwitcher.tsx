@@ -1,31 +1,30 @@
 import { Button, ListItem, Spacer, Text, useToasts } from "@arconnect/components-rebrand";
-import { concatGatewayURL } from "~gateways/utils";
-import { type Variants } from "framer-motion";
-import { formatFiatBalance } from "~tokens/currency";
-import type { HardwareApi } from "~wallets/hardware";
-import { useStorage } from "~utils/storage";
-import { ExtensionStorage } from "~utils/storage";
-import { formatAddress, truncateMiddle } from "~utils/format";
-import type { StoredWallet } from "~wallets";
-import { useEffect, useMemo, useState } from "react";
-import HardwareWalletIcon from "~components/hardware/HardwareWalletIcon";
-import keystoneLogo from "url:/assets/hardware/keystone.png";
-import { findGateway } from "~gateways/wayfinder";
-import browser from "webextension-polyfill";
-import Squircle from "~components/Squircle";
-import styled, { useTheme } from "styled-components";
-import { useLocation } from "~wallets/router/router.utils";
-import { getNameServiceProfiles } from "~lib/nameservice";
-import SliderMenu from "~components/SliderMenu";
-import { CopyToClipboard } from "~components/CopyToClipboard";
 import { PlusCircle, QrCode02, XClose } from "@untitled-ui/icons-react";
 import BigNumber from "bignumber.js";
-import { fetchWalletBalances } from "~utils/balances";
-import useSetting from "~settings/hook";
-import QRModal from "~components/modals/QRModal";
-import { useArPrice } from "~lib/coingecko";
-import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import { type Variants } from "framer-motion";
+import { useEffect, useMemo, useState } from "react";
+import styled, { useTheme } from "styled-components";
+import keystoneLogo from "url:/assets/hardware/keystone.png";
+import browser from "webextension-polyfill";
 import { NoAvatarIcon } from "~components/Avatar";
+import { CopyToClipboard } from "~components/CopyToClipboard";
+import HardwareWalletIcon from "~components/hardware/HardwareWalletIcon";
+import QRModal from "~components/modals/QRModal";
+import SliderMenu from "~components/SliderMenu";
+import Squircle from "~components/Squircle";
+import { concatGatewayURL } from "~gateways/utils";
+import { findGateway } from "~gateways/wayfinder";
+import { useArPrice } from "~lib/coingecko";
+import { useNameServiceProfiles } from "~lib/nameservice";
+import useSetting from "~settings/hook";
+import { formatFiatBalance } from "~tokens/currency";
+import { fetchWalletBalances } from "~utils/balances";
+import { formatAddress, truncateMiddle } from "~utils/format";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import { ExtensionStorage, useStorage } from "~utils/storage";
+import type { StoredWallet } from "~wallets";
+import type { HardwareApi } from "~wallets/hardware";
+import { useLocation } from "~wallets/router/router.utils";
 
 export default function WalletSwitcher({ open, close }: Props) {
   const theme = useTheme();
@@ -56,6 +55,8 @@ export default function WalletSwitcher({ open, close }: Props) {
   // load wallet datas
   const [wallets, setWallets] = useState<DisplayedWallet[]>([]);
 
+  const { data: profiles } = useNameServiceProfiles(wallets.map((val) => val.address));
+
   const [walletBalances, setWalletBalances] = useState<Record<string, string>>({});
 
   const activeWallet = useMemo(
@@ -81,17 +82,13 @@ export default function WalletSwitcher({ open, close }: Props) {
     setUpdateAvatars(true);
   }, [storedWallets]);
 
-  // load ANS data for wallet
-  const [loadedAns, setLoadedAns] = useState(true);
-
   // update avatars flag
   const [updateAvatars, setUpdateAvatars] = useState(false);
 
   useAsyncEffect(async () => {
-    if (wallets.length === 0 || !updateAvatars) return;
+    if (wallets.length === 0 || !updateAvatars || !profiles) return;
 
     // get ans profiles
-    const profiles = await getNameServiceProfiles(wallets.map((val) => val.address));
     const gateway = await findGateway({ startBlock: 0 });
 
     // update wallets state
@@ -108,9 +105,8 @@ export default function WalletSwitcher({ open, close }: Props) {
       }),
     );
 
-    setLoadedAns(true);
     setUpdateAvatars(false);
-  }, [wallets.length, updateAvatars]);
+  }, [profiles, wallets.length, updateAvatars]);
 
   useEffect(() => {
     const updateBalances = async () => {
@@ -224,7 +220,7 @@ export default function WalletSwitcher({ open, close }: Props) {
                   setActiveAddress(wallet.address);
                   setToast({
                     type: "success",
-                    content: browser.i18n.getMessage("switchedToWallet", [wallet.name]),
+                    content: browser.i18n.getMessage("switchedToWallet", [truncateMiddle(wallet.name, 28)]),
                     duration: 1100,
                   });
                   close();

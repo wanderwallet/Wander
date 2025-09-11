@@ -17,6 +17,7 @@ export enum LOG_GROUP {
   TRANSACTIONS = "TRANSACTIONS",
   EARN = "EARN",
   SWAP = "SWAP",
+  ARNS = "ARNS",
 }
 
 const LOG_GROUPS_ENABLED: Record<LOG_GROUP, boolean> = {
@@ -38,6 +39,7 @@ const LOG_GROUPS_ENABLED: Record<LOG_GROUP, boolean> = {
   [LOG_GROUP.TRANSACTIONS]: false,
   [LOG_GROUP.EARN]: false,
   [LOG_GROUP.SWAP]: process.env.NODE_ENV === "development",
+  [LOG_GROUP.ARNS]: process.env.NODE_ENV === "development",
 };
 
 function getColor() {

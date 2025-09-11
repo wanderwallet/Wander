@@ -1,7 +1,7 @@
 import Arweave from "arweave";
 import type { Alarms } from "webextension-polyfill";
 import { getAoTokens, getAoTokensCache, getAoTokensAutoImportRestrictedIds } from "~tokens";
-import { getTokenInfo } from "~tokens/aoTokens/ao";
+import { fetchTokenByProcessId } from "~tokens/aoTokens/ao";
 import {
   AO_TOKENS,
   AO_TOKENS_AUTO_IMPORT_RESTRICTED_IDS,
@@ -66,7 +66,7 @@ export async function handleAoTokensImportAlarm(alarm: Alarms.Alarm) {
       .filter((processId) => !aoTokensCacheIds.has(processId))
       .map((processId) =>
         withRetry(async () => {
-          const token = await timeoutPromise(getTokenInfo(processId), 3000);
+          const token = await timeoutPromise(fetchTokenByProcessId(processId), 3000);
           return { ...token, processId };
         }, 2),
       );
@@ -77,7 +77,9 @@ export async function handleAoTokensImportAlarm(alarm: Alarms.Alarm) {
     results.forEach((result) => {
       if (result.status === "fulfilled") {
         const token = result.value;
-        if (token.Ticker) {
+        // NOTE: Token with ticker ANT is not a valid token, so we need to exclude it
+        // TODO: Update this once we know we have a valid token with ticker ANT
+        if (token.Ticker && token.Ticker !== "ANT") {
           tokens.push(token);
         } else if (!removedTokenIds.includes(token.processId)) {
           tokensToRestrict.push(token);

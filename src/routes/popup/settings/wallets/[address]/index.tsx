@@ -1,18 +1,5 @@
 import { Button, Input, ListItem, Section, Text, Tooltip, useInput, useToasts } from "@arconnect/components-rebrand";
 import { CopyIcon } from "@iconicicons/react";
-import { removeWallet, type StoredWallet } from "~wallets";
-import { useEffect, useMemo, useState } from "react";
-import { useStorage } from "~utils/storage";
-import { ExtensionStorage } from "~utils/storage";
-import keystoneLogo from "url:/assets/hardware/keystone.png";
-import browser from "webextension-polyfill";
-import styled, { useTheme } from "styled-components";
-import { formatAddress, truncateMiddle } from "~utils/format";
-import HeadV2 from "~components/popup/HeadV2";
-import type { CommonRouteProps } from "~wallets/router/router.types";
-import { useLocation } from "~wallets/router/router.utils";
-import { LoadingView } from "~components/page/common/loading/loading.view";
-import { CopyToClipboard } from "~components/CopyToClipboard";
 import {
   AlertCircle,
   ArrowUpRight,
@@ -23,11 +10,30 @@ import {
   QrCode02,
   Share03,
 } from "@untitled-ui/icons-react";
+import { useEffect, useMemo, useState } from "react";
+import styled, { useTheme } from "styled-components";
+import keystoneLogo from "url:/assets/hardware/keystone.png";
+import browser from "webextension-polyfill";
+import { CopyToClipboard } from "~components/CopyToClipboard";
+import { ArioIcon } from "~components/embed";
 import { HorizontalLine } from "~components/HorizontalLine";
-import SliderMenu from "~components/SliderMenu";
-import { getNameServiceProfile } from "~lib/nameservice";
+import { LoadingView } from "~components/page/common/loading/loading.view";
+import HeadV2 from "~components/popup/HeadV2";
 import { BackupSeedphraseWarning } from "~components/popup/settings/BackupSeedphraseWarning";
-import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import { TierGatedTag } from "~components/popup/tier/TierGatedTag";
+import SliderMenu from "~components/SliderMenu";
+import { useIsArNSPurchaseGated } from "~lib/arns";
+import { useNameServiceProfile } from "~lib/nameservice";
+import { decodeDomainToASCII } from "~routes/popup/arns/utils";
+import { SwapGatingPopup } from "~routes/popup/swap/components/SwapGatingPopup";
+import { EventType, trackEvent } from "~utils/analytics";
+import { formatAddress, truncateMiddle } from "~utils/format";
+import { ExtensionStorage, useStorage } from "~utils/storage";
+import { removeWallet, type StoredWallet } from "~wallets";
+import { useActiveAddress } from "~wallets/hooks";
+import { PopupPaths } from "~wallets/router/popup/popup.routes";
+import type { CommonRouteProps } from "~wallets/router/router.types";
+import { useLocation } from "~wallets/router/router.utils";
 
 export interface WalletViewParams {
   address: string;
@@ -37,12 +43,18 @@ export type WalletViewProps = CommonRouteProps<WalletViewParams>;
 
 export function WalletView({ params: { address } }: WalletViewProps) {
   const { navigate } = useLocation();
+  const isArnGated = useIsArNSPurchaseGated();
+  const activeAddress = useActiveAddress();
 
-  const [isRecoveryModalOpen, setIsRecoveryModalOpen] = useState(false);
   const [editName, setEditName] = useState(false);
   const [open, setOpen] = useState(false);
+  const [isGatingOpen, setIsGatingOpen] = useState(false);
 
   const theme = useTheme();
+
+  const effectiveAddress = useMemo(() => (address === "active" ? activeAddress : address), [address, activeAddress]);
+
+  const { data: nameServiceProfile } = useNameServiceProfile(effectiveAddress);
 
   // wallets
   const [wallets, setWallets] = useStorage<StoredWallet[]>(
@@ -54,11 +66,11 @@ export function WalletView({ params: { address } }: WalletViewProps) {
   );
 
   // this wallet
-  const wallet = useMemo(() => wallets?.find((w) => w.address === address), [wallets, address]);
+  const wallet = useMemo(() => wallets?.find((w) => w.address === effectiveAddress), [wallets, effectiveAddress]);
 
   const [isSeedphraseBackedUp] = useStorage(
     {
-      key: `recovery_phrase_backedup_${wallet?.address}`,
+      key: `recovery_phrase_backedup_${effectiveAddress}`,
       instance: ExtensionStorage,
     },
     true,
@@ -67,27 +79,17 @@ export function WalletView({ params: { address } }: WalletViewProps) {
   // toasts
   const { setToast } = useToasts();
 
-  // name service name
-  const [nameServiceName, setNameServiceName] = useState<string>();
-
-  useAsyncEffect(async () => {
-    if (!wallet) return;
-
-    const arnsProfile = await getNameServiceProfile(wallet.address);
-    setNameServiceName(arnsProfile?.name);
-  }, [wallet?.address]);
-
   // wallet name input
   const walletNameInput = useInput();
 
   useEffect(() => {
     if (!wallet) return;
-    walletNameInput.setState(nameServiceName || wallet.nickname);
-  }, [wallet, nameServiceName]);
+    walletNameInput.setState(nameServiceProfile?.name || wallet.nickname);
+  }, [wallet, nameServiceProfile]);
 
   // update nickname function
   async function updateNickname() {
-    if (!!nameServiceName) return;
+    if (!!nameServiceProfile) return;
 
     // check name
     const newName = walletNameInput.state;
@@ -104,7 +106,7 @@ export function WalletView({ params: { address } }: WalletViewProps) {
     try {
       await setWallets((val) =>
         val.map((wallet) => {
-          if (wallet.address !== address) {
+          if (wallet.address !== effectiveAddress) {
             return wallet;
           }
 
@@ -145,6 +147,8 @@ export function WalletView({ params: { address } }: WalletViewProps) {
             display: "flex",
             flexDirection: "column",
             gap: "1.5rem",
+            overflowY: "auto",
+            maxHeight: "calc(100vh - 160px)",
           }}>
           {!editName ? (
             <div
@@ -154,14 +158,14 @@ export function WalletView({ params: { address } }: WalletViewProps) {
                 gap: "1rem",
               }}>
               <WalletName>
-                {nameServiceName || wallet.nickname}
+                {decodeDomainToASCII(nameServiceProfile?.name || wallet.nickname)}
                 {wallet.type === "hardware" && (
                   <Tooltip content={wallet.api.slice(0, 1).toUpperCase() + wallet.api.slice(1)} position="bottom">
                     <HardwareWalletIcon src={wallet.api === "keystone" ? keystoneLogo : undefined} />
                   </Tooltip>
                 )}
               </WalletName>
-              {nameServiceName ? (
+              {nameServiceProfile ? (
                 <Tooltip position="bottomEnd" content={browser.i18n.getMessage("cannot_edit_with_name_service")}>
                   <Edit02 style={{ cursor: "not-allowed" }} height={20} width={20} />
                 </Tooltip>
@@ -177,7 +181,7 @@ export function WalletView({ params: { address } }: WalletViewProps) {
                 type="text"
                 placeholder={browser.i18n.getMessage("edit_wallet_name")}
                 fullWidth
-                disabled={!!nameServiceName}
+                disabled={!!nameServiceProfile}
               />
               <Button
                 style={{ width: "100px" }}
@@ -187,7 +191,7 @@ export function WalletView({ params: { address } }: WalletViewProps) {
                   }
                   setEditName(false);
                 }}
-                disabled={!!nameServiceName}>
+                disabled={!!nameServiceProfile}>
                 {browser.i18n.getMessage(walletNameInput.state === wallet.nickname ? "cancel" : "save")}
               </Button>
             </div>
@@ -199,6 +203,30 @@ export function WalletView({ params: { address } }: WalletViewProps) {
             text={wallet.address}
             iconSize={24}
           />
+
+          <div style={{ position: "relative" }}>
+            <ListItem
+              disabled={isArnGated}
+              title={browser.i18n.getMessage("manage_arns")}
+              style={{ flexShrink: 0 }}
+              titleStyle={{ fontSize: 18, fontWeight: 500 }}
+              icon={<ArioIcon width="24px" height="24px" />}
+              hideSquircle
+              showArrow={!isArnGated}
+              active={isArnGated}
+              onClick={() => {
+                if (!isArnGated) {
+                  trackEvent(EventType.ARNS_MANAGE_BUTTON, {});
+                  navigate(PopupPaths.ArNSManage);
+                }
+              }}
+            />
+            {isArnGated && (
+              <DisabledTag>
+                <TierGatedTag onClick={() => setIsGatingOpen((prev) => !prev)} />
+              </DisabledTag>
+            )}
+          </div>
           <HorizontalLine />
           {!isSeedphraseBackedUp && <BackupSeedphraseWarning />}
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
@@ -241,9 +269,10 @@ export function WalletView({ params: { address } }: WalletViewProps) {
                 icon={<Icon color="primary" as={QrCode02} />}
                 hideSquircle
                 showArrow
-                onClick={() => navigate(`/quick-settings/wallets/${address}/qr`)}
+                onClick={() => navigate(`/quick-settings/wallets/${wallet.address}/qr`)}
               />
               <ListItem
+                style={{ position: "relative" }}
                 title={browser.i18n.getMessage("export_keyfile")}
                 titleStyle={{ fontSize: 18, fontWeight: 500 }}
                 icon={<Icon color="primary" as={Download01} />}
@@ -252,7 +281,7 @@ export function WalletView({ params: { address } }: WalletViewProps) {
                     style={{
                       cursor: "pointer",
                       position: "absolute",
-                      right: "44%",
+                      right: "43%",
                       marginTop: "5px",
                     }}>
                     <Tooltip
@@ -273,7 +302,7 @@ export function WalletView({ params: { address } }: WalletViewProps) {
                 }
                 hideSquircle
                 showArrow
-                onClick={() => navigate(`/quick-settings/wallets/${address}/export`)}
+                onClick={() => navigate(`/quick-settings/wallets/${wallet.address}/export`)}
               />
             </div>
           </div>
@@ -326,7 +355,7 @@ export function WalletView({ params: { address } }: WalletViewProps) {
                 fullWidth
                 onClick={async () => {
                   try {
-                    await removeWallet(address);
+                    await removeWallet(wallet.address);
                     setToast({
                       type: "success",
                       content: browser.i18n.getMessage("removed_wallet_notification"),
@@ -347,6 +376,7 @@ export function WalletView({ params: { address } }: WalletViewProps) {
             </div>
           </Section>
         </SliderMenu>
+        <SwapGatingPopup isOpen={isGatingOpen} setOpen={setIsGatingOpen} />
       </Wrapper>
     </>
   );
@@ -354,11 +384,13 @@ export function WalletView({ params: { address } }: WalletViewProps) {
 
 const Wrapper = styled(Section).attrs({
   showPaddingVertical: false,
+  showPaddingHorizontal: false,
 })`
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   height: calc(100vh - 100px);
+  padding: 0 24px;
 `;
 
 const WalletName = styled(Text).attrs({
@@ -369,6 +401,7 @@ const WalletName = styled(Text).attrs({
   display: flex;
   align-items: center;
   gap: 0.45rem;
+  word-break: break-all;
 `;
 
 const HardwareWalletIcon = styled.img.attrs({
@@ -419,4 +452,11 @@ const Icon = styled(Cube01)<{ color?: "primary" | "secondary" | "tertiary" }>`
   height: 24px;
   width: 24px;
   color: ${({ theme, color }) => (color ? theme[`${color}Text`] : theme.primaryText)};
+`;
+
+const DisabledTag = styled.div`
+  position: absolute;
+  top: -8px;
+  right: 0px;
+  z-index: 2;
 `;
