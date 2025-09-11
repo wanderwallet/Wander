@@ -133,7 +133,11 @@ export const ArNSManageView = () => {
             style={{ cursor: "pointer", width: "100%" }}>
             <Flex direction="row" gap="0.5rem" padding="0.5rem">
               <PlusIcon width="24px" height="24px" />
-              <Text>{browser.i18n.getMessage("buy_another_domain")}</Text>
+              <Text>
+                {sortedArnsRecords?.length > 0
+                  ? browser.i18n.getMessage("buy_another_domain")
+                  : browser.i18n.getMessage("buy_a_domain")}
+              </Text>
             </Flex>
           </button>
         </ManageCard>

@@ -3737,7 +3737,7 @@
     "description": "Announcement 8 description"
   },
   "announcement_8_body": {
-    "message": "Wander has partnered with [Ar.io](https://ar.io) to enable users to purchase their ArNS name directly in Wander!",
+    "message": "Wander has partnered with [Ar.io](https://ar.io) to enable users to purchase their ArNS name directly in Wander!.<br/><br/> [Get ArNS](/quick-settings/wallets/active){button,fullWidth=true}",
     "description": "Announcement 8 body"
   },
   "swipe_to_learn_more": {
@@ -4477,6 +4477,10 @@
   "buy_another_domain": {
     "message": "Buy another domain",
     "description": "Buy another domain text"
+  },
+  "buy_a_domain": {
+    "message": "Buy a domain",
+    "description": "Buy a domain text"
   },
   "advanced_management": {
     "message": "Advanced Management",
