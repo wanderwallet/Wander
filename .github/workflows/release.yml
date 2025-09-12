@@ -16,6 +16,13 @@ jobs:
         with:
           node-version: 20
           cache: "yarn"
+      - name: Cache yarn modules
+        uses: actions/cache@v3
+        with:
+          path: "**/node_modules"
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
       - run: yarn install --frozen-lockfile
       - run: NODE_OPTIONS="--max-old-space-size=8192" yarn build:chrome
       - run: npx semantic-release
