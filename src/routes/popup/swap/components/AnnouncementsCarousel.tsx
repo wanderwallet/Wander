@@ -6,13 +6,16 @@ import { Carousel } from "~components/Carousel";
 import { useTheme } from "styled-components";
 import { ArrowNarrowLeft, ArrowNarrowRight, CurrencyDollarCircle } from "@untitled-ui/icons-react";
 import { defaultStars, AnimatedStarContainer } from "~components/common/AnimatedStarContainer";
-import { useAsyncEffect } from "~utils/react/useAsyncEffect";
-import { ExtensionStorage } from "~utils/storage";
+import { ExtensionStorage, useStorage } from "~utils/storage";
 import { useLocation } from "~wallets/router/router.utils";
 import type { WanderRoutePath } from "~wallets/router/router.types";
 import { SwapIcon } from "./SwapIcon";
 import { AgentIcon } from "./AgentIcon";
 import { useIsSwapGated } from "../utils/swap.hooks";
+import { ArioIcon } from "~components/embed";
+import { useHasArnsNames, useIsArNSPurchaseGated } from "~lib/arns";
+import { useActiveAddress } from "~wallets/hooks";
+import { PopupPaths } from "~wallets/router/popup/popup.routes";
 
 const stars = defaultStars.toSpliced(1, 1);
 
@@ -25,9 +28,7 @@ interface AgentSlide {
   disabled?: boolean;
 }
 
-const renderSlide = (slide: AgentSlide, onClose: () => void) => {
-  const { navigate } = useLocation();
-
+const renderSlide = (slide: AgentSlide, onClose: () => void, navigate: (href: WanderRoutePath) => void) => {
   return (
     <AnimatedStarContainer
       stars={stars}
@@ -63,33 +64,56 @@ const swapData = {
   href: "/swap",
 };
 
+const arnsData = {
+  icon: <ArioIcon style={{ height: 24, width: 24 }} />,
+  title: `${browser.i18n.getMessage("get_your_arns_name")}!`,
+  href: "/arns",
+};
+
 export function AnnouncementsCarousel() {
   const theme = useTheme();
-  const [isOpen, setOpen] = useState(false);
+  const [isOpen, setOpen] = useState(true);
+  const activeAddress = useActiveAddress();
+  const hasArnsNames = useHasArnsNames();
   const isSwapGated = useIsSwapGated();
+  const isArNSPurchaseGated = useIsArNSPurchaseGated();
+  const { navigate } = useLocation();
+  const [isArnsPurchaseStartShown] = useStorage<boolean>({
+    key: "arns_purchase_start_shown",
+    instance: ExtensionStorage,
+  });
 
   const handleOnClose = () => {
     ExtensionStorage.set(ANNOUNCEMENTS_CAROUSEL_SHOWN, true);
     setOpen(false);
   };
 
-  useAsyncEffect(async () => {
-    const storedValue = await ExtensionStorage.get<boolean>(ANNOUNCEMENTS_CAROUSEL_SHOWN);
-    setOpen(!(storedValue ?? false));
-  }, []);
-
   const carouselData = useMemo(() => {
     const swapUpdatedData = { ...swapData, disabled: isSwapGated };
 
-    return [swapUpdatedData, agentData, earnData];
-  }, [isSwapGated]);
+    const items = [swapUpdatedData, agentData, earnData];
 
-  if (!isOpen) return null;
+    if (!hasArnsNames) {
+      const arnsHref = isArNSPurchaseGated
+        ? `/quick-settings/wallets/${activeAddress}`
+        : isArnsPurchaseStartShown
+          ? PopupPaths.ArNSPurchaseNameSearch
+          : PopupPaths.ArNSPurchaseStart;
+
+      const arnsUpdatedData = { ...arnsData, href: arnsHref };
+
+      items.push(arnsUpdatedData);
+    }
+
+    return items;
+  }, [isSwapGated, isArNSPurchaseGated, activeAddress, hasArnsNames, isArnsPurchaseStartShown]);
+
+  if (!isOpen || !carouselData?.length) return null;
 
   return (
     <Carousel
       slides={carouselData}
-      renderSlide={(slide) => renderSlide(slide as AgentSlide, handleOnClose)}
+      renderSlide={(slide) => renderSlide(slide as AgentSlide, handleOnClose, navigate)}
       showDots={true}
       showNavigationArrows={true}
       slideNavigationGap={8}

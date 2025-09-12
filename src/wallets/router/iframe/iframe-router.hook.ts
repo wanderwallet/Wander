@@ -78,6 +78,7 @@ export function useEmbeddedOverride(location?: RoutePath) {
       location,
       [
         EmbeddedPaths.AuthAddWallet,
+        EmbeddedPaths.AuthImportWallet,
         EmbeddedPaths.AuthImportSeedPhrase,
         EmbeddedPaths.AuthAddWithQRCode,
         EmbeddedPaths.AuthQRCodeScanner,
@@ -106,6 +107,7 @@ export function useEmbeddedOverride(location?: RoutePath) {
 
         // Add wallet:
         EmbeddedPaths.AuthAddWallet,
+        EmbeddedPaths.AuthImportWallet,
         EmbeddedPaths.AuthImportSeedPhrase,
         EmbeddedPaths.AuthAddWithQRCode,
         EmbeddedPaths.AuthQRCodeScanner,

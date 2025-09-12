@@ -16,7 +16,7 @@ import {
 import React, { useCallback, useRef, useState } from "react";
 import { getSupabaseClient } from "~utils/embedded/embedded.utils";
 import { useLocation, useSearchParams } from "~wallets/router/router.utils";
-import { isValidEmail } from "~utils/email";
+import { isOTPBlocked, isValidEmail } from "~utils/email";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 import { sleep } from "~utils/promises/sleep";
@@ -148,6 +148,18 @@ export function AuthEmbeddedView() {
 
         if (!email || !isValidEmail(email)) {
           toast.error("Please enter a valid email address");
+          return;
+        }
+
+        if (isOTPBlocked(email)) {
+          const blockedDomains = ["@icloud.com", "@me.com", "@mac.com"].join(", ");
+          const blockedMessage = (
+            <div style={{ display: "flex", flexDirection: "column", gap: ".5rem" }}>
+              <span>Email domains {blockedDomains} are not supported.</span>
+              <span>Please try a different email or sign in method.</span>
+            </div>
+          );
+          toast.error(blockedMessage);
           return;
         }
 

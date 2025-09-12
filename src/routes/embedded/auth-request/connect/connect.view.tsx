@@ -22,7 +22,7 @@ export function EmbeddedConnectAuthRequestView() {
 
   const [avatar, setAvatar] = useState("");
 
-  const nameServiceProfile = useNameServiceProfile(activeWallet?.address);
+  const { data: nameServiceProfile } = useNameServiceProfile(activeWallet?.address);
   const nsGateway = useGateway(FULL_HISTORY);
 
   const { appInfo = {}, url = "" } = authRequest;

@@ -1,10 +1,9 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useCallback, useEffect, useState } from "react";
-import { Button, KeyIcon, SeedIcon, WalletIcon } from "~components/embed";
+import { Button, SeedIcon, WalletIcon } from "~components/embed";
 import type { WalletSourceType } from "embed-api";
 import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
 import { signOut } from "~utils/embedded/embedded.utils";
-import { QrCode02 } from "@untitled-ui/icons-react";
 import { navigate } from "wouter/use-hash-location";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 import { toast } from "react-toastify";
@@ -43,7 +42,7 @@ export function AuthAddWalletEmbeddedView() {
   return (
     <OnboardingCard
       headerText={authStatus === "noWallets" ? "Add a Wallet" : "Restore Wallet"}
-      subtitle="Add a wallet to your account to hold your funds. Create or add an existing wallet to continue."
+      subtitle="Create or add an existing wallet that will hold your funds."
       onBackButtonClick={() =>
         authStatus === "noWallets" ? signOut(false) : navigate(EmbeddedPaths.AuthRestoreShares)
       }
@@ -61,27 +60,9 @@ export function AuthAddWalletEmbeddedView() {
         variant="outlined"
         isFullWidth
         icon={<SeedIcon fontSize={24} />}
-        href="/auth/import-seedphrase"
+        href="/auth/import-wallet"
         isDisabled={areButtonsDisabled}>
-        Enter Seed Phrase
-      </Button>
-
-      <Button
-        variant="outlined"
-        isFullWidth
-        icon={<KeyIcon fontSize={24} />}
-        href="/auth/import-keyfile"
-        isDisabled={areButtonsDisabled}>
-        Import Keyfile
-      </Button>
-
-      <Button
-        variant="outlined"
-        isFullWidth
-        icon={<QrCode02 fontSize={24} color="currentColor" />}
-        href="/auth/import-qrcode"
-        isDisabled={areButtonsDisabled}>
-        Scan QR Code
+        Import wallet
       </Button>
 
       {/* {authProviderType === "PASSKEYS" ? (

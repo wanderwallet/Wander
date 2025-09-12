@@ -7,11 +7,11 @@ import { ExtensionStorage } from "~utils/storage";
 import { findGateway } from "~gateways/wayfinder";
 import { retryWithDelay } from "~utils/promises/retry";
 import type { HardwareApi } from "./hardware";
-import type { LocalWallet, StoredWallet } from "~wallets";
+import type { StoredWallet } from "~wallets";
 import Arweave from "arweave";
 import { isPasswordFresh } from "./auth";
 import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
-import { getNameServiceProfiles } from "~lib/nameservice";
+import { useNameServiceProfiles } from "~lib/nameservice";
 import type GQLResultInterface from "ar-gql/dist/faces";
 import { printTxWorkingGateways, txHistoryGateways } from "~gateways/gateway";
 import {
@@ -44,6 +44,8 @@ import { AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 export function useWalletsDetails(wallets: JWKInterface[]) {
   const [walletDetails, setWalletDetails] = useState<WalletInterface[]>([]);
 
+  const { data: profiles } = useNameServiceProfiles(walletDetails.map((w) => w.address));
+
   useAsyncEffect(async () => {
     const arweave = new Arweave(defaultGateway);
     const details: WalletInterface[] = [];
@@ -62,8 +64,6 @@ export function useWalletsDetails(wallets: JWKInterface[]) {
 
     // load ans labels
     try {
-      const profiles = await getNameServiceProfiles(details.map((w) => w.address));
-
       for (const wallet of details) {
         const profile = profiles.find((p) => p.address === wallet.address);
 
@@ -74,7 +74,7 @@ export function useWalletsDetails(wallets: JWKInterface[]) {
 
     // set details
     setWalletDetails(details);
-  }, [wallets]);
+  }, [wallets, profiles]);
 
   return walletDetails;
 }

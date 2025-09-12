@@ -10,10 +10,10 @@
     "@jridgewell/gen-mapping" "^0.3.5"
     "@jridgewell/trace-mapping" "^0.3.24"
 
-"@ar.io/sdk@^3.13.0":
-  version "3.14.0"
-  resolved "https://registry.yarnpkg.com/@ar.io/sdk/-/sdk-3.14.0.tgz#aadfd03ca157d017265df39b12c8f57633303ee5"
-  integrity sha512-1moIb3CZzS7qu16K7CM8nc4vzuG4AHzXLVo711P+s5mSioZ235wshiXDJscQ2kZku4m/XpLSo1eEYv300AgAEA==
+"@ar.io/sdk@^3.18.0":
+  version "3.18.3"
+  resolved "https://registry.npmjs.org/@ar.io/sdk/-/sdk-3.18.3.tgz#5a19b386db0a685aa3b07ef43e06a44d714e40d4"
+  integrity sha512-RA2wXmSbKkn5uRgTwpA0j+FrkEWs7b21ZPK1AmFm24qKFCtkaXURC5V5xtBsNveh+0vh/O0xxNA2WTsmTO/3yA==
   dependencies:
     "@dha-team/arbundles" "^1.0.1"
     "@permaweb/aoconnect" "0.0.68"
@@ -4301,15 +4301,22 @@
   resolved "https://registry.yarnpkg.com/@tanstack/query-core/-/query-core-5.75.0.tgz#6a29620a58cf91cac5f804dde44bb8904df071d7"
   integrity sha512-rk8KQuCdhoRkzjRVF3QxLgAfFUyS0k7+GCQjlGEpEGco+qazJ0eMH6aO1DjDjibH7/ik383nnztua3BG+lOnwg==
 
-"@tanstack/query-core@5.83.0":
-  version "5.83.0"
-  resolved "https://registry.yarnpkg.com/@tanstack/query-core/-/query-core-5.83.0.tgz#ac3bf337007bb7ea97b1fd2e7c3ceb4240f36dbc"
-  integrity sha512-0M8dA+amXUkyz5cVUm/B+zSk3xkQAcuXuz5/Q/LveT4ots2rBpPTZOzd7yJa2Utsf8D2Upl5KyjhHRY+9lB/XA==
+"@tanstack/query-core@5.87.1":
+  version "5.87.1"
+  resolved "https://registry.npmjs.org/@tanstack/query-core/-/query-core-5.87.1.tgz#9b8b9331714749d505a7ceb0ae52b6ad6ae8a461"
+  integrity sha512-HOFHVvhOCprrWvtccSzc7+RNqpnLlZ5R6lTmngb8aq7b4rc2/jDT0w+vLdQ4lD9bNtQ+/A4GsFXy030Gk4ollA==
 
 "@tanstack/query-devtools@5.81.2":
   version "5.81.2"
   resolved "https://registry.yarnpkg.com/@tanstack/query-devtools/-/query-devtools-5.81.2.tgz#9ac478de2f441881e299d3280063d34c53828234"
   integrity sha512-jCeJcDCwKfoyyBXjXe9+Lo8aTkavygHHsUHAlxQKKaDeyT0qyQNLKl7+UyqYH2dDF6UN/14873IPBHchcsU+Zg==
+
+"@tanstack/query-persist-client-core@5.87.1":
+  version "5.87.1"
+  resolved "https://registry.npmjs.org/@tanstack/query-persist-client-core/-/query-persist-client-core-5.87.1.tgz#97b987d854e3e1ceeb1c8d2994ca887799baf9a0"
+  integrity sha512-NL3YiHNxyz49N1+97ppKxgMtk8zITxa15Edu8a07w7XLgT/xH1lz5wzElJCGeNbe84rvdbp0/4XKwSiS9rAL9Q==
+  dependencies:
+    "@tanstack/query-core" "5.87.1"
 
 "@tanstack/react-query-devtools@^5.75.2":
   version "5.83.0"
@@ -4318,6 +4325,13 @@
   dependencies:
     "@tanstack/query-devtools" "5.81.2"
 
+"@tanstack/react-query-persist-client@^5.84.2":
+  version "5.87.1"
+  resolved "https://registry.npmjs.org/@tanstack/react-query-persist-client/-/react-query-persist-client-5.87.1.tgz#206dccb3a684f2d0fe1d1c2a5996d935e96a9ffc"
+  integrity sha512-S3nJD31YRdv0q0n/IYY9pdeIPkEx319ygHSpDieeTbTFuYxn2b6LMUCNZhPw96ZYi182uwH53Z3KGcTGnWjzYQ==
+  dependencies:
+    "@tanstack/query-persist-client-core" "5.87.1"
+
 "@tanstack/react-query@5.75.2":
   version "5.75.2"
   resolved "https://registry.yarnpkg.com/@tanstack/react-query/-/react-query-5.75.2.tgz#6397277c90aa4d4203bf1b53738397bc51c00d7c"
@@ -4325,12 +4339,12 @@
   dependencies:
     "@tanstack/query-core" "5.75.0"
 
-"@tanstack/react-query@^5.64.1":
-  version "5.83.0"
-  resolved "https://registry.yarnpkg.com/@tanstack/react-query/-/react-query-5.83.0.tgz#e72cacdb03d2e6a7e4f82f5b2fc228118941d499"
-  integrity sha512-/XGYhZ3foc5H0VM2jLSD/NyBRIOK4q9kfeml4+0x2DlL6xVuAcVEW+hTlTapAmejObg0i3eNqhkr2dT+eciwoQ==
+"@tanstack/react-query@^5.84.1":
+  version "5.87.1"
+  resolved "https://registry.npmjs.org/@tanstack/react-query/-/react-query-5.87.1.tgz#074bd2238173f49ef8804a9b6d94f63374828a78"
+  integrity sha512-YKauf8jfMowgAqcxj96AHs+Ux3m3bWT1oSVKamaRPXSnW2HqSznnTCEkAVqctF1e/W9R/mPcyzzINIgpOH94qg==
   dependencies:
-    "@tanstack/query-core" "5.83.0"
+    "@tanstack/query-core" "5.87.1"
 
 "@trpc/client@^11.1.2":
   version "11.4.3"
@@ -10711,6 +10725,11 @@ public-encrypt@^4.0.3:
     parse-asn1 "^5.0.0"
     randombytes "^2.0.1"
     safe-buffer "^5.1.2"
+
+puny-coder@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.npmjs.org/puny-coder/-/puny-coder-1.0.1.tgz#f66084a3ced42dd11c1a6b3b55c0b7a5808299e2"
+  integrity sha512-FgldP5k7bxkFrJ67BoE88TGnd+Qct7+khD2Sbint76V+G+E4ht8XuAUkm1gtxbCeR/l9mT7COSLi7jAKo/fq9g==
 
 punycode@^1.4.1:
   version "1.4.1"

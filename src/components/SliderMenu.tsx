@@ -1,9 +1,9 @@
-import { CloseIcon } from "@iconicicons/react";
 import { AnimatePresence, motion, type Variants } from "framer-motion";
 import type React from "react";
 import { useRef } from "react";
 import { createPortal } from "react-dom";
 import styled from "styled-components";
+import { ExitButton } from "./ExitButton";
 
 interface SliderMenuProps {
   title?: string;
@@ -89,27 +89,6 @@ export default function SliderMenu({
 
   return createPortal(<AnimatePresence>{contentElement}</AnimatePresence>, document.body);
 }
-
-const ExitButton = styled(CloseIcon)<{ color?: string }>`
-  cursor: pointer;
-  color: ${({ theme, color }) => color || `${theme.displayTheme === "light" ? "#000000" : "#FFFFFF"}`};
-  transition: transform 0.2s ease;
-
-  &:hover {
-    transform: scale(1.15);
-  }
-
-  & path {
-    stroke-width: 2;
-  }
-
-  /* Prevent rendering artifacts on hover */
-  &:hover {
-    transform-origin: center;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-  }
-`;
 
 const AbsoluteExitButton = styled(ExitButton)`
   z-index: 1;

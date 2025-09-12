@@ -8,7 +8,7 @@ export function AuthImportQrCodeEmbeddedView() {
     <QrCodeScanEmbeddedView
       headerText={authStatus === "noWallets" ? "Import Wallet" : "Restore Wallet"}
       subtitle="Scan your wallet QR code to import your account."
-      backButtonClickHref="/auth/add-wallet"
+      backButtonClickHref="/auth/import-wallet"
       type="importWallet"
     />
   );

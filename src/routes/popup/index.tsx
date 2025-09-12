@@ -19,6 +19,7 @@ import CreateWanderAgentCTA from "./agents/components/CreateWanderAgentCTA";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { scheduleSwapExecution } from "~utils/agents/swap";
 import { WandAnnouncementPopup } from "~components/popup/home/WandAnnouncementPopup";
+import ArNSBanner from "~components/popup/home/ArNSBanner";
 import { AnnouncementsCarousel } from "./swap/components/AnnouncementsCarousel";
 import { SwapAnnouncementPopup } from "./swap/components/SwapAnnouncementPopup";
 import { checkForFinishedSwapToShow } from "./swap/utils/swap.progress";
@@ -32,9 +33,15 @@ export function HomeView() {
   const [isOpen, setOpen] = useState(false);
   const [isWandAnnouncementOpen, setWandAnnouncementOpen] = useState(false);
   const [isSwapAnnouncementOpen, setSwapAnnouncementOpen] = useState(false);
+  const [isAnnouncementsCarouselOpen, setAnnouncementsCarouselOpen] = useState(false);
 
   const [announcement, _] = useStorage<boolean>({
     key: "show_announcement",
+    instance: ExtensionStorage,
+  });
+
+  const [activeAddress] = useStorage<string>({
+    key: "active_address",
     instance: ExtensionStorage,
   });
 
@@ -108,12 +115,14 @@ export function HomeView() {
       setLoggedIn(true);
     }
 
-    const [wandAnnouncementShown, swapAnnouncementShown] = await Promise.all([
+    const [wandAnnouncementShown, swapAnnouncementShown, announcementsCarouselShown] = await Promise.all([
       ExtensionStorage.get<boolean>("wander_announcement_shown").then((val) => val ?? false),
       ExtensionStorage.get<boolean>("swap_announcement_shown").then((val) => val ?? false),
+      ExtensionStorage.get<boolean>("announcements_carousel_shown").then((val) => val ?? false),
     ]);
     setWandAnnouncementOpen(!wandAnnouncementShown);
     setSwapAnnouncementOpen(!swapAnnouncementShown);
+    setAnnouncementsCarouselOpen(!announcementsCarouselShown);
 
     // WALLET.TYPE JUST FOR KEYSTONE POPUP
     setOpen(announcement && wallet?.type === "hardware");
@@ -143,13 +152,14 @@ export function HomeView() {
           <KeystoneAnnouncementPopup isOpen={isOpen} setOpen={setOpen} />
           <SwapAnnouncementPopup isOpen={isSwapAnnouncementOpen} setOpen={setSwapAnnouncementOpen} />
           <WandAnnouncementPopup isOpen={isWandAnnouncementOpen} setOpen={setWandAnnouncementOpen} />
+          <ArNSBanner activeAddress={activeAddress} />
         </>
       )}
       <WalletHeader />
       <HomeContent>
         <Balance />
         <WalletActions />
-        <AnnouncementsCarousel />
+        {isAnnouncementsCarouselOpen && <AnnouncementsCarousel />}
         <CreateWanderAgentCTA />
         <Tabs />
       </HomeContent>

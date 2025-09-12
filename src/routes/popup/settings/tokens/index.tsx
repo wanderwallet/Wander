@@ -83,7 +83,11 @@ export function TokensSettingsView() {
       <HeadV2 title={browser.i18n.getMessage("setting_tokens")} back={() => navigate("/quick-settings")} />
       <Wrapper>
         <div>
-          <SearchInput small placeholder={browser.i18n.getMessage("search_tokens")} {...searchInput.bindings} />
+          <SearchInput
+            sizeVariant="small"
+            placeholder={browser.i18n.getMessage("search_tokens")}
+            {...searchInput.bindings}
+          />
 
           <Spacer y={1} />
 

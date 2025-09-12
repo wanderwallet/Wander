@@ -58,7 +58,7 @@ export default function Head({ title, showOptions = true, back: onBack, showBack
     instance: ExtensionStorage,
   });
 
-  const nameServiceProfile = useNameServiceProfile(activeAddress);
+  const { data: nameServiceProfile } = useNameServiceProfile(activeAddress);
 
   // first render for animation
   const [firstRender, setFirstRender] = useState(true);

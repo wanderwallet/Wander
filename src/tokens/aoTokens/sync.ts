@@ -107,8 +107,7 @@ function getCollectiblesQuery() {
       tags: [
         { name: "Data-Protocol", values: ["ao"] },
         { name: "Type", values: ["Process"] },
-        { name: "Implements", values: ["ANS-110"] },
-        { name: "Content-Type" }
+        { name: "Implements", values: ["ANS-110"] }
       ]
       first: 100
     ) {
