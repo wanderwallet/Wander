@@ -96,7 +96,7 @@ export function AuthImportSeedphraseEmbeddedView() {
     <OnboardingCard
       headerText={authStatus === "noWallets" ? "Enter Seedphrase" : "Restore Wallet"}
       subtitle="Would you like to add this wallet to your account?"
-      onBackButtonClick={() => navigate(`/auth/add-wallet`)}
+      onBackButtonClick={() => navigate(`/auth/import-wallet`)}
       isLoading={isViewLoading}>
       <Copyable
         isFullWidth
@@ -120,7 +120,7 @@ export function AuthImportSeedphraseEmbeddedView() {
     <OnboardingCard
       headerText={authStatus === "noWallets" ? "Enter Seedphrase" : "Restore Wallet"}
       subtitle="Enter your seedphrase to add your wallet to your account."
-      onBackButtonClick={() => navigate(`/auth/add-wallet`)}
+      onBackButtonClick={() => navigate(`/auth/import-wallet`)}
       isLoading={isViewLoading}>
       <SeedInput seedPhrase={seedPhrase} handleSubmit={handleImportWallet} handleInputChange={handleInputChange} />
 

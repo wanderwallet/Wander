@@ -3688,6 +3688,18 @@
         "message": "交换功能正式登陆 Wander！🎉<br/><br/>Reserve、Edge 和 Prime 会员今天就可以直接从 Wander 仪表板开始使用全新的交换功能。<br/><br/>Core 和 Select 会员不用等太久！9月15日开放访问。标记您的日历，准备好交换吧！",
         "description": "Announcement 7 body"
     },
+    "announcement_8_title": {
+        "message": "购买您的 ArNS 名称",
+        "description": "Announcement 8 title"
+    },
+    "announcement_8_description": {
+        "message": "Wander 已集成购买 ArNS 名称的功能",
+        "description": "Announcement 8 description"
+    },
+    "announcement_8_body": {
+        "message": "Wander 已与 [Ar.io](https://ar.io) 合作，使用户可以直接在 Wander! 中购买他们的 ArNS 名称。<br/><br/>Reserve、Edge 和 Prime 会员今天就可以开始使用全新的 ArNS 功能。<br/><br/>Core 和 Select 会员也无需等待太久！访问权限将于 9 月 30 日开放。请记下日期，准备好购买您的 ArNS 名称吧！<br/><br/>[获取 ArNS](/quick-settings/wallets/active){button,fullWidth=true}",
+        "description": "Announcement 8 body"
+    },
     "swipe_to_learn_more": {
       "message": "滑动了解更多",
       "description": "Swipe to learn more text"
@@ -4365,5 +4377,221 @@
     "submitting": {
       "message": "提交中",
       "description": "Submitting text"
+    },
+    "get_your_arns_name": {
+      "message": "获取您的 ArNS 名称！",
+      "description": "Get your ArNS Name text"
+    },
+    "manage_arns": {
+      "message": "管理 ArNS",
+      "description": "Manage ArNS text"
+    },
+    "set_primary_name": {
+      "message": "设置主名称",
+      "description": "Set Primary Name text"
+    },
+    "loading_balance": {
+      "message": "加载余额...",
+      "description": "Loading balance text"
+    },
+    "processing_transactions": {
+      "message": "处理交易...",
+      "description": "Processing transactions text"
+    },
+    "cost": {
+      "message": "成本",
+      "description": "Cost text"
+    },
+    "something_went_wrong": {
+      "message": "出了点问题",
+      "description": "Something went wrong text"
+    },
+    "arns_name_purchase_error": {
+      "message": "尝试购买您的 ArNS 名称时出错，请再试一次。",
+      "description": "arns name purchase error text"
+    },
+    "see_transaction_details": {
+      "message": "查看交易详情",
+      "description": "See transaction details text"
+    },
+    "primary_name_set": {
+      "message": "主名称设置！",
+      "description": "Primary name set text"
+    },
+    "your_arns_names": {
+      "message": "您的 ArNS 名称",
+      "description": "Your ArNS Names text"
+    },
+    "unable_to_load_arns_records": {
+      "message": "无法加载 ArNS 记录",
+      "description": "Unable to load ArNS records text"
+    },
+    "leased": {
+      "message": "租用",
+      "description": "Leased text"
+    },
+    "permanent": {
+      "message": "永久",
+      "description": "Permanent text"
+    },
+    "buy_another_domain": {
+      "message": "购买另一个域名",
+      "description": "Buy another domain text"
+    },
+    "buy_a_domain": {
+      "message": "购买一个域名",
+      "description": "Buy a domain text"
+    },
+    "advanced_management": {
+      "message": "高级管理",
+      "description": "Advanced Management text"
+    },
+    "registering": {
+      "message": "注册中",
+      "description": "Registering text"
+    },
+    "lease": {
+      "message": "租用",
+      "description": "Lease text"
+    },
+    "purchase": {
+      "message": "购买",
+      "description": "Purchase text"
+    },
+    "year": {
+      "message": "年",
+      "description": "Year text"
+    },
+    "years": {
+      "message": "年",
+      "description": "Years text"
+    },
+    "until": {
+      "message": "直到",
+      "description": "Until text"
+    },
+    "calculating_fee": {
+      "message": "计算费用...",
+      "description": "Calculating fee text"
+    },
+    "purchase_arns": {
+      "message": "购买 ArNS",
+      "description": "Purchase ArNS text"
+    },
+    "search_for_an_arns_name": {
+      "message": "搜索 ArNS 名称",
+      "description": "Search for an ArNS Name text"
+    },
+    "search_arns": {
+      "message": "搜索 ArNS",
+      "description": "Search ArNS text"
+    },
+    "enter_arns_name_to_search": {
+      "message": "输入 ArNS 名称以搜索其可用性",
+      "description": "Enter an ArNS name to search for its availability text"
+    },
+    "searching": {
+      "message": "搜索中...",
+      "description": "Searching text"
+    },
+    "register": {
+      "message": "注册",
+      "description": "Register text"
+    },
+    "arns_search_error": {
+      "message": "搜索 ArNS 名称时出错，请再试一次。",
+      "description": "ArNS search error text"
+    },
+    "has_already_been_registered": {
+      "message": "已经注册",
+      "description": "Has already been registered text"
+    },
+    "is_available": {
+      "message": "可用",
+      "description": "Is available text"
+    },
+    "arns_name_max_length": {
+      "message": "名称最大长度为 51 个字符。",
+      "description": "ArNS name max length text"
+    },
+    "arns_name_only_letters_numbers_and_hyphens": {
+      "message": "名称只能包含字母、数字和连字符。",
+      "description": "ArNS name only letters numbers and hyphens text"
+    },
+    "arns_name_cannot_start_or_end_with_hyphen": {
+      "message": "名称不能以连字符开头或结尾。",
+      "description": "ArNS name cannot start or end with hyphen text"
+    },
+    "arns_name_cannot_be_www": {
+      "message": "名称不能为 'www'。",
+      "description": "ArNS name cannot be www text"
+    },
+    "one_year_lease_fee": {
+      "message": "$FEE$ $TICKER$ 一年租用；或",
+      "description": "One year lease fee text",
+      "placeholders": {
+        "fee": {
+          "content": "$1",
+          "example": "1000"
+        },
+        "ticker": {
+          "content": "$2",
+          "example": "ARIO"
+        }
+      }
+    },
+    "permabuy_fee": {
+      "message": "$FEE$ $TICKER$ 永久购买",
+      "description": "Permabuy fee text",
+      "placeholders": {
+        "fee": {
+          "content": "$1",
+          "example": "1000"
+        },
+        "ticker": {
+          "content": "$2",
+          "example": "ARIO"
+        }
+      }
+    },
+    "search_for_a_name": {
+      "message": "搜索名称",
+      "description": "Search for a name text"
+    },
+    "arns_purchase_description": {
+      "message": "ArNS（Arweave 名称服务）为您提供一个可读性强的名称，用于您的 Arweave 钱包和内容。",
+      "description": "ArNS description text"
+    },
+    "arns_purchase_description_2": {
+      "message": "与其分享长长的钱包地址，您可以使用您的 ArNS 名称：",
+      "description": "ArNS description 2 text"
+    },
+    "arns_wallet_address": {
+      "message": "钱包地址",
+      "description": "Wallet address text"
+    },
+    "arns_name": {
+      "message": "ArNS 名称",
+      "description": "ArNS name text"
+    },
+    "name_registered": {
+      "message": "名称注册成功！",
+      "description": "Name registered text"
+    },
+    "registration_period": {
+      "message": "注册期限",
+      "description": "Registration period text"
+    },
+    "is_now_registered_to_this_wallet": {
+      "message": "已注册到此钱包。",
+      "description": "Is now registered to this wallet text"
+    },
+    "set_as_primary_name": {
+      "message": "设置为主名称",
+      "description": "Set as Primary Name text"
+    },
+    "register_now": {
+      "message": "立即注册",
+      "description": "Register now text"
     }
 }

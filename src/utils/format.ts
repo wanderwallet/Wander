@@ -158,10 +158,25 @@ export function formatBalance(balance: BigNumber | string) {
 }
 
 export function truncateMiddle(str: string, maxLength: number): string {
-  if (str.length <= maxLength) return str;
+  // Create a segmenter to handle graphemes (including emojis) correctly
+  const segmenter = new Intl.Segmenter("en", { granularity: "grapheme" });
+  const segments = Array.from(segmenter.segment(str));
+
+  if (segments.length <= maxLength) return str;
+
   const separator = "...";
   const charsToShow = maxLength - separator.length;
   const frontChars = Math.ceil(charsToShow / 2);
   const backChars = Math.floor(charsToShow / 2);
-  return str.substring(0, frontChars) + separator + str.substring(str.length - backChars);
+
+  const front = segments
+    .slice(0, frontChars)
+    .map((s) => s.segment)
+    .join("");
+  const back = segments
+    .slice(-backChars)
+    .map((s) => s.segment)
+    .join("");
+
+  return front + separator + back;
 }

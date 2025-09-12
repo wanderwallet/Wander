@@ -51,7 +51,7 @@ export function AccountAddWalletEmbeddedView() {
           isDisabled={isDisabled}
           icon={<WalletIcon fontSize={24} />}
           href="/auth/import-seedphrase">
-          Enter Seed Phrase
+          Enter Seedphrase
         </Button>
         <Button
           variant="outlined"

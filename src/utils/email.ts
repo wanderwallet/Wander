@@ -46,3 +46,26 @@ export function isValidEmailSimple(email: string): boolean {
 
   return simpleEmailRegex.test(email);
 }
+
+/**
+ * Verifies if an email address is part of the OTP blocked list
+ *
+ * Basic validation checks:
+ * - belongs to the OTP blocked list
+ *
+ * @param email The email address to validate
+ * @returns boolean - true if valid, false if invalid
+ */
+export function isOTPBlocked(email: string): boolean {
+  if (!email) return false;
+
+  // Domains that are part of the OTP blocked list
+  // This pattern checks:
+  // - the domain part of the email address is one of:
+  // - icloud.com
+  // - me.com
+  // - mac.com
+  const emailRegex = /@(?:icloud|me|mac)\.com$/i;
+
+  return emailRegex.test(email);
+}

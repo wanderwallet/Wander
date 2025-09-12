@@ -13,6 +13,7 @@ import { AuthEmailSignInPasswordEmbeddedView } from "~routes/embedded/auth/auth-
 import { AuthEmailVerifyEmbeddedView } from "~routes/embedded/auth/auth-email-verify/auth-email-verify.view";
 import { AuthMoreProvidersEmbeddedView } from "~routes/embedded/auth/auth-more-providers/auth-more-providers.view";
 import { AuthAddWalletEmbeddedView } from "~routes/embedded/auth/add-wallet/auth-add-wallet.view";
+import { AuthImportWalletEmbeddedView } from "~routes/embedded/auth/add-wallet/auth-import-wallet.view";
 import { AuthImportSeedphraseEmbeddedView } from "~routes/embedded/auth/import-seedphrase/auth-import-seedphrase.view";
 import { AuthImportKeyfileEmbeddedView } from "~routes/embedded/auth/import-keyfile/auth-import-keyfile.view";
 import { AuthImportQrCodeEmbeddedView } from "~routes/embedded/auth/import-qrcode/auth-import-qrcode";
@@ -80,6 +81,7 @@ export type EmbeddedRoutePath =
   | "/auth/email-verify"
   | "/auth/more-providers"
   | "/auth/add-wallet"
+  | "/auth/import-wallet"
   | "/auth/import-seedphrase"
   | "/auth/import-keyfile"
   | "/auth/import-qrcode"
@@ -145,6 +147,7 @@ export const EmbeddedPaths = {
   AuthEmailVerify: "/auth/email-verify",
   AuthMoreProviders: "/auth/more-providers",
   AuthAddWallet: "/auth/add-wallet",
+  AuthImportWallet: "/auth/import-wallet",
   AuthImportSeedPhrase: "/auth/import-seedphrase",
   AuthImportKeyfile: "/auth/import-keyfile",
   AuthImportQrCode: "/auth/import-qrcode",
@@ -237,6 +240,10 @@ const IFRAME_OWN_ROUTES = [
   {
     path: EmbeddedPaths.AuthAddWallet,
     component: AuthAddWalletEmbeddedView,
+  },
+  {
+    path: EmbeddedPaths.AuthImportWallet,
+    component: AuthImportWalletEmbeddedView,
   },
   {
     path: EmbeddedPaths.AuthImportSeedPhrase,

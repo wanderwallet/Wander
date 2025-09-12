@@ -82,7 +82,11 @@ export function ApplicationsView() {
       <HeadV2 title={browser.i18n.getMessage("setting_apps")} back={() => navigate("/quick-settings")} />
       <Wrapper>
         <SearchWrapper>
-          <SearchInput small placeholder={browser.i18n.getMessage("search_apps")} {...searchInput.bindings} />
+          <SearchInput
+            sizeVariant="small"
+            placeholder={browser.i18n.getMessage("search_apps")}
+            {...searchInput.bindings}
+          />
         </SearchWrapper>
         <Spacer y={1} />
         <SettingsList>
