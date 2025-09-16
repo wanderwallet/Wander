@@ -183,7 +183,6 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       unpartitionedStateStatus,
       prevUnpartitionedStateStatus,
     }: UnpartitionedStateStatusChangeData) {
-      log(LOG_GROUP.AUTH, { unpartitionedStateStatus, prevUnpartitionedStateStatus });
       setUnpartitionedStateStatus(unpartitionedStateStatus);
 
       // We want to prevent the app from using data from the partitioned state after the permissions has been granted, or from the unpartitioned state once the
