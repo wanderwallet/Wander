@@ -22,7 +22,7 @@ export enum LOG_GROUP {
 
 const LOG_GROUPS_ENABLED: Record<LOG_GROUP, boolean> = {
   [LOG_GROUP.API]: false,
-  [LOG_GROUP.AUTH]: true,
+  [LOG_GROUP.AUTH]: process.env.NODE_ENV === "development",
   [LOG_GROUP.CHUNKS]: false,
   [LOG_GROUP.EMBEDDED_FLOWS]: false,
   [LOG_GROUP.GATEWAYS]: false,

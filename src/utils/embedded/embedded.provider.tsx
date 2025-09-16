@@ -179,10 +179,6 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
   // Unpartitioned state:
 
   useEffect(() => {
-    log(LOG_GROUP.AUTH, "authStatus: ", authStatus);
-
-    console.log("Time since mount: ", (Date.now() - mountedTimeRef.current) / 1000);
-
     async function handleUnpartitionedStateStatusChange({
       unpartitionedStateStatus,
       prevUnpartitionedStateStatus,
@@ -208,7 +204,6 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         });
 
         const difference = Date.now() - mountedTimeRef.current;
-        log(LOG_GROUP.AUTH, `reloading page 1 took ${difference / 1000} seconds`);
         if (difference > 500) window.location.reload();
 
         return;
@@ -224,7 +219,6 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       if (coverElement) coverElement.removeAttribute("aria-hidden");
 
       const difference = Date.now() - mountedTimeRef.current;
-      log(LOG_GROUP.AUTH, `reloading page 2 took ${difference / 1000} seconds`);
       if (difference > 500) window.location.reload();
     }
 

@@ -1,5 +1,3 @@
-import { log, LOG_GROUP } from "~utils/log/log.utils";
-
 export const HAS_SIMPLE_STORAGE_API =
   import.meta.env?.VITE_IS_EMBEDDED_APP === "1" &&
   typeof document !== "undefined" &&
@@ -16,8 +14,6 @@ let _unpartitionedStateStatus: UnpartitionedStateStatus = HAS_SIMPLE_STORAGE_API
     ? "supported"
     : "limited"
   : "unsupported";
-
-log(LOG_GROUP.AUTH, "_unpartitionedStateStatus: ", _unpartitionedStateStatus);
 
 export interface UnpartitionedStateStatusChangeData {
   unpartitionedStateStatus: UnpartitionedStateStatus;
@@ -44,9 +40,6 @@ export function getUnpartitionedStateStatus() {
 
 export function setUnpartitionedStateStatus(unpartitionedStateStatus: UnpartitionedStateStatus, error?: Error) {
   const prevUnpartitionedStateStatus = _unpartitionedStateStatus;
-
-  // If the status hasn't actually changed, don't trigger callbacks
-  if (unpartitionedStateStatus === prevUnpartitionedStateStatus) return;
 
   _unpartitionedStateStatus = unpartitionedStateStatus;
 
