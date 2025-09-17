@@ -36,7 +36,8 @@
       "contextMenus",
       "tabs",
       "webNavigation",
-      "notifications"
+      "notifications",
+      "declarativeNetRequestWithHostAccess"
     ],
     "web_accessible_resources": [
       {

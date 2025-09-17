@@ -243,18 +243,10 @@ export const useTransak = (apiKey: string, initialConversion = false) => {
         paymentMethod: quote.paymentMethod,
       };
 
-      const apiKeyId = 0;
-
-      const response = await fetch(
-        "https://wander-cache-git-arc-1565-add-transak-widget-api-community-labs.vercel.app/api/transak-widget",
-        {
-          method: "POST",
-          body: JSON.stringify({
-            apiKeyId,
-            widgetParams,
-          }),
-        },
-      );
+      const response = await fetch("http://localhost:3000/api/transak-widget", {
+        method: "POST",
+        body: JSON.stringify({ widgetParams }),
+      });
 
       if (!response.ok) {
         throw new Error("Failed to create Transak widget url");
