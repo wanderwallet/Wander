@@ -137,39 +137,6 @@ export function setupBackgroundService() {
 
   // ONLY BROWSER EXTENSION BELOW THIS LINE:
 
-  async function setupTransakRule() {
-    try {
-      // Remove any existing rules first
-      const existingRules = await browser.declarativeNetRequest.getDynamicRules();
-      const existingRuleIds = existingRules.map((rule) => rule.id);
-
-      if (existingRuleIds.length > 0) {
-        await browser.declarativeNetRequest.updateDynamicRules({ removeRuleIds: existingRuleIds });
-      }
-
-      // Add our single rule
-      const newRule: browser.DeclarativeNetRequest.Rule = {
-        id: 1,
-        priority: 1,
-        action: {
-          type: "modifyHeaders",
-          requestHeaders: [{ header: "Referer", operation: "set", value: "https://www.wander.app/" }],
-        },
-        condition: {
-          regexFilter: "^https://(?:[^.]+\\.)?transak\\.com/",
-        },
-      };
-
-      await browser.declarativeNetRequest.updateDynamicRules({ addRules: [newRule] });
-      console.log("Transak rules set up");
-    } catch (err) {
-      console.error("Error setting up Transak rule:", err);
-    }
-  }
-
-  // Set up the rule
-  setupTransakRule();
-
   // ALARMS:
   browser.alarms.onAlarm.addListener(handleAOYieldAgentAlarm);
   browser.alarms.onAlarm.addListener(handleAOYieldAgentRecentTxsCheck);
