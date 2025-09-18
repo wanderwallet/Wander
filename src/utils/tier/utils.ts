@@ -155,7 +155,7 @@ export async function saveWalletLifetimeSavings(walletAddress: string, savingsIn
     const keyfile = decryptedWallet.keyfile;
 
     const signer = createDataItemSigner(keyfile);
-    const transferID = await message({
+    const messageId = await message({
       process: TIER_PROCESS_ID,
       signer,
       tags: [
@@ -166,7 +166,7 @@ export async function saveWalletLifetimeSavings(walletAddress: string, savingsIn
 
     await scheduleRefreshWalletLifetimeSavings(walletAddress);
 
-    return transferID;
+    return messageId;
   } catch {
     console.error("Error getting keyfile for wallet address: ", walletAddress);
     return;

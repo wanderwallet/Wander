@@ -796,7 +796,19 @@ export async function createSwapMessage({
           // @ts-ignore
           body: dataItemRaw,
         });
-        if (!response.ok) throw new Error("Failed to post transaction");
+        if (!response.ok) {
+          let errorMessage = "Failed to post transaction";
+          try {
+            const data = await response.json();
+            if (data?.error) errorMessage = data.error;
+          } catch {
+            try {
+              const text = await response.text();
+              if (text) errorMessage = text;
+            } catch {}
+          }
+          throw new Error(errorMessage);
+        }
         const result = await response.json();
         return result.id;
       } catch (err) {

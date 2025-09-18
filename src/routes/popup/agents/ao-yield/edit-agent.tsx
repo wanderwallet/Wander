@@ -13,10 +13,12 @@ import type { Asset } from "~utils/agents/types";
 import { assets, formatDate, getAOYieldActiveAgent, updateAOYieldAgent } from "~utils/agents/utils";
 import { trackPage, PageType } from "~utils/analytics";
 import { SlippageInputButton } from "~routes/popup/swap/components/SlippageInputButton";
+import { useAoRateLimittedToast } from "~utils/toast/toast.hooks";
 
 export function EditAOYieldAgentView() {
   const theme = useTheme();
   const toasts = useToasts();
+  const { showAoRateLimittedToast } = useAoRateLimittedToast();
   const [isLoading, setIsLoading] = useState(false);
   const [agentId, setAgentId] = useState<string | null>(null);
   const [selectedAsset, setSelectedAsset] = useState<Asset>(assets[0]);
@@ -72,12 +74,13 @@ export function EditAOYieldAgentView() {
         type: "success",
         duration: 2400,
       });
-    } catch {
+    } catch (error) {
       toasts.setToast({
         content: browser.i18n.getMessage("error_updating_agent"),
         type: "error",
         duration: 2400,
       });
+      showAoRateLimittedToast(error);
     } finally {
       setIsLoading(false);
     }
