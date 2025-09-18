@@ -22,17 +22,19 @@ export function useAoRateLimitedToast() {
   const { displayTheme } = useTheme();
 
   function showAoRateLimitedToast(error: Error) {
-    if (!error?.message?.includes("Rate limit exceeded")) return;
+    try {
+      if (!error?.message?.includes("Rate limit exceeded")) return;
 
-    setToast({
-      type: "error",
-      content: () => <ToastContent displayTheme={displayTheme} />,
-      position: "top",
-      duration: 5000,
-      showIcon: true,
-      showProgress: true,
-      progressColor: "linear-gradient(47deg, #5842F8 5.41%, #6B57F9 96%)",
-    });
+      setToast({
+        type: "error",
+        content: () => <ToastContent displayTheme={displayTheme} />,
+        position: "top",
+        duration: 5000,
+        showIcon: true,
+        showProgress: true,
+        progressColor: "linear-gradient(47deg, #5842F8 5.41%, #6B57F9 96%)",
+      });
+    } catch {}
   }
 
   return { showAoRateLimitedToast };
