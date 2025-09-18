@@ -538,6 +538,13 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
             message,
           );
 
+          queryClient.invalidateQueries({
+            queryKey: ["tokenBalance", tokenID, activeAddress],
+          });
+          queryClient.invalidateQueries({
+            queryKey: ["tokenBalance", tokenID, recipient.address],
+          });
+
           setToast({
             type: "success",
             content: browser.i18n.getMessage("sent_tx"),
@@ -545,10 +552,14 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
           });
           navigate(`/send/completed/${res}?isAo=true`);
           setIsLoading(false);
+        } else {
+          throw new Error("Failed to send ao transfer");
         }
       } catch (err) {
         console.log("err in ao", err);
-        throw err;
+        showAoRateLimittedToast(err);
+        setIsLoading(false);
+        return;
       }
     }
 
@@ -557,7 +568,6 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
 
     // get tx UR
     try {
-      setIsLoading(false);
       setTransactionUR(await transactionToUR(convertedTransaction, wallet.xfp, wallet.publicKey));
       setPreparedTx(prepared);
     } catch (error) {
@@ -567,6 +577,7 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
         content: browser.i18n.getMessage("transaction_auth_ur_fail"),
       });
       showAoRateLimittedToast(error);
+      setIsLoading(false);
       navigate("/send/transfer");
     }
   }, [wallet, recipient?.address, keystoneSigner, amount]);
