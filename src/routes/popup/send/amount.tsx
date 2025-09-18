@@ -32,7 +32,8 @@ import { HorizontalLine } from "~components/HorizontalLine";
 import { TokenLogo } from "~components/popup/TokenLogo";
 import { WarningIcon } from "~components/icons/WarningIcon";
 import { useTheme } from "~utils/theme/theme.hook";
-import { AR_PROCESS_ID, nonTransferableTokenIds, EXP_PROCESS_ID, defaultTokens } from "~tokens/aoTokens/ao.constants";
+import { AR_PROCESS_ID, EXP_PROCESS_ID, defaultTokens } from "~tokens/aoTokens/ao.constants";
+import { isNonTransferableToken } from "~tokens/aoTokens/ao.utils";
 
 export enum AmountValidationState {
   Invalid = "Invalid",
@@ -150,7 +151,7 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
     AR_PROCESS_ID,
   );
 
-  const showNonTransferableAnnouncement = nonTransferableTokenIds.includes(tokenID);
+  const showNonTransferableAnnouncement = isNonTransferableToken(tokenID, wallet?.address);
 
   // currency setting
   const [currency] = useSetting<string>("currency");

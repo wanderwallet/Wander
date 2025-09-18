@@ -116,6 +116,8 @@ export const defaultTokens = [
 
 export const nonTransferableTokenIds: Array<string> = [EXP_PROCESS_ID, WNDR_PROCESS_ID];
 
+export const nonTransferableWhitelistedWallets = { [WNDR_PROCESS_ID]: ["X-2dpeYFiknCjfdVijr7J4sEPwtwrr5dp4ilVZsUKGQ"] };
+
 /**
  * Dummy ID
  */
