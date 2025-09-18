@@ -570,6 +570,7 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
     try {
       setTransactionUR(await transactionToUR(convertedTransaction, wallet.xfp, wallet.publicKey));
       setPreparedTx(prepared);
+      setIsLoading(false);
     } catch (error) {
       setToast({
         type: "error",
