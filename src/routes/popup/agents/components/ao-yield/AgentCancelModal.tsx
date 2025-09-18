@@ -12,7 +12,7 @@ import alertTriangle from "url:/assets/agents/images/alert-triangle.svg";
 import { useLocation } from "~wallets/router/router.utils";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import { EventType, trackEvent } from "~utils/analytics";
-import { useAoRateLimittedToast } from "~utils/toast/toast.hooks";
+import { useAoRateLimitedToast } from "~utils/toast/toast.hooks";
 
 interface AgentCancelModalProps {
   open: boolean;
@@ -27,7 +27,7 @@ export function AgentCancelModal({ open, onClose, agentId }: AgentCancelModalPro
   const toasts = useToasts();
   const theme = useTheme();
   const { navigate } = useLocation();
-  const { showAoRateLimittedToast } = useAoRateLimittedToast();
+  const { showAoRateLimitedToast } = useAoRateLimitedToast();
 
   const [transferRequirePassword] = useStorage(
     {
@@ -74,7 +74,7 @@ export function AgentCancelModal({ open, onClose, agentId }: AgentCancelModalPro
         type: "error",
         duration: 2400,
       });
-      showAoRateLimittedToast(error);
+      showAoRateLimitedToast(error);
     } finally {
       setIsLoading(false);
     }

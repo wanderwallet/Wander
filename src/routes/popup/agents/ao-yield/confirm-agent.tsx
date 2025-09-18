@@ -24,7 +24,7 @@ import { scheduleSwapExecution } from "~utils/agents/swap";
 import { AGENT_VERSION } from "~utils/agents/constants";
 import { useAOYieldAgentProperties } from "~utils/agents/hooks";
 import { useDefiFeeDetails } from "~utils/tier/hooks";
-import { useAoRateLimittedToast } from "~utils/toast/toast.hooks";
+import { useAoRateLimitedToast } from "~utils/toast/toast.hooks";
 
 export function ConfirmAOYieldAgentView() {
   const [isLoading, setIsLoading] = useState(false);
@@ -35,7 +35,7 @@ export function ConfirmAOYieldAgentView() {
   const theme = useTheme();
   const [aoYieldAgent] = useStorage<AOYieldAgentCreate>({ key: "ao-yield-agent", instance: TempTransactionStorage });
   const defiFeeDetails = useDefiFeeDetails();
-  const { showAoRateLimittedToast } = useAoRateLimittedToast();
+  const { showAoRateLimitedToast } = useAoRateLimitedToast();
   const [transferRequirePassword] = useStorage(
     {
       key: "transfer_require_password",
@@ -136,7 +136,7 @@ export function ConfirmAOYieldAgentView() {
       TempTransactionStorage.remove("ao-yield-agent");
     } catch (error) {
       console.log("error: ", error);
-      showAoRateLimittedToast(error);
+      showAoRateLimitedToast(error);
       navigate(PopupPaths.AOYieldAgentActivated, { search: { activationStatus: "error" } });
     } finally {
       setIsLoading(false);

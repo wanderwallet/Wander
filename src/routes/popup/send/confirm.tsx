@@ -55,7 +55,7 @@ import useSetting from "~settings/hook";
 import { Flex } from "~components/common/Flex";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
-import { useAoRateLimittedToast } from "~utils/toast/toast.hooks";
+import { useAoRateLimitedToast } from "~utils/toast/toast.hooks";
 
 export interface ConfirmViewParams {
   token: string;
@@ -70,7 +70,7 @@ export type ConfirmViewProps = CommonRouteProps<ConfirmViewParams>;
 export function ConfirmView({ params: { token: tokenID, subscription } }: ConfirmViewProps) {
   const { navigate } = useLocation();
   const queryClient = useQueryClient();
-  const { showAoRateLimittedToast } = useAoRateLimittedToast();
+  const { showAoRateLimitedToast } = useAoRateLimitedToast();
 
   // TODO: Need to get Token information
   const [token, setToken] = useState<TokenInfo | undefined>();
@@ -352,7 +352,7 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
           content: browser.i18n.getMessage("failed_tx"),
           duration: 2000,
         });
-        showAoRateLimittedToast(err);
+        showAoRateLimitedToast(err);
         return;
       }
     }
@@ -557,7 +557,7 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
         }
       } catch (err) {
         console.log("err in ao", err);
-        showAoRateLimittedToast(err);
+        showAoRateLimitedToast(err);
         setIsLoading(false);
         return;
       }
@@ -577,7 +577,7 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
         duration: 2300,
         content: browser.i18n.getMessage("transaction_auth_ur_fail"),
       });
-      showAoRateLimittedToast(error);
+      showAoRateLimitedToast(error);
       setIsLoading(false);
       navigate("/send/transfer");
     }

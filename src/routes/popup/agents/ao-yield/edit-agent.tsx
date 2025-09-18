@@ -13,12 +13,12 @@ import type { Asset } from "~utils/agents/types";
 import { assets, formatDate, getAOYieldActiveAgent, updateAOYieldAgent } from "~utils/agents/utils";
 import { trackPage, PageType } from "~utils/analytics";
 import { SlippageInputButton } from "~routes/popup/swap/components/SlippageInputButton";
-import { useAoRateLimittedToast } from "~utils/toast/toast.hooks";
+import { useAoRateLimitedToast } from "~utils/toast/toast.hooks";
 
 export function EditAOYieldAgentView() {
   const theme = useTheme();
   const toasts = useToasts();
-  const { showAoRateLimittedToast } = useAoRateLimittedToast();
+  const { showAoRateLimitedToast } = useAoRateLimitedToast();
   const [isLoading, setIsLoading] = useState(false);
   const [agentId, setAgentId] = useState<string | null>(null);
   const [selectedAsset, setSelectedAsset] = useState<Asset>(assets[0]);
@@ -80,7 +80,7 @@ export function EditAOYieldAgentView() {
         type: "error",
         duration: 2400,
       });
-      showAoRateLimittedToast(error);
+      showAoRateLimitedToast(error);
     } finally {
       setIsLoading(false);
     }

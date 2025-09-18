@@ -25,7 +25,7 @@ import { BalanceFetchError, NetworkError } from "~utils/error/error.utils";
 import { DegradedMessage, NetworkErrorMessage } from "../tokens/ErrorMessages";
 import { TokenLogo } from "~components/popup/TokenLogo";
 import { defaultTokens } from "~tokens/aoTokens/ao.constants";
-import { useAoRateLimittedToast } from "~utils/toast/toast.hooks";
+import { useAoRateLimitedToast } from "~utils/toast/toast.hooks";
 
 export function EarnTabs() {
   const { navigate, location } = useLocation();
@@ -154,7 +154,7 @@ function Token({
   const activeAddress = useActiveAddress();
   const [isClaiming, setIsClaiming] = useState(false);
   const { data: claimableBalance = "0" } = useClaimableBalance(token);
-  const { showAoRateLimittedToast } = useAoRateLimittedToast();
+  const { showAoRateLimitedToast } = useAoRateLimitedToast();
   const {
     data: balance = "0",
     isLoading: isBalanceLoading,
@@ -184,7 +184,7 @@ function Token({
           content: browser.i18n.getMessage("flp_claim_error"),
           duration: 3000,
         });
-        showAoRateLimittedToast(error);
+        showAoRateLimitedToast(error);
       } finally {
         setIsClaiming(false);
       }

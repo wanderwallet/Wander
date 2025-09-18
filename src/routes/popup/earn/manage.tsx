@@ -27,7 +27,7 @@ import { EventType, PageType, trackEvent, trackPage } from "~utils/analytics";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { TokenLogo } from "~components/popup/TokenLogo";
 import { defaultTokens, AO_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
-import { useAoRateLimittedToast } from "~utils/toast/toast.hooks";
+import { useAoRateLimitedToast } from "~utils/toast/toast.hooks";
 
 export function ManageEarningsView() {
   const theme = useTheme();
@@ -46,7 +46,7 @@ export function ManageEarningsView() {
   const { data: delegationInfo = {}, isLoading: isLoadingDelegationInfo } = useDelegationInfo();
   const { data: flpTokens = [], isLoading: isLoadingFlpTokens } = useFairLaunchTokens();
   const { hasNoAOYieldDelegations, hasAOYieldDelegations } = useAOYieldDelegations();
-  const { showAoRateLimittedToast } = useAoRateLimittedToast();
+  const { showAoRateLimitedToast } = useAoRateLimitedToast();
 
   const keystoneInteraction = useMemo(() => {
     const keystoneInteraction: KeystoneInteraction = {
@@ -158,7 +158,7 @@ export function ManageEarningsView() {
         content: browser.i18n.getMessage("delegation_info_save_failed"),
         duration: 2400,
       });
-      showAoRateLimittedToast(error);
+      showAoRateLimitedToast(error);
     } finally {
       setIsSaving(false);
       setHardwareStatus(null);

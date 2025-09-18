@@ -17,11 +17,11 @@ const ToastContent = ({ displayTheme }: { displayTheme: DisplayTheme }) => (
   </>
 );
 
-export function useAoRateLimittedToast() {
+export function useAoRateLimitedToast() {
   const { setToast } = useToasts();
   const { displayTheme } = useTheme();
 
-  function showAoRateLimittedToast(error: Error) {
+  function showAoRateLimitedToast(error: Error) {
     if (!error?.message?.includes("Rate limit exceeded")) return;
 
     setToast({
@@ -35,5 +35,5 @@ export function useAoRateLimittedToast() {
     });
   }
 
-  return { showAoRateLimittedToast };
+  return { showAoRateLimitedToast };
 }
