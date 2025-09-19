@@ -294,6 +294,14 @@ export interface WanderConnectOptions {
   baseServerURL?: string;
 
   /**
+   * Skip the unpartitioned storage access warning UI.
+   * When enabled, bypasses the warning UI that appears when the iframe cannot access
+   * unpartitioned storage (localStorage, cookies, etc.).
+   * @default false
+   */
+  skipStorageAccessWarning?: boolean;
+
+  /**
    * Configuration options for the iframe component or an existing iframe element.
    */
   iframe?: IframeOptions | HTMLIFrameElement;

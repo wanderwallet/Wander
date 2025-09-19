@@ -165,6 +165,7 @@ export class WanderConnect {
           clickOutsideBehavior: true,
         },
         button: true,
+        skipStorageAccessWarning: false,
       } satisfies WanderConnectOptions,
       options || {},
     );
@@ -280,6 +281,7 @@ export class WanderConnect {
       theme = WanderConnect.DEFAULT_THEME,
       hideBE,
       baseServerURL,
+      skipStorageAccessWarning,
     } = options;
 
     // Deep clone these objects so that we don't mutate the original, developer-provider ones:
@@ -301,6 +303,7 @@ export class WanderConnect {
       hideBE,
       injectedBE: this.isBrowserWalletEnabled,
       baseServerURL,
+      skipStorageAccessWarning,
     });
 
     if (iframeOptions instanceof HTMLElement) {
