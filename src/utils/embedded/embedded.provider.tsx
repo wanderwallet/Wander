@@ -81,6 +81,7 @@ import {
 } from "~utils/embedded/embedded.context";
 
 export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
+  const mountedTimeRef = useRef(Date.now());
   const [embeddedContextState, setEmbeddedContextState] =
     useState<EmbeddedContextState>(EMBEDDED_CONTEXT_INITIAL_STATE);
 
@@ -201,7 +202,8 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
           console.warn("Error signing out: ", err);
         });
 
-        window.location.reload();
+        const difference = Date.now() - mountedTimeRef.current;
+        if (difference > 500) window.location.reload();
 
         return;
       }
@@ -215,7 +217,8 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
       if (coverElement) coverElement.removeAttribute("aria-hidden");
 
-      window.location.reload();
+      const difference = Date.now() - mountedTimeRef.current;
+      if (difference > 500) window.location.reload();
     }
 
     addUnpartitionedStateStatusChangeListener(handleUnpartitionedStateStatusChange);
@@ -1243,6 +1246,8 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
   navigateRef.current = navigate;
 
   useEffect(() => {
+    mountedTimeRef.current = Date.now();
+
     isomorphicOnMessage("embedded_signOut", () => {
       signOut(false);
     });

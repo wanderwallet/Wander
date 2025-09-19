@@ -1,6 +1,4 @@
 import { InputWithBtn, InputWrapper } from "~components/arlocal/InputWrapper";
-import { defaultAllowance } from "~applications/allowance";
-import { InformationIcon } from "@iconicicons/react";
 import { useEffect, useMemo, useState } from "react";
 import { IconButton } from "~components/IconButton";
 import { removeApp } from "~applications";
@@ -11,7 +9,6 @@ import {
   SelectV2,
   Spacer,
   Text,
-  TooltipV2,
   useInput,
   useModal,
   useToasts,
@@ -23,11 +20,9 @@ import styled from "styled-components";
 import Arweave from "arweave";
 import { defaultGateway, suggestedGateways, testnets } from "~gateways/gateway";
 import HeadV2 from "~components/popup/HeadV2";
-import { ToggleSwitch } from "~components/ToggleSwitch";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import { useLocation } from "~wallets/router/router.utils";
 import Checkbox from "~components/Checkbox";
-import { ErrorTypes } from "~utils/error/error.utils";
 import { LoadingView } from "~components/page/common/loading/loading.view";
 import { signPolicyOptions } from "~applications/permissions";
 

@@ -26,6 +26,7 @@ import { useTokenPrice } from "~tokens/hooks";
 import useSetting from "~settings/hook";
 import { formatFiatBalance } from "~tokens/currency";
 import BigNumber from "bignumber.js";
+import { useAoRateLimitedToast } from "~utils/toast/toast.hooks";
 
 export interface ArNSConfirmPurchaseViewParams {
   name: string;
@@ -40,6 +41,7 @@ export const ArNSConfirmPurchaseView = ({
   const { data: ticker } = useTicker();
   const isArnGated = useIsArNSPurchaseGated();
 
+  const { showAoRateLimitedToast } = useAoRateLimitedToast();
   const { data: totalFee } = useRegistrationFee(name, purchaseType, purchaseYears);
   const [processingTransaction, setProcessingTransaction] = useState<boolean>(false);
 
@@ -90,6 +92,8 @@ export const ArNSConfirmPurchaseView = ({
         purchaseType,
         purchaseYears,
       });
+
+      showAoRateLimitedToast(error);
 
       navigate(`/arns/purchase-error/${name}/${purchaseType}/${purchaseYears}`);
     } finally {

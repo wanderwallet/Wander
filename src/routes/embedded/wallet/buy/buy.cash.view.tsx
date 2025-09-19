@@ -21,6 +21,7 @@ export function WalletBuyCashEmbeddedView() {
     purchaseAmount,
     arConversion,
     loading,
+    isOpeningTransak,
     invalidFiatAmount,
     selectedCurrency,
     paymentMethod,
@@ -110,10 +111,10 @@ export function WalletBuyCashEmbeddedView() {
       )}
 
       <Button
-        isLoading={loading}
+        isLoading={loading || isOpeningTransak}
         variant="primary"
         onClick={() => openTransak("/wallet/buy/success")}
-        isDisabled={!purchaseAmount || loading || invalidFiatAmount || !!error || !quote}
+        isDisabled={!purchaseAmount || loading || invalidFiatAmount || !!error || !quote || isOpeningTransak}
         style={{ marginTop: " var(--spacing-3)" }}>
         {!quote ? browser.i18n.getMessage("enter_an_amount") : browser.i18n.getMessage("next")}
       </Button>

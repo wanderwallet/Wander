@@ -1,4 +1,4 @@
-import type { ThemeMode } from "~utils/theme/theme.hook";
+import type { ThemeMode } from "~utils/theme/theme.types";
 
 const { search = "", ancestorOrigins = [] } =
   import.meta.env?.VITE_IS_EMBEDDED_APP === "1" && typeof document !== "undefined" ? document.location : {};
@@ -44,6 +44,7 @@ const PARAM_ANCESTOR_ORIGIN = "ancestor-origin";
 const PARAM_HIDE_BE = "hide-be";
 const PARAM_INJECTED_BE = "injected-be";
 const PARAM_SERVER_BASE_URL = "server-base-url";
+const PARAM_SKIP_STORAGE_ACCESS_WARNING = "skip-storage-access-warning";
 
 export const EMBEDDED_CLIENT_ID = searchParams.get(PARAM_CLIENT_ID) || EMBEDDED_ENV_VARS.DEFAULT_EMBEDDED_CLIENT_ID;
 
@@ -57,6 +58,9 @@ export const EMBEDDED_INJECTED_BE = searchParams.get(PARAM_INJECTED_BE) === "1" 
 
 export const EMBEDDED_SERVER_BASE_URL =
   searchParams.get(PARAM_SERVER_BASE_URL) || EMBEDDED_ENV_VARS.DEFAULT_EMBEDDED_SERVER_BASE_URL;
+
+export const EMBEDDED_SKIP_STORAGE_ACCESS_WARNING =
+  searchParams.get(PARAM_SKIP_STORAGE_ACCESS_WARNING) === "1" || false;
 
 // Note: DO NOT use document.referrer here as that will return the "incorrect" value when the user is redirected from
 // an auth provider domain to back to Wander Embedded.

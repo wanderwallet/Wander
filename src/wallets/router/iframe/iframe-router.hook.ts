@@ -6,6 +6,7 @@ import type { ExtensionRouteOverride } from "~wallets/router/extension/extension
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 import type { WanderRoutePath, BaseLocationHook, RoutePath } from "~wallets/router/router.types";
 import { isRouteOverride, routeTrapMatches, routeTrapOutside, withRouterRedirects } from "~wallets/router/router.utils";
+import { EMBEDDED_SKIP_STORAGE_ACCESS_WARNING } from "~utils/embedded/iframe.utils";
 
 const AUTH_STATUS_TO_OVERRIDE: Record<AuthStatus, null | ExtensionRouteOverride> = {
   // TODO: Redefine these override paths:
@@ -33,7 +34,12 @@ export function useEmbeddedOverride(location?: RoutePath) {
     return "/__OVERRIDES/cover";
   }
 
-  if (unpartitionedStateStatus !== "supported" && !unpartitionedStateConfirmed && authStatus === "noAuth") {
+  if (
+    !EMBEDDED_SKIP_STORAGE_ACCESS_WARNING &&
+    unpartitionedStateStatus !== "supported" &&
+    !unpartitionedStateConfirmed &&
+    authStatus === "noAuth"
+  ) {
     return routeTrapMatches(
       location,
       [EmbeddedPaths.SupportUnpartitionedStateMissing],
