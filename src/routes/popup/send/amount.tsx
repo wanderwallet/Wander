@@ -151,7 +151,10 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
     AR_PROCESS_ID,
   );
 
-  const showNonTransferableAnnouncement = isNonTransferableToken(tokenID, wallet?.address);
+  const showNonTransferableAnnouncement = useMemo(
+    () => isNonTransferableToken(tokenID, wallet?.address),
+    [tokenID, wallet?.address],
+  );
 
   // currency setting
   const [currency] = useSetting<string>("currency");
