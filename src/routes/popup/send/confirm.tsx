@@ -55,6 +55,7 @@ import useSetting from "~settings/hook";
 import { Flex } from "~components/common/Flex";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
+import { useAoRateLimitedToast } from "~utils/toast/toast.hooks";
 
 export interface ConfirmViewParams {
   token: string;
@@ -69,6 +70,7 @@ export type ConfirmViewProps = CommonRouteProps<ConfirmViewParams>;
 export function ConfirmView({ params: { token: tokenID, subscription } }: ConfirmViewProps) {
   const { navigate } = useLocation();
   const queryClient = useQueryClient();
+  const { showAoRateLimitedToast } = useAoRateLimitedToast();
 
   // TODO: Need to get Token information
   const [token, setToken] = useState<TokenInfo | undefined>();
@@ -350,6 +352,7 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
           content: browser.i18n.getMessage("failed_tx"),
           duration: 2000,
         });
+        showAoRateLimitedToast(err);
         return;
       }
     }
@@ -535,6 +538,13 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
             message,
           );
 
+          queryClient.invalidateQueries({
+            queryKey: ["tokenBalance", tokenID, activeAddress],
+          });
+          queryClient.invalidateQueries({
+            queryKey: ["tokenBalance", tokenID, recipient.address],
+          });
+
           setToast({
             type: "success",
             content: browser.i18n.getMessage("sent_tx"),
@@ -542,10 +552,14 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
           });
           navigate(`/send/completed/${res}?isAo=true`);
           setIsLoading(false);
+        } else {
+          throw new Error("Failed to send ao transfer");
         }
       } catch (err) {
         console.log("err in ao", err);
-        throw err;
+        showAoRateLimitedToast(err);
+        setIsLoading(false);
+        return;
       }
     }
 
@@ -554,15 +568,17 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
 
     // get tx UR
     try {
-      setIsLoading(false);
       setTransactionUR(await transactionToUR(convertedTransaction, wallet.xfp, wallet.publicKey));
       setPreparedTx(prepared);
-    } catch {
+      setIsLoading(false);
+    } catch (error) {
       setToast({
         type: "error",
         duration: 2300,
         content: browser.i18n.getMessage("transaction_auth_ur_fail"),
       });
+      showAoRateLimitedToast(error);
+      setIsLoading(false);
       navigate("/send/transfer");
     }
   }, [wallet, recipient?.address, keystoneSigner, amount]);
