@@ -347,6 +347,8 @@ export function usePoolQuote({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedPoolInfo, setSelectedPoolInfo] = useState<SelectedPoolInfo | null>(null);
+  const stopFetchingRef = useRef(stopFetching);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const wanderFee = useMemo(() => {
     if (!amountIn || !wanderFeePercent || isNaN(wanderFeePercent)) return "0";
@@ -358,7 +360,9 @@ export function usePoolQuote({
 
   const fetchPoolQuote = useCallback(async () => {
     try {
-      if (!tokenIn || !tokenOut || !slippage || !amountIn || !poolId || !poolType || !wanderFee || stopFetching) {
+      if (stopFetchingRef.current) return;
+
+      if (!tokenIn || !tokenOut || !slippage || !amountIn || !poolId || !poolType || !wanderFee) {
         setSelectedPoolInfo(null);
         setError(null);
         return;
@@ -410,7 +414,7 @@ export function usePoolQuote({
     } finally {
       setIsLoading(false);
     }
-  }, [tokenIn, tokenOut, slippage, amountIn, poolId, poolType, wanderFee, stopFetching]);
+  }, [tokenIn, tokenOut, slippage, amountIn, poolId, poolType, wanderFee]);
 
   useEffect(() => {
     if (
@@ -427,7 +431,7 @@ export function usePoolQuote({
       return;
     }
 
-    let interval: NodeJS.Timeout;
+    let cancelled = false;
 
     const fetchPoolQuoteInterval = async () => {
       const now = Date.now();
@@ -438,16 +442,25 @@ export function usePoolQuote({
         await sleep(waitTime);
       }
 
+      if (cancelled) return;
+
       fetchPoolQuote();
-      interval = setInterval(fetchPoolQuote, FIFTEEN_SECONDS_MS);
+      intervalRef.current = setInterval(fetchPoolQuote, FIFTEEN_SECONDS_MS);
     };
 
     fetchPoolQuoteInterval();
 
     return () => {
-      clearInterval(interval);
+      cancelled = true;
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
     };
   }, [fetchPoolQuote, tokenIn, tokenOut, slippage, amountIn, poolId, poolType, stopFetching]);
+
+  useEffect(() => {
+    stopFetchingRef.current = stopFetching;
+  }, [stopFetching]);
 
   return { selectedPoolInfo, isLoading, error };
 }

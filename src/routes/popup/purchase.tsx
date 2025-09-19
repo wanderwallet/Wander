@@ -3,7 +3,7 @@ import browser from "webextension-polyfill";
 import { Bank, BankNote01, ChevronDown, SwitchVertical02 } from "@untitled-ui/icons-react";
 import styled from "styled-components";
 import HeadV2 from "~components/popup/HeadV2";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { PageType, trackPage } from "~utils/analytics";
 import { ExtensionStorage } from "~utils/storage";
 import SliderMenu from "~components/SliderMenu";
@@ -17,6 +17,7 @@ import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import { InputButton } from "~components/common/InputButton";
 import { Image } from "~components/common/Image/Image";
 import { TokenLogo } from "~components/popup/TokenLogo";
+import { log, LOG_GROUP } from "~utils/log/log.utils";
 
 export function PurchaseView() {
   const theme = useTheme();
@@ -26,6 +27,7 @@ export function PurchaseView() {
     purchaseAmount,
     arConversion,
     loading,
+    isOpeningTransak,
     invalidFiatAmount,
     currencies,
     selectedCurrency,
@@ -52,6 +54,15 @@ export function PurchaseView() {
     const input = event.currentTarget;
     input.value = input.value.replace(/[^0-9.]/g, "");
   };
+
+  async function handleReview() {
+    try {
+      await ExtensionStorage.set("transak_quote", quote);
+      await openTransak(PopupPaths.PendingPurchase);
+    } catch (error) {
+      log(LOG_GROUP.TRANSAK, "Error opening Transak purchase", error);
+    }
+  }
 
   //segment
   useEffect(() => {
@@ -264,12 +275,10 @@ export function PurchaseView() {
           </SliderMenu>
         </Top>
         <Button
-          disabled={!quote || invalidFiatAmount}
+          disabled={!quote || invalidFiatAmount || isOpeningTransak}
           fullWidth
-          onClick={async () => {
-            await ExtensionStorage.set("transak_quote", quote);
-            await openTransak(PopupPaths.PendingPurchase);
-          }}>
+          onClick={handleReview}
+          loading={isOpeningTransak}>
           {!quote ? "Enter amount" : "Review"}
         </Button>
       </Wrapper>

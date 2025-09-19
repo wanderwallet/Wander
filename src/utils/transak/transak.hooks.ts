@@ -11,6 +11,7 @@ import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 import { useActiveTier } from "~utils/tier/hooks";
 import { TierTypes } from "~utils/tier/constants";
 import { scheduleTransakPurchaseAlarm } from "./transak.alarms";
+import { CACHE_API } from "~constants/api";
 
 const TRANSAK_API_KEY = process.env.PLASMO_PUBLIC_TRANSAK_API_KEY;
 const TRANSAK_TOP_TIER_API_KEY = process.env.PLASMO_PUBLIC_TRANSAK_TOP_TIER_API_KEY;
@@ -25,6 +26,7 @@ export const useTransak = (apiKey: string, initialConversion = false) => {
   const debouncedAmount = useDebounce(purchaseAmount, 300);
   const [arConversion, setArConversion] = useState<boolean>(initialConversion);
   const [loading, setLoading] = useState(false);
+  const [isOpeningTransak, setIsOpeningTransak] = useState(false);
   const [invalidFiatAmount, setInvalidFiatAmount] = useState(false);
   const [countryCode, setCountryCode] = useState("");
   const [currencies, setCurrencies] = useState<any[]>([]);
@@ -231,20 +233,28 @@ export const useTransak = (apiKey: string, initialConversion = false) => {
 
   // Create a Transak purchase URL
   const createPurchaseUrl = useCallback(
-    (walletAddress: string) => {
+    async (walletAddress: string) => {
       if (!quote) return null;
 
-      const baseUrl = TRANSAK_PURCHASE_BASE_URL;
-      const params = new URLSearchParams({
-        apiKey: apiKey,
-        defaultCryptoCurrency: "AR",
-        defaultFiatAmount: quote.fiatAmount.toString(),
-        defaultFiatCurrency: quote.fiatCurrency,
+      const widgetParams = {
+        cryptoCurrencyCode: "AR",
+        fiatAmount: quote.fiatAmount.toString(),
+        fiatCurrency: quote.fiatCurrency,
         walletAddress: walletAddress,
-        defaultPaymentMethod: quote.paymentMethod,
+        paymentMethod: quote.paymentMethod,
+      };
+
+      const response = await fetch(`${CACHE_API}/api/transak-widget`, {
+        method: "POST",
+        body: JSON.stringify({ widgetParams }),
       });
 
-      return `${baseUrl}?${params.toString()}`;
+      if (!response.ok) {
+        throw new Error("Failed to create Transak widget url");
+      }
+
+      const { widgetUrl } = await response.json();
+      return widgetUrl;
     },
     [apiKey, quote],
   );
@@ -271,11 +281,12 @@ export const useTransak = (apiKey: string, initialConversion = false) => {
 
   const openTransak = useCallback(
     async (navigateTo: string) => {
+      setIsOpeningTransak(true);
       try {
-        const url = createPurchaseUrl(activeAddress);
+        const url = await createPurchaseUrl(activeAddress);
         if (url) {
           if (IS_EMBEDDED_APP) {
-            window.open(url, "_blank");
+            window.open(url, "_blank", "noopener");
           } else {
             await scheduleTransakPurchaseAlarm();
             browser.tabs.create({ url });
@@ -284,6 +295,8 @@ export const useTransak = (apiKey: string, initialConversion = false) => {
         }
       } catch (error) {
         console.error("Error buying AR:", error);
+      } finally {
+        setIsOpeningTransak(false);
       }
     },
     [activeAddress, createPurchaseUrl, navigate],
@@ -305,6 +318,7 @@ export const useTransak = (apiKey: string, initialConversion = false) => {
     error,
     showCurrencySelector,
     showPaymentSelector,
+    isOpeningTransak,
 
     // Setters
     setPurchaseAmount,

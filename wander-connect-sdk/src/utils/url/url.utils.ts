@@ -15,6 +15,7 @@ const PARAM_ANCESTOR_ORIGIN = "ancestor-origin";
 const PARAM_HIDE_BE = "hide-be";
 const PARAM_INJECTED_BE = "injected-be";
 const PARAM_SERVER_BASE_URL = "server-base-url";
+const PARAM_SKIP_STORAGE_ACCESS_WARNING = "skip-storage-access-warning";
 
 export interface getWanderConnectAppURL {
   baseURL: string;
@@ -23,6 +24,7 @@ export interface getWanderConnectAppURL {
   hideBE?: boolean;
   injectedBE?: boolean;
   baseServerURL?: string;
+  skipStorageAccessWarning?: boolean;
 }
 
 export function getWanderConnectAppURL({
@@ -32,6 +34,7 @@ export function getWanderConnectAppURL({
   hideBE,
   injectedBE,
   baseServerURL,
+  skipStorageAccessWarning,
 }: getWanderConnectAppURL) {
   const url = new URL(baseURL);
   const { searchParams } = url;
@@ -44,6 +47,7 @@ export function getWanderConnectAppURL({
   if (hideBE) searchParams.set(PARAM_HIDE_BE, "1");
   if (injectedBE) searchParams.set(PARAM_INJECTED_BE, "1");
   if (baseServerURL) searchParams.set(PARAM_SERVER_BASE_URL, baseServerURL);
+  if (skipStorageAccessWarning) searchParams.set(PARAM_SKIP_STORAGE_ACCESS_WARNING, "1");
 
   return url.toString();
 }

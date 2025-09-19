@@ -8,6 +8,7 @@ log(LOG_GROUP.SETUP, "api.ts");
 
 export const config: PlasmoCSConfig = {
   matches: ["file://*/*", "http://*/*", "https://*/*"],
+  exclude_matches: ["*://reddit.com/*", "*://*.reddit.com/*"],
   run_at: "document_start",
   all_frames: true,
 };

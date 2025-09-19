@@ -46,12 +46,14 @@ import Arweave from "arweave";
 import { AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 import { PoolTypeEnum } from "./utils/swap.constants";
 import { OrderError } from "./utils/dex/dex.utils";
+import { useAoRateLimitedToast } from "~utils/toast/toast.hooks";
 
 export function SwapReviewView() {
   const { navigate } = useLocation();
   const theme = useTheme();
   const wallet = useActiveWallet();
   const { setToast } = useToasts();
+  const { showAoRateLimitedToast } = useAoRateLimitedToast();
   const [isExecutingSwap, setIsExecutingSwap] = useState(false);
   const [swapData] = useSavedSwapData();
   const defiFeeDetails = useDefiFeeDetails();
@@ -246,6 +248,7 @@ export function SwapReviewView() {
       log(LOG_GROUP.SWAP, "Error executing swap", err);
       const errorMessage = err instanceof OrderError ? err.message : browser.i18n.getMessage("swap_error");
       setToast({ type: "error", content: errorMessage, duration: 2400 });
+      showAoRateLimitedToast(err);
     } finally {
       setIsExecutingSwap(false);
       setHardwareStatus(null);
