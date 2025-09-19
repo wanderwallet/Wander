@@ -11,6 +11,7 @@ import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 import { useActiveTier } from "~utils/tier/hooks";
 import { TierTypes } from "~utils/tier/constants";
 import { scheduleTransakPurchaseAlarm } from "./transak.alarms";
+import { CACHE_API } from "~constants/api";
 
 const TRANSAK_API_KEY = process.env.PLASMO_PUBLIC_TRANSAK_API_KEY;
 const TRANSAK_TOP_TIER_API_KEY = process.env.PLASMO_PUBLIC_TRANSAK_TOP_TIER_API_KEY;
@@ -243,13 +244,10 @@ export const useTransak = (apiKey: string, initialConversion = false) => {
         paymentMethod: quote.paymentMethod,
       };
 
-      const response = await fetch(
-        "https://wander-cache-git-arc-1565-add-transak-widget-api-community-labs.vercel.app/api/transak-widget",
-        {
-          method: "POST",
-          body: JSON.stringify({ widgetParams }),
-        },
-      );
+      const response = await fetch(`${CACHE_API}/api/transak-widget`, {
+        method: "POST",
+        body: JSON.stringify({ widgetParams }),
+      });
 
       if (!response.ok) {
         throw new Error("Failed to create Transak widget url");
