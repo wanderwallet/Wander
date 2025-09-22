@@ -418,7 +418,7 @@ export async function sendAoTransferForWallet(
     return transferID;
   } catch (err) {
     console.log("err", err);
-    return undefined;
+    throw err;
   } finally {
     // Clean up keyfile from memory
     if (decryptedWallet && decryptedWallet.type !== "hardware") {
@@ -453,6 +453,7 @@ export const sendAoTransferKeystone = async (
     return transferID;
   } catch (err) {
     console.log("err", err);
+    throw err;
   }
 };
 

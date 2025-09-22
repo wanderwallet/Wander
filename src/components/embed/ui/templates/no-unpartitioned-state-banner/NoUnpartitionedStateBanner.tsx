@@ -3,6 +3,7 @@ import { Link } from "~wallets/router/components/link/Link";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 import { AlertTriangle } from "@untitled-ui/icons-react";
 import { useLocation } from "~wallets/router/router.utils";
+import { EMBEDDED_SKIP_STORAGE_ACCESS_WARNING } from "~utils/embedded/iframe.utils";
 import clsx from "clsx";
 
 import styles from "./NoUnpartitionedStateBanner.module.scss";
@@ -16,7 +17,9 @@ export function NoUnpartitionedStateBanner({ className, disableLink }: NoUnparti
   const { location } = useLocation();
   const { unpartitionedStateStatus } = useEmbedded();
 
-  return unpartitionedStateStatus !== "supported" && location !== EmbeddedPaths.SupportUnpartitionedStateMissing ? (
+  return !EMBEDDED_SKIP_STORAGE_ACCESS_WARNING &&
+    unpartitionedStateStatus !== "supported" &&
+    location !== EmbeddedPaths.SupportUnpartitionedStateMissing ? (
     <div className={clsx(styles.root, className)}>
       <AlertTriangle className={styles.icon} />
       <span>

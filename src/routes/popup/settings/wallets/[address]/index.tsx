@@ -30,6 +30,7 @@ import { EventType, trackEvent } from "~utils/analytics";
 import { formatAddress, truncateMiddle } from "~utils/format";
 import { ExtensionStorage, useStorage } from "~utils/storage";
 import { removeWallet, type StoredWallet } from "~wallets";
+import { useActiveAddress } from "~wallets/hooks";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import { useLocation } from "~wallets/router/router.utils";
@@ -43,6 +44,7 @@ export type WalletViewProps = CommonRouteProps<WalletViewParams>;
 export function WalletView({ params: { address } }: WalletViewProps) {
   const { navigate } = useLocation();
   const isArnGated = useIsArNSPurchaseGated();
+  const activeAddress = useActiveAddress();
 
   const [editName, setEditName] = useState(false);
   const [open, setOpen] = useState(false);
@@ -50,7 +52,9 @@ export function WalletView({ params: { address } }: WalletViewProps) {
 
   const theme = useTheme();
 
-  const { data: nameServiceProfile } = useNameServiceProfile(address);
+  const effectiveAddress = useMemo(() => (address === "active" ? activeAddress : address), [address, activeAddress]);
+
+  const { data: nameServiceProfile } = useNameServiceProfile(effectiveAddress);
 
   // wallets
   const [wallets, setWallets] = useStorage<StoredWallet[]>(
@@ -62,11 +66,11 @@ export function WalletView({ params: { address } }: WalletViewProps) {
   );
 
   // this wallet
-  const wallet = useMemo(() => wallets?.find((w) => w.address === address), [wallets, address]);
+  const wallet = useMemo(() => wallets?.find((w) => w.address === effectiveAddress), [wallets, effectiveAddress]);
 
   const [isSeedphraseBackedUp] = useStorage(
     {
-      key: `recovery_phrase_backedup_${wallet?.address}`,
+      key: `recovery_phrase_backedup_${effectiveAddress}`,
       instance: ExtensionStorage,
     },
     true,
@@ -102,7 +106,7 @@ export function WalletView({ params: { address } }: WalletViewProps) {
     try {
       await setWallets((val) =>
         val.map((wallet) => {
-          if (wallet.address !== address) {
+          if (wallet.address !== effectiveAddress) {
             return wallet;
           }
 
@@ -265,7 +269,7 @@ export function WalletView({ params: { address } }: WalletViewProps) {
                 icon={<Icon color="primary" as={QrCode02} />}
                 hideSquircle
                 showArrow
-                onClick={() => navigate(`/quick-settings/wallets/${address}/qr`)}
+                onClick={() => navigate(`/quick-settings/wallets/${wallet.address}/qr`)}
               />
               <ListItem
                 style={{ position: "relative" }}
@@ -298,7 +302,7 @@ export function WalletView({ params: { address } }: WalletViewProps) {
                 }
                 hideSquircle
                 showArrow
-                onClick={() => navigate(`/quick-settings/wallets/${address}/export`)}
+                onClick={() => navigate(`/quick-settings/wallets/${wallet.address}/export`)}
               />
             </div>
           </div>
@@ -351,7 +355,7 @@ export function WalletView({ params: { address } }: WalletViewProps) {
                 fullWidth
                 onClick={async () => {
                   try {
-                    await removeWallet(address);
+                    await removeWallet(wallet.address);
                     setToast({
                       type: "success",
                       content: browser.i18n.getMessage("removed_wallet_notification"),

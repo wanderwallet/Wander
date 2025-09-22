@@ -156,6 +156,7 @@
     "postcss": "^8.0.0",
     "postcss-modules": "^4.3.0",
     "prettier": "^3.5.3",
+    "prisma": "6.11.1",
     "querystring-es3": "^0.2.1",
     "semantic-release": "^23.0.0",
     "stream-browserify": "^3.0.0",

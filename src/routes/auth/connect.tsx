@@ -6,7 +6,7 @@ import { unlock as globalUnlock } from "~wallets/auth";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useStorage } from "~utils/storage";
 import { ExtensionStorage } from "~utils/storage";
-import { formatAddress } from "~utils/format";
+import { formatAddress, truncateMiddle } from "~utils/format";
 import { addApp } from "~applications";
 import WalletSwitcher from "~components/popup/WalletSwitcher";
 import Wrapper from "~components/auth/Wrapper";
@@ -71,6 +71,8 @@ export function ConnectAuthRequestView() {
 
     if (nameServiceProfile?.logo && nsGateway?.protocol && nsGateway?.host) {
       setAvatar(concatGatewayURL(nsGateway) + "/" + nameServiceProfile.logo);
+    } else {
+      setAvatar("");
     }
   }, [wallet, nameServiceProfile, nsGateway]);
 
@@ -247,7 +249,7 @@ export function ConnectAuthRequestView() {
                 appInfo={appInfo}
                 url={url}
                 gateway={gateway}
-                wallet={wallet}
+                walletName={nameServiceProfile?.name || wallet?.nickname}
                 avatar={avatar}
                 activeAddress={activeAddress}
                 switcherOpen={switcherOpen}
@@ -383,7 +385,7 @@ const ConnectPage = ({
   appInfo,
   url,
   gateway,
-  wallet,
+  walletName,
   avatar,
   activeAddress,
   switcherOpen,
@@ -392,11 +394,11 @@ const ConnectPage = ({
   appInfo: any;
   url: string;
   gateway: any;
-  wallet: any;
   avatar: any;
   activeAddress: string;
   switcherOpen: boolean;
   setSwitcherOpen: (open: boolean) => void;
+  walletName: string;
 }) => (
   <ConnectPageContent>
     <ConnectPageSection>
@@ -420,7 +422,7 @@ const ConnectPage = ({
           <div style={{ display: "flex", flexDirection: "row", gap: "12px" }}>
             <Avatar img={avatar}>{!avatar && <NoAvatarIcon size="1.8em" />}</Avatar>
             <div>
-              <WalletName>{wallet?.nickname}</WalletName>
+              <WalletName>{truncateMiddle(walletName, 20)}</WalletName>
               <SecondaryText>{formatAddress(activeAddress || "", 4)}</SecondaryText>
             </div>
           </div>

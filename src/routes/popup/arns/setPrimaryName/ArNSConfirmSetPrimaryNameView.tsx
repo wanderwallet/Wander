@@ -23,6 +23,7 @@ import { queryClient } from "~utils/tanstack";
 import browser from "webextension-polyfill";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { trackPage, PageType, trackEvent, EventType } from "~utils/analytics";
+import { useAoRateLimitedToast } from "~utils/toast/toast.hooks";
 
 export interface ArNSConfirmSetPrimaryNameViewParams {
   name: string;
@@ -36,6 +37,8 @@ export const ArNSConfirmSetPrimaryNameView = ({ params: { name } }: ArNSConfirmS
 
   const { data: costDetails } = usePrimaryNameCostDetails({ name });
   const { data: ticker } = useTicker();
+
+  const { showAoRateLimitedToast } = useAoRateLimitedToast();
 
   const costDetailsArio = useMemo(() => {
     return costDetails ? new mARIOToken(costDetails.tokenCost).toARIO().valueOf() : undefined;
@@ -89,11 +92,13 @@ export const ArNSConfirmSetPrimaryNameView = ({ params: { name } }: ArNSConfirmS
         navigate(`/arns/primary-name-success/${name}/${result.transactionId}`);
       } else {
         trackEvent(EventType.ARNS_SET_PRIMARY_NAME_ERROR, { name });
+        showAoRateLimitedToast(new Error(result?.error || ""));
         navigate(`/arns/primary-name-error/${name}`);
       }
     } catch (error) {
       log(LOG_GROUP.ARNS, "error: ", error);
       trackEvent(EventType.ARNS_SET_PRIMARY_NAME_ERROR, { name });
+      showAoRateLimitedToast(error);
       navigate(`/arns/primary-name-error/${name}`);
     } finally {
       setProcessingTransaction(false);
