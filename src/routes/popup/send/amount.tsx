@@ -502,6 +502,7 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
           scrollable={false}
           title={browser.i18n.getMessage("select_token")}
           isOpen={showTokenSelector}
+          paddingVertical={0}
           onClose={() => {
             setShownTokenSelector(false);
           }}>

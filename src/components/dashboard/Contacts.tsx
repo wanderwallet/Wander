@@ -131,7 +131,6 @@ export function ContactsDashboardView({ isQuickSetting }: ContactsDashboardViewP
           {browser.i18n.getMessage(isQuickSetting ? "new" : "add_contact")}
         </AddContactButton>
       </SearchWrapper>
-      <Spacer y={1} />
       <Title>{browser.i18n.getMessage("your_contacts")}</Title>
       <Spacer y={0.5} />
       <SettingsList style={{ flex: 1, overflowY: "auto", minHeight: 0 }}>
@@ -176,6 +175,7 @@ export function ContactsDashboardView({ isQuickSetting }: ContactsDashboardViewP
             </React.Fragment>
           );
         })}
+        <Spacer y={0.5} />
       </SettingsList>
     </Wrapper>
   );
@@ -191,9 +191,7 @@ interface SettingsContactData {
 
 const Wrapper = styled.div`
   position: relative;
-  min-height: 0;
-  overflow: hidden;
-  height: calc(100vh - 100px);
+  height: calc(100vh - 78px);
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -204,11 +202,16 @@ const LetterHeader = styled.div`
 `;
 
 const SearchWrapper = styled.div<{ small?: boolean }>`
+  position: sticky;
   display: grid;
   gap: 8px;
+  inset: -32px 0 auto;
+  margin-top: -32px;
+  padding-top: 32px;
+  padding-bottom: 24px;
   z-index: 20;
   grid-template-columns: auto auto;
-  ${(props) => !props.small && `background-color: rgb(${props.theme.cardBackground})`}
+  ${(props) => !props.small && `background-color: ${props.theme.cardBackground}`}
 `;
 
 const AddContactButton = styled(Button)`

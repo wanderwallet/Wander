@@ -531,7 +531,7 @@
     "message": "Control the fees paid after transactions",
     "description": "Fee multiplier settings description"
   },
-  "setting_setting_currency_description": {
+  "setting_currency_description": {
     "message": "Fiat display currency",
     "description": "Currency settings description"
   },

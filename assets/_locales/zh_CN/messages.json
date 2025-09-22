@@ -527,7 +527,7 @@
       "message": "控制交易后的费用",
       "description": "Fee multiplier settings description"
   },
-  "setting_setting_currency_description": {
+  "setting_currency_description": {
       "message": "法定货币显示",
       "description": "Currency settings description"
   },
