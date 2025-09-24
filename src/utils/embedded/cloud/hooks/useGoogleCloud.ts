@@ -1,10 +1,11 @@
 import prettyBytes from "pretty-bytes";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useScript } from "~utils/script/script.hooks";
+import type { AppDataFile, UploadProgress } from "../cloud.types";
+import type { JWKInterface } from "arweave/web/lib/wallet";
 
-interface GoogleAuthState {
+interface GoogleCloudAuthState {
   isAuthenticated: boolean;
-  accessToken: string | null;
   isLoading: boolean;
   error: string | null;
 }
@@ -15,25 +16,9 @@ interface StoredToken {
   timestamp: number;
 }
 
-interface AppDataFile {
-  id: string;
-  name: string;
-  mimeType: string;
-  size?: string;
-  createdTime: string;
-  modifiedTime: string;
-}
-
-interface UploadProgress {
-  fileName: string;
-  progress: number;
-  isComplete: boolean;
-}
-
-interface UseGoogleDriveReturn {
+interface UseGoogleCloudReturn {
   // Auth state
   isAuthenticated: boolean;
-  accessToken: string | null;
   isLoading: boolean;
   error: string | null;
 
@@ -49,8 +34,13 @@ interface UseGoogleDriveReturn {
 
   // File operations methods
   listFiles: () => Promise<void>;
-  uploadFile: (file: File | Blob, fileName: string, mimeType?: string) => Promise<AppDataFile | null>;
-  getFile: (fileId: string) => Promise<Blob | null>;
+  uploadFile: (
+    file: File | Blob,
+    fileName: string,
+    walletAddress: string,
+    mimeType?: string,
+  ) => Promise<AppDataFile | null>;
+  getFile: (fileId: string) => Promise<JWKInterface | null>;
   updateFile: (fileId: string, file: File | Blob, fileName?: string, mimeType?: string) => Promise<AppDataFile | null>;
   downloadFile: (fileId: string, fileName: string) => Promise<void>;
   deleteFile: (fileId: string) => Promise<void>;
@@ -60,7 +50,6 @@ interface UseGoogleDriveReturn {
 const TOKEN_STORAGE_KEY = "google_drive_token";
 const TOKEN_EXPIRY_BUFFER = 5 * 60 * 1000; // 5 minutes buffer before actual expiry
 
-// Token management utilities
 const storeToken = (accessToken: string, expiresIn: number = 3600): void => {
   const expiresAt = Date.now() + expiresIn * 1000 - TOKEN_EXPIRY_BUFFER;
   const tokenData: StoredToken = {
@@ -113,32 +102,42 @@ declare global {
   }
 }
 
-export const useGoogleDrive = (clientId: string): UseGoogleDriveReturn => {
-  const [authState, setAuthState] = useState<GoogleAuthState>({
-    isAuthenticated: false,
-    accessToken: null,
-    isLoading: false,
-    error: null,
+export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
+  const accessTokenRef = useRef<string | null>(null);
+
+  const [authState, setAuthState] = useState<GoogleCloudAuthState>(() => {
+    const storedToken = getStoredToken();
+    accessTokenRef.current = storedToken?.accessToken || null;
+    return {
+      isAuthenticated: !!storedToken,
+      isLoading: false,
+      error: null,
+    };
   });
 
   const [files, setFiles] = useState<AppDataFile[]>([]);
   const [uploadProgress, setUploadProgress] = useState<UploadProgress | null>(null);
 
-  // Initialize auth state from stored token on mount
   useEffect(() => {
-    const initializeAuth = () => {
+    const syncAuthState = () => {
       const storedToken = getStoredToken();
-      if (storedToken) {
-        setAuthState({
-          isAuthenticated: true,
-          accessToken: storedToken.accessToken,
-          isLoading: false,
-          error: null,
-        });
-      }
+      const newIsAuthenticated = !!storedToken;
+      const newAccessToken = storedToken?.accessToken || null;
+
+      accessTokenRef.current = newAccessToken;
+
+      setAuthState((prev) => {
+        if (prev.isAuthenticated !== newIsAuthenticated) {
+          return {
+            ...prev,
+            isAuthenticated: newIsAuthenticated,
+          };
+        }
+        return prev;
+      });
     };
 
-    initializeAuth();
+    syncAuthState();
   }, []);
 
   // Google cloud script
@@ -186,12 +185,15 @@ export const useGoogleDrive = (clientId: string): UseGoogleDriveReturn => {
               // Store the token with expiry information
               storeToken(accessToken, expiresIn);
 
-              setAuthState({
+              // Update ref immediately
+              accessTokenRef.current = accessToken;
+
+              setAuthState((prev) => ({
+                ...prev,
                 isAuthenticated: true,
-                accessToken: accessToken,
                 isLoading: false,
                 error: null,
-              });
+              }));
               resolve(true);
             }
           },
@@ -201,16 +203,16 @@ export const useGoogleDrive = (clientId: string): UseGoogleDriveReturn => {
   }, [clientId, authState.isAuthenticated]);
 
   const revokeAuth = useCallback(() => {
-    if (authState.accessToken && window.google) {
-      window.google.accounts.oauth2.revoke(authState.accessToken);
+    if (accessTokenRef.current && window.google) {
+      window.google.accounts.oauth2.revoke(accessTokenRef.current);
     }
 
-    // Clear stored token
+    // Clear stored token and ref
     clearStoredToken();
+    accessTokenRef.current = null;
 
     setAuthState({
       isAuthenticated: false,
-      accessToken: null,
       isLoading: false,
       error: null,
     });
@@ -218,7 +220,7 @@ export const useGoogleDrive = (clientId: string): UseGoogleDriveReturn => {
     // Clear files when logging out
     setFiles([]);
     setUploadProgress(null);
-  }, [authState.accessToken]);
+  }, []);
 
   // Function to check if current token is valid
   const isTokenValid = useCallback((): boolean => {
@@ -228,8 +230,8 @@ export const useGoogleDrive = (clientId: string): UseGoogleDriveReturn => {
 
   // Function to refresh token if needed
   const ensureValidToken = useCallback(async (): Promise<string | null> => {
-    if (isTokenValid() && authState.accessToken) {
-      return authState.accessToken;
+    if (isTokenValid() && accessTokenRef.current) {
+      return accessTokenRef.current;
     }
 
     // Token is invalid or expired, need to re-authenticate
@@ -241,7 +243,7 @@ export const useGoogleDrive = (clientId: string): UseGoogleDriveReturn => {
     }
 
     return null;
-  }, [authState.accessToken, isTokenValid, authenticate]);
+  }, [isTokenValid, authenticate]);
 
   const listFiles = useCallback(async (): Promise<void> => {
     const token = await ensureValidToken();
@@ -297,7 +299,12 @@ export const useGoogleDrive = (clientId: string): UseGoogleDriveReturn => {
   }, [ensureValidToken]);
 
   const uploadFile = useCallback(
-    async (file: File | Blob, fileName: string, mimeType?: string): Promise<AppDataFile | null> => {
+    async (
+      file: File | Blob,
+      fileName: string,
+      walletAddress: string,
+      mimeType?: string,
+    ): Promise<AppDataFile | null> => {
       const token = await ensureValidToken();
       if (!token) {
         setAuthState((prev) => ({ ...prev, error: "Authentication required" }));
@@ -320,6 +327,7 @@ export const useGoogleDrive = (clientId: string): UseGoogleDriveReturn => {
         const metadata = {
           name: fileName,
           mimeType: fileType,
+          walletAddress,
           parents: ["appDataFolder"], // This is key for storing in app data folder
         };
 
@@ -359,6 +367,7 @@ export const useGoogleDrive = (clientId: string): UseGoogleDriveReturn => {
           size: result.size ? prettyBytes(parseInt(result.size)) : undefined,
           createdTime: result.createdTime,
           modifiedTime: result.modifiedTime,
+          walletAddress,
         };
 
         // Add to files list
@@ -379,7 +388,7 @@ export const useGoogleDrive = (clientId: string): UseGoogleDriveReturn => {
   );
 
   const getFile = useCallback(
-    async (fileId: string): Promise<Blob | null> => {
+    async (fileId: string): Promise<JWKInterface | null> => {
       const token = await ensureValidToken();
       if (!token) {
         setAuthState((prev) => ({ ...prev, error: "Authentication required" }));
@@ -400,8 +409,8 @@ export const useGoogleDrive = (clientId: string): UseGoogleDriveReturn => {
           throw new Error(`Failed to get file: ${errorData.error?.message || response.statusText}`);
         }
 
-        const blob = await response.blob();
-        return blob;
+        const blob = await response.json();
+        return blob as JWKInterface;
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
         setAuthState((prev) => ({ ...prev, error: errorMessage }));
@@ -483,6 +492,7 @@ export const useGoogleDrive = (clientId: string): UseGoogleDriveReturn => {
           size: result.size ? prettyBytes(parseInt(result.size)) : undefined,
           createdTime: result.createdTime,
           modifiedTime: result.modifiedTime,
+          walletAddress: result.walletAddress,
         };
 
         // Update the file in the files list
@@ -583,7 +593,6 @@ export const useGoogleDrive = (clientId: string): UseGoogleDriveReturn => {
   return {
     // Auth state
     isAuthenticated: authState.isAuthenticated,
-    accessToken: authState.accessToken,
     isLoading: authState.isLoading,
     error: authState.error,
 

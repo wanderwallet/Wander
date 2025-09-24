@@ -69,6 +69,7 @@ import { WalletBuyInputEmbeddedView } from "~routes/embedded/wallet/buy/buy.inpu
 import { WalletBuySuccessEmbeddedView } from "~routes/embedded/wallet/buy/buy.success.view";
 import { AccountBackupCloudEmbeddedView } from "~routes/embedded/account/backup-wallet/cloud/backup-cloud.view";
 import { AccountBackupCloudChangeProviderEmbeddedView } from "~routes/embedded/account/backup-wallet/cloud/backup-cloud-change-provider.view";
+import { AccountBackupCloudImportEmbeddedView } from "~routes/embedded/account/backup-wallet/cloud/backup-cloud-import.view";
 
 /**
  * Developers can manually navigate to these flows:
@@ -122,6 +123,7 @@ export type EmbeddedRoutePath =
   | "/account/backup-wallet/qrcode"
   | "/account/backup-wallet/cloud"
   | "/account/backup-wallet/cloud/change-provider"
+  | "/account/backup-wallet/cloud/import"
   // | "/account/backup-shares/<backupProvider>"
   | "/account/export-wallet"
   | "/"
@@ -195,6 +197,7 @@ export const EmbeddedPaths = {
   AccountBackupWalletQrCode: "/account/backup-wallet/qrcode",
   AccountBackupCloud: "/account/backup-wallet/cloud",
   AccountBackupCloudChangeProvider: "/account/backup-wallet/cloud/change-provider",
+  AccountBackupCloudImport: "/account/backup-wallet/cloud/import",
   AccountExportWallet: "/account/export-wallet",
 
   // Wallet:
@@ -245,8 +248,7 @@ const IFRAME_OWN_ROUTES = [
   },
   {
     path: EmbeddedPaths.AuthAddWallet,
-    // component: AuthAddWalletEmbeddedView,
-    component: AccountBackupCloudEmbeddedView,
+    component: AuthAddWalletEmbeddedView,
   },
   {
     path: EmbeddedPaths.AuthImportWallet,
@@ -437,6 +439,10 @@ const IFRAME_OWN_ROUTES = [
   {
     path: EmbeddedPaths.AccountBackupCloudChangeProvider,
     component: AccountBackupCloudChangeProviderEmbeddedView,
+  },
+  {
+    path: EmbeddedPaths.AccountBackupCloudImport,
+    component: AccountBackupCloudImportEmbeddedView,
   },
 ] as const satisfies RouteConfig<EmbeddedRoutePath>[];
 

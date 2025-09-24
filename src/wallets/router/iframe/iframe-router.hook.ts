@@ -24,10 +24,12 @@ const AUTH_STATUS_TO_OVERRIDE: Record<AuthStatus, null | ExtensionRouteOverride>
 export function useEmbeddedOverride(location?: RoutePath) {
   const {
     authStatus,
+    currentWallet,
     recoverableAccount,
     requestPasswordChange,
     unpartitionedStateStatus,
     unpartitionedStateConfirmed,
+    lastRegisteredWallet,
   } = useEmbedded();
 
   if (!location || authStatus === "unknown") {
@@ -92,9 +94,6 @@ export function useEmbeddedOverride(location?: RoutePath) {
         EmbeddedPaths.AuthImportQrCode,
         EmbeddedPaths.AuthAddDevice,
         EmbeddedPaths.AuthAddAuthProvider,
-        // TODO: Remove these once we have a proper auth flow:
-        EmbeddedPaths.AccountBackupCloud,
-        EmbeddedPaths.AccountBackupCloudChangeProvider,
         // EmbeddedPaths.AddDevice/<SOMETHING>
         // EmbeddedPaths.AddAuthProvider/<SOMETHING>
       ],
@@ -103,6 +102,14 @@ export function useEmbeddedOverride(location?: RoutePath) {
   }
 
   if (authStatus === "noShares") {
+    if (currentWallet.totalCloudBackups > 0) {
+      return routeTrapMatches(
+        location,
+        [EmbeddedPaths.AccountBackupCloudImport],
+        EmbeddedPaths.AccountBackupCloudImport,
+      );
+    }
+
     return routeTrapMatches(
       location,
       [
@@ -128,6 +135,15 @@ export function useEmbeddedOverride(location?: RoutePath) {
   }
 
   if (authStatus === "unlocked") {
+    // Show cloud backup screen for first-time wallet creation/import
+    if (lastRegisteredWallet && currentWallet.totalCloudBackups === 0) {
+      return routeTrapMatches(
+        location,
+        [EmbeddedPaths.AccountBackupCloud, EmbeddedPaths.AccountBackupCloudChangeProvider],
+        EmbeddedPaths.AccountBackupCloud,
+      );
+    }
+
     if (requestPasswordChange) {
       // TODO: Consider also including this as a box in the dashboard?
       return routeTrapMatches(location, [EmbeddedPaths.AccountChangePassword], EmbeddedPaths.AccountChangePassword);
