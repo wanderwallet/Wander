@@ -79,6 +79,8 @@ import {
   EMBEDDED_CONTEXT_INITIAL_STATE,
   EmbeddedContext,
 } from "~utils/embedded/embedded.context";
+import { CloudProvider } from "./cloud/cloud.types";
+import { browserInfo } from "~utils/browser-info/browser-info.utils";
 
 export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
   const mountedTimeRef = useRef(Date.now());
@@ -1010,6 +1012,15 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     [user],
   );
 
+  // CLOUD PROVIDER:
+
+  const setCloudProvider = useCallback((cloudProvider: CloudProvider) => {
+    setEmbeddedContextState((prevAuthContextState) => ({
+      ...prevAuthContextState,
+      cloudProvider,
+    }));
+  }, []);
+
   // INITIALIZATION:
 
   const lastUserIdRef = useRef<string | null>(null);
@@ -1084,10 +1095,13 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
     const wallets = await WalletService.fetchWallets(userId);
 
+    const cloudProvider = browserInfo.isAppleDevice ? CloudProvider.iCloud : CloudProvider.GoogleCloud;
+
     setEmbeddedContextState((prevAuthContextState) => ({
       ...prevAuthContextState,
       currentWalletId: wallets?.[0]?.id || null,
       wallets,
+      cloudProvider,
       ...getBackupsNeededAndMessage(wallets),
     }));
 
@@ -1247,6 +1261,8 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
   useEffect(() => {
     mountedTimeRef.current = Date.now();
+    const cloudProvider = browserInfo.isAppleDevice ? CloudProvider.iCloud : CloudProvider.GoogleCloud;
+    setCloudProvider(cloudProvider);
 
     isomorphicOnMessage("embedded_signOut", () => {
       signOut(false);
@@ -1293,6 +1309,8 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
         importTempWallet,
         deleteImportedTempWallet,
+
+        setCloudProvider,
 
         registerWallet,
         clearLastRegisteredWallet,

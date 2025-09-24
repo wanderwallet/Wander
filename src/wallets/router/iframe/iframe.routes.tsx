@@ -67,6 +67,8 @@ import { WalletReceiveOptionsEmbeddedView } from "~routes/embedded/wallet/receiv
 import { WalletDepositTokensEmbeddedView } from "~routes/embedded/wallet/deposit/deposit.container.view";
 import { WalletBuyInputEmbeddedView } from "~routes/embedded/wallet/buy/buy.input.view";
 import { WalletBuySuccessEmbeddedView } from "~routes/embedded/wallet/buy/buy.success.view";
+import { AccountBackupCloudEmbeddedView } from "~routes/embedded/account/backup-wallet/cloud/backup-cloud.view";
+import { AccountBackupCloudChangeProviderEmbeddedView } from "~routes/embedded/account/backup-wallet/cloud/backup-cloud-change-provider.view";
 
 /**
  * Developers can manually navigate to these flows:
@@ -118,6 +120,8 @@ export type EmbeddedRoutePath =
   | "/account/backup-wallet/copy-seedphrase"
   | "/account/backup-wallet/recovery-file"
   | "/account/backup-wallet/qrcode"
+  | "/account/backup-wallet/cloud"
+  | "/account/backup-wallet/cloud/change-provider"
   // | "/account/backup-shares/<backupProvider>"
   | "/account/export-wallet"
   | "/"
@@ -189,6 +193,8 @@ export const EmbeddedPaths = {
   AccountBackupCopySeedphrase: "/account/backup-wallet/copy-seedphrase",
   AccountBackupWalletRecoveryFile: "/account/backup-wallet/recovery-file",
   AccountBackupWalletQrCode: "/account/backup-wallet/qrcode",
+  AccountBackupCloud: "/account/backup-wallet/cloud",
+  AccountBackupCloudChangeProvider: "/account/backup-wallet/cloud/change-provider",
   AccountExportWallet: "/account/export-wallet",
 
   // Wallet:
@@ -239,7 +245,8 @@ const IFRAME_OWN_ROUTES = [
   },
   {
     path: EmbeddedPaths.AuthAddWallet,
-    component: AuthAddWalletEmbeddedView,
+    // component: AuthAddWalletEmbeddedView,
+    component: AccountBackupCloudEmbeddedView,
   },
   {
     path: EmbeddedPaths.AuthImportWallet,
@@ -420,6 +427,16 @@ const IFRAME_OWN_ROUTES = [
   {
     path: EmbeddedPaths.WalletBuySuccessEmbeddedView,
     component: WalletBuySuccessEmbeddedView,
+  },
+
+  // Account Backup Cloud:
+  {
+    path: EmbeddedPaths.AccountBackupCloud,
+    component: AccountBackupCloudEmbeddedView,
+  },
+  {
+    path: EmbeddedPaths.AccountBackupCloudChangeProvider,
+    component: AccountBackupCloudChangeProviderEmbeddedView,
   },
 ] as const satisfies RouteConfig<EmbeddedRoutePath>[];
 

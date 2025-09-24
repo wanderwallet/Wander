@@ -12428,6 +12428,11 @@ ts-interface-checker@^0.1.9:
   resolved "https://registry.yarnpkg.com/ts-interface-checker/-/ts-interface-checker-0.1.13.tgz#784fd3d679722bc103b1b4b8030bcddb5db2a699"
   integrity sha512-Y/arvbn+rrz3JCKl9C4kVNfTfSm2/mEp5FSz5EsZSANGPSlQrpRI5M4PKF+mJnE52jOO90PnPSc3Ur3bTQw0gA==
 
+tsl-apple-cloudkit@^0.2.34:
+  version "0.2.34"
+  resolved "https://registry.npmjs.org/tsl-apple-cloudkit/-/tsl-apple-cloudkit-0.2.34.tgz#cd62ff67db8440816272f5f94028e2641efd4343"
+  integrity sha512-A49Oflo4/Edb9GUN9hzjm7akpY3S+uivrPUxgvp6LPN+PGQsnruiCadSED029Wnh7HVZDU/I7dqWtG9VkPAbVA==
+
 tslib@2.4.0:
   version "2.4.0"
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-2.4.0.tgz#7cecaa7f073ce680a05847aa77be941098f36dc3"

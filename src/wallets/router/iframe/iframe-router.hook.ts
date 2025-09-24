@@ -92,6 +92,9 @@ export function useEmbeddedOverride(location?: RoutePath) {
         EmbeddedPaths.AuthImportQrCode,
         EmbeddedPaths.AuthAddDevice,
         EmbeddedPaths.AuthAddAuthProvider,
+        // TODO: Remove these once we have a proper auth flow:
+        EmbeddedPaths.AccountBackupCloud,
+        EmbeddedPaths.AccountBackupCloudChangeProvider,
         // EmbeddedPaths.AddDevice/<SOMETHING>
         // EmbeddedPaths.AddAuthProvider/<SOMETHING>
       ],

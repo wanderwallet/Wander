@@ -14,6 +14,7 @@ export const EMBEDDED_CONTEXT_INITIAL_STATE = {
   recoverableAccountWallets: null,
   requestPasswordChange: false,
   backupsNeeded: 0,
+  cloudProvider: null,
 } as const satisfies EmbeddedContextState;
 
 export const EMBEDDED_CONTEXT_INITIAL_AUTH = {
@@ -52,6 +53,8 @@ export const EmbeddedContext = createContext<EmbeddedContextData>({
 
   registerWallet: async () => null,
   clearLastRegisteredWallet: () => null,
+
+  setCloudProvider: () => null,
 
   // TODO: These should work for multiple wallets:
   downloadKeyfile: async () => null,

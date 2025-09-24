@@ -16,6 +16,7 @@
       "~isomorphic-messaging": ["./src/utils/messaging/strategies/extension/extension-messaging.strategy.ts"],
       "~isomorphic-chunking": ["./src/utils/messaging/strategies/extension/extension-chunking.strategy.ts"]
     },
+    "typeRoots": ["./node_modules/@types", "./node_modules/tsl-apple-cloudkit"],
     "resolveJsonModule": true,
     "baseUrl": ".",
     "jsx": "react-jsx",

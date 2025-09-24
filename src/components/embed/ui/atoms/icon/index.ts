@@ -47,3 +47,5 @@ export { default as EyeIcon } from "./Eye";
 export { default as EyeOffIcon } from "./EyeOff";
 export { default as EUAFlagIcon } from "./EUAFlag";
 export { default as ArioIcon } from "./Ario";
+export { default as ICloudIcon } from "./ICloud";
+export { default as GoogleCloudIcon } from "./GoogleCloud";
