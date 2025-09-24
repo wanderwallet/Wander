@@ -4,7 +4,7 @@ import styled from "styled-components";
 import browser from "webextension-polyfill";
 import HeadV2 from "~components/popup/HeadV2";
 import { SendButton, type RecipientType, type TransactionData } from ".";
-import { formatAddress } from "~utils/format";
+import { formatAddress, isEVMAddressFormat } from "~utils/format";
 import type Transaction from "arweave/web/lib/transaction";
 import { useStorage } from "~utils/storage";
 import { saveAoTransactionToLocalStorage } from "~utils/transactions";
@@ -677,7 +677,8 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
                 )}
                 {toContact && toContact.name
                   ? toContact.name.slice(0, 8)
-                  : recipient && formatAddress(recipient.address, 4)}
+                  : recipient &&
+                    `${formatAddress(recipient.address, 4)}${isEVMAddressFormat(recipient.address) ? " (EVM)" : ""}`}
               </Address>
             </AddressWrapper>
           )}
@@ -750,6 +751,7 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
                           {!toContact ? (
                             <>
                               {formatAddress(toMe || toAddress, 6)}
+                              {isEVMAddressFormat(toAddress) && " (EVM)"}
 
                               {toMe ? null : (
                                 <AddContact>

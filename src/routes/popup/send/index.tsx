@@ -5,12 +5,12 @@ import { Button, Input, Section, useInput, Text, ListItem, useToasts } from "@ar
 import browser from "webextension-polyfill";
 import { type Token as TokenInterface } from "~tokens/token";
 import HeadV2 from "~components/popup/HeadV2";
-import { generateProfileIcon, type Contact, type Contacts } from "~components/Recipient";
+import { type Contact, type Contacts } from "~components/Recipient";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import { Flex } from "~components/common/Flex";
 import Tabs from "~components/Tabs";
 import { useContacts, type Recipient } from "~contacts/hooks";
-import { formatAddress, isAddressFormat } from "~utils/format";
+import { formatAddress, isArweaveAddressFormat, isEVMAddressFormat } from "~utils/format";
 import { calculateDaysSinceTimestamp, humanizeTimestampForRecipient } from "~utils/timestamp";
 import { searchArNSName } from "~lib/arns";
 import SliderMenu from "~components/SliderMenu";
@@ -172,7 +172,7 @@ export function SendView({ params: { id } }: SendViewProps) {
       return lastRecipients;
     }
 
-    if (isAddressFormat(query)) {
+    if (isArweaveAddressFormat(query)) {
       return [{ address: addressInput.state }];
     }
 
@@ -253,7 +253,7 @@ export function SendView({ params: { id } }: SendViewProps) {
       setLoading(true);
       const input = directAddress || addressInput.state?.trim() || recipient?.address || "";
       let recipientAddress = "";
-      if (isAddressFormat(input)) {
+      if (isArweaveAddressFormat(input)) {
         if (input === activeAddress) {
           setToast({
             type: "error",
@@ -262,6 +262,9 @@ export function SendView({ params: { id } }: SendViewProps) {
           });
           return;
         }
+        recipientAddress = input;
+        setRecipient({ address: input });
+      } else if (isEVMAddressFormat(input)) {
         recipientAddress = input;
         setRecipient({ address: input });
       } else if (input.startsWith("ar://")) {

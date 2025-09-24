@@ -1,4 +1,4 @@
-import { isAddress, isLocalWallet, isSubscriptionType } from "~utils/assertions";
+import { isArweaveAddress, isLocalWallet, isSubscriptionType } from "~utils/assertions";
 import { getActiveAddress, getActiveKeyfile } from "~wallets";
 import type { BackgroundModuleFunction } from "~api/background/background-modules";
 import { requestUserAuthorization } from "../../../utils/auth/auth.utils";
@@ -7,7 +7,7 @@ import { RecurringPaymentFrequency, type SubscriptionData } from "~subscriptions
 
 const background: BackgroundModuleFunction<SubscriptionData> = async (appData, subscriptionData: SubscriptionData) => {
   // validate input
-  isAddress(subscriptionData.arweaveAccountAddress);
+  isArweaveAddress(subscriptionData.arweaveAccountAddress);
 
   isSubscriptionType(subscriptionData);
   const address = await getActiveAddress();

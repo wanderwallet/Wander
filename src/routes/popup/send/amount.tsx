@@ -15,7 +15,7 @@ import { useLocation } from "~wallets/router/router.utils";
 import HeadV2 from "~components/popup/HeadV2";
 import SliderMenu from "~components/SliderMenu";
 import { type Contact } from "~components/Recipient";
-import { formatAddress } from "~utils/format";
+import { formatAddress, isEVMAddressFormat } from "~utils/format";
 import { useContact } from "~contacts/hooks";
 import type { TokenInfo } from "~tokens/aoTokens/ao";
 import { useAoTokens } from "~tokens/hooks";
@@ -399,6 +399,7 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
                   {contact?.name
                     ? `${contact.name} (${formatAddress(recipient, 4)})`
                     : `${formatAddress(recipient, 4)}`}
+                  {isEVMAddressFormat(recipient) && " (EVM)"}
                 </Text>
               </Flex>
             </Flex>

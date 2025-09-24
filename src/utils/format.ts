@@ -66,7 +66,19 @@ export function formatAddress(addressOrWallet?: string | StoredWallet, count = 1
  * @param addr String to validate
  * @returns Valid address or not
  */
-export const isAddressFormat = (addr: string) => /^[a-z0-9_-]{43}$/i.test(addr);
+export const isArweaveAddressFormat = (addr: string) => /^[a-z0-9_-]{43}$/i.test(addr);
+
+/**
+ * Returns if a string is a valid EVM address
+ *
+ * This does not throw an error if the input is not a valid
+ * address, unlike the "isEVMAddress" assertion, in the assertion
+ * utils.
+ *
+ * @param addr String to validate
+ * @returns Valid address or not
+ */
+export const isEVMAddressFormat = (address: string): boolean => /^0x[a-fA-F0-9]{40}$/.test(address);
 
 /**
  * Capitalizes first letters of settings name and replaces "_" with " "

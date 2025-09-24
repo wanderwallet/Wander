@@ -3,7 +3,7 @@ import browser from "webextension-polyfill";
 import { useEffect, useState } from "react";
 import { getTokenInfo, type TokenInfo } from "~tokens/aoTokens/ao";
 import styled from "styled-components";
-import { isAddress } from "~utils/assertions";
+import { isArweaveAddress } from "~utils/assertions";
 import { getAoTokens } from "~tokens";
 import { PersistentStorage } from "~utils/storage";
 import { SubTitle } from "./ContactSettings";
@@ -66,7 +66,7 @@ export function AddTokenDashboardView({ isQuickSetting }: AddTokenDashboardViewP
       try {
         setLoading(true);
         //TODO double check
-        targetInput.state !== "AR" && isAddress(targetInput.state);
+        targetInput.state !== "AR" && isArweaveAddress(targetInput.state);
 
         const foundToken = defaultTokens.find((t) => t.processId === targetInput.state);
 

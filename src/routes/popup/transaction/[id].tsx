@@ -6,7 +6,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type MutableRefObjec
 import { STAKED_GQL_FULL_HISTORY, useGateway, useGraphqlGateways } from "~gateways/wayfinder";
 import { useLocation, useSearchParams } from "~wallets/router/router.utils";
 import { ChevronDownIcon, ChevronUpIcon, DownloadIcon } from "@iconicicons/react";
-import { formatAddress } from "~utils/format";
+import { formatAddress, isEVMAddressFormat } from "~utils/format";
 import { concatGatewayURL, urlToGateway } from "~gateways/utils";
 import { gql } from "~gateways/api";
 import CustomGatewayWarning from "~components/auth/CustomGatewayWarning";
@@ -469,6 +469,7 @@ export function TransactionView({ params: { id, gateway: gw, message } }: Transa
                       {!toContact ? (
                         <>
                           {formatAddress(toMe || toAddress, 6)}
+                          {isEVMAddressFormat(toAddress) && " (EVM)"}
 
                           {toMe ? null : (
                             <AddContact>

@@ -11,7 +11,7 @@ import type Transaction from "arweave/web/lib/transaction";
 import type { DecodedTag } from "~api/modules/sign/tags";
 import type { AppInfo } from "~applications/application";
 import type { Chunk } from "~api/modules/sign/chunks";
-import { isAddressFormat } from "./format";
+import { isArweaveAddressFormat, isEVMAddressFormat } from "./format";
 import type { EncryptionAlgorithm, LegacyEncryptionOptions } from "~api/modules/encrypt/types";
 import type { ApiCall } from "shim";
 import {
@@ -90,9 +90,14 @@ export function isTokenType(input: unknown): asserts input is TokenType {
   isOneOf(input, ["asset", "collectible"], "Token type should be asset/collectible.");
 }
 
-export function isAddress(input: unknown): asserts input is string {
+export function isArweaveAddress(input: unknown): asserts input is string {
   isString(input, "Address or ID should be a string.");
-  assert(isAddressFormat(input), "Invalid address or ID format.");
+  assert(isArweaveAddressFormat(input), "Invalid address or ID format.");
+}
+
+export function isEVMAddress(input: unknown): asserts input is string {
+  isString(input, "Address should be a string.");
+  assert(isEVMAddressFormat(input), "Invalid address or ID format.");
 }
 
 export function isPermissionsArray(input: unknown): asserts input is PermissionType[] {
@@ -222,7 +227,7 @@ export function isRawDataItem(input: unknown): asserts input is RawDataItem {
   isRecord(input, "Raw data item has to be a record.");
   isNumberArray(input.data);
 
-  if (input.target) isAddress(input.target);
+  if (input.target) isArweaveAddress(input.target);
   if (input.anchor) isString(input.anchor, "Anchor needs to be a string.");
 
   if (input.tags) isArrayOfType(input.tags, isTag, "Invalid tags array.");

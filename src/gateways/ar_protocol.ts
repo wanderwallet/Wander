@@ -1,5 +1,5 @@
 import { concatGatewayURL } from "~gateways/utils";
-import { isAddressFormat } from "~utils/format";
+import { isArweaveAddressFormat } from "~utils/format";
 import { type Gateway } from "./gateway";
 
 const PROTOCOL_PREFIX = "ar";
@@ -28,7 +28,7 @@ export function getRedirectURL(url: URL, gateway: Gateway) {
   redirectURL = concatGatewayURL(gateway) + "/" + value;
 
   // if it is not an Arweave ID, redirect to permapages
-  if (!isAddressFormat(value)) {
+  if (!isArweaveAddressFormat(value)) {
     // split path
     const paths = value.split("/");
 

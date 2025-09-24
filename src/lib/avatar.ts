@@ -3,7 +3,7 @@ import { getActiveKeyfile } from "~wallets";
 import { freeDecryptedWallet } from "~wallets/encryption";
 import { createData, ArweaveSigner } from "@dha-team/arbundles";
 import { uploadDataToTurbo } from "~api/modules/dispatch/uploader";
-import { isAddress } from "~utils/assertions";
+import { isArweaveAddress } from "~utils/assertions";
 import { QueryClient } from "@tanstack/react-query";
 
 // Create a new query client instance for avatar fetching
@@ -78,7 +78,7 @@ export async function uploadUserAvatar(avatar: File) {
 const fetchAvatarData = async (txId: string): Promise<string | null> => {
   try {
     // validate txId
-    isAddress(txId);
+    isArweaveAddress(txId);
 
     const data = await arweave.transactions.getData(txId, { decode: true });
     let mimeType = "image/png";
