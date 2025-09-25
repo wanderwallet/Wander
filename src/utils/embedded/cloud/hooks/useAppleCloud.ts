@@ -12,7 +12,6 @@ import type {
 import { useScript } from "~utils/script/script.hooks";
 import type { AppDataFile, UploadProgress } from "../cloud.types";
 import type { JWKInterface } from "arweave/web/lib/wallet";
-import { nanoid } from "nanoid";
 
 interface AppleAuthState {
   isAuthenticated: boolean;
@@ -37,14 +36,15 @@ interface UseAppleCloudReturn {
   revokeAuth: () => void;
 
   // File operations methods
-  listFiles: () => Promise<void>;
+  listFiles: () => Promise<AppDataFile[]>;
   uploadFile: (
     file: File | Blob,
     fileName: string,
     walletAddress: string,
     mimeType?: string,
   ) => Promise<AppDataFile | null>;
-  getFile: (fileId: string) => Promise<JWKInterface | null>;
+  getFileContent: (fileId: string) => Promise<JWKInterface | null>;
+  getFile: (walletAddress: string, fileId?: string) => Promise<AppDataFile | null>;
   updateFile: (fileId: string, file: File | Blob, fileName?: string, mimeType?: string) => Promise<AppDataFile | null>;
   downloadFile: (fileId: string, fileName: string) => Promise<void>;
   deleteFile: (fileId: string) => Promise<void>;
@@ -299,7 +299,7 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
     containerRef.current?._auth.signOut();
   }, []);
 
-  const listFiles = useCallback(async (): Promise<void> => {
+  const listFiles = useCallback(async (): Promise<AppDataFile[]> => {
     if (!isAuthenticatedRef.current || !containerRef.current) {
       setAuthState((prev) => ({ ...prev, error: "Authentication required" }));
       return;
@@ -310,12 +310,6 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
     try {
       const query: Query = {
         recordType: RECORD_TYPE,
-        sortBy: [
-          {
-            fieldName: "modifiedTimestamp",
-            ascending: false,
-          },
-        ],
       };
 
       const response = await containerRef.current.privateCloudDatabase.performQuery(query);
@@ -327,15 +321,15 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
         return {
           id: record.recordName,
           name: (fields.fileName?.value as string) || "Unknown",
-          mimeType: "application/octet-stream", // Default since we don't store it
-          size: asset?.fileSize ? prettyBytes(asset.fileSize) : undefined,
+          mimeType: "application/json",
           createdTime: record.created ? new Date(record.created.timestamp).toISOString() : "",
           modifiedTime: record.modified ? new Date(record.modified.timestamp).toISOString() : "",
-          walletAddress: (fields.walletAddress?.value as string) || "Unknown",
+          walletAddress: record.recordName || "Unknown",
         };
       });
 
       setFiles(appDataFiles);
+      return appDataFiles;
     } catch (err: any) {
       let errorMessage = "Unknown error occurred";
 
@@ -376,11 +370,17 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
       });
 
       try {
-        const fileType = mimeType || (file instanceof File ? file.type : "application/octet-stream");
-        const fileSize = file.size;
+        const existingFile = await getFile(walletAddress);
+        if (existingFile) {
+          console.log("File already exists: ", existingFile);
+          setAuthState((prev) => ({ ...prev, error: "File already exists" }));
+          return existingFile;
+        }
+
+        const fileType = mimeType || (file instanceof File ? file.type : "application/json");
 
         // Create a unique record name
-        const recordName = `wallet-backup-${nanoid()}`;
+        const recordName = walletAddress;
 
         // Update progress to 30% when preparing asset
         setUploadProgress((prev) => (prev ? { ...prev, progress: 30 } : null));
@@ -397,10 +397,6 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
             fileAsset: {
               value: file,
               type: "ASSETID",
-            },
-            walletAddress: {
-              value: walletAddress,
-              type: "STRING",
             },
           },
         };
@@ -426,8 +422,7 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
         const uploadedFile: AppDataFile = {
           id: savedRecord.recordName,
           name: (fields.fileName?.value as string) || fileName,
-          mimeType: fileType, // Use the original file type
-          size: prettyBytes(fileSize), // Use the original file size
+          mimeType: fileType,
           createdTime: savedRecord.created ? new Date(savedRecord.created.timestamp).toISOString() : "",
           modifiedTime: savedRecord.modified ? new Date(savedRecord.modified.timestamp).toISOString() : "",
           walletAddress: (fields.walletAddress?.value as string) || walletAddress,
@@ -459,7 +454,7 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
     [],
   );
 
-  const getFile = useCallback(async (fileId: string): Promise<JWKInterface | null> => {
+  const getFileContent = useCallback(async (fileId: string): Promise<JWKInterface | null> => {
     if (!isAuthenticatedRef.current || !containerRef.current) {
       setAuthState((prev) => ({ ...prev, error: "Authentication required" }));
       return null;
@@ -509,6 +504,45 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
     }
   }, []);
 
+  const getFile = useCallback(async (walletAddress: string, fileId?: string): Promise<AppDataFile | null> => {
+    try {
+      if (!isAuthenticatedRef.current || !containerRef.current) {
+        setAuthState((prev) => ({ ...prev, error: "Authentication required" }));
+        return null;
+      }
+
+      const response = await containerRef.current.privateCloudDatabase.fetchRecords([fileId]);
+
+      if (response.records.length === 0) {
+        throw new Error("File not found");
+      }
+
+      const record = response.records[0];
+      const fields = record.fields as { [name: string]: RecordField };
+      const asset = fields.fileAsset?.value as Asset;
+
+      if (!asset) {
+        throw new Error("File asset not found");
+      }
+
+      return {
+        id: record.recordName,
+        name: (fields.fileName?.value as string) || "Unknown",
+        mimeType: "application/json",
+        createdTime: record.created ? new Date(record.created.timestamp).toISOString() : "",
+        modifiedTime: record.modified ? new Date(record.modified.timestamp).toISOString() : "",
+        walletAddress: record.recordName || "Unknown",
+      };
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
+      setAuthState((prev) => ({ ...prev, error: errorMessage }));
+      console.error("Error getting file:", err);
+      return null;
+    } finally {
+      setAuthState((prev) => ({ ...prev, isLoading: false }));
+    }
+  }, []);
+
   const updateFile = useCallback(
     async (fileId: string, file: File | Blob, fileName?: string, mimeType?: string): Promise<AppDataFile | null> => {
       if (!isAuthenticatedRef.current || !containerRef.current) {
@@ -526,8 +560,7 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
       });
 
       try {
-        const fileType = mimeType || (file instanceof File ? file.type : "application/octet-stream");
-        const fileSize = file.size;
+        const fileType = mimeType || (file instanceof File ? file.type : "application/json");
 
         // First, fetch the existing record to get its current state
         const fetchResponse = await containerRef.current.privateCloudDatabase.fetchRecords([fileId]);
@@ -579,8 +612,7 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
         const updatedFile: AppDataFile = {
           id: savedRecord.recordName,
           name: (fields.fileName?.value as string) || fileName || "Unknown",
-          mimeType: fileType, // Use the original file type
-          size: prettyBytes(fileSize), // Use the original file size
+          mimeType: fileType,
           createdTime: savedRecord.created ? new Date(savedRecord.created.timestamp).toISOString() : "",
           modifiedTime: savedRecord.modified ? new Date(savedRecord.modified.timestamp).toISOString() : "",
           walletAddress: fields.walletAddress?.value as string,
@@ -622,7 +654,7 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
       setAuthState((prev) => ({ ...prev, isLoading: true, error: null }));
 
       try {
-        const jsonData = await getFile(fileId);
+        const jsonData = await getFileContent(fileId);
         if (!jsonData) {
           throw new Error("Failed to get file");
         }
@@ -653,7 +685,7 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
         setAuthState((prev) => ({ ...prev, isLoading: false }));
       }
     },
-    [getFile],
+    [getFileContent],
   );
 
   const deleteFile = useCallback(async (fileId: string): Promise<void> => {
@@ -705,6 +737,7 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
     // File operations methods
     listFiles,
     uploadFile,
+    getFileContent,
     getFile,
     updateFile,
     downloadFile,

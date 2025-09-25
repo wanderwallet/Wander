@@ -1,13 +1,12 @@
 export enum CloudProvider {
-  iCloud = "iCloud",
-  GoogleCloud = "Google Cloud",
+  APPLE = "APPLE",
+  GOOGLE = "GOOGLE",
 }
 
 export interface AppDataFile {
   id: string;
   name: string;
   mimeType: string;
-  size?: string;
   createdTime: string;
   modifiedTime: string;
   walletAddress: string;

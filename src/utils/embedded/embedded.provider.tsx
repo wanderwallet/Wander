@@ -1,7 +1,7 @@
 import type { JWKInterface } from "arweave/web/lib/wallet";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { setupBackgroundService } from "~api/background/background-setup";
-import { WalletService } from "~utils/wallets/wallets.service";
+import { WalletService, type CloudBackup } from "~utils/wallets/wallets.service";
 import { WalletUtils } from "~utils/wallets/wallets.utils";
 import { getKeyfile, getWallets, type LocalWallet } from "~wallets";
 import Arweave from "arweave";
@@ -80,7 +80,6 @@ import {
   EmbeddedContext,
 } from "~utils/embedded/embedded.context";
 import { CloudProvider } from "./cloud/cloud.types";
-import { browserInfo } from "~utils/browser-info/browser-info.utils";
 
 export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
   const mountedTimeRef = useRef(Date.now());
@@ -1021,6 +1020,20 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     }));
   }, []);
 
+  const setCloudBackup = useCallback((cloudBackup: CloudBackup, updatedWallet?: Wallet) => {
+    setEmbeddedContextState((prevAuthContextState) => ({
+      ...prevAuthContextState,
+      cloudBackup,
+    }));
+
+    if (updatedWallet) {
+      updateCurrentWallet((currentWallet) => ({
+        ...currentWallet,
+        ...updatedWallet,
+      }));
+    }
+  }, []);
+
   // INITIALIZATION:
 
   const lastUserIdRef = useRef<string | null>(null);
@@ -1095,13 +1108,10 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
     const wallets = await WalletService.fetchWallets(userId);
 
-    const cloudProvider = browserInfo.isAppleDevice ? CloudProvider.iCloud : CloudProvider.GoogleCloud;
-
     setEmbeddedContextState((prevAuthContextState) => ({
       ...prevAuthContextState,
       currentWalletId: wallets?.[0]?.id || null,
       wallets,
-      cloudProvider,
       ...getBackupsNeededAndMessage(wallets),
     }));
 
@@ -1261,8 +1271,6 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
   useEffect(() => {
     mountedTimeRef.current = Date.now();
-    const cloudProvider = browserInfo.isAppleDevice ? CloudProvider.iCloud : CloudProvider.GoogleCloud;
-    setCloudProvider(cloudProvider);
 
     isomorphicOnMessage("embedded_signOut", () => {
       signOut(false);
@@ -1311,6 +1319,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         deleteImportedTempWallet,
 
         setCloudProvider,
+        setCloudBackup,
 
         registerWallet,
         clearLastRegisteredWallet,

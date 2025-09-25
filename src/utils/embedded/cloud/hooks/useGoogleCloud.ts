@@ -1,4 +1,3 @@
-import prettyBytes from "pretty-bytes";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useScript } from "~utils/script/script.hooks";
 import type { AppDataFile, UploadProgress } from "../cloud.types";
@@ -33,14 +32,15 @@ interface UseGoogleCloudReturn {
   ensureValidToken: () => Promise<string | null>;
 
   // File operations methods
-  listFiles: () => Promise<void>;
+  listFiles: () => Promise<AppDataFile[]>;
   uploadFile: (
     file: File | Blob,
     fileName: string,
     walletAddress: string,
     mimeType?: string,
   ) => Promise<AppDataFile | null>;
-  getFile: (fileId: string) => Promise<JWKInterface | null>;
+  getFileContent: (fileId: string) => Promise<JWKInterface | null>;
+  getFile: (walletAddress: string, fileId?: string) => Promise<AppDataFile | null>;
   updateFile: (fileId: string, file: File | Blob, fileName?: string, mimeType?: string) => Promise<AppDataFile | null>;
   downloadFile: (fileId: string, fileName: string) => Promise<void>;
   deleteFile: (fileId: string) => Promise<void>;
@@ -245,18 +245,18 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
     return null;
   }, [isTokenValid, authenticate]);
 
-  const listFiles = useCallback(async (): Promise<void> => {
+  const listFiles = useCallback(async (): Promise<AppDataFile[]> => {
     const token = await ensureValidToken();
     if (!token) {
       setAuthState((prev) => ({ ...prev, error: "Authentication required" }));
-      return;
+      return [];
     }
 
     setAuthState((prev) => ({ ...prev, isLoading: true, error: null }));
 
     try {
       const response = await fetch(
-        "https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&fields=files(id,name,mimeType,size,createdTime,modifiedTime)",
+        "https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&fields=files(id,name,mimeType,createdTime,modifiedTime,appProperties)",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -275,20 +275,21 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
           id: string;
           name: string;
           mimeType: string;
-          size?: string;
           createdTime: string;
           modifiedTime: string;
+          appProperties: { walletAddress: string };
         }) => ({
           id: file.id,
           name: file.name,
           mimeType: file.mimeType,
-          size: file.size ? prettyBytes(parseInt(file.size)) : undefined,
           createdTime: file.createdTime,
           modifiedTime: file.modifiedTime,
+          walletAddress: file?.appProperties?.walletAddress || "",
         }),
       );
 
       setFiles(appDataFiles);
+      return appDataFiles;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
       setAuthState((prev) => ({ ...prev, error: errorMessage }));
@@ -297,6 +298,49 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
       setAuthState((prev) => ({ ...prev, isLoading: false }));
     }
   }, [ensureValidToken]);
+
+  const getFile = useCallback(
+    async (walletAddress: string, fileId?: string): Promise<AppDataFile | null> => {
+      try {
+        const token = await ensureValidToken();
+        if (!token) {
+          setAuthState((prev) => ({ ...prev, error: "Authentication required" }));
+          return null;
+        }
+
+        const url = fileId
+          ? `https://www.googleapis.com/drive/v3/files/${fileId}`
+          : `https://www.googleapis.com/drive/v3/files?q=appProperties has { key: 'walletAddress', value: '${walletAddress}' }`;
+
+        const response = await fetch(`${url}&fields=id,name,mimeType,createdTime,modifiedTime,appProperties`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(`Failed to get file: ${errorData.error?.message || response.statusText}`);
+        }
+
+        const data = await response.json();
+        return {
+          id: data.id,
+          name: data.name,
+          mimeType: data.mimeType,
+          createdTime: data.createdTime,
+          modifiedTime: data.modifiedTime,
+          walletAddress: data?.appProperties?.walletAddress || "",
+        } as AppDataFile;
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
+        setAuthState((prev) => ({ ...prev, error: errorMessage }));
+        console.error("Error getting file:", err);
+        return null;
+      }
+    },
+    [ensureValidToken],
+  );
 
   const uploadFile = useCallback(
     async (
@@ -321,14 +365,21 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
       });
 
       try {
+        const existingFile = await getFile(walletAddress);
+        if (existingFile) {
+          console.log("File already exists: ", existingFile);
+          setAuthState((prev) => ({ ...prev, error: "File already exists" }));
+          return existingFile;
+        }
+
         const fileType = mimeType || (file instanceof File ? file.type : "application/octet-stream");
 
         // Create metadata for the file - specify appDataFolder as parent
         const metadata = {
           name: fileName,
           mimeType: fileType,
-          walletAddress,
-          parents: ["appDataFolder"], // This is key for storing in app data folder
+          parents: ["appDataFolder"], // This is key for storing in app data folder,
+          appProperties: { walletAddress },
         };
 
         // Create form data for multipart upload
@@ -364,9 +415,8 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
           id: result.id,
           name: result.name,
           mimeType: result.mimeType,
-          size: result.size ? prettyBytes(parseInt(result.size)) : undefined,
-          createdTime: result.createdTime,
-          modifiedTime: result.modifiedTime,
+          createdTime: result.createdTime || new Date(),
+          modifiedTime: result.modifiedTime || new Date(),
           walletAddress,
         };
 
@@ -387,7 +437,7 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
     [ensureValidToken],
   );
 
-  const getFile = useCallback(
+  const getFileContent = useCallback(
     async (fileId: string): Promise<JWKInterface | null> => {
       const token = await ensureValidToken();
       if (!token) {
@@ -489,7 +539,6 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
           id: result.id,
           name: result.name,
           mimeType: result.mimeType,
-          size: result.size ? prettyBytes(parseInt(result.size)) : undefined,
           createdTime: result.createdTime,
           modifiedTime: result.modifiedTime,
           walletAddress: result.walletAddress,
@@ -609,6 +658,7 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
     // File operations methods
     listFiles,
     uploadFile,
+    getFileContent,
     getFile,
     updateFile,
     downloadFile,

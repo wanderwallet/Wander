@@ -1,6 +1,6 @@
 import React from "react";
 import type { CardBaseProps } from "./Card.types";
-import { Box, MinimizeIcon, ChevronLeft, Button } from "../../atoms";
+import { Box, ChevronLeft, Button, XClose } from "../../atoms";
 import { Header } from "../header";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 import { useLocation } from "~wallets/router/router.utils";
@@ -46,7 +46,7 @@ const Card = React.forwardRef<HTMLDivElement, CardBaseProps>(
         className={styles["card__close__btn"]}
         onClick={onCloseButtonClick ?? closeCard}
         isDisabled={isDisabled || isLoading}>
-        {customIcon ?? <MinimizeIcon fontSize={24} style={{ color: "var(--color-font-body)", margin: 0 }} />}
+        {customIcon ?? <XClose fontSize={24} style={{ color: "var(--color-font-body)", margin: 0 }} />}
       </Button>
     ) : null;
 

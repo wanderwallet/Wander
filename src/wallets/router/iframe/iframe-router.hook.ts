@@ -102,36 +102,33 @@ export function useEmbeddedOverride(location?: RoutePath) {
   }
 
   if (authStatus === "noShares") {
-    if (currentWallet.totalCloudBackups > 0) {
-      return routeTrapMatches(
-        location,
-        [EmbeddedPaths.AccountBackupCloudImport],
-        EmbeddedPaths.AccountBackupCloudImport,
-      );
+    const hasCloudBackup = currentWallet.totalCloudBackups > 0;
+    const redirectTo = hasCloudBackup ? EmbeddedPaths.AccountBackupCloudImport : EmbeddedPaths.AuthRestoreShares;
+
+    const validRoutes = [
+      // Restore:
+      EmbeddedPaths.AuthRestoreShares,
+      EmbeddedPaths.AuthRestoreSharesCreateConfirmation,
+      EmbeddedPaths.AuthRestoreSharesRecoveryFile,
+      EmbeddedPaths.AuthRestoreSharesSeedPhrase,
+      EmbeddedPaths.AuthRestoreSharesKeyfile,
+      EmbeddedPaths.AuthRestoreSharesQrCode,
+
+      // Add wallet:
+      EmbeddedPaths.AuthAddWallet,
+      EmbeddedPaths.AuthImportWallet,
+      EmbeddedPaths.AuthImportSeedPhrase,
+      EmbeddedPaths.AuthAddWithQRCode,
+      EmbeddedPaths.AuthQRCodeScanner,
+      EmbeddedPaths.AuthImportKeyfile,
+      EmbeddedPaths.AuthImportQrCode,
+    ] as RoutePath[];
+
+    if (hasCloudBackup) {
+      validRoutes.unshift(EmbeddedPaths.AccountBackupCloudImport);
     }
 
-    return routeTrapMatches(
-      location,
-      [
-        // Restore:
-        EmbeddedPaths.AuthRestoreShares,
-        EmbeddedPaths.AuthRestoreSharesCreateConfirmation,
-        EmbeddedPaths.AuthRestoreSharesRecoveryFile,
-        EmbeddedPaths.AuthRestoreSharesSeedPhrase,
-        EmbeddedPaths.AuthRestoreSharesKeyfile,
-        EmbeddedPaths.AuthRestoreSharesQrCode,
-
-        // Add wallet:
-        EmbeddedPaths.AuthAddWallet,
-        EmbeddedPaths.AuthImportWallet,
-        EmbeddedPaths.AuthImportSeedPhrase,
-        EmbeddedPaths.AuthAddWithQRCode,
-        EmbeddedPaths.AuthQRCodeScanner,
-        EmbeddedPaths.AuthImportKeyfile,
-        EmbeddedPaths.AuthImportQrCode,
-      ],
-      EmbeddedPaths.AuthRestoreShares,
-    );
+    return routeTrapMatches(location, validRoutes, redirectTo);
   }
 
   if (authStatus === "unlocked") {

@@ -1,5 +1,5 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button, Column, ICloudIcon, GoogleCloudIcon, Row, Switch, Text } from "~components/embed";
 import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
@@ -10,6 +10,8 @@ import { WalletService } from "~utils/wallets/wallets.service";
 import { navigate } from "wouter/use-hash-location";
 import { browserInfo } from "~utils/browser-info/browser-info.utils";
 import { sleep } from "~utils/promises/sleep";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import type { Wallet } from "~utils/embedded/embedded.types";
 
 const clientId = import.meta.env?.VITE_GOOGLE_CLIENT_ID;
 const containerIdentifier = import.meta.env?.VITE_APPLE_CONTAINER_IDENTIFIER;
@@ -24,22 +26,27 @@ export function AccountBackupCloudEmbeddedView() {
     clearLastRegisteredWallet,
     lastRegisteredWallet,
     setCloudProvider,
+    setCloudBackup,
+    cloudBackup,
   } = useEmbedded();
 
+  const fileRef = useRef<AppDataFile | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isBackupLoading, setIsBackupLoading] = useState(false);
   const [isCloudEnabled, setIsCloudEnabled] = useState(false);
 
-  const areButtonsDisabled = authStatus === "unknown" || authStatus === "loading" || authStatus === "authLoading";
-
-  const isViewLoading = areButtonsDisabled;
+  const isViewLoading =
+    authStatus === "unknown" || authStatus === "loading" || authStatus === "authLoading" || isBackupLoading;
 
   const googleCloud = useGoogleCloud(clientId);
   const appleCloud = useAppleCloud(containerIdentifier, apiToken);
 
   const handleComplete = async () => {
-    if (lastRegisteredWallet) clearLastRegisteredWallet();
-    await sleep(100);
-    navigate(EmbeddedPaths.WalletHomeEmbeddedView);
+    if (lastRegisteredWallet) {
+      clearLastRegisteredWallet();
+      await sleep(100);
+      navigate(EmbeddedPaths.WalletHomeEmbeddedView);
+    }
   };
 
   const handleSkip = () => {
@@ -55,29 +62,30 @@ export function AccountBackupCloudEmbeddedView() {
       const fileName = "backup-jwk.json";
       const mimeType = "application/json";
 
-      let file: AppDataFile | null = null;
-
-      if (cloudProvider === CloudProvider.GoogleCloud) {
-        const success = await googleCloud.authenticate();
-        if (!success) throw new Error("Failed to authenticate with Google Drive");
-        file = await googleCloud.uploadFile(blob, fileName, currentWallet.address, mimeType);
-      } else if (cloudProvider === CloudProvider.iCloud) {
-        const success = await appleCloud.authenticate();
-        if (!success) throw new Error("Failed to authenticate with Apple Drive");
-        file = await appleCloud.uploadFile(blob, fileName, currentWallet.address, mimeType);
+      if (!fileRef.current) {
+        if (cloudProvider === CloudProvider.GOOGLE) {
+          const success = await googleCloud.authenticate();
+          if (!success) throw new Error("Failed to authenticate with Google Drive");
+          fileRef.current = await googleCloud.uploadFile(blob, fileName, currentWallet.address, mimeType);
+        } else if (cloudProvider === CloudProvider.APPLE) {
+          const success = await appleCloud.authenticate();
+          if (!success) throw new Error("Failed to authenticate with Apple Drive");
+          fileRef.current = await appleCloud.uploadFile(blob, fileName, currentWallet.address, mimeType);
+        }
       }
 
-      if (file) {
-        const { cloudBackup } = await WalletService.createCloudBackup({
+      if (fileRef.current) {
+        const { cloudBackup, wallet } = await WalletService.createCloudBackup({
           walletId: currentWallet.id,
-          fileId: file.id,
+          fileId: fileRef.current.id,
           email: "wander@wander.app",
-          provider: cloudProvider === CloudProvider.iCloud ? "APPLE" : "GOOGLE",
+          provider: cloudProvider,
         });
 
-        console.log({ file, cloudBackup });
+        setCloudBackup(cloudBackup, wallet as Wallet);
 
-        // Complete the onboarding flow after successful backup
+        if (!cloudBackup) throw new Error("Failed to create cloud backup");
+
         handleComplete();
       }
     } catch (error) {
@@ -87,56 +95,112 @@ export function AccountBackupCloudEmbeddedView() {
     }
   }
 
+  async function handleDeleteFromCloud() {
+    if (!currentWallet || !cloudBackup) return;
+    setIsLoading(true);
+    try {
+      if (cloudBackup.provider === CloudProvider.GOOGLE) {
+        const success = await googleCloud.authenticate();
+        if (!success) throw new Error("Failed to authenticate with Google Drive");
+        await googleCloud.deleteFile(cloudBackup.fileId);
+      } else if (cloudBackup.provider === CloudProvider.APPLE) {
+        const success = await appleCloud.authenticate();
+        if (!success) throw new Error("Failed to authenticate with Apple Drive");
+        await appleCloud.deleteFile(cloudBackup.fileId);
+      }
+
+      const { wallet } = await WalletService.deleteCloudBackup({ walletId: currentWallet.id });
+      setCloudBackup(null, wallet as Wallet);
+    } catch (error) {
+      console.error("Failed to delete from cloud:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   useEffect(() => {
     if (cloudProvider) return;
-    const provider = browserInfo.isAppleDevice ? CloudProvider.iCloud : CloudProvider.GoogleCloud;
+    const provider = browserInfo.isAppleDevice ? CloudProvider.APPLE : CloudProvider.GOOGLE;
     setCloudProvider(provider);
   }, []);
 
+  useAsyncEffect(async () => {
+    if (!currentWallet || cloudBackup) return;
+    setIsBackupLoading(true);
+    try {
+      const { cloudBackup: fetchedCloudBackup } = await WalletService.fetchCloudBackup({ walletId: currentWallet.id });
+      setCloudBackup(fetchedCloudBackup);
+    } catch (error) {
+      console.error("Failed to fetch cloud backup:", error);
+    } finally {
+      setIsBackupLoading(false);
+    }
+  }, [currentWallet]);
+
   return (
     <OnboardingCard
-      headerText="Store your recovery key on the cloud"
-      subtitle="Upload your recovery key to the cloud to easily sign in and connect your wallet on new devices."
-      hasBackButton={false}
+      headerText="Store your keyfile on the cloud"
+      subtitle="Upload your keyfile to the cloud to easily sign in and connect your wallet on new devices."
+      hasBackButton={!lastRegisteredWallet}
       hasCloseButton={false}
-      isLoading={isViewLoading}>
+      isLoading={isViewLoading}
+      onBackButtonClick={() => navigate(EmbeddedPaths.AccountBackupFullWallet)}>
       <Column alignment="left">
         <Row justifyContent="between" isFullWidth>
           <Row justifyContent="start" isFullWidth>
-            {cloudProvider === CloudProvider.iCloud ? <ICloudIcon /> : <GoogleCloudIcon />}
-            <Text variant="bodyLg">Store on {cloudProvider}</Text>
+            {cloudProvider === CloudProvider.APPLE ? <ICloudIcon /> : <GoogleCloudIcon />}
+            <Text variant="bodyLg">
+              Store{cloudBackup ? "d" : ""} on {cloudProvider === CloudProvider.APPLE ? "iCloud" : "Google Cloud"}
+            </Text>
           </Row>
-          <Switch size={31} isChecked={isCloudEnabled} handleChange={(e) => setIsCloudEnabled(e.target.checked)} />
+          {!cloudBackup && (
+            <Switch size={31} isChecked={isCloudEnabled} handleChange={(e) => setIsCloudEnabled(e.target.checked)} />
+          )}
         </Row>
-        <Text variant="bodySm">
-          Leaving this off will require you to re-import your wallet every time you use Wander Connect on a new device.
-        </Text>
-        <Button variant="link" isDisabled={areButtonsDisabled} href={EmbeddedPaths.AccountBackupCloudChangeProvider}>
-          Change cloud provider
-        </Button>
+        {!cloudBackup && (
+          <>
+            <Text variant="bodySm">
+              Leaving this off will require you to re-import your wallet every time you use Wander Connect on a new
+              device.
+            </Text>
+            <Button variant="link" isDisabled={isViewLoading} href={EmbeddedPaths.AccountBackupCloudChangeProvider}>
+              Change cloud provider
+            </Button>
+          </>
+        )}
       </Column>
       {/* <Spacer y={0.5} /> */}
       <div style={{ opacity: 0, height: 0 }} id="apple-sign-in-button" />
       <Column spacing="xl">
         <Column isFullWidth>
-          <Button
-            onClick={handleStoreOnCloud}
-            variant="primary"
-            isFullWidth
-            isLoading={isLoading || googleCloud.isLoading || appleCloud.isLoading}
-            isDisabled={!isCloudEnabled}>
-            Store on cloud
-          </Button>
+          {!cloudBackup ? (
+            <Button
+              onClick={handleStoreOnCloud}
+              variant="primary"
+              isFullWidth
+              isLoading={isLoading || googleCloud.isLoading || appleCloud.isLoading}
+              isDisabled={!isCloudEnabled || isBackupLoading || isLoading}>
+              Store on cloud
+            </Button>
+          ) : (
+            <Button
+              onClick={handleDeleteFromCloud}
+              variant="primary"
+              isFullWidth
+              isLoading={isLoading}
+              isDisabled={isLoading}>
+              Delete backup
+            </Button>
+          )}
 
-          <Button variant="secondary" isFullWidth isDisabled={areButtonsDisabled} onClick={handleSkip}>
-            Skip
-          </Button>
+          {!cloudBackup && (
+            <Button variant="secondary" isFullWidth isDisabled={isViewLoading} onClick={handleSkip}>
+              Skip
+            </Button>
+          )}
         </Column>
-        <Button
-          variant="link"
-          isDisabled={areButtonsDisabled}
-          href="https://www.wander.app/help/what-is-a-wander-connect-recovery-file">
-          What is a recovery file?
+        <Button variant="link" isDisabled={isViewLoading} href="https://www.wander.app/help/what-is-a-json-keyfile">
+          What is a keyfile?
         </Button>
       </Column>
     </OnboardingCard>

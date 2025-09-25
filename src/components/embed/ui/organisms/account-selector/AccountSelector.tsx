@@ -31,7 +31,7 @@ export function AccountSelector({ wallets, currentWallet }: AccountSelectorProps
               <Text variant="bodySm" style={{ fontWeight: 500 }}>
                 Secure your account by backing it up.
               </Text>
-              <DownloadIcon />
+              <DownloadIcon style={{ flexShrink: 0 }} />
             </Row>
           </Link>
         }
