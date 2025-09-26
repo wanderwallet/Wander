@@ -54,6 +54,14 @@ interface UseAppleCloudReturn {
 const RECORD_TYPE = "WalletBackup";
 
 export const useAppleCloud = (containerIdentifier: string, apiToken: string): UseAppleCloudReturn => {
+  // Validate environment configuration
+  if (!containerIdentifier || !apiToken) {
+    console.error("Apple CloudKit configuration missing:", {
+      hasContainer: !!containerIdentifier,
+      hasApiToken: !!apiToken,
+    });
+  }
+
   const [authState, setAuthState] = useState<AppleAuthState>({
     isAuthenticated: false,
     userIdentity: null,
@@ -71,6 +79,18 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
   useEffect(() => {
     const initializeCloudKit = async () => {
       try {
+        if (!containerIdentifier || !apiToken) {
+          console.error("CloudKit initialization failed: Missing required configuration");
+          setAuthState((prev) => ({
+            ...prev,
+            error: "CloudKit configuration is missing. Check environment variables.",
+          }));
+          return;
+        }
+
+        const environment = process.env.NODE_ENV === "development" ? "development" : "production";
+        console.log(`Initializing CloudKit with environment: ${environment}`);
+
         const cloudKit = window.CloudKit.configure({
           containers: [
             {
@@ -87,9 +107,7 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
                   theme: "black",
                 },
               },
-
-              // TODO: Change to production when ready
-              environment: process.env.NODE_ENV === "development" ? "development" : "production",
+              environment,
             },
           ],
         });
@@ -112,6 +130,7 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
         }
 
         container.whenUserSignsIn().then(async (user: UserIdentity) => {
+          isAuthenticatedRef.current = true;
           setAuthState({
             isAuthenticated: true,
             userIdentity: user,
@@ -121,6 +140,7 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
         });
 
         container.whenUserSignsOut().then(() => {
+          isAuthenticatedRef.current = false;
           setAuthState({
             isAuthenticated: false,
             userIdentity: null,
@@ -189,14 +209,14 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
             return new Promise((resolve) => {
               const checkAuth = async () => {
                 try {
-                  const userIdentity = await containerRef.current!.fetchCurrentUserIdentity();
-                  if (userIdentity) {
-                    setAuthState({
+                  // const userIdentity = await containerRef.current!.fetchCurrentUserIdentity();
+                  if (isAuthenticatedRef.current) {
+                    setAuthState((prev) => ({
+                      ...prev,
                       isAuthenticated: true,
-                      userIdentity,
                       isLoading: false,
                       error: null,
-                    });
+                    }));
                     resolve({ success: true, email: null });
                   } else {
                     // Check again in 1 second
