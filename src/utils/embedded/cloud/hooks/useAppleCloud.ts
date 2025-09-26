@@ -89,7 +89,7 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
               },
 
               // TODO: Change to production when ready
-              environment: "development",
+              environment: process.env.NODE_ENV === "development" ? "development" : "production",
             },
           ],
         });
