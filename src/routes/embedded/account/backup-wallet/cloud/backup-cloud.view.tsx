@@ -151,9 +151,10 @@ export function AccountBackupCloudEmbeddedView() {
       <Column alignment="left">
         <Row justifyContent="between" isFullWidth>
           <Row justifyContent="start" isFullWidth>
-            {cloudProvider === CloudProvider.APPLE ? <ICloudIcon /> : <GoogleCloudIcon />}
+            {(cloudBackup?.provider || cloudProvider) === CloudProvider.APPLE ? <ICloudIcon /> : <GoogleCloudIcon />}
             <Text variant="bodyLg">
-              Store{cloudBackup ? "d" : ""} on {cloudProvider === CloudProvider.APPLE ? "iCloud" : "Google Cloud"}
+              Store{cloudBackup ? "d" : ""} on{" "}
+              {(cloudBackup?.provider || cloudProvider) === CloudProvider.APPLE ? "iCloud" : "Google Cloud"}
             </Text>
           </Row>
           {!cloudBackup && (
