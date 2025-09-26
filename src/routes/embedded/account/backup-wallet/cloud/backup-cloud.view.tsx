@@ -62,13 +62,16 @@ export function AccountBackupCloudEmbeddedView() {
       const fileName = "backup-jwk.json";
       const mimeType = "application/json";
 
+      let googleEmail: string | null = null;
+
       if (!fileRef.current) {
         if (cloudProvider === CloudProvider.GOOGLE) {
-          const success = await googleCloud.authenticate();
+          const { success, email } = await googleCloud.authenticate();
+          googleEmail = email;
           if (!success) throw new Error("Failed to authenticate with Google Drive");
           fileRef.current = await googleCloud.uploadFile(blob, fileName, currentWallet.address, mimeType);
         } else if (cloudProvider === CloudProvider.APPLE) {
-          const success = await appleCloud.authenticate();
+          const { success } = await appleCloud.authenticate();
           if (!success) throw new Error("Failed to authenticate with Apple Drive");
           fileRef.current = await appleCloud.uploadFile(blob, fileName, currentWallet.address, mimeType);
         }
@@ -78,8 +81,8 @@ export function AccountBackupCloudEmbeddedView() {
         const { cloudBackup, wallet } = await WalletService.createCloudBackup({
           walletId: currentWallet.id,
           fileId: fileRef.current.id,
-          email: "wander@wander.app",
           provider: cloudProvider,
+          email: googleEmail,
         });
 
         setCloudBackup(cloudBackup, wallet as Wallet);
@@ -99,12 +102,13 @@ export function AccountBackupCloudEmbeddedView() {
     if (!currentWallet || !cloudBackup) return;
     setIsLoading(true);
     try {
+      fileRef.current = null;
       if (cloudBackup.provider === CloudProvider.GOOGLE) {
-        const success = await googleCloud.authenticate();
+        const { success } = await googleCloud.authenticate();
         if (!success) throw new Error("Failed to authenticate with Google Drive");
         await googleCloud.deleteFile(cloudBackup.fileId);
       } else if (cloudBackup.provider === CloudProvider.APPLE) {
-        const success = await appleCloud.authenticate();
+        const { success } = await appleCloud.authenticate();
         if (!success) throw new Error("Failed to authenticate with Apple Drive");
         await appleCloud.deleteFile(cloudBackup.fileId);
       }
@@ -125,7 +129,7 @@ export function AccountBackupCloudEmbeddedView() {
   }, []);
 
   useAsyncEffect(async () => {
-    if (!currentWallet || cloudBackup) return;
+    if (!currentWallet || cloudBackup !== undefined) return;
     setIsBackupLoading(true);
     try {
       const { cloudBackup: fetchedCloudBackup } = await WalletService.fetchCloudBackup({ walletId: currentWallet.id });
@@ -135,7 +139,7 @@ export function AccountBackupCloudEmbeddedView() {
     } finally {
       setIsBackupLoading(false);
     }
-  }, [currentWallet]);
+  }, [currentWallet?.id, cloudBackup]);
 
   return (
     <OnboardingCard

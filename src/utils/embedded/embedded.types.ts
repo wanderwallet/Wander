@@ -80,7 +80,7 @@ export interface EmbeddedContextState {
   backupsNeeded: number;
   backupMessage?: string;
   cloudProvider: null | CloudProvider;
-  cloudBackup: null | CloudBackup;
+  cloudBackup: CloudBackup | null | undefined;
 }
 
 export interface EmbeddedContextAuth {

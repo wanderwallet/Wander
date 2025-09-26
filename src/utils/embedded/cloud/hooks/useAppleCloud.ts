@@ -32,7 +32,7 @@ interface UseAppleCloudReturn {
   uploadProgress: UploadProgress | null;
 
   // Auth methods
-  authenticate: () => Promise<boolean>;
+  authenticate: () => Promise<{ success: boolean; email: string | null }>;
   revokeAuth: () => void;
 
   // File operations methods
@@ -150,17 +150,17 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
     setAuthState((prev) => ({ ...prev, error: null }));
   }, []);
 
-  const triggerSignIn = useCallback(async (): Promise<boolean> => {
+  const triggerSignIn = useCallback(async (): Promise<{ success: boolean; email: string | null }> => {
     if (!containerRef.current) {
       setAuthState((prev) => ({
         ...prev,
         isLoading: false,
         error: "CloudKit not initialized",
       }));
-      return false;
+      return { success: false, email: null };
     }
 
-    if (authState.isAuthenticated) return true;
+    if (authState.isAuthenticated) return { success: true, email: null };
 
     setAuthState((prev) => ({ ...prev, isLoading: true, error: null }));
 
@@ -175,7 +175,7 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
           isLoading: false,
           error: null,
         });
-        return true;
+        return { success: true, email: null };
       }
     } catch (error) {
       try {
@@ -197,7 +197,7 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
                       isLoading: false,
                       error: null,
                     });
-                    resolve(true);
+                    resolve({ success: true, email: null });
                   } else {
                     // Check again in 1 second
                     setTimeout(checkAuth, 5000);
@@ -218,7 +218,7 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
                   isLoading: false,
                   error: "Authentication timeout. Please try again.",
                 }));
-                resolve(false);
+                resolve({ success: false, email: null });
               }, 300000);
             });
           }
@@ -229,7 +229,7 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
           isLoading: false,
           error: "Please complete the sign in process",
         }));
-        return false;
+        return { success: false, email: null };
       } catch (signInError) {
         console.error("Error during signin flow:", signInError);
         setAuthState((prev) => ({
@@ -237,24 +237,24 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
           isLoading: false,
           error: "Sign in failed. Please try again.",
         }));
-        return false;
+        return { success: false, email: null };
       }
     }
 
-    return false;
+    return { success: false, email: null };
   }, [authState.isAuthenticated]);
 
-  const authenticate = useCallback(async (): Promise<boolean> => {
+  const authenticate = useCallback(async (): Promise<{ success: boolean; email: string | null }> => {
     if (!containerRef.current) {
       setAuthState((prev) => ({
         ...prev,
         isLoading: false,
         error: "CloudKit not initialized",
       }));
-      return false;
+      return { success: false, email: null };
     }
 
-    if (authState.isAuthenticated) return true;
+    if (authState.isAuthenticated) return { success: true, email: null };
 
     setAuthState((prev) => ({ ...prev, isLoading: true, error: null }));
 
@@ -268,7 +268,7 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
           isLoading: false,
           error: null,
         });
-        return true;
+        return { success: true, email: null };
       } else {
         return await triggerSignIn();
       }
@@ -279,7 +279,7 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
         isLoading: false,
         error: errorMessage,
       }));
-      return false;
+      return { success: false, email: null };
     }
   }, [authState.isAuthenticated, triggerSignIn]);
 
@@ -511,7 +511,7 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
         return null;
       }
 
-      const response = await containerRef.current.privateCloudDatabase.fetchRecords([fileId]);
+      const response = await containerRef.current.privateCloudDatabase.fetchRecords([walletAddress || fileId]);
 
       if (response.records.length === 0) {
         throw new Error("File not found");

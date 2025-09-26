@@ -7,12 +7,14 @@ interface GoogleCloudAuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
+  email: string | null;
 }
 
 interface StoredToken {
   accessToken: string;
   expiresAt: number;
   timestamp: number;
+  email: string | null;
 }
 
 interface UseGoogleCloudReturn {
@@ -20,13 +22,14 @@ interface UseGoogleCloudReturn {
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
+  email: string | null;
 
   // File operations state
   files: AppDataFile[];
   uploadProgress: UploadProgress | null;
 
   // Auth methods
-  authenticate: () => Promise<boolean>;
+  authenticate: () => Promise<{ success: boolean; email?: string | null }>;
   revokeAuth: () => void;
   isTokenValid: () => boolean;
   ensureValidToken: () => Promise<string | null>;
@@ -50,12 +53,13 @@ interface UseGoogleCloudReturn {
 const TOKEN_STORAGE_KEY = "google_drive_token";
 const TOKEN_EXPIRY_BUFFER = 5 * 60 * 1000; // 5 minutes buffer before actual expiry
 
-const storeToken = (accessToken: string, expiresIn: number = 3600): void => {
+const storeToken = (accessToken: string, expiresIn: number = 3600, email: string | null = null): void => {
   const expiresAt = Date.now() + expiresIn * 1000 - TOKEN_EXPIRY_BUFFER;
   const tokenData: StoredToken = {
     accessToken,
     expiresAt,
     timestamp: Date.now(),
+    email,
   };
   localStorage.setItem(TOKEN_STORAGE_KEY, JSON.stringify(tokenData));
 };
@@ -112,6 +116,7 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
       isAuthenticated: !!storedToken,
       isLoading: false,
       error: null,
+      email: storedToken?.email || null,
     };
   });
 
@@ -131,6 +136,7 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
           return {
             ...prev,
             isAuthenticated: newIsAuthenticated,
+            email: newIsAuthenticated ? prev.email : null, // Clear email when not authenticated
           };
         }
         return prev;
@@ -147,7 +153,29 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
     setAuthState((prev) => ({ ...prev, error: null }));
   }, []);
 
-  const authenticate = useCallback((): Promise<boolean> => {
+  // Function to fetch user email using the access token
+  const fetchUserEmail = useCallback(async (accessToken: string): Promise<string | null> => {
+    try {
+      const response = await fetch("https://www.googleapis.com/oauth2/v2/userinfo", {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      if (!response.ok) {
+        console.error("Failed to fetch user info:", response.statusText);
+        return null;
+      }
+
+      const userInfo = await response.json();
+      return userInfo.email || null;
+    } catch (error) {
+      console.error("Error fetching user email:", error);
+      return null;
+    }
+  }, []);
+
+  const authenticate = useCallback((): Promise<{ success: boolean; email: string | null }> => {
     return new Promise((resolve) => {
       if (!window.google) {
         setAuthState((prev) => ({
@@ -155,12 +183,12 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
           isLoading: false,
           error: "Google Identity Services not loaded",
         }));
-        resolve(false);
+        resolve({ success: false, email: null });
         return;
       }
 
       if (authState.isAuthenticated) {
-        resolve(true);
+        resolve({ success: true, email: authState.email });
         return;
       }
 
@@ -169,21 +197,24 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
       window.google.accounts.oauth2
         .initTokenClient({
           client_id: clientId,
-          scope: "https://www.googleapis.com/auth/drive.appdata",
-          callback: (response: { error?: string; access_token?: string; expires_in?: number }) => {
+          scope: "https://www.googleapis.com/auth/drive.appdata email",
+          callback: async (response: { error?: string; access_token?: string; expires_in?: number }) => {
             if (response.error) {
               setAuthState((prev) => ({
                 ...prev,
                 isLoading: false,
                 error: response.error || null,
               }));
-              resolve(false);
+              resolve({ success: false, email: null });
             } else {
               const accessToken = response.access_token || "";
               const expiresIn = response.expires_in || 3600; // Default to 1 hour
 
+              // Fetch user email
+              const email = await fetchUserEmail(accessToken);
+
               // Store the token with expiry information
-              storeToken(accessToken, expiresIn);
+              storeToken(accessToken, expiresIn, email);
 
               // Update ref immediately
               accessTokenRef.current = accessToken;
@@ -193,8 +224,9 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
                 isAuthenticated: true,
                 isLoading: false,
                 error: null,
+                email,
               }));
-              resolve(true);
+              resolve({ success: true, email });
             }
           },
         })
@@ -215,6 +247,7 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
       isAuthenticated: false,
       isLoading: false,
       error: null,
+      email: null,
     });
 
     // Clear files when logging out
@@ -235,7 +268,7 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
     }
 
     // Token is invalid or expired, need to re-authenticate
-    const authSuccess = await authenticate();
+    const { success: authSuccess } = await authenticate();
     if (authSuccess) {
       // Get the token from state after successful authentication
       const storedToken = getStoredToken();
@@ -644,6 +677,7 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
     isAuthenticated: authState.isAuthenticated,
     isLoading: authState.isLoading,
     error: authState.error,
+    email: authState.email,
 
     // File operations state
     files,

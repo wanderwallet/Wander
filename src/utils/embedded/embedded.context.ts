@@ -15,7 +15,7 @@ export const EMBEDDED_CONTEXT_INITIAL_STATE = {
   requestPasswordChange: false,
   backupsNeeded: 0,
   cloudProvider: null,
-  cloudBackup: null,
+  cloudBackup: undefined,
 } as const satisfies EmbeddedContextState;
 
 export const EMBEDDED_CONTEXT_INITIAL_AUTH = {

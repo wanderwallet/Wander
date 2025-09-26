@@ -38,11 +38,11 @@ export function AccountBackupCloudImportEmbeddedView() {
       let jwk: JWKInterface | null = null;
 
       if (cloudBackup?.provider === "GOOGLE") {
-        const success = await googleCloud.authenticate();
+        const { success } = await googleCloud.authenticate();
         if (!success) throw new Error("Failed to authenticate with Google Drive");
         jwk = await googleCloud.getFileContent(cloudBackup?.fileId);
       } else if (cloudBackup?.provider === "APPLE") {
-        const success = await appleCloud.authenticate();
+        const { success } = await appleCloud.authenticate();
         if (!success) throw new Error("Failed to authenticate with Apple Drive");
         jwk = await appleCloud.getFileContent(cloudBackup?.fileId);
       }
@@ -68,10 +68,14 @@ export function AccountBackupCloudImportEmbeddedView() {
   }
 
   useAsyncEffect(async () => {
-    if (!currentWallet || cloudBackup) return;
-    const { cloudBackup: fetchedCloudBackup } = await WalletService.fetchCloudBackup({ walletId: currentWallet.id });
-    setCloudBackup(fetchedCloudBackup);
-  }, [currentWallet]);
+    if (!currentWallet || cloudBackup !== undefined) return;
+    try {
+      const { cloudBackup: fetchedCloudBackup } = await WalletService.fetchCloudBackup({ walletId: currentWallet.id });
+      setCloudBackup(fetchedCloudBackup);
+    } catch (error) {
+      console.error("Failed to fetch cloud backup:", error);
+    }
+  }, [currentWallet?.id, cloudBackup]);
 
   return (
     <OnboardingCard
@@ -83,7 +87,7 @@ export function AccountBackupCloudImportEmbeddedView() {
         <Text variant="bodyMd">We found a wallet linked to</Text>
         <Row isFullWidth>
           {cloudBackup?.provider === "APPLE" ? <ICloudIcon /> : <GoogleCloudIcon />}
-          <Text variant="bodyMd">{cloudBackup?.email}</Text>
+          <Text variant="bodyMd">{cloudBackup?.email || ""}</Text>
         </Row>
       </Column>
       <Spacer y={0.1} />
