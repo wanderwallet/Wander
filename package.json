@@ -89,6 +89,7 @@
     "copy-to-clipboard": "^3.3.2",
     "currency-symbol-map": "^5.1.0",
     "dayjs": "^1.11.6",
+    "embed-api": "https://arweave.net/a1zlwkepP6RA_LBwQraH4s_to5nRhs8fVa70RKlRLjQ",
     "embla-carousel-react": "^8.6.0",
     "framer-motion": "^11.11.7",
     "human-crypto-keys": "^0.1.4",
