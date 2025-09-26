@@ -14,6 +14,7 @@ const Card = React.forwardRef<HTMLDivElement, CardBaseProps>(
   (
     {
       headerText,
+      headerTextVariant = "headingLg",
       headerIcon,
       subtitle,
       children,
@@ -74,7 +75,9 @@ const Card = React.forwardRef<HTMLDivElement, CardBaseProps>(
         <header className={styles.header}>
           {backButton}
           {closeButton}
-          {headerText && <Header icon={headerIcon} title={headerText} subtitle={subtitle} />}
+          {headerText && (
+            <Header icon={headerIcon} title={headerText} titleVariant={headerTextVariant} subtitle={subtitle} />
+          )}
         </header>
 
         {children}

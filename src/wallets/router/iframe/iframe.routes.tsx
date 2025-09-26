@@ -70,6 +70,8 @@ import { WalletBuySuccessEmbeddedView } from "~routes/embedded/wallet/buy/buy.su
 import { AccountBackupCloudEmbeddedView } from "~routes/embedded/account/backup-wallet/cloud/backup-cloud.view";
 import { AccountBackupCloudChangeProviderEmbeddedView } from "~routes/embedded/account/backup-wallet/cloud/backup-cloud-change-provider.view";
 import { AccountBackupCloudImportEmbeddedView } from "~routes/embedded/account/backup-wallet/cloud/backup-cloud-import.view";
+import { CongratulationsEmbeddedView } from "~routes/embedded/account/congratulations/congratulations.view";
+import { AccountBackupCloudImportSuccessEmbeddedView } from "~routes/embedded/account/backup-wallet/cloud/backup-cloud-import-success.view";
 
 /**
  * Developers can manually navigate to these flows:
@@ -124,6 +126,8 @@ export type EmbeddedRoutePath =
   | "/account/backup-wallet/cloud"
   | "/account/backup-wallet/cloud/change-provider"
   | "/account/backup-wallet/cloud/import"
+  | "/account/backup-wallet/cloud/import-success"
+  | "/account/congratulations"
   // | "/account/backup-shares/<backupProvider>"
   | "/account/export-wallet"
   | "/"
@@ -198,6 +202,8 @@ export const EmbeddedPaths = {
   AccountBackupCloud: "/account/backup-wallet/cloud",
   AccountBackupCloudChangeProvider: "/account/backup-wallet/cloud/change-provider",
   AccountBackupCloudImport: "/account/backup-wallet/cloud/import",
+  AccountBackupCloudImportSuccess: "/account/backup-wallet/cloud/import-success",
+  AccountCongratulations: "/account/congratulations",
   AccountExportWallet: "/account/export-wallet",
 
   // Wallet:
@@ -443,6 +449,14 @@ const IFRAME_OWN_ROUTES = [
   {
     path: EmbeddedPaths.AccountBackupCloudImport,
     component: AccountBackupCloudImportEmbeddedView,
+  },
+  {
+    path: EmbeddedPaths.AccountCongratulations,
+    component: CongratulationsEmbeddedView,
+  },
+  {
+    path: EmbeddedPaths.AccountBackupCloudImportSuccess,
+    component: AccountBackupCloudImportSuccessEmbeddedView,
   },
 ] as const satisfies RouteConfig<EmbeddedRoutePath>[];
 

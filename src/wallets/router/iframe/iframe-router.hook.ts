@@ -125,6 +125,7 @@ export function useEmbeddedOverride(location?: RoutePath) {
     ] as RoutePath[];
 
     if (hasCloudBackup) {
+      validRoutes.unshift(EmbeddedPaths.AccountBackupCloudImportSuccess);
       validRoutes.unshift(EmbeddedPaths.AccountBackupCloudImport);
     }
 
@@ -136,7 +137,11 @@ export function useEmbeddedOverride(location?: RoutePath) {
     if (lastRegisteredWallet && currentWallet.totalCloudBackups === 0) {
       return routeTrapMatches(
         location,
-        [EmbeddedPaths.AccountBackupCloud, EmbeddedPaths.AccountBackupCloudChangeProvider],
+        [
+          EmbeddedPaths.AccountBackupCloud,
+          EmbeddedPaths.AccountBackupCloudChangeProvider,
+          EmbeddedPaths.AccountCongratulations,
+        ],
         EmbeddedPaths.AccountBackupCloud,
       );
     }

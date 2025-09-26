@@ -43,9 +43,8 @@ export function AccountBackupCloudEmbeddedView() {
 
   const handleComplete = async () => {
     if (lastRegisteredWallet) {
-      clearLastRegisteredWallet();
       await sleep(100);
-      navigate(EmbeddedPaths.WalletHomeEmbeddedView);
+      navigate(EmbeddedPaths.AccountCongratulations);
     }
   };
 

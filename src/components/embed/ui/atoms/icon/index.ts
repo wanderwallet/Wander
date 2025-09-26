@@ -36,6 +36,7 @@ export { default as ReceiptIcon } from "./Receipt";
 export { default as TwitterIcon } from "./Twitter";
 export { default as UploadIcon } from "./Upload";
 export { default as WalletIcon } from "./Wallet";
+export { default as Wallet2Icon } from "./Wallet2";
 export { default as WarningIcon } from "./Warning";
 export { default as WarningCircledIcon } from "./WarningCircled";
 export { default as Wander2Icon } from "./Wander-2";

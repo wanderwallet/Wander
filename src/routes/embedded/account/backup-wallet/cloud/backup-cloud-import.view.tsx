@@ -12,6 +12,7 @@ import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 import { navigate } from "wouter/use-hash-location";
 import { signOut } from "~utils/embedded/embedded.utils";
 import { sleep } from "~utils/promises/sleep";
+import { Loading } from "@arconnect/components-rebrand";
 
 const clientId = import.meta.env?.VITE_GOOGLE_CLIENT_ID;
 const containerIdentifier = import.meta.env?.VITE_APPLE_CONTAINER_IDENTIFIER;
@@ -21,6 +22,7 @@ export function AccountBackupCloudImportEmbeddedView() {
   const { authStatus, currentWallet, importTempWallet, recoverWallet, cloudBackup, setCloudBackup } = useEmbedded();
 
   const [isLoading, setIsLoading] = useState(false);
+  const [isBackupLoading, setIsBackupLoading] = useState(false);
 
   const isViewLoading = authStatus === "unknown" || authStatus === "loading" || authStatus === "authLoading";
 
@@ -58,7 +60,7 @@ export function AccountBackupCloudImportEmbeddedView() {
 
         await sleep(100);
 
-        navigate(EmbeddedPaths.WalletHomeEmbeddedView);
+        navigate(EmbeddedPaths.AccountBackupCloudImportSuccess);
       }
     } catch (error) {
       console.error("Failed to import from cloud:", error);
@@ -69,24 +71,27 @@ export function AccountBackupCloudImportEmbeddedView() {
 
   useAsyncEffect(async () => {
     if (!currentWallet || cloudBackup !== undefined) return;
+    setIsBackupLoading(true);
     try {
       const { cloudBackup: fetchedCloudBackup } = await WalletService.fetchCloudBackup({ walletId: currentWallet.id });
       setCloudBackup(fetchedCloudBackup);
     } catch (error) {
       console.error("Failed to fetch cloud backup:", error);
+    } finally {
+      setIsBackupLoading(false);
     }
   }, [currentWallet?.id, cloudBackup]);
 
   return (
     <OnboardingCard
-      headerText="Import your keyfile from the cloud"
+      headerText="Connect wallet"
       hasCloseButton={false}
       onBackButtonClick={() => signOut(false)}
       isLoading={isViewLoading}>
       <Column>
         <Text variant="bodyMd">We found a wallet linked to</Text>
         <Row isFullWidth>
-          {cloudBackup?.provider === "APPLE" ? <ICloudIcon /> : <GoogleCloudIcon />}
+          {isBackupLoading ? <Loading /> : cloudBackup?.provider === "APPLE" ? <ICloudIcon /> : <GoogleCloudIcon />}
           <Text variant="bodyMd">{cloudBackup?.email || ""}</Text>
         </Row>
       </Column>
@@ -108,7 +113,7 @@ export function AccountBackupCloudImportEmbeddedView() {
           isFullWidth
           isDisabled={!cloudBackup}
           isLoading={isLoading || googleCloud.isLoading || appleCloud.isLoading}>
-          Import from cloud
+          Connect this wallet
         </Button>
 
         <Button variant="secondary" isFullWidth isDisabled={isViewLoading} onClick={handleOtherOptions}>
