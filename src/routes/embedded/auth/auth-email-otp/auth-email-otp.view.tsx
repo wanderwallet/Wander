@@ -1,7 +1,7 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { toast } from "react-toastify";
-import { Button, Text } from "~components/embed";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import { Button, Column, Text } from "~components/embed";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation, useSearchParams } from "~wallets/router/router.utils";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
@@ -46,11 +46,6 @@ export function AuthEmailOtpEmbeddedView() {
   // Code input:
 
   const codeInputRef = useRef<CodeInputHandle>();
-  const [isComplete, setIsComplete] = useState(false);
-
-  const handleCodeChange = useCallback((_, isComplete: boolean) => {
-    setIsComplete(isComplete);
-  }, []);
 
   // Code retrieval:
 
@@ -98,42 +93,46 @@ export function AuthEmailOtpEmbeddedView() {
 
   // Handlers:
 
-  const handleVerifyOtp = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault();
+  const handleVerifyOtp = useCallback(async () => {
+    if (!email || isVerifying) return;
 
-      if (!email || isVerifying) return;
+    const otpCode = codeInputRef.current.getCode();
 
-      const otpCode = codeInputRef.current.getCode();
+    if (otpCode.length !== OTP_LENGTH) {
+      toast.error(`Please enter all ${OTP_LENGTH} digits of the access code`);
+      return;
+    }
 
-      if (otpCode.length !== OTP_LENGTH) {
-        toast.error(`Please enter all ${OTP_LENGTH} digits of the access code`);
-        return;
+    setIsVerifying(true);
+
+    try {
+      await authenticate({
+        method: "verifyOtp",
+        email,
+        token: otpCode,
+      });
+
+      // This is done to clear the search params (email and isAlreadyRegistered):
+      navigate(location, { search: { email } });
+
+      setPreferredEmailAuth("otp");
+    } catch (error) {
+      setIsVerifying(false);
+      toast.error(getFriendlyAuthErrorMessage(error, "Invalid or expired code"));
+    } finally {
+      clearOtpAvailable();
+    }
+
+    // We leave isVerifying = true intentionally as the user will simply be redirected after verifying the account.
+  }, [email, isVerifying, authenticate]);
+
+  const handleCodeChange = useCallback(
+    (_, isComplete: boolean) => {
+      if (isComplete) {
+        handleVerifyOtp();
       }
-
-      setIsVerifying(true);
-
-      try {
-        await authenticate({
-          method: "verifyOtp",
-          email,
-          token: otpCode,
-        });
-
-        // This is done to clear the search params (email and isAlreadyRegistered):
-        navigate(location, { search: { email } });
-
-        setPreferredEmailAuth("otp");
-      } catch (error) {
-        setIsVerifying(false);
-        toast.error(getFriendlyAuthErrorMessage(error, "Invalid or expired code"));
-      } finally {
-        clearOtpAvailable();
-      }
-
-      // We leave isVerifying = true intentionally as the user will simply be redirected after verifying the account.
     },
-    [email, isVerifying, authenticate],
+    [handleVerifyOtp],
   );
 
   useEffect(() => {
@@ -148,19 +147,28 @@ export function AuthEmailOtpEmbeddedView() {
 
   return (
     <OnboardingCard
-      headerText="Sign In"
-      subtitle={`We've sent an email to ${email}`}
+      headerText={`Enter the code sent to ${email}`}
       onBackButtonClick={() => navigate(EmbeddedPaths.Auth)}
       isLoading={isViewLoading}
       onSubmit={handleVerifyOtp}>
-      <Text variant={"bodySm"} alignment={"center"} style={{ color: "var(--text-color-secondary, #666666)" }}>
-        Enter the 6-digit access code from that email to sign in to your account. If you don't see the email, please
-        check your spam folder.
-      </Text>
+      <Column>
+        <Text alignment={"center"} style={{ color: "var(--text-color-secondary, #666666)" }}>
+          This code will expire after 1 hour.
+        </Text>
+        <Text>
+          <Button
+            variant="link"
+            onClick={() => signInWithOtp(true)}
+            isDisabled={areButtonsDisabled || cooldownSeconds > 0}>
+            Send again
+          </Button>
+          {cooldownSeconds > 0 && ` in ${cooldownSeconds} seconds`}
+        </Text>
+      </Column>
 
-      <Flex direction="column" gap={12} width="100%">
-        <Text alignment="center" variant={"bodySm"} style={{ color: "var(--text-color-secondary, #666666)" }}>
-          Access Code
+      <Flex direction="column" gap={8} style={{ marginTop: 20 }} width="100%">
+        <Text alignment="left" variant={"bodySm"} style={{ color: "var(--text-color-secondary, #666666)" }}>
+          Secure Code
         </Text>
 
         <CodeInput
@@ -172,30 +180,11 @@ export function AuthEmailOtpEmbeddedView() {
         />
       </Flex>
 
-      <Button
-        type="submit"
-        variant="primary"
-        isFullWidth
-        isLoading={isResending}
-        isDisabled={areButtonsDisabled || !isComplete}>
-        Sign In
-      </Button>
-
-      <Text variant="bodySm" alignment="center">
-        Didn't receive the email?{" "}
-        {cooldownSeconds === 0 ? (
-          <Button variant="link" onClick={() => signInWithOtp(true)} isDisabled={areButtonsDisabled}>
-            Send again
-          </Button>
-        ) : (
-          <>Send again in {cooldownSeconds} seconds</>
-        )}
-      </Text>
-
       {isAlreadyRegisteredParam === "0" ? null : (
-        <Text variant="bodySm" alignment="center">
+        <Text variant="bodySm" alignment="center" style={{ marginTop: 20 }}>
+          Prefer signing in with password?{" "}
           <Button variant="link" isDisabled={areButtonsDisabled} href={EmbeddedPaths.AuthEmailSignInPassword}>
-            Use password instead
+            Use password
           </Button>
         </Text>
       )}

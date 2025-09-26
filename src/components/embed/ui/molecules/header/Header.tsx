@@ -26,6 +26,7 @@ const Header = React.forwardRef<HTMLDivElement, HeaderBaseProps>(
               alignment="center"
               style={{
                 marginInline: 8,
+                wordBreak: "break-word",
               }}>
               {title}
             </Text>
