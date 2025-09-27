@@ -1,4 +1,3 @@
-import prettyBytes from "pretty-bytes";
 import { useState, useEffect, useCallback, useRef } from "react";
 import type {
   Container,
@@ -88,7 +87,8 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
           return;
         }
 
-        const environment = process.env.NODE_ENV === "development" ? "development" : "production";
+        // const environment = process.env.NODE_ENV === "development" ? "development" : "production";
+        const environment = "development"; // TODO: Remove this and uncomment the above line
         console.log(`Initializing CloudKit with environment: ${environment}`);
 
         const cloudKit = window.CloudKit.configure({
@@ -110,13 +110,20 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
               environment,
             },
           ],
+          services: {
+            authTokenStore: {
+              putToken: (containerIdentifier: string, authToken: string) =>
+                localStorage.setItem(containerIdentifier, authToken),
+              getToken: (containerIdentifier: string) => localStorage.getItem(containerIdentifier) || "",
+            },
+          },
         });
 
         const container = cloudKit.getDefaultContainer();
         containerRef.current = container;
 
         try {
-          const userIdentity = await container.fetchCurrentUserIdentity();
+          const userIdentity = await container.setUpAuth();
           if (userIdentity) {
             setAuthState({
               isAuthenticated: true,
@@ -170,100 +177,6 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
     setAuthState((prev) => ({ ...prev, error: null }));
   }, []);
 
-  const triggerSignIn = useCallback(async (): Promise<{ success: boolean; email: string | null }> => {
-    if (!containerRef.current) {
-      setAuthState((prev) => ({
-        ...prev,
-        isLoading: false,
-        error: "CloudKit not initialized",
-      }));
-      return { success: false, email: null };
-    }
-
-    if (authState.isAuthenticated) return { success: true, email: null };
-
-    setAuthState((prev) => ({ ...prev, isLoading: true, error: null }));
-
-    try {
-      // First, try to get current user identity
-      const userIdentity = await containerRef.current.fetchCurrentUserIdentity();
-
-      if (userIdentity) {
-        setAuthState({
-          isAuthenticated: true,
-          userIdentity,
-          isLoading: false,
-          error: null,
-        });
-        return { success: true, email: null };
-      }
-    } catch (error) {
-      try {
-        const signInButton = document.getElementById("apple-sign-in-button");
-        if (signInButton) {
-          const clickableElement = signInButton.children[0] as HTMLElement;
-          if (clickableElement) {
-            clickableElement.click();
-
-            // Wait for authentication to complete
-            return new Promise((resolve) => {
-              const checkAuth = async () => {
-                try {
-                  // const userIdentity = await containerRef.current!.fetchCurrentUserIdentity();
-                  if (isAuthenticatedRef.current) {
-                    setAuthState((prev) => ({
-                      ...prev,
-                      isAuthenticated: true,
-                      isLoading: false,
-                      error: null,
-                    }));
-                    resolve({ success: true, email: null });
-                  } else {
-                    // Check again in 1 second
-                    setTimeout(checkAuth, 5000);
-                  }
-                } catch (error) {
-                  // Still not authenticated, check again
-                  setTimeout(checkAuth, 5000);
-                }
-              };
-
-              // Start checking after a short delay
-              setTimeout(checkAuth, 5000);
-
-              // Timeout after 30 seconds
-              setTimeout(() => {
-                setAuthState((prev) => ({
-                  ...prev,
-                  isLoading: false,
-                  error: "Authentication timeout. Please try again.",
-                }));
-                resolve({ success: false, email: null });
-              }, 300000);
-            });
-          }
-        }
-
-        setAuthState((prev) => ({
-          ...prev,
-          isLoading: false,
-          error: "Please complete the sign in process",
-        }));
-        return { success: false, email: null };
-      } catch (signInError) {
-        console.error("Error during signin flow:", signInError);
-        setAuthState((prev) => ({
-          ...prev,
-          isLoading: false,
-          error: "Sign in failed. Please try again.",
-        }));
-        return { success: false, email: null };
-      }
-    }
-
-    return { success: false, email: null };
-  }, [authState.isAuthenticated]);
-
   const authenticate = useCallback(async (): Promise<{ success: boolean; email: string | null }> => {
     if (!containerRef.current) {
       setAuthState((prev) => ({
@@ -290,7 +203,45 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
         });
         return { success: true, email: null };
       } else {
-        return await triggerSignIn();
+        const signInButton = document.getElementById("apple-sign-in-button");
+        const clickableElement = signInButton.children[0] as HTMLElement;
+        clickableElement.click();
+
+        // Wait for authentication to complete
+        return new Promise((resolve) => {
+          const checkAuth = async () => {
+            try {
+              if (isAuthenticatedRef.current) {
+                setAuthState((prev) => ({
+                  ...prev,
+                  isAuthenticated: true,
+                  isLoading: false,
+                  error: null,
+                }));
+                resolve({ success: true, email: null });
+              } else {
+                // Check again in 5 seconds
+                setTimeout(checkAuth, 5000);
+              }
+            } catch (error) {
+              // Still not authenticated, check again in 5 seconds
+              setTimeout(checkAuth, 5000);
+            }
+          };
+
+          // Start checking after a short delay in 5 seconds
+          setTimeout(checkAuth, 5000);
+
+          // Timeout after 5 minutes
+          setTimeout(() => {
+            setAuthState((prev) => ({
+              ...prev,
+              isLoading: false,
+              error: "Authentication timeout. Please try again.",
+            }));
+            resolve({ success: false, email: null });
+          }, 300000);
+        });
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Authentication failed";
@@ -301,7 +252,7 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
       }));
       return { success: false, email: null };
     }
-  }, [authState.isAuthenticated, triggerSignIn]);
+  }, [authState.isAuthenticated]);
 
   const revokeAuth = useCallback(() => {
     setAuthState({
