@@ -114,9 +114,11 @@ export const defaultTokens = [
   WAR_TOKEN_INFO,
 ] as const satisfies TokenInfo[];
 
-export const nonTransferableTokenIds: Array<string> = [EXP_PROCESS_ID, WNDR_PROCESS_ID];
+export const nonTransferableTokenIds: Array<string> = [EXP_PROCESS_ID];
 
-export const nonTransferableWhitelistedWallets = { [WNDR_PROCESS_ID]: ["X-2dpeYFiknCjfdVijr7J4sEPwtwrr5dp4ilVZsUKGQ"] };
+// Example:
+// export const nonTransferableWhitelistedWallets = { [PROCESS_ID]: ["<Wallet Address 1>", "<Wallet Address 2>" ] };
+export const nonTransferableWhitelistedWallets = {};
 
 /**
  * Dummy ID
