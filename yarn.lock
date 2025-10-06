@@ -59,10 +59,9 @@
     qrcode.react "3.1.0"
     react-qr-reader "2.2.1"
 
-"@arconnect/webext-bridge@^5.0.6":
+"@arconnect/webext-bridge@https://arweave.net/37OdN5bUTjIFRScBJn0ViGyJn0F935GbMgoe-tqxa1E":
   version "5.0.6"
-  resolved "https://registry.yarnpkg.com/@arconnect/webext-bridge/-/webext-bridge-5.0.6.tgz#edcc28d0d7e215fba2e5a3c832cf7842f7046b9d"
-  integrity sha512-Zxflrgmb5iZzpqUEqVc+FkfHnW18txORS5ERLLyeeE+2j7sNVmmdjP2tbW7ypmeyyHZ5yu4WBJP6AHOuf5AoSg==
+  resolved "https://arweave.net/37OdN5bUTjIFRScBJn0ViGyJn0F935GbMgoe-tqxa1E#32dc909f319fb2cde12bd59437d8bdd7d943e4cc"
   dependencies:
     "@types/webextension-polyfill" "^0.8.3"
     nanoevents "^6.0.2"

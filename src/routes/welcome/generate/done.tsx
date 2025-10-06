@@ -19,6 +19,7 @@ import { Flex } from "~components/common/Flex";
 import { PinExtension } from "../PinExtension";
 import { TempTransactionStorage } from "~utils/storage";
 import { QRCodeWrapper } from "~components/QRCodeWrapper";
+import { closeCurrentTab } from "~utils/tabs";
 
 export type GenerateDoneWelcomeViewProps = CommonRouteProps<SetupWelcomeViewParams>;
 
@@ -32,7 +33,7 @@ export function GenerateDoneWelcomeView({ params }: GenerateDoneWelcomeViewProps
   // add generated wallet
   async function goToDashboard() {
     window.onbeforeunload = null;
-    window.top.close();
+    closeCurrentTab();
   }
 
   async function takeTour() {
