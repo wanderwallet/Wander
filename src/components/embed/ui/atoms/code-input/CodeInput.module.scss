@@ -14,3 +14,14 @@
   outline: none;
   box-sizing: border-box;
 }
+
+.separator {
+  display: flex;
+  align-items: center;
+  color: var(--color-neutral-400);
+  font-family: var(--font-family-serif);
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-semi);
+  line-height: var(--line-height-snug);
+  user-select: none;
+}

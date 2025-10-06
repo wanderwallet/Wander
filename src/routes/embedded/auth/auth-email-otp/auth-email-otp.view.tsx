@@ -168,7 +168,7 @@ export function AuthEmailOtpEmbeddedView() {
 
       <Flex direction="column" gap={8} style={{ marginTop: 20 }} width="100%">
         <Text alignment="left" variant={"bodySm"} style={{ color: "var(--text-color-secondary, #666666)" }}>
-          Secure Code
+          Secure code
         </Text>
 
         <CodeInput
