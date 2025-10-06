@@ -23,7 +23,6 @@ export function AccountBackupCloudEmbeddedView() {
     cloudProvider,
     getDecryptedWallet,
     currentWallet,
-    clearLastRegisteredWallet,
     lastRegisteredWallet,
     setCloudProvider,
     setCloudBackup,
@@ -197,7 +196,7 @@ export function AccountBackupCloudEmbeddedView() {
             </Button>
           )}
 
-          {!cloudBackup && (
+          {lastRegisteredWallet && (
             <Button variant="secondary" isFullWidth isDisabled={isViewLoading} onClick={handleSkip}>
               Skip
             </Button>
