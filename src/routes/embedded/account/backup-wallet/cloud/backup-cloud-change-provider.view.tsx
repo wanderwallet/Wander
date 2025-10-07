@@ -12,7 +12,7 @@ export function AccountBackupCloudChangeProviderEmbeddedView() {
 
   function handleChangeCloudProvider(cloudProvider: CloudProvider) {
     setCloudProvider(cloudProvider);
-    navigate(EmbeddedPaths.AccountBackupCloud);
+    window.history.back();
   }
 
   return (
