@@ -98,6 +98,7 @@ declare global {
             client_id: string;
             scope: string;
             callback: (response: { error?: string; access_token?: string; expires_in?: number }) => void;
+            error_callback: (error: any) => void;
           }) => { requestAccessToken: () => void };
           revoke: (token: string) => void;
         };
@@ -228,6 +229,15 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
               }));
               resolve({ success: true, email });
             }
+          },
+          error_callback: (error) => {
+            if (!error) return;
+            setAuthState((prev) => ({
+              ...prev,
+              isLoading: false,
+              error: error?.message || "Google authentication failed",
+            }));
+            resolve({ success: false, email: null });
           },
         })
         .requestAccessToken();
