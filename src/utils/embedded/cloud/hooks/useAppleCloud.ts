@@ -202,47 +202,74 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
           error: null,
         });
         return { success: true, email: null };
-      } else {
-        const signInButton = document.getElementById("apple-sign-in-button");
-        const clickableElement = signInButton.children[0] as HTMLElement;
-        clickableElement.click();
-
-        // Wait for authentication to complete
-        return new Promise((resolve) => {
-          const checkAuth = async () => {
-            try {
-              if (isAuthenticatedRef.current) {
-                setAuthState((prev) => ({
-                  ...prev,
-                  isAuthenticated: true,
-                  isLoading: false,
-                  error: null,
-                }));
-                resolve({ success: true, email: null });
-              } else {
-                // Check again in 5 seconds
-                setTimeout(checkAuth, 5000);
-              }
-            } catch (error) {
-              // Still not authenticated, check again in 5 seconds
-              setTimeout(checkAuth, 5000);
-            }
-          };
-
-          // Start checking after a short delay in 5 seconds
-          setTimeout(checkAuth, 5000);
-
-          // Timeout after 5 minutes
-          setTimeout(() => {
-            setAuthState((prev) => ({
-              ...prev,
-              isLoading: false,
-              error: "Authentication timeout. Please try again.",
-            }));
-            resolve({ success: false, email: null });
-          }, 300000);
-        });
       }
+
+      // User needs to authenticate via popup
+      const signInButton = document.getElementById("apple-sign-in-button");
+      const clickableElement = signInButton?.children[0] as HTMLElement;
+
+      if (!clickableElement) {
+        setAuthState((prev) => ({
+          ...prev,
+          isLoading: false,
+          error: "Sign-in button not found",
+        }));
+        return { success: false, email: null };
+      }
+
+      // Intercept window.open to capture popup reference
+      let cloudKitPopup: Window | null = null;
+      const originalWindowOpen = window.open;
+
+      window.open = function (...args) {
+        const popup = originalWindowOpen.apply(this, args);
+        cloudKitPopup = popup;
+        return popup;
+      };
+
+      clickableElement.click();
+
+      // Restore original window.open
+      setTimeout(() => {
+        window.open = originalWindowOpen;
+      }, 1000);
+
+      // Monitor authentication completion
+      return new Promise((resolve) => {
+        let authCheckInterval: NodeJS.Timeout | null = null;
+        let authTimeout: NodeJS.Timeout | null = null;
+
+        const cleanup = () => {
+          if (authCheckInterval) clearInterval(authCheckInterval);
+          if (authTimeout) clearTimeout(authTimeout);
+        };
+
+        const resolveAuth = (success: boolean, error?: string) => {
+          cleanup();
+          setAuthState((prev) => ({
+            ...prev,
+            isAuthenticated: success,
+            isLoading: false,
+            error: error || null,
+          }));
+          resolve({ success, email: null });
+        };
+
+        // Check authentication status every 2 seconds
+        authCheckInterval = setInterval(() => {
+          if (isAuthenticatedRef.current) {
+            resolveAuth(true);
+          } else if (cloudKitPopup?.closed) {
+            // Only show cancelled error if popup closed without successful auth
+            resolveAuth(false, "Authentication was cancelled. Please try again.");
+          }
+        }, 2000);
+
+        // Timeout after 5 minutes
+        authTimeout = setTimeout(() => {
+          resolveAuth(false, "Authentication timeout. Please try again.");
+        }, 300000);
+      });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Authentication failed";
       setAuthState((prev) => ({
