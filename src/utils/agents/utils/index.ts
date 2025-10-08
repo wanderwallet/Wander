@@ -31,6 +31,33 @@ const agentStorageMutex = new Mutex();
 export const arweave = Arweave.init(defaultGateway);
 
 /**
+ * Checks if version a is greater than version b
+ * @param a - The first version to compare
+ * @param b - The second version to compare
+ * @returns True if version a is greater than version b, false otherwise
+ */
+function isVersionGte(a: string, b: string): boolean {
+  try {
+    const pa = a.split(".").map(Number);
+    const pb = b.split(".").map(Number);
+    const len = Math.max(pa.length, pb.length);
+
+    for (let i = 0; i < len; i++) {
+      const na = pa[i] ?? 0;
+      const nb = pb[i] ?? 0;
+
+      if (na >= nb) return true;
+      if (na < nb) return false;
+    }
+
+    return false;
+  } catch (error) {
+    console.error("Error comparing versions: ", a, b, error);
+    return false;
+  }
+}
+
+/**
  * Parses a gateway URL and returns an object containing the host, port, and protocol.
  *
  * @param url - The gateway URL to be parsed.
@@ -232,55 +259,106 @@ export async function getAOYieldActiveAgent() {
   return agents[agents.length - 1];
 }
 
-export async function getAOYieldAgentInfo(agentId: string) {
-  const aoInstance = connect(defaultConfig);
+export async function getAOYieldAgentInfo(agentId: string, currentAgentVersion?: string) {
+  try {
+    if (currentAgentVersion && isVersionGte(currentAgentVersion, "1.0.2")) {
+      throw new Error("Fetch agent info from the HB node");
+    }
 
-  const dryrunRes = await aoInstance.dryrun({
-    Id,
-    Owner,
-    process: agentId,
-    tags: [{ name: "Action", value: "Info" }],
-  });
+    const aoInstance = connect(defaultConfig);
 
-  const message = dryrunRes.Messages?.[0];
-  const tags = message?.Tags;
+    const dryrunRes = await aoInstance.dryrun({
+      Id,
+      Owner,
+      process: agentId,
+      tags: [{ name: "Action", value: "Info" }],
+    });
 
-  const dex = getTagValue("Dex", tags);
-  const status = getTagValue("Status", tags);
-  const tokenOut = getTagValue("Token-Out", tags);
-  const conversionPercentage = getTagValue("Conversion-Percentage", tags);
-  const startDate = getTagValue("Start-Date", tags);
-  const endDate = getTagValue("End-Date", tags);
-  const runIndefinitely = getTagValue("Run-Indefinitely", tags);
-  const slippage = getTagValue("Slippage", tags);
-  const totalAOSold = getTagValue("Total-AO-Sold", tags);
-  const totalBought = getTagValue("Total-Bought", tags);
-  const totalTransactions = getTagValue("Total-Transactions", tags);
-  const totalWanderFee = getTagValue("Total-Wander-Fee", tags);
-  const swapInProgress = getTagValue("Swap-In-Progress", tags);
-  const processedUpToDate = getTagValue("Processed-Up-To-Date", tags);
-  const swappedUpToDate = getTagValue("Swapped-Up-To-Date", tags);
-  const agentVersion = getTagValue("Agent-Version", tags);
+    const message = dryrunRes.Messages?.[0];
+    const tags = message?.Tags;
 
-  return {
-    id: agentId,
-    status,
-    dex,
-    tokenOut,
-    conversionPercentage: Number(conversionPercentage),
-    startDate: Number(startDate),
-    endDate: Number(endDate),
-    runIndefinitely: runIndefinitely === "true",
-    slippage: Number(slippage),
-    totalAOSold,
-    totalBought: JSON.parse(totalBought),
-    totalTransactions: Number(totalTransactions),
-    totalWanderFee,
-    swapInProgress: swapInProgress === "true",
-    processedUpToDate: processedUpToDate !== "nil" ? Number(processedUpToDate) : undefined,
-    swappedUpToDate: swappedUpToDate !== "nil" ? Number(swappedUpToDate) : undefined,
-    agentVersion,
-  } as AOYieldAgentInfo;
+    const dex = getTagValue("Dex", tags);
+    const status = getTagValue("Status", tags);
+    const tokenOut = getTagValue("Token-Out", tags);
+    const conversionPercentage = getTagValue("Conversion-Percentage", tags);
+    const startDate = getTagValue("Start-Date", tags);
+    const endDate = getTagValue("End-Date", tags);
+    const runIndefinitely = getTagValue("Run-Indefinitely", tags);
+    const slippage = getTagValue("Slippage", tags);
+    const totalAOSold = getTagValue("Total-AO-Sold", tags);
+    const totalBought = getTagValue("Total-Bought", tags);
+    const totalTransactions = getTagValue("Total-Transactions", tags);
+    const totalWanderFee = getTagValue("Total-Wander-Fee", tags);
+    const swapInProgress = getTagValue("Swap-In-Progress", tags);
+    const processedUpToDate = getTagValue("Processed-Up-To-Date", tags);
+    const swappedUpToDate = getTagValue("Swapped-Up-To-Date", tags);
+    const agentVersion = getTagValue("Agent-Version", tags);
+
+    return {
+      id: agentId,
+      status,
+      dex,
+      tokenOut,
+      conversionPercentage: Number(conversionPercentage),
+      startDate: Number(startDate),
+      endDate: Number(endDate),
+      runIndefinitely: runIndefinitely === "true",
+      slippage: Number(slippage),
+      totalAOSold,
+      totalBought: JSON.parse(totalBought),
+      totalTransactions: Number(totalTransactions),
+      totalWanderFee,
+      swapInProgress: swapInProgress === "true",
+      processedUpToDate: processedUpToDate && processedUpToDate !== "nil" ? Number(processedUpToDate) : undefined,
+      swappedUpToDate: swappedUpToDate && swappedUpToDate !== "nil" ? Number(swappedUpToDate) : undefined,
+      agentVersion,
+    } as AOYieldAgentInfo;
+  } catch (error) {
+    console.log("Fetching agent info from the HB node with version: ", currentAgentVersion);
+    // TODO: Update this with the actual HB node
+    const response = await fetch(`http://localhost:10000/${agentId}/~process@1.0/now/agent-info/~json@1.0/serialize`);
+    if (!response.ok) {
+      throw new Error("Failed to fetch agent info");
+    }
+    const data = await response.json();
+
+    const dex = data.dex;
+    const status = data.status;
+    const tokenOut = data.tokenOut ?? data.tokenout;
+    const conversionPercentage = data.conversionPercentage ?? data.conversionpercentage;
+    const startDate = data.startDate ?? data.startdate;
+    const endDate = data.endDate ?? data.enddate;
+    const runIndefinitely = data.runIndefinitely ?? data.runindefinitely;
+    const slippage = data.slippage ?? data.slippage;
+    const totalAOSold = data.totalAOSold ?? data.totalaosold;
+    const totalBought = data.totalBought ?? data.totalbought;
+    const totalTransactions = data.totalTransactions ?? data.totaltransactions;
+    const totalWanderFee = data.totalWanderFee ?? data.totalwanderfee;
+    const swapInProgress = data.swapInProgress ?? data.swapinprogress;
+    const processedUpToDate = data.processedUpToDate ?? data.processeduptodate;
+    const swappedUpToDate = data.swappedUpToDate ?? data.swappeduptodate;
+    const agentVersion = data.agentVersion ?? data.agentversion;
+
+    return {
+      id: agentId,
+      status,
+      dex,
+      tokenOut,
+      conversionPercentage: Number(conversionPercentage),
+      startDate: Number(startDate),
+      endDate: Number(endDate),
+      runIndefinitely: runIndefinitely === "true",
+      slippage: Number(slippage),
+      totalAOSold,
+      totalBought: JSON.parse(totalBought),
+      totalTransactions: Number(totalTransactions),
+      totalWanderFee,
+      swapInProgress: swapInProgress === "true",
+      processedUpToDate: processedUpToDate && processedUpToDate !== "nil" ? Number(processedUpToDate) : undefined,
+      swappedUpToDate: swappedUpToDate && swappedUpToDate !== "nil" ? Number(swappedUpToDate) : undefined,
+      agentVersion,
+    } as AOYieldAgentInfo;
+  }
 }
 
 /**

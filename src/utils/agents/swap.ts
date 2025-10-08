@@ -475,7 +475,7 @@ async function processAgentSwap(agent: AOYieldAgent, walletAddress: string): Pro
     // Fetch fresh agent info
     const agentInfo = await queryClient.fetchQuery({
       queryKey: ["ao-yield-agent-info", agent.id],
-      queryFn: () => getAOYieldAgentInfo(agent.id),
+      queryFn: () => getAOYieldAgentInfo(agent.id, agent.version),
       staleTime: 0, // Force fresh data
       gcTime: 0,
       retry: 3,

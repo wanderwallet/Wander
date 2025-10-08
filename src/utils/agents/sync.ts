@@ -69,7 +69,7 @@ export async function checkAndSyncAgents(address: string): Promise<void> {
           log(LOG_GROUP.AGENTS, `Fetching agent info for ${agentId}`);
           const agentInfo = await queryClient.fetchQuery({
             queryKey: ["ao-yield-agent-info", agentId],
-            queryFn: () => getAOYieldAgentInfo(agentId),
+            queryFn: () => getAOYieldAgentInfo(agentId, agent.version),
             staleTime: 0, // Force fresh data
             gcTime: 0,
             retry: 1,

@@ -82,10 +82,10 @@ export function useAOYieldAgent(agentId: string, status?: AOYieldAgentStatus) {
   }, [agents, agentId, status]);
 }
 
-export function useAOYieldAgentInfo(agentId: string) {
+export function useAOYieldAgentInfo(agentId: string, currentAgentVersion?: string) {
   return useQuery<AOYieldAgentInfo>({
     queryKey: ["ao-yield-agent-info", agentId],
-    queryFn: () => getAOYieldAgentInfo(agentId),
+    queryFn: () => getAOYieldAgentInfo(agentId, currentAgentVersion),
     enabled: !!agentId,
     refetchInterval: 60_000,
     staleTime: 60_000,
