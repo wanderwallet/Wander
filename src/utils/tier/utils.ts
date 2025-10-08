@@ -69,27 +69,55 @@ export async function getActiveTier(walletAddress: string, retry = false): Promi
 
     data = responseData;
   } catch {
-    const dryrunParams = {
-      Id,
-      Owner: walletAddress,
-      process: TIER_PROCESS_ID,
-      tags: [{ name: "Action", value: "Get-Wallet-Info" }],
-    };
+    // TODO: Update this with the actual HB node & process ID
+    const url = `http://localhost:10000/QC6z9NZYtVYn0Elx40iUmeIYvzKvuqk-OmfoleUxpSQ~process@1.0/now/wallets-tier-info/${walletAddress}/~json@1.0/serialize`;
 
-    const dryrunRes = retry
+    const response = retry
       ? await retryWithDelay(
-          () => dryrun(dryrunParams),
+          async () => {
+            const response = await fetch(url);
+            console.log(response.ok, response.status, typeof response.status);
+            if (!response.ok && response.status !== 404) {
+              throw new Error("Failed to fetch tier info from HB node");
+            }
+            return response;
+          },
           3,
           1000,
           (attempt) => Math.min(1000 * 2 ** attempt, 30000),
         )
-      : await dryrun(dryrunParams);
+      : await fetch(url);
 
-    const message = dryrunRes.Messages?.[0];
-    const parsedData = JSON.parse(message?.Data || "{}");
+    let parsedData: ActiveTierFromApi;
+
+    if (response.status === 404) {
+      // TODO: Update this with the actual HB node
+      const response = await fetch(
+        `http://localhost:10000/QC6z9NZYtVYn0Elx40iUmeIYvzKvuqk-OmfoleUxpSQ~process@1.0/now/tier-info/~json@1.0/serialize`,
+      );
+      const responseData = await response.json();
+      parsedData = {
+        balance: "0",
+        progress: 0,
+        rank: "",
+        snapshotTimestamp: responseData.snapshotTimestamp,
+        tier: 5,
+        totalHolders: responseData.totalHolders,
+      } as ActiveTierFromApi;
+    } else {
+      const responseData = await response.json();
+      parsedData = {
+        balance: responseData.balance,
+        progress: responseData.progress,
+        rank: responseData.rank,
+        snapshotTimestamp: responseData.snapshotTimestamp,
+        tier: responseData.tier,
+        totalHolders: responseData.totalHolders,
+      } as ActiveTierFromApi;
+    }
 
     if (!isValidTierInfo(parsedData)) {
-      throw new Error("Invalid tier info data from WNDR tier process");
+      throw new Error("Invalid tier info data from HB node");
     }
 
     data = parsedData;
