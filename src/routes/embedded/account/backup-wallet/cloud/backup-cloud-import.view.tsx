@@ -59,6 +59,7 @@ export function AccountBackupCloudImportEmbeddedView() {
 
         await sleep(100);
 
+        toast.success("Wallet imported successfully");
         navigate(EmbeddedPaths.AccountBackupCloudImportSuccess);
       }
     } catch (error) {

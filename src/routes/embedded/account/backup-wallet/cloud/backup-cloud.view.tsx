@@ -92,6 +92,8 @@ export function AccountBackupCloudEmbeddedView() {
         if (!cloudBackup) throw new Error("Failed to create cloud backup");
 
         handleComplete();
+
+        toast.success("Wallet backup created successfully");
       }
     } catch (error) {
       toast.error(error?.message || "Failed to store on cloud");
@@ -119,6 +121,7 @@ export function AccountBackupCloudEmbeddedView() {
 
       const { wallet } = await WalletService.deleteCloudBackup({ walletId: currentWallet.id });
       setCloudBackup(null, wallet as Wallet);
+      toast.success("Wallet backup deleted successfully");
     } catch (error) {
       toast.error(error?.message || "Failed to delete from cloud");
     } finally {

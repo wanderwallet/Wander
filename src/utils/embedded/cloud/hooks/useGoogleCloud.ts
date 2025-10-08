@@ -157,7 +157,7 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
     return new Promise((resolve, reject) => {
       if (!window.google) {
         setAuthState((prev) => ({ ...prev, isLoading: false }));
-        reject(new Error("Google authentication failed."));
+        reject(new Error("Google authentication failed. Please try again."));
       }
 
       if (authState.isAuthenticated) {
@@ -174,7 +174,7 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
           callback: async (response: { error?: string; access_token?: string; expires_in?: number }) => {
             if (response.error) {
               setAuthState((prev) => ({ ...prev, isLoading: false }));
-              reject(new Error(response.error || "Google authentication failed."));
+              reject(new Error(response.error || "Google authentication failed. Please try again."));
             } else {
               const accessToken = response.access_token || "";
               const expiresIn = response.expires_in || 3600; // Default to 1 hour
@@ -198,9 +198,19 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
             }
           },
           error_callback: (error) => {
-            if (!error) return;
             setAuthState((prev) => ({ ...prev, isLoading: false }));
-            reject(new Error(error?.message || "Google authentication failed."));
+            if (!error?.type) return;
+            switch (error.type) {
+              case "popup_failed_to_open":
+                reject(new Error("Failed to open Google authentication popup. Please try again."));
+                break;
+              case "popup_closed":
+                reject(new Error("Google authentication was cancelled. Please try again."));
+                break;
+              default:
+                reject(new Error(error?.message || "Google authentication failed. Please try again."));
+                break;
+            }
           },
         })
         .requestAccessToken();
@@ -240,6 +250,16 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
     const storedToken = getStoredToken();
     return storedToken?.accessToken || null;
   }, [isTokenValid, authenticate]);
+
+  const checkGoogleResponse = useCallback(async (response: Response): Promise<void> => {
+    const { error } = await response.json().catch(() => ({ error: {} }));
+    if (error?.status === "PERMISSION_DENIED") {
+      clearStoredToken();
+      accessTokenRef.current = null;
+      setAuthState((prev) => ({ ...prev, isAuthenticated: false, isLoading: false, email: null }));
+      throw new Error("Insufficient permissions - please grant required permissions");
+    }
+  }, []);
 
   const getFile = useCallback(
     async (walletAddress: string, fileId?: string): Promise<AppDataFile | null> => {
@@ -312,6 +332,7 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
         });
 
         if (!response.ok) {
+          await checkGoogleResponse(response);
           throw new Error(`Failed to backup wallet.`);
         }
 
@@ -334,7 +355,7 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
         setAuthState((prev) => ({ ...prev, isLoading: false }));
       }
     },
-    [ensureValidToken],
+    [ensureValidToken, checkGoogleResponse],
   );
 
   const getFileContent = useCallback(
@@ -349,6 +370,7 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
         });
 
         if (!response.ok) {
+          await checkGoogleResponse(response);
           throw new Error("Failed to get wallet backup.");
         }
 
@@ -361,7 +383,7 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
         setAuthState((prev) => ({ ...prev, isLoading: false }));
       }
     },
-    [ensureValidToken],
+    [ensureValidToken, checkGoogleResponse],
   );
 
   const updateFile = useCallback(
@@ -400,6 +422,7 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
         );
 
         if (!response.ok) {
+          await checkGoogleResponse(response);
           throw new Error(`Failed to update wallet backup.`);
         }
 
@@ -422,7 +445,7 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
         setAuthState((prev) => ({ ...prev, isLoading: false }));
       }
     },
-    [ensureValidToken],
+    [ensureValidToken, checkGoogleResponse],
   );
 
   const downloadFile = useCallback(
@@ -439,6 +462,7 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
         });
 
         if (!response.ok) {
+          await checkGoogleResponse(response);
           throw new Error(`Failed to get wallet backup.`);
         }
 
@@ -458,7 +482,7 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
         setAuthState((prev) => ({ ...prev, isLoading: false }));
       }
     },
-    [ensureValidToken],
+    [ensureValidToken, checkGoogleResponse],
   );
 
   const deleteFile = useCallback(
@@ -476,6 +500,7 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
         });
 
         if (!response.ok) {
+          await checkGoogleResponse(response);
           throw new Error(`Failed to delete wallet backup.`);
         }
       } catch (err) {
@@ -485,7 +510,7 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
         setAuthState((prev) => ({ ...prev, isLoading: false }));
       }
     },
-    [ensureValidToken],
+    [ensureValidToken, checkGoogleResponse],
   );
 
   return {

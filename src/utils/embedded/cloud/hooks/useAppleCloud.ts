@@ -151,7 +151,7 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
       const signInButton = document.getElementById("apple-sign-in-button");
       const clickableElement = signInButton?.children[0] as HTMLElement;
 
-      if (!clickableElement) throw new Error("iCloud authentication failed.");
+      if (!clickableElement) throw new Error("iCloud authentication failed. Please try again.");
 
       // Intercept window.open to capture popup reference
       let cloudKitPopup: Window | null = null;
@@ -207,7 +207,7 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
         }, 300000);
       });
     } catch (error) {
-      const errorMessage = error?.message || error?.reason || "iCloud authentication failed.";
+      const errorMessage = error?.message || error?.reason || "iCloud authentication failed. Please try again.";
       throw new Error(errorMessage);
     } finally {
       setAuthState((prev) => ({ ...prev, isLoading: false }));
