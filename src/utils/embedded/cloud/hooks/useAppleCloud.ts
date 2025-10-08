@@ -1,22 +1,13 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import type {
-  Container,
-  UserIdentity,
-  RecordField,
-  Query,
-  RecordToCreate,
-  RecordToSave,
-  Asset,
-} from "tsl-apple-cloudkit";
+import type { Container, UserIdentity, RecordField, RecordToCreate, RecordToSave, Asset } from "tsl-apple-cloudkit";
 import { useScript } from "~utils/script/script.hooks";
-import type { AppDataFile, UploadProgress } from "../cloud.types";
+import type { AppDataFile } from "../cloud.types";
 import type { JWKInterface } from "arweave/web/lib/wallet";
 
 interface AppleAuthState {
   isAuthenticated: boolean;
   userIdentity: UserIdentity | null;
   isLoading: boolean;
-  error: string | null;
 }
 
 interface UseAppleCloudReturn {
@@ -24,52 +15,29 @@ interface UseAppleCloudReturn {
   isAuthenticated: boolean;
   userIdentity: UserIdentity | null;
   isLoading: boolean;
-  error: string | null;
-
-  // File operations state
-  files: AppDataFile[];
-  uploadProgress: UploadProgress | null;
 
   // Auth methods
-  authenticate: () => Promise<{ success: boolean; email: string | null }>;
+  authenticate: () => Promise<{ email: string | null }>;
   revokeAuth: () => void;
 
   // File operations methods
-  listFiles: () => Promise<AppDataFile[]>;
-  uploadFile: (
-    file: File | Blob,
-    fileName: string,
-    walletAddress: string,
-    mimeType?: string,
-  ) => Promise<AppDataFile | null>;
-  getFileContent: (fileId: string) => Promise<JWKInterface | null>;
+  uploadFile: (file: File | Blob, fileName: string, walletAddress: string, mimeType?: string) => Promise<AppDataFile>;
+  getFileContent: (fileId: string) => Promise<JWKInterface>;
   getFile: (walletAddress: string, fileId?: string) => Promise<AppDataFile | null>;
-  updateFile: (fileId: string, file: File | Blob, fileName?: string, mimeType?: string) => Promise<AppDataFile | null>;
+  updateFile: (fileId: string, file: File | Blob, fileName?: string, mimeType?: string) => Promise<AppDataFile>;
   downloadFile: (fileId: string, fileName: string) => Promise<void>;
   deleteFile: (fileId: string) => Promise<void>;
-  clearError: () => void;
 }
 
 const RECORD_TYPE = "WalletBackup";
 
 export const useAppleCloud = (containerIdentifier: string, apiToken: string): UseAppleCloudReturn => {
-  // Validate environment configuration
-  if (!containerIdentifier || !apiToken) {
-    console.error("Apple CloudKit configuration missing:", {
-      hasContainer: !!containerIdentifier,
-      hasApiToken: !!apiToken,
-    });
-  }
-
   const [authState, setAuthState] = useState<AppleAuthState>({
     isAuthenticated: false,
     userIdentity: null,
     isLoading: false,
-    error: null,
   });
 
-  const [files, setFiles] = useState<AppDataFile[]>([]);
-  const [uploadProgress, setUploadProgress] = useState<UploadProgress | null>(null);
   const containerRef = useRef<Container>(null);
   const isAuthenticatedRef = useRef(false);
 
@@ -80,10 +48,6 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
       try {
         if (!containerIdentifier || !apiToken) {
           console.error("CloudKit initialization failed: Missing required configuration");
-          setAuthState((prev) => ({
-            ...prev,
-            error: "CloudKit configuration is missing. Check environment variables.",
-          }));
           return;
         }
 
@@ -122,18 +86,13 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
         const container = cloudKit.getDefaultContainer();
         containerRef.current = container;
 
-        try {
-          const userIdentity = await container.setUpAuth();
-          if (userIdentity) {
-            setAuthState({
-              isAuthenticated: true,
-              userIdentity,
-              isLoading: false,
-              error: null,
-            });
-          }
-        } catch (error) {
-          console.error("Error fetching user identity:", error);
+        const userIdentity = await container.setUpAuth();
+        if (userIdentity) {
+          setAuthState({
+            isAuthenticated: true,
+            userIdentity,
+            isLoading: false,
+          });
         }
 
         container.whenUserSignsIn().then(async (user: UserIdentity) => {
@@ -142,7 +101,6 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
             isAuthenticated: true,
             userIdentity: user,
             isLoading: false,
-            error: null,
           });
         });
 
@@ -152,15 +110,10 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
             isAuthenticated: false,
             userIdentity: null,
             isLoading: false,
-            error: null,
           });
         });
       } catch (error) {
-        console.error("Error initializing CloudKit:", error);
-        setAuthState((prev) => ({
-          ...prev,
-          error: "Failed to initialize CloudKit",
-        }));
+        console.error("Error initializing CloudKit: ", error);
       }
     };
 
@@ -173,25 +126,16 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
     isAuthenticatedRef.current = authState.isAuthenticated;
   }, [authState.isAuthenticated]);
 
-  const clearError = useCallback(() => {
-    setAuthState((prev) => ({ ...prev, error: null }));
-  }, []);
-
-  const authenticate = useCallback(async (): Promise<{ success: boolean; email: string | null }> => {
-    if (!containerRef.current) {
-      setAuthState((prev) => ({
-        ...prev,
-        isLoading: false,
-        error: "CloudKit not initialized",
-      }));
-      return { success: false, email: null };
-    }
-
-    if (authState.isAuthenticated) return { success: true, email: null };
-
-    setAuthState((prev) => ({ ...prev, isLoading: true, error: null }));
-
+  const authenticate = useCallback(async (): Promise<{ email: string | null }> => {
     try {
+      if (!containerRef.current) {
+        throw new Error("CloudKit not initialized");
+      }
+
+      if (authState.isAuthenticated) return { email: null };
+
+      setAuthState((prev) => ({ ...prev, isLoading: true }));
+
       const userIdentity = await containerRef.current.setUpAuth();
 
       if (userIdentity) {
@@ -199,23 +143,15 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
           isAuthenticated: true,
           userIdentity,
           isLoading: false,
-          error: null,
         });
-        return { success: true, email: null };
+        return { email: null };
       }
 
       // User needs to authenticate via popup
       const signInButton = document.getElementById("apple-sign-in-button");
       const clickableElement = signInButton?.children[0] as HTMLElement;
 
-      if (!clickableElement) {
-        setAuthState((prev) => ({
-          ...prev,
-          isLoading: false,
-          error: "Sign-in button not found",
-        }));
-        return { success: false, email: null };
-      }
+      if (!clickableElement) throw new Error("Apple authentication failed");
 
       // Intercept window.open to capture popup reference
       let cloudKitPopup: Window | null = null;
@@ -235,7 +171,7 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
       }, 1000);
 
       // Monitor authentication completion
-      return new Promise((resolve) => {
+      return new Promise((resolve, reject) => {
         let authCheckInterval: NodeJS.Timeout | null = null;
         let authTimeout: NodeJS.Timeout | null = null;
 
@@ -250,14 +186,14 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
             ...prev,
             isAuthenticated: success,
             isLoading: false,
-            error: error || null,
           }));
-          resolve({ success, email: null });
+          if (error) reject(new Error(error));
+          resolve({ email: null });
         };
 
         // Check authentication status every 2 seconds
         authCheckInterval = setInterval(() => {
-          if (isAuthenticatedRef.current) {
+          if (isAuthenticatedRef.current || localStorage.getItem(containerIdentifier)) {
             resolveAuth(true);
           } else if (cloudKitPopup?.closed) {
             // Only show cancelled error if popup closed without successful auth
@@ -271,13 +207,10 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
         }, 300000);
       });
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Authentication failed";
-      setAuthState((prev) => ({
-        ...prev,
-        isLoading: false,
-        error: errorMessage,
-      }));
-      return { success: false, email: null };
+      const errorMessage = error instanceof Error ? error.message : "Apple authentication failed";
+      throw new Error(errorMessage);
+    } finally {
+      setAuthState((prev) => ({ ...prev, isLoading: false }));
     }
   }, [authState.isAuthenticated]);
 
@@ -286,102 +219,32 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
       isAuthenticated: false,
       userIdentity: null,
       isLoading: false,
-      error: null,
     });
-
-    // Clear files when logging out
-    setFiles([]);
-    setUploadProgress(null);
 
     // @ts-ignore
     containerRef.current?._auth.signOut();
   }, []);
 
-  const listFiles = useCallback(async (): Promise<AppDataFile[]> => {
-    if (!isAuthenticatedRef.current || !containerRef.current) {
-      setAuthState((prev) => ({ ...prev, error: "Authentication required" }));
-      return;
-    }
+  const ensureIsAuthenticated = useCallback(async () => {
+    if (isAuthenticatedRef.current) return;
 
-    setAuthState((prev) => ({ ...prev, isLoading: true, error: null }));
-
-    try {
-      const query: Query = {
-        recordType: RECORD_TYPE,
-      };
-
-      const response = await containerRef.current.privateCloudDatabase.performQuery(query);
-
-      const appDataFiles: AppDataFile[] = response.records.map((record) => {
-        const fields = record.fields as { [name: string]: RecordField };
-        const asset = fields.fileAsset?.value as any; // Asset object from CloudKit
-
-        return {
-          id: record.recordName,
-          name: (fields.fileName?.value as string) || "Unknown",
-          mimeType: "application/json",
-          createdTime: record.created ? new Date(record.created.timestamp).toISOString() : "",
-          modifiedTime: record.modified ? new Date(record.modified.timestamp).toISOString() : "",
-          walletAddress: record.recordName || "Unknown",
-        };
-      });
-
-      setFiles(appDataFiles);
-      return appDataFiles;
-    } catch (err: any) {
-      let errorMessage = "Unknown error occurred";
-
-      if (err && typeof err === "object") {
-        if (err.serverErrorCode) {
-          errorMessage = `CloudKit Error: ${err.serverErrorCode} - ${err.reason || err.message}`;
-        } else if (err.message) {
-          errorMessage = err.message;
-        }
-      }
-
-      setAuthState((prev) => ({ ...prev, error: errorMessage }));
-      console.error("Error listing files:", err);
-    } finally {
-      setAuthState((prev) => ({ ...prev, isLoading: false }));
-    }
-  }, [authState.isAuthenticated]);
+    await authenticate();
+  }, [authenticate]);
 
   const uploadFile = useCallback(
-    async (
-      file: File | Blob,
-      fileName: string,
-      walletAddress: string,
-      mimeType?: string,
-    ): Promise<AppDataFile | null> => {
-      if (!isAuthenticatedRef.current || !containerRef.current) {
-        setAuthState((prev) => ({ ...prev, error: "Authentication required" }));
-        return null;
-      }
-
-      setAuthState((prev) => ({ ...prev, isLoading: true, error: null }));
-
-      // Initialize upload progress
-      setUploadProgress({
-        fileName,
-        progress: 0,
-        isComplete: false,
-      });
-
+    async (file: File | Blob, fileName: string, walletAddress: string, mimeType?: string): Promise<AppDataFile> => {
       try {
+        await ensureIsAuthenticated();
+
+        setAuthState((prev) => ({ ...prev, isLoading: true }));
+
         const existingFile = await getFile(walletAddress);
-        if (existingFile) {
-          console.log("File already exists: ", existingFile);
-          setAuthState((prev) => ({ ...prev, error: "File already exists" }));
-          return existingFile;
-        }
+        if (existingFile) return existingFile;
 
         const fileType = mimeType || (file instanceof File ? file.type : "application/json");
 
         // Create a unique record name
         const recordName = walletAddress;
-
-        // Update progress to 30% when preparing asset
-        setUploadProgress((prev) => (prev ? { ...prev, progress: 30 } : null));
 
         // Create the record with minimal data - CloudKit handles the rest
         const record: RecordToCreate = {
@@ -399,9 +262,6 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
           },
         };
 
-        // Update progress to 50% when starting upload
-        setUploadProgress((prev) => (prev ? { ...prev, progress: 50 } : null));
-
         const response = await containerRef.current.privateCloudDatabase.saveRecords([record]);
 
         if (response.records.length === 0) {
@@ -409,12 +269,6 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
         }
 
         const savedRecord = response.records[0];
-
-        // Complete progress
-        setUploadProgress((prev) => (prev ? { ...prev, progress: 100, isComplete: true } : null));
-
-        // Clear progress after a delay
-        setTimeout(() => setUploadProgress(null), 2000);
 
         const fields = savedRecord.fields as { [name: string]: RecordField };
         const uploadedFile: AppDataFile = {
@@ -425,9 +279,6 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
           modifiedTime: savedRecord.modified ? new Date(savedRecord.modified.timestamp).toISOString() : "",
           walletAddress: (fields.walletAddress?.value as string) || walletAddress,
         };
-
-        // Add to files list
-        setFiles((prev) => [uploadedFile, ...prev]);
 
         return uploadedFile;
       } catch (err: any) {
@@ -441,123 +292,106 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
           }
         }
 
-        setAuthState((prev) => ({ ...prev, error: errorMessage }));
-        console.error("Error uploading file:", err);
-        setUploadProgress(null);
+        throw new Error(errorMessage);
+      } finally {
+        setAuthState((prev) => ({ ...prev, isLoading: false }));
+      }
+    },
+    [ensureIsAuthenticated],
+  );
+
+  const getFileContent = useCallback(
+    async (fileId: string): Promise<JWKInterface> => {
+      try {
+        await ensureIsAuthenticated();
+
+        setAuthState((prev) => ({ ...prev, isLoading: true }));
+
+        const response = await containerRef.current.privateCloudDatabase.fetchRecords([fileId]);
+
+        if (response.records.length === 0) {
+          throw new Error("File not found");
+        }
+
+        const record = response.records[0];
+        const fields = record.fields as { [name: string]: RecordField };
+        const asset = fields.fileAsset?.value as Asset;
+
+        if (!asset) {
+          throw new Error("File asset not found");
+        }
+
+        const downloadResponse = await fetch(asset.downloadURL);
+        if (!downloadResponse.ok) {
+          throw new Error("Failed to download file");
+        }
+
+        const jsonData = (await downloadResponse.json()) as JWKInterface;
+
+        return jsonData;
+      } catch (err: any) {
+        let errorMessage = "Unknown error occurred";
+
+        if (err && typeof err === "object") {
+          if (err.serverErrorCode) {
+            errorMessage = `CloudKit Error: ${err.serverErrorCode} - ${err.reason || err.message}`;
+          } else if (err.message) {
+            errorMessage = err.message;
+          }
+        }
+
+        throw new Error(errorMessage);
+      } finally {
+        setAuthState((prev) => ({ ...prev, isLoading: false }));
+      }
+    },
+    [ensureIsAuthenticated],
+  );
+
+  const getFile = useCallback(
+    async (walletAddress: string, fileId?: string): Promise<AppDataFile | null> => {
+      try {
+        await ensureIsAuthenticated();
+
+        const response = await containerRef.current.privateCloudDatabase.fetchRecords([walletAddress || fileId]);
+
+        if (response.records.length === 0) {
+          throw new Error("File not found");
+        }
+
+        const record = response.records[0];
+        const fields = record.fields as { [name: string]: RecordField };
+        const asset = fields.fileAsset?.value as Asset;
+
+        if (!asset) {
+          throw new Error("File asset not found");
+        }
+
+        return {
+          id: record.recordName,
+          name: (fields.fileName?.value as string) || "Unknown",
+          mimeType: "application/json",
+          createdTime: record.created ? new Date(record.created.timestamp).toISOString() : "",
+          modifiedTime: record.modified ? new Date(record.modified.timestamp).toISOString() : "",
+          walletAddress: record.recordName || "Unknown",
+        };
+      } catch (err) {
+        console.error("Error getting file:", err);
         return null;
       } finally {
         setAuthState((prev) => ({ ...prev, isLoading: false }));
       }
     },
-    [],
+    [ensureIsAuthenticated],
   );
 
-  const getFileContent = useCallback(async (fileId: string): Promise<JWKInterface | null> => {
-    if (!isAuthenticatedRef.current || !containerRef.current) {
-      setAuthState((prev) => ({ ...prev, error: "Authentication required" }));
-      return null;
-    }
-
-    setAuthState((prev) => ({ ...prev, isLoading: true, error: null }));
-
-    try {
-      const response = await containerRef.current.privateCloudDatabase.fetchRecords([fileId]);
-
-      if (response.records.length === 0) {
-        throw new Error("File not found");
-      }
-
-      const record = response.records[0];
-      const fields = record.fields as { [name: string]: RecordField };
-      const asset = fields.fileAsset?.value as Asset;
-
-      if (!asset) {
-        throw new Error("File asset not found");
-      }
-
-      const downloadResponse = await fetch(asset.downloadURL);
-      if (!downloadResponse.ok) {
-        throw new Error("Failed to download file");
-      }
-
-      const jsonData = (await downloadResponse.json()) as JWKInterface;
-
-      return jsonData;
-    } catch (err: any) {
-      let errorMessage = "Unknown error occurred";
-
-      if (err && typeof err === "object") {
-        if (err.serverErrorCode) {
-          errorMessage = `CloudKit Error: ${err.serverErrorCode} - ${err.reason || err.message}`;
-        } else if (err.message) {
-          errorMessage = err.message;
-        }
-      }
-
-      setAuthState((prev) => ({ ...prev, error: errorMessage }));
-      console.error("Error getting file:", err);
-      return null;
-    } finally {
-      setAuthState((prev) => ({ ...prev, isLoading: false }));
-    }
-  }, []);
-
-  const getFile = useCallback(async (walletAddress: string, fileId?: string): Promise<AppDataFile | null> => {
-    try {
-      if (!isAuthenticatedRef.current || !containerRef.current) {
-        setAuthState((prev) => ({ ...prev, error: "Authentication required" }));
-        return null;
-      }
-
-      const response = await containerRef.current.privateCloudDatabase.fetchRecords([walletAddress || fileId]);
-
-      if (response.records.length === 0) {
-        throw new Error("File not found");
-      }
-
-      const record = response.records[0];
-      const fields = record.fields as { [name: string]: RecordField };
-      const asset = fields.fileAsset?.value as Asset;
-
-      if (!asset) {
-        throw new Error("File asset not found");
-      }
-
-      return {
-        id: record.recordName,
-        name: (fields.fileName?.value as string) || "Unknown",
-        mimeType: "application/json",
-        createdTime: record.created ? new Date(record.created.timestamp).toISOString() : "",
-        modifiedTime: record.modified ? new Date(record.modified.timestamp).toISOString() : "",
-        walletAddress: record.recordName || "Unknown",
-      };
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
-      setAuthState((prev) => ({ ...prev, error: errorMessage }));
-      console.error("Error getting file:", err);
-      return null;
-    } finally {
-      setAuthState((prev) => ({ ...prev, isLoading: false }));
-    }
-  }, []);
-
   const updateFile = useCallback(
-    async (fileId: string, file: File | Blob, fileName?: string, mimeType?: string): Promise<AppDataFile | null> => {
-      if (!isAuthenticatedRef.current || !containerRef.current) {
-        setAuthState((prev) => ({ ...prev, error: "Authentication required" }));
-        return null;
-      }
-
-      setAuthState((prev) => ({ ...prev, isLoading: true, error: null }));
-
-      // Initialize upload progress for update
-      setUploadProgress({
-        fileName: fileName || "file",
-        progress: 0,
-        isComplete: false,
-      });
-
+    async (fileId: string, file: File | Blob, fileName?: string, mimeType?: string): Promise<AppDataFile> => {
       try {
+        await ensureIsAuthenticated();
+
+        setAuthState((prev) => ({ ...prev, isLoading: true }));
+
         const fileType = mimeType || (file instanceof File ? file.type : "application/json");
 
         // First, fetch the existing record to get its current state
@@ -589,9 +423,6 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
           };
         }
 
-        // Update progress to 50% when starting upload
-        setUploadProgress((prev) => (prev ? { ...prev, progress: 50 } : null));
-
         const response = await containerRef.current.privateCloudDatabase.saveRecords([updatedRecord]);
 
         if (response.records.length === 0) {
@@ -599,12 +430,6 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
         }
 
         const savedRecord = response.records[0];
-
-        // Complete progress
-        setUploadProgress((prev) => (prev ? { ...prev, progress: 100, isComplete: true } : null));
-
-        // Clear progress after a delay
-        setTimeout(() => setUploadProgress(null), 2000);
 
         const fields = savedRecord.fields as { [name: string]: RecordField };
         const updatedFile: AppDataFile = {
@@ -615,9 +440,6 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
           modifiedTime: savedRecord.modified ? new Date(savedRecord.modified.timestamp).toISOString() : "",
           walletAddress: fields.walletAddress?.value as string,
         };
-
-        // Update the file in the files list
-        setFiles((prev) => prev.map((f) => (f.id === fileId ? updatedFile : f)));
 
         return updatedFile;
       } catch (err: any) {
@@ -631,27 +453,21 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
           }
         }
 
-        setAuthState((prev) => ({ ...prev, error: errorMessage }));
-        console.error("Error updating file:", err);
-        setUploadProgress(null);
-        return null;
+        throw new Error(errorMessage);
       } finally {
         setAuthState((prev) => ({ ...prev, isLoading: false }));
       }
     },
-    [],
+    [ensureIsAuthenticated],
   );
 
   const downloadFile = useCallback(
     async (fileId: string, fileName: string): Promise<void> => {
-      if (!isAuthenticatedRef.current || !containerRef.current) {
-        setAuthState((prev) => ({ ...prev, error: "Authentication required" }));
-        return;
-      }
-
-      setAuthState((prev) => ({ ...prev, isLoading: true, error: null }));
-
       try {
+        await ensureIsAuthenticated();
+
+        setAuthState((prev) => ({ ...prev, isLoading: true }));
+
         const jsonData = await getFileContent(fileId);
         if (!jsonData) {
           throw new Error("Failed to get file");
@@ -677,69 +493,57 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
           }
         }
 
-        setAuthState((prev) => ({ ...prev, error: errorMessage }));
-        console.error("Error downloading file:", err);
+        throw new Error(errorMessage);
       } finally {
         setAuthState((prev) => ({ ...prev, isLoading: false }));
       }
     },
-    [getFileContent],
+    [getFileContent, ensureIsAuthenticated],
   );
 
-  const deleteFile = useCallback(async (fileId: string): Promise<void> => {
-    if (!isAuthenticatedRef.current || !containerRef.current) {
-      setAuthState((prev) => ({ ...prev, error: "Authentication required" }));
-      return;
-    }
+  const deleteFile = useCallback(
+    async (fileId: string): Promise<void> => {
+      try {
+        await ensureIsAuthenticated();
 
-    setAuthState((prev) => ({ ...prev, isLoading: true, error: null }));
+        setAuthState((prev) => ({ ...prev, isLoading: true }));
 
-    try {
-      await containerRef.current.privateCloudDatabase.deleteRecords([fileId]);
+        await containerRef.current.privateCloudDatabase.deleteRecords([fileId]);
+      } catch (err: any) {
+        let errorMessage = "Unknown error occurred";
 
-      // Remove from files list
-      setFiles((prev) => prev.filter((file) => file.id !== fileId));
-    } catch (err: any) {
-      let errorMessage = "Unknown error occurred";
-
-      if (err && typeof err === "object") {
-        if (err.serverErrorCode) {
-          errorMessage = `CloudKit Error: ${err.serverErrorCode} - ${err.reason || err.message}`;
-        } else if (err.message) {
-          errorMessage = err.message;
+        if (err && typeof err === "object") {
+          if (err.serverErrorCode) {
+            errorMessage = `CloudKit Error: ${err.serverErrorCode} - ${err.reason || err.message}`;
+          } else if (err.message) {
+            errorMessage = err.message;
+          }
         }
-      }
 
-      setAuthState((prev) => ({ ...prev, error: errorMessage }));
-      console.error("Error deleting file:", err);
-    } finally {
-      setAuthState((prev) => ({ ...prev, isLoading: false }));
-    }
-  }, []);
+        throw new Error(errorMessage);
+      } finally {
+        setAuthState((prev) => ({ ...prev, isLoading: false }));
+      }
+    },
+    [ensureIsAuthenticated],
+  );
 
   return {
     // Auth state
     isAuthenticated: authState.isAuthenticated,
     userIdentity: authState.userIdentity,
     isLoading: authState.isLoading,
-    error: authState.error,
-
-    // File operations state
-    files,
-    uploadProgress,
 
     // Auth methods
     authenticate,
     revokeAuth,
 
     // File operations methods
-    listFiles,
     uploadFile,
     getFileContent,
     getFile,
     updateFile,
     downloadFile,
     deleteFile,
-    clearError,
   };
 };

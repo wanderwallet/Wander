@@ -1,5 +1,5 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Button, Column, ICloudIcon, GoogleCloudIcon, Row, Text, Spacer, Copyable } from "~components/embed";
 import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
 import { useAppleCloud } from "~utils/embedded/cloud/hooks/useAppleCloud";
@@ -13,6 +13,7 @@ import { navigate } from "wouter/use-hash-location";
 import { signOut } from "~utils/embedded/embedded.utils";
 import { sleep } from "~utils/promises/sleep";
 import { Loading } from "@arconnect/components-rebrand";
+import { toast } from "react-toastify";
 
 const clientId = import.meta.env?.VITE_GOOGLE_CLIENT_ID;
 const containerIdentifier = import.meta.env?.VITE_APPLE_CONTAINER_IDENTIFIER;
@@ -40,12 +41,10 @@ export function AccountBackupCloudImportEmbeddedView() {
       let jwk: JWKInterface | null = null;
 
       if (cloudBackup?.provider === "GOOGLE") {
-        const { success } = await googleCloud.authenticate();
-        if (!success) throw new Error("Failed to authenticate with Google Drive");
+        await googleCloud.authenticate();
         jwk = await googleCloud.getFileContent(cloudBackup?.fileId);
       } else if (cloudBackup?.provider === "APPLE") {
-        const { success } = await appleCloud.authenticate();
-        if (!success) throw new Error("Failed to authenticate with Apple Drive");
+        await appleCloud.authenticate();
         jwk = await appleCloud.getFileContent(cloudBackup?.fileId);
       }
 
@@ -63,7 +62,7 @@ export function AccountBackupCloudImportEmbeddedView() {
         navigate(EmbeddedPaths.AccountBackupCloudImportSuccess);
       }
     } catch (error) {
-      console.error("Failed to import from cloud:", error);
+      toast.error(error?.message || "Failed to import from cloud");
     } finally {
       setIsLoading(false);
     }

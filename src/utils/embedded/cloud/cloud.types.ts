@@ -11,9 +11,3 @@ export interface AppDataFile {
   modifiedTime: string;
   walletAddress: string;
 }
-
-export interface UploadProgress {
-  fileName: string;
-  progress: number;
-  isComplete: boolean;
-}

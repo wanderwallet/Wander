@@ -12,6 +12,7 @@ import { browserInfo } from "~utils/browser-info/browser-info.utils";
 import { sleep } from "~utils/promises/sleep";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import type { Wallet } from "~utils/embedded/embedded.types";
+import { toast } from "react-toastify";
 
 const clientId = import.meta.env?.VITE_GOOGLE_CLIENT_ID;
 const containerIdentifier = import.meta.env?.VITE_APPLE_CONTAINER_IDENTIFIER;
@@ -52,9 +53,10 @@ export function AccountBackupCloudEmbeddedView() {
   };
 
   async function handleStoreOnCloud() {
-    if (!currentWallet) return;
-    setIsLoading(true);
     try {
+      if (!currentWallet) return;
+      setIsLoading(true);
+
       const wallet = await getDecryptedWallet();
       const blob = new Blob([JSON.stringify(wallet.keyfile)], { type: "application/json" });
       const fileName = "backup-jwk.json";
@@ -64,13 +66,11 @@ export function AccountBackupCloudEmbeddedView() {
 
       if (!fileRef.current) {
         if (cloudProvider === CloudProvider.GOOGLE) {
-          const { success, email } = await googleCloud.authenticate();
+          const { email } = await googleCloud.authenticate();
           googleEmail = email;
-          if (!success) throw new Error("Failed to authenticate with Google Drive");
           fileRef.current = await googleCloud.uploadFile(blob, fileName, currentWallet.address, mimeType);
         } else if (cloudProvider === CloudProvider.APPLE) {
-          const { success } = await appleCloud.authenticate();
-          if (!success) throw new Error("Failed to authenticate with Apple Drive");
+          await appleCloud.authenticate();
           fileRef.current = await appleCloud.uploadFile(blob, fileName, currentWallet.address, mimeType);
         }
       }
@@ -90,31 +90,30 @@ export function AccountBackupCloudEmbeddedView() {
         handleComplete();
       }
     } catch (error) {
-      console.error("Failed to store on cloud:", error);
+      toast.error(error?.message || "Failed to store on cloud");
     } finally {
       setIsLoading(false);
     }
   }
 
   async function handleDeleteFromCloud() {
-    if (!currentWallet || !cloudBackup) return;
-    setIsLoading(true);
     try {
+      if (!currentWallet || !cloudBackup) return;
+      setIsLoading(true);
+
       fileRef.current = null;
       if (cloudBackup.provider === CloudProvider.GOOGLE) {
-        const { success } = await googleCloud.authenticate();
-        if (!success) throw new Error("Failed to authenticate with Google Drive");
+        await googleCloud.authenticate();
         await googleCloud.deleteFile(cloudBackup.fileId);
       } else if (cloudBackup.provider === CloudProvider.APPLE) {
-        const { success } = await appleCloud.authenticate();
-        if (!success) throw new Error("Failed to authenticate with Apple Drive");
+        await appleCloud.authenticate();
         await appleCloud.deleteFile(cloudBackup.fileId);
       }
 
       const { wallet } = await WalletService.deleteCloudBackup({ walletId: currentWallet.id });
       setCloudBackup(null, wallet as Wallet);
     } catch (error) {
-      console.error("Failed to delete from cloud:", error);
+      toast.error(error?.message || "Failed to delete from cloud");
     } finally {
       setIsLoading(false);
     }

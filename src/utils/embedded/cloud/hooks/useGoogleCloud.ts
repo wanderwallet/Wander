@@ -1,12 +1,11 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useScript } from "~utils/script/script.hooks";
-import type { AppDataFile, UploadProgress } from "../cloud.types";
+import type { AppDataFile } from "../cloud.types";
 import type { JWKInterface } from "arweave/web/lib/wallet";
 
 interface GoogleCloudAuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
-  error: string | null;
   email: string | null;
 }
 
@@ -21,33 +20,19 @@ interface UseGoogleCloudReturn {
   // Auth state
   isAuthenticated: boolean;
   isLoading: boolean;
-  error: string | null;
   email: string | null;
 
-  // File operations state
-  files: AppDataFile[];
-  uploadProgress: UploadProgress | null;
-
   // Auth methods
-  authenticate: () => Promise<{ success: boolean; email?: string | null }>;
+  authenticate: () => Promise<{ email?: string | null }>;
   revokeAuth: () => void;
-  isTokenValid: () => boolean;
-  ensureValidToken: () => Promise<string | null>;
 
   // File operations methods
-  listFiles: () => Promise<AppDataFile[]>;
-  uploadFile: (
-    file: File | Blob,
-    fileName: string,
-    walletAddress: string,
-    mimeType?: string,
-  ) => Promise<AppDataFile | null>;
-  getFileContent: (fileId: string) => Promise<JWKInterface | null>;
+  uploadFile: (file: File | Blob, fileName: string, walletAddress: string, mimeType?: string) => Promise<AppDataFile>;
+  getFileContent: (fileId: string) => Promise<JWKInterface>;
   getFile: (walletAddress: string, fileId?: string) => Promise<AppDataFile | null>;
-  updateFile: (fileId: string, file: File | Blob, fileName?: string, mimeType?: string) => Promise<AppDataFile | null>;
+  updateFile: (fileId: string, file: File | Blob, fileName?: string, mimeType?: string) => Promise<AppDataFile>;
   downloadFile: (fileId: string, fileName: string) => Promise<void>;
   deleteFile: (fileId: string) => Promise<void>;
-  clearError: () => void;
 }
 
 const TOKEN_STORAGE_KEY = "google_drive_token";
@@ -116,13 +101,9 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
     return {
       isAuthenticated: !!storedToken,
       isLoading: false,
-      error: null,
       email: storedToken?.email || null,
     };
   });
-
-  const [files, setFiles] = useState<AppDataFile[]>([]);
-  const [uploadProgress, setUploadProgress] = useState<UploadProgress | null>(null);
 
   useEffect(() => {
     const syncAuthState = () => {
@@ -150,10 +131,6 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
   // Google cloud script
   useScript("https://accounts.google.com/gsi/client", { removeOnUnmount: true });
 
-  const clearError = useCallback(() => {
-    setAuthState((prev) => ({ ...prev, error: null }));
-  }, []);
-
   // Function to fetch user email using the access token
   const fetchUserEmail = useCallback(async (accessToken: string): Promise<string | null> => {
     try {
@@ -176,24 +153,19 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
     }
   }, []);
 
-  const authenticate = useCallback((): Promise<{ success: boolean; email: string | null }> => {
-    return new Promise((resolve) => {
+  const authenticate = useCallback((): Promise<{ email: string | null }> => {
+    return new Promise((resolve, reject) => {
       if (!window.google) {
-        setAuthState((prev) => ({
-          ...prev,
-          isLoading: false,
-          error: "Google Identity Services not loaded",
-        }));
-        resolve({ success: false, email: null });
-        return;
+        setAuthState((prev) => ({ ...prev, isLoading: false }));
+        reject(new Error("Google authentication failed"));
       }
 
       if (authState.isAuthenticated) {
-        resolve({ success: true, email: authState.email });
+        resolve({ email: authState.email });
         return;
       }
 
-      setAuthState((prev) => ({ ...prev, isLoading: true, error: null }));
+      setAuthState((prev) => ({ ...prev, isLoading: true }));
 
       window.google.accounts.oauth2
         .initTokenClient({
@@ -201,12 +173,8 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
           scope: "https://www.googleapis.com/auth/drive.appdata email",
           callback: async (response: { error?: string; access_token?: string; expires_in?: number }) => {
             if (response.error) {
-              setAuthState((prev) => ({
-                ...prev,
-                isLoading: false,
-                error: response.error || null,
-              }));
-              resolve({ success: false, email: null });
+              setAuthState((prev) => ({ ...prev, isLoading: false }));
+              reject(new Error(response.error || "Google authentication failed"));
             } else {
               const accessToken = response.access_token || "";
               const expiresIn = response.expires_in || 3600; // Default to 1 hour
@@ -224,20 +192,15 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
                 ...prev,
                 isAuthenticated: true,
                 isLoading: false,
-                error: null,
                 email,
               }));
-              resolve({ success: true, email });
+              resolve({ email });
             }
           },
           error_callback: (error) => {
             if (!error) return;
-            setAuthState((prev) => ({
-              ...prev,
-              isLoading: false,
-              error: error?.message || "Google authentication failed",
-            }));
-            resolve({ success: false, email: null });
+            setAuthState((prev) => ({ ...prev, isLoading: false }));
+            reject(new Error(error?.message || "Google authentication failed"));
           },
         })
         .requestAccessToken();
@@ -256,13 +219,8 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
     setAuthState({
       isAuthenticated: false,
       isLoading: false,
-      error: null,
       email: null,
     });
-
-    // Clear files when logging out
-    setFiles([]);
-    setUploadProgress(null);
   }, []);
 
   // Function to check if current token is valid
@@ -272,84 +230,21 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
   }, []);
 
   // Function to refresh token if needed
-  const ensureValidToken = useCallback(async (): Promise<string | null> => {
-    if (isTokenValid() && accessTokenRef.current) {
-      return accessTokenRef.current;
-    }
+  const ensureValidToken = useCallback(async (): Promise<string> => {
+    if (isTokenValid() && accessTokenRef.current) return accessTokenRef.current;
 
     // Token is invalid or expired, need to re-authenticate
-    const { success: authSuccess } = await authenticate();
-    if (authSuccess) {
-      // Get the token from state after successful authentication
-      const storedToken = getStoredToken();
-      return storedToken?.accessToken || null;
-    }
+    await authenticate();
 
-    return null;
+    // Get the token from state after successful authentication
+    const storedToken = getStoredToken();
+    return storedToken?.accessToken || null;
   }, [isTokenValid, authenticate]);
-
-  const listFiles = useCallback(async (): Promise<AppDataFile[]> => {
-    const token = await ensureValidToken();
-    if (!token) {
-      setAuthState((prev) => ({ ...prev, error: "Authentication required" }));
-      return [];
-    }
-
-    setAuthState((prev) => ({ ...prev, isLoading: true, error: null }));
-
-    try {
-      const response = await fetch(
-        "https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&fields=files(id,name,mimeType,createdTime,modifiedTime,appProperties)",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(`Failed to list files: ${errorData.error?.message || response.statusText}`);
-      }
-
-      const data = await response.json();
-      const appDataFiles: AppDataFile[] = data.files.map(
-        (file: {
-          id: string;
-          name: string;
-          mimeType: string;
-          createdTime: string;
-          modifiedTime: string;
-          appProperties: { walletAddress: string };
-        }) => ({
-          id: file.id,
-          name: file.name,
-          mimeType: file.mimeType,
-          createdTime: file.createdTime,
-          modifiedTime: file.modifiedTime,
-          walletAddress: file?.appProperties?.walletAddress || "",
-        }),
-      );
-
-      setFiles(appDataFiles);
-      return appDataFiles;
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
-      setAuthState((prev) => ({ ...prev, error: errorMessage }));
-      console.error("Error listing files:", err);
-    } finally {
-      setAuthState((prev) => ({ ...prev, isLoading: false }));
-    }
-  }, [ensureValidToken]);
 
   const getFile = useCallback(
     async (walletAddress: string, fileId?: string): Promise<AppDataFile | null> => {
       try {
         const token = await ensureValidToken();
-        if (!token) {
-          setAuthState((prev) => ({ ...prev, error: "Authentication required" }));
-          return null;
-        }
 
         const url = fileId
           ? `https://www.googleapis.com/drive/v3/files/${fileId}`
@@ -377,8 +272,7 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
         } as AppDataFile;
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
-        setAuthState((prev) => ({ ...prev, error: errorMessage }));
-        console.error("Error getting file:", err);
+        console.error("Error getting file: ", errorMessage);
         return null;
       }
     },
@@ -386,34 +280,14 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
   );
 
   const uploadFile = useCallback(
-    async (
-      file: File | Blob,
-      fileName: string,
-      walletAddress: string,
-      mimeType?: string,
-    ): Promise<AppDataFile | null> => {
-      const token = await ensureValidToken();
-      if (!token) {
-        setAuthState((prev) => ({ ...prev, error: "Authentication required" }));
-        return null;
-      }
-
-      setAuthState((prev) => ({ ...prev, isLoading: true, error: null }));
-
-      // Initialize upload progress
-      setUploadProgress({
-        fileName,
-        progress: 0,
-        isComplete: false,
-      });
-
+    async (file: File | Blob, fileName: string, walletAddress: string, mimeType?: string): Promise<AppDataFile> => {
       try {
+        const token = await ensureValidToken();
+
+        setAuthState((prev) => ({ ...prev, isLoading: true }));
+
         const existingFile = await getFile(walletAddress);
-        if (existingFile) {
-          console.log("File already exists: ", existingFile);
-          setAuthState((prev) => ({ ...prev, error: "File already exists" }));
-          return existingFile;
-        }
+        if (existingFile) return existingFile;
 
         const fileType = mimeType || (file instanceof File ? file.type : "application/octet-stream");
 
@@ -430,9 +304,6 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
         form.append("metadata", new Blob([JSON.stringify(metadata)], { type: "application/json" }));
         form.append("file", file);
 
-        // Update progress to 50% when starting upload
-        setUploadProgress((prev) => (prev ? { ...prev, progress: 50 } : null));
-
         const response = await fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart", {
           method: "POST",
           headers: {
@@ -448,12 +319,6 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
 
         const result = await response.json();
 
-        // Complete progress
-        setUploadProgress((prev) => (prev ? { ...prev, progress: 100, isComplete: true } : null));
-
-        // Clear progress after a delay
-        setTimeout(() => setUploadProgress(null), 2000);
-
         const uploadedFile: AppDataFile = {
           id: result.id,
           name: result.name,
@@ -463,16 +328,10 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
           walletAddress,
         };
 
-        // Add to files list
-        setFiles((prev) => [uploadedFile, ...prev]);
-
         return uploadedFile;
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
-        setAuthState((prev) => ({ ...prev, error: errorMessage }));
-        console.error("Error uploading file:", err);
-        setUploadProgress(null);
-        return null;
+        throw new Error(errorMessage);
       } finally {
         setAuthState((prev) => ({ ...prev, isLoading: false }));
       }
@@ -481,16 +340,12 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
   );
 
   const getFileContent = useCallback(
-    async (fileId: string): Promise<JWKInterface | null> => {
-      const token = await ensureValidToken();
-      if (!token) {
-        setAuthState((prev) => ({ ...prev, error: "Authentication required" }));
-        return null;
-      }
-
-      setAuthState((prev) => ({ ...prev, isLoading: true, error: null }));
-
+    async (fileId: string): Promise<JWKInterface> => {
       try {
+        const token = await ensureValidToken();
+
+        setAuthState((prev) => ({ ...prev, isLoading: true }));
+
         const response = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -506,9 +361,7 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
         return blob as JWKInterface;
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
-        setAuthState((prev) => ({ ...prev, error: errorMessage }));
-        console.error("Error getting file:", err);
-        return null;
+        throw new Error(errorMessage);
       } finally {
         setAuthState((prev) => ({ ...prev, isLoading: false }));
       }
@@ -517,23 +370,12 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
   );
 
   const updateFile = useCallback(
-    async (fileId: string, file: File | Blob, fileName?: string, mimeType?: string): Promise<AppDataFile | null> => {
-      const token = await ensureValidToken();
-      if (!token) {
-        setAuthState((prev) => ({ ...prev, error: "Authentication required" }));
-        return null;
-      }
-
-      setAuthState((prev) => ({ ...prev, isLoading: true, error: null }));
-
-      // Initialize upload progress for update
-      setUploadProgress({
-        fileName: fileName || "file",
-        progress: 0,
-        isComplete: false,
-      });
-
+    async (fileId: string, file: File | Blob, fileName?: string, mimeType?: string): Promise<AppDataFile> => {
       try {
+        const token = await ensureValidToken();
+
+        setAuthState((prev) => ({ ...prev, isLoading: true }));
+
         const fileType = mimeType || (file instanceof File ? file.type : "application/octet-stream");
 
         // Create metadata for the file update
@@ -550,9 +392,6 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
         const form = new FormData();
         form.append("metadata", new Blob([JSON.stringify(metadata)], { type: "application/json" }));
         form.append("file", file);
-
-        // Update progress to 50% when starting upload
-        setUploadProgress((prev) => (prev ? { ...prev, progress: 50 } : null));
 
         const response = await fetch(
           `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=multipart`,
@@ -572,12 +411,6 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
 
         const result = await response.json();
 
-        // Complete progress
-        setUploadProgress((prev) => (prev ? { ...prev, progress: 100, isComplete: true } : null));
-
-        // Clear progress after a delay
-        setTimeout(() => setUploadProgress(null), 2000);
-
         const updatedFile: AppDataFile = {
           id: result.id,
           name: result.name,
@@ -587,16 +420,10 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
           walletAddress: result.walletAddress,
         };
 
-        // Update the file in the files list
-        setFiles((prev) => prev.map((f) => (f.id === fileId ? updatedFile : f)));
-
         return updatedFile;
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
-        setAuthState((prev) => ({ ...prev, error: errorMessage }));
-        console.error("Error updating file:", err);
-        setUploadProgress(null);
-        return null;
+        throw new Error(errorMessage);
       } finally {
         setAuthState((prev) => ({ ...prev, isLoading: false }));
       }
@@ -606,15 +433,11 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
 
   const downloadFile = useCallback(
     async (fileId: string, fileName: string): Promise<void> => {
-      const token = await ensureValidToken();
-      if (!token) {
-        setAuthState((prev) => ({ ...prev, error: "Authentication required" }));
-        return;
-      }
-
-      setAuthState((prev) => ({ ...prev, isLoading: true, error: null }));
-
       try {
+        const token = await ensureValidToken();
+
+        setAuthState((prev) => ({ ...prev, isLoading: true }));
+
         const response = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -637,8 +460,7 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
         document.body.removeChild(a);
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
-        setAuthState((prev) => ({ ...prev, error: errorMessage }));
-        console.error("Error downloading file:", err);
+        throw new Error(errorMessage);
       } finally {
         setAuthState((prev) => ({ ...prev, isLoading: false }));
       }
@@ -648,15 +470,11 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
 
   const deleteFile = useCallback(
     async (fileId: string): Promise<void> => {
-      const token = await ensureValidToken();
-      if (!token) {
-        setAuthState((prev) => ({ ...prev, error: "Authentication required" }));
-        return;
-      }
-
-      setAuthState((prev) => ({ ...prev, isLoading: true, error: null }));
-
       try {
+        const token = await ensureValidToken();
+
+        setAuthState((prev) => ({ ...prev, isLoading: true }));
+
         const response = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}`, {
           method: "DELETE",
           headers: {
@@ -668,13 +486,9 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
           const errorData = await response.json().catch(() => ({}));
           throw new Error(`Delete failed: ${errorData.error?.message || response.statusText}`);
         }
-
-        // Remove from files list
-        setFiles((prev) => prev.filter((file) => file.id !== fileId));
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
-        setAuthState((prev) => ({ ...prev, error: errorMessage }));
-        console.error("Error deleting file:", err);
+        throw new Error(errorMessage);
       } finally {
         setAuthState((prev) => ({ ...prev, isLoading: false }));
       }
@@ -686,27 +500,18 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
     // Auth state
     isAuthenticated: authState.isAuthenticated,
     isLoading: authState.isLoading,
-    error: authState.error,
     email: authState.email,
-
-    // File operations state
-    files,
-    uploadProgress,
 
     // Auth methods
     authenticate,
     revokeAuth,
-    isTokenValid,
-    ensureValidToken,
 
     // File operations methods
-    listFiles,
     uploadFile,
     getFileContent,
     getFile,
     updateFile,
     downloadFile,
     deleteFile,
-    clearError,
   };
 };
