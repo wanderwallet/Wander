@@ -13,6 +13,9 @@ import { sleep } from "~utils/promises/sleep";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import type { Wallet } from "~utils/embedded/embedded.types";
 import { toast } from "react-toastify";
+import type { JWKInterface } from "@dha-team/arbundles/node";
+import type { LocalWallet } from "~wallets/wallets.types";
+import { freeDecryptedWallet } from "~wallets/encryption";
 
 const clientId = import.meta.env?.VITE_GOOGLE_CLIENT_ID;
 const containerIdentifier = import.meta.env?.VITE_APPLE_CONTAINER_IDENTIFIER;
@@ -53,11 +56,12 @@ export function AccountBackupCloudEmbeddedView() {
   };
 
   async function handleStoreOnCloud() {
+    let wallet: LocalWallet<JWKInterface> | null = null;
     try {
       if (!currentWallet) return;
       setIsLoading(true);
 
-      const wallet = await getDecryptedWallet();
+      wallet = await getDecryptedWallet();
       const blob = new Blob([JSON.stringify(wallet.keyfile)], { type: "application/json" });
       const fileName = "backup-jwk.json";
       const mimeType = "application/json";
@@ -93,6 +97,9 @@ export function AccountBackupCloudEmbeddedView() {
       toast.error(error?.message || "Failed to store on cloud");
     } finally {
       setIsLoading(false);
+      if (wallet?.keyfile) {
+        freeDecryptedWallet(wallet.keyfile);
+      }
     }
   }
 

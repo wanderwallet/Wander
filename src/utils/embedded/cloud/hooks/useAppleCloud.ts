@@ -129,7 +129,7 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
   const authenticate = useCallback(async (): Promise<{ email: string | null }> => {
     try {
       if (!containerRef.current) {
-        throw new Error("CloudKit not initialized");
+        throw new Error("iCloud not initialized.");
       }
 
       if (authState.isAuthenticated) return { email: null };
@@ -151,7 +151,7 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
       const signInButton = document.getElementById("apple-sign-in-button");
       const clickableElement = signInButton?.children[0] as HTMLElement;
 
-      if (!clickableElement) throw new Error("Apple authentication failed");
+      if (!clickableElement) throw new Error("iCloud authentication failed.");
 
       // Intercept window.open to capture popup reference
       let cloudKitPopup: Window | null = null;
@@ -197,17 +197,17 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
             resolveAuth(true);
           } else if (cloudKitPopup?.closed) {
             // Only show cancelled error if popup closed without successful auth
-            resolveAuth(false, "Authentication was cancelled. Please try again.");
+            resolveAuth(false, "iCloud authentication was cancelled. Please try again.");
           }
         }, 2000);
 
         // Timeout after 5 minutes
         authTimeout = setTimeout(() => {
-          resolveAuth(false, "Authentication timeout. Please try again.");
+          resolveAuth(false, "iCloud authentication timeout. Please try again.");
         }, 300000);
       });
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Apple authentication failed";
+      const errorMessage = error?.message || error?.reason || "iCloud authentication failed.";
       throw new Error(errorMessage);
     } finally {
       setAuthState((prev) => ({ ...prev, isLoading: false }));
@@ -265,7 +265,7 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
         const response = await containerRef.current.privateCloudDatabase.saveRecords([record]);
 
         if (response.records.length === 0) {
-          throw new Error("Failed to save record");
+          throw new Error("Failed to save record.");
         }
 
         const savedRecord = response.records[0];
@@ -282,16 +282,7 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
 
         return uploadedFile;
       } catch (err: any) {
-        let errorMessage = "Unknown error occurred";
-
-        if (err && typeof err === "object") {
-          if (err.serverErrorCode) {
-            errorMessage = `CloudKit Error: ${err.serverErrorCode} - ${err.reason || err.message}`;
-          } else if (err.message) {
-            errorMessage = err.message;
-          }
-        }
-
+        let errorMessage = err?.message || err?.reason || "Failed to backup wallet.";
         throw new Error(errorMessage);
       } finally {
         setAuthState((prev) => ({ ...prev, isLoading: false }));
@@ -310,7 +301,7 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
         const response = await containerRef.current.privateCloudDatabase.fetchRecords([fileId]);
 
         if (response.records.length === 0) {
-          throw new Error("File not found");
+          throw new Error("Wallet backup not found.");
         }
 
         const record = response.records[0];
@@ -318,28 +309,19 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
         const asset = fields.fileAsset?.value as Asset;
 
         if (!asset) {
-          throw new Error("File asset not found");
+          throw new Error("Wallet backup not found.");
         }
 
         const downloadResponse = await fetch(asset.downloadURL);
         if (!downloadResponse.ok) {
-          throw new Error("Failed to download file");
+          throw new Error("Failed to get wallet backup.");
         }
 
         const jsonData = (await downloadResponse.json()) as JWKInterface;
 
         return jsonData;
       } catch (err: any) {
-        let errorMessage = "Unknown error occurred";
-
-        if (err && typeof err === "object") {
-          if (err.serverErrorCode) {
-            errorMessage = `CloudKit Error: ${err.serverErrorCode} - ${err.reason || err.message}`;
-          } else if (err.message) {
-            errorMessage = err.message;
-          }
-        }
-
+        let errorMessage = err?.message || err?.reason || "Failed to get wallet backup.";
         throw new Error(errorMessage);
       } finally {
         setAuthState((prev) => ({ ...prev, isLoading: false }));
@@ -356,7 +338,7 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
         const response = await containerRef.current.privateCloudDatabase.fetchRecords([walletAddress || fileId]);
 
         if (response.records.length === 0) {
-          throw new Error("File not found");
+          throw new Error("Wallet backup not found.");
         }
 
         const record = response.records[0];
@@ -364,7 +346,7 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
         const asset = fields.fileAsset?.value as Asset;
 
         if (!asset) {
-          throw new Error("File asset not found");
+          throw new Error("Wallet backup not found.");
         }
 
         return {
@@ -376,7 +358,7 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
           walletAddress: record.recordName || "Unknown",
         };
       } catch (err) {
-        console.error("Error getting file:", err);
+        console.error("Error getting wallet backup:", err);
         return null;
       } finally {
         setAuthState((prev) => ({ ...prev, isLoading: false }));
@@ -398,7 +380,7 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
         const fetchResponse = await containerRef.current.privateCloudDatabase.fetchRecords([fileId]);
 
         if (fetchResponse.records.length === 0) {
-          throw new Error("File not found");
+          throw new Error("Wallet backup not found.");
         }
 
         const existingRecord = fetchResponse.records[0];
@@ -426,7 +408,7 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
         const response = await containerRef.current.privateCloudDatabase.saveRecords([updatedRecord]);
 
         if (response.records.length === 0) {
-          throw new Error("Failed to update record");
+          throw new Error("Failed to update record.");
         }
 
         const savedRecord = response.records[0];
@@ -443,16 +425,7 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
 
         return updatedFile;
       } catch (err: any) {
-        let errorMessage = "Unknown error occurred";
-
-        if (err && typeof err === "object") {
-          if (err.serverErrorCode) {
-            errorMessage = `CloudKit Error: ${err.serverErrorCode} - ${err.reason || err.message}`;
-          } else if (err.message) {
-            errorMessage = err.message;
-          }
-        }
-
+        let errorMessage = err?.message || err?.reason || "Failed to update wallet backup.";
         throw new Error(errorMessage);
       } finally {
         setAuthState((prev) => ({ ...prev, isLoading: false }));
@@ -470,7 +443,7 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
 
         const jsonData = await getFileContent(fileId);
         if (!jsonData) {
-          throw new Error("Failed to get file");
+          throw new Error("Failed to get wallet backup.");
         }
 
         const blob = new Blob([JSON.stringify(jsonData)], { type: "application/json" });
@@ -483,16 +456,7 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
       } catch (err: any) {
-        let errorMessage = "Unknown error occurred";
-
-        if (err && typeof err === "object") {
-          if (err.serverErrorCode) {
-            errorMessage = `CloudKit Error: ${err.serverErrorCode} - ${err.reason || err.message}`;
-          } else if (err.message) {
-            errorMessage = err.message;
-          }
-        }
-
+        let errorMessage = err?.message || err?.reason || "Failed to get wallet backup.";
         throw new Error(errorMessage);
       } finally {
         setAuthState((prev) => ({ ...prev, isLoading: false }));
@@ -510,16 +474,7 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
 
         await containerRef.current.privateCloudDatabase.deleteRecords([fileId]);
       } catch (err: any) {
-        let errorMessage = "Unknown error occurred";
-
-        if (err && typeof err === "object") {
-          if (err.serverErrorCode) {
-            errorMessage = `CloudKit Error: ${err.serverErrorCode} - ${err.reason || err.message}`;
-          } else if (err.message) {
-            errorMessage = err.message;
-          }
-        }
-
+        let errorMessage = err?.message || err?.reason || "Failed to delete wallet backup.";
         throw new Error(errorMessage);
       } finally {
         setAuthState((prev) => ({ ...prev, isLoading: false }));

@@ -157,7 +157,7 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
     return new Promise((resolve, reject) => {
       if (!window.google) {
         setAuthState((prev) => ({ ...prev, isLoading: false }));
-        reject(new Error("Google authentication failed"));
+        reject(new Error("Google authentication failed."));
       }
 
       if (authState.isAuthenticated) {
@@ -174,7 +174,7 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
           callback: async (response: { error?: string; access_token?: string; expires_in?: number }) => {
             if (response.error) {
               setAuthState((prev) => ({ ...prev, isLoading: false }));
-              reject(new Error(response.error || "Google authentication failed"));
+              reject(new Error(response.error || "Google authentication failed."));
             } else {
               const accessToken = response.access_token || "";
               const expiresIn = response.expires_in || 3600; // Default to 1 hour
@@ -200,7 +200,7 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
           error_callback: (error) => {
             if (!error) return;
             setAuthState((prev) => ({ ...prev, isLoading: false }));
-            reject(new Error(error?.message || "Google authentication failed"));
+            reject(new Error(error?.message || "Google authentication failed."));
           },
         })
         .requestAccessToken();
@@ -257,8 +257,7 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
         });
 
         if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(`Failed to get file: ${errorData.error?.message || response.statusText}`);
+          throw new Error(`Failed to get wallet backup.`);
         }
 
         const data = await response.json();
@@ -271,7 +270,7 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
           walletAddress: data?.appProperties?.walletAddress || "",
         } as AppDataFile;
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
+        const errorMessage = err?.message || err?.reason || "Failed to get wallet backup.";
         console.error("Error getting file: ", errorMessage);
         return null;
       }
@@ -313,8 +312,7 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
         });
 
         if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(`Upload failed: ${errorData.error?.message || response.statusText}`);
+          throw new Error(`Failed to backup wallet.`);
         }
 
         const result = await response.json();
@@ -330,7 +328,7 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
 
         return uploadedFile;
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
+        const errorMessage = err?.message || err?.reason || "Failed to backup wallet.";
         throw new Error(errorMessage);
       } finally {
         setAuthState((prev) => ({ ...prev, isLoading: false }));
@@ -347,20 +345,17 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
         setAuthState((prev) => ({ ...prev, isLoading: true }));
 
         const response = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
 
         if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(`Failed to get file: ${errorData.error?.message || response.statusText}`);
+          throw new Error("Failed to get wallet backup.");
         }
 
         const blob = await response.json();
         return blob as JWKInterface;
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
+        const errorMessage = err?.message || err?.reason || "Failed to get wallet backup.";
         throw new Error(errorMessage);
       } finally {
         setAuthState((prev) => ({ ...prev, isLoading: false }));
@@ -405,8 +400,7 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
         );
 
         if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(`Update failed: ${errorData.error?.message || response.statusText}`);
+          throw new Error(`Failed to update wallet backup.`);
         }
 
         const result = await response.json();
@@ -422,7 +416,7 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
 
         return updatedFile;
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
+        const errorMessage = err?.message || err?.reason || "Failed to update wallet backup.";
         throw new Error(errorMessage);
       } finally {
         setAuthState((prev) => ({ ...prev, isLoading: false }));
@@ -445,8 +439,7 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
         });
 
         if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(`Download failed: ${errorData.error?.message || response.statusText}`);
+          throw new Error(`Failed to get wallet backup.`);
         }
 
         const blob = await response.blob();
@@ -459,7 +452,7 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
+        const errorMessage = err?.message || err?.reason || "Failed to get wallet backup.";
         throw new Error(errorMessage);
       } finally {
         setAuthState((prev) => ({ ...prev, isLoading: false }));
@@ -483,11 +476,10 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
         });
 
         if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(`Delete failed: ${errorData.error?.message || response.statusText}`);
+          throw new Error(`Failed to delete wallet backup.`);
         }
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
+        const errorMessage = err?.message || err?.reason || "Failed to delete wallet backup.";
         throw new Error(errorMessage);
       } finally {
         setAuthState((prev) => ({ ...prev, isLoading: false }));
