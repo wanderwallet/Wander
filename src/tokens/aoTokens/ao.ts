@@ -55,7 +55,6 @@ type DataItemResult = {
 };
 
 const { dryrun: customDryrun } = connect({ CU_URL: "https://cu.ardrive.io" });
-const { dryrun: wARDryrun } = connect({ CU_URL: "https://ao.arweave.asia" });
 
 const getDryrunForProcess = (processId: string) => {
   return processId === ARIO_MAINNET_PROCESS_ID ||
@@ -63,9 +62,7 @@ const getDryrunForProcess = (processId: string) => {
     processId === USDA_PROCESS_ID ||
     processId === WNDR_PROCESS_ID
     ? { dryrunFn: customDryrun, isCustomDryrun: true }
-    : processId === WAR_PROCESS_ID
-      ? { dryrunFn: wARDryrun, isCustomDryrun: true }
-      : { dryrunFn: dryrun, isCustomDryrun: false };
+    : { dryrunFn: dryrun, isCustomDryrun: false };
 };
 
 export function getTokenInfoFromData(res: any, id: string): TokenInfo {
