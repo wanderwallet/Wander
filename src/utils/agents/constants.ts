@@ -24,4 +24,4 @@ export const AO_YIELD_AGENT_RECENT_TXS_CHECK_ALARM_NAME = "ao-yield-agent-recent
 export const AO_YIELD_AGENT_SYNC_ALARM_NAME_PREFIX = "ao-yield-agent-sync-alarm-";
 export const AO_YIELD_AGENT_SYNC_STATUS_PREFIX_KEY = "ao-yield-agent-sync-status-";
 
-export const AGENT_VERSION = "1.0.0";
+export const AGENT_VERSION = "1.0.2";
