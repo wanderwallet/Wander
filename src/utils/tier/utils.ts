@@ -69,8 +69,8 @@ export async function getActiveTier(walletAddress: string, retry = false): Promi
 
     data = responseData;
   } catch {
-    // TODO: Update this with the actual HB node & process ID
-    const url = `http://localhost:10000/QC6z9NZYtVYn0Elx40iUmeIYvzKvuqk-OmfoleUxpSQ~process@1.0/now/wallets-tier-info/${walletAddress}/~json@1.0/serialize`;
+    // TODO: Update this with the prod HB node & process ID
+    const url = `https://forward.computer/QC6z9NZYtVYn0Elx40iUmeIYvzKvuqk-OmfoleUxpSQ~process@1.0/now/wallets-tier-info/${walletAddress}/~json@1.0/serialize`;
 
     const response = retry
       ? await retryWithDelay(
@@ -91,9 +91,9 @@ export async function getActiveTier(walletAddress: string, retry = false): Promi
     let parsedData: ActiveTierFromApi;
 
     if (response.status === 404) {
-      // TODO: Update this with the actual HB node
+      // TODO: Update this with the prod HB node
       const response = await fetch(
-        `http://localhost:10000/QC6z9NZYtVYn0Elx40iUmeIYvzKvuqk-OmfoleUxpSQ~process@1.0/now/tier-info/~json@1.0/serialize`,
+        `https://forward.computer/QC6z9NZYtVYn0Elx40iUmeIYvzKvuqk-OmfoleUxpSQ~process@1.0/now/tier-info/~json@1.0/serialize`,
       );
       const responseData = await response.json();
       parsedData = {

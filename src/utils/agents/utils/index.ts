@@ -319,9 +319,9 @@ export async function getAOYieldAgentInfo(agentId: string, currentAgentVersion?:
     }
 
     console.log("Fetching agent info from the HB node with agent version: ", currentAgentVersion);
-    // TODO: Update this with the actual HB node
+    // TODO: Update this with the prod HB node
     const response = await fetch(
-      `http://localhost:10000/${agentId}/~process@1.0/now/agent-info/~json@1.0/serialize?bundle`,
+      `https://forward.computer/${agentId}/~process@1.0/now/agent-info/~json@1.0/serialize?bundle`,
     );
     if (!response.ok) {
       throw new Error("Failed to fetch agent info");
