@@ -31,10 +31,10 @@ const agentStorageMutex = new Mutex();
 export const arweave = Arweave.init(defaultGateway);
 
 /**
- * Checks if version a is greater than version b
+ * Checks if version a is greater than or equal to version b
  * @param a - The first version to compare
  * @param b - The second version to compare
- * @returns True if version a is greater than version b, false otherwise
+ * @returns True if version a is greater than or equal to version b, false otherwise
  */
 function isVersionGte(a: string, b: string): boolean {
   try {
@@ -46,11 +46,11 @@ function isVersionGte(a: string, b: string): boolean {
       const na = pa[i] ?? 0;
       const nb = pb[i] ?? 0;
 
-      if (na >= nb) return true;
+      if (na > nb) return true;
       if (na < nb) return false;
     }
 
-    return false;
+    return true; // Equal versions
   } catch (error) {
     console.error("Error comparing versions: ", a, b, error);
     return false;
@@ -314,9 +314,15 @@ export async function getAOYieldAgentInfo(agentId: string, currentAgentVersion?:
       agentVersion,
     } as AOYieldAgentInfo;
   } catch (error) {
-    console.log("Fetching agent info from the HB node with version: ", currentAgentVersion);
+    if (!isVersionGte(currentAgentVersion, "1.0.2")) {
+      throw new Error("Agent version is required & must be greater than 1.0.2");
+    }
+
+    console.log("Fetching agent info from the HB node with agent version: ", currentAgentVersion);
     // TODO: Update this with the actual HB node
-    const response = await fetch(`http://localhost:10000/${agentId}/~process@1.0/now/agent-info/~json@1.0/serialize`);
+    const response = await fetch(
+      `http://localhost:10000/${agentId}/~process@1.0/now/agent-info/~json@1.0/serialize?bundle`,
+    );
     if (!response.ok) {
       throw new Error("Failed to fetch agent info");
     }
@@ -339,6 +345,15 @@ export async function getAOYieldAgentInfo(agentId: string, currentAgentVersion?:
     const swappedUpToDate = data.swappedUpToDate ?? data.swappeduptodate;
     const agentVersion = data.agentVersion ?? data.agentversion;
 
+    let totalBoughtObj = {};
+    if (typeof totalBought === "object" && totalBought !== null) {
+      totalBoughtObj = totalBought;
+    } else {
+      try {
+        totalBoughtObj = JSON.parse(totalBought);
+      } catch {}
+    }
+
     return {
       id: agentId,
       status,
@@ -350,7 +365,7 @@ export async function getAOYieldAgentInfo(agentId: string, currentAgentVersion?:
       runIndefinitely: runIndefinitely === "true",
       slippage: Number(slippage),
       totalAOSold,
-      totalBought: JSON.parse(totalBought),
+      totalBought: totalBoughtObj,
       totalTransactions: Number(totalTransactions),
       totalWanderFee,
       swapInProgress: swapInProgress === "true",

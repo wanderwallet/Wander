@@ -99,6 +99,10 @@ export function ConfirmAOYieldAgentView() {
             name: "Slippage",
             value: aoYieldAgent.slippage.toString(),
           },
+          {
+            name: "Agent-Version",
+            value: AGENT_VERSION,
+          },
         ],
         forceSpawn: true,
       });
