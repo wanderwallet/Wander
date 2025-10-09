@@ -4,7 +4,7 @@ import browser from "webextension-polyfill";
 import HeadV2 from "~components/popup/HeadV2";
 import { Flex } from "~components/common/Flex";
 import { PropertyName, PropertyValue, TransactionProperty } from "~routes/popup/transaction/[id]";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAOYieldAgent, useAOYieldAgentInfo, useAOYieldAgentProperties } from "~utils/agents/hooks";
 import { Divider } from "~components/Divider";
 import { RemoveButton } from "~routes/popup/settings/wallets/[address]";
@@ -19,11 +19,14 @@ import {
   formatTokenQuantity,
   getStatusColor,
   getStatusText,
+  isVersionGte,
   updateLocalAOYieldAgent,
 } from "~utils/agents/utils";
 import type { MintingStatus } from "~utils/agents/types";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { EventType, trackEvent } from "~utils/analytics";
+import { AgentUpdateModal } from "./AgentUpdateModal";
+import { AGENT_VERSION } from "~utils/agents/constants";
 
 interface AgentInfoProps {
   agentId: string;
@@ -34,6 +37,7 @@ interface AgentInfoProps {
 
 export function AgentInfo({ agentId, headerTitle, mintingStatus, isHistory = false }: AgentInfoProps) {
   const [showCancelModal, setShowCancelModal] = useState(false);
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
   const agent = useAOYieldAgent(agentId);
   const { data: agentInfo } = useAOYieldAgentInfo(agentId);
   const { navigate, previousLocation } = useLocation();
@@ -109,6 +113,12 @@ export function AgentInfo({ agentId, headerTitle, mintingStatus, isHistory = fal
       console.error("Error updating AO Yield Agent status", error);
     }
   }, [agent, agentInfo]);
+
+  useEffect(() => {
+    if (agent && agent.status === "Active" && !isVersionGte(agent.version, AGENT_VERSION)) {
+      setShowUpdateModal(true);
+    }
+  }, [agent]);
 
   return (
     <>
@@ -219,6 +229,7 @@ export function AgentInfo({ agentId, headerTitle, mintingStatus, isHistory = fal
         )}
       </Wrapper>
       <AgentCancelModal open={showCancelModal} onClose={() => setShowCancelModal(false)} agentId={agentId} />
+      <AgentUpdateModal open={showUpdateModal} onClose={() => setShowUpdateModal(false)} agentId={agentId} />
     </>
   );
 }

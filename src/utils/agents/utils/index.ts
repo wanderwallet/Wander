@@ -36,7 +36,7 @@ export const arweave = Arweave.init(defaultGateway);
  * @param b - The second version to compare
  * @returns True if version a is greater than or equal to version b, false otherwise
  */
-function isVersionGte(a: string, b: string): boolean {
+export function isVersionGte(a: string, b: string): boolean {
   try {
     const pa = a.split(".").map(Number);
     const pb = b.split(".").map(Number);
@@ -379,11 +379,11 @@ export async function getAOYieldAgentInfo(agentId: string, currentAgentVersion?:
 /**
  * Builds tags array for agent update based on the update data
  */
-function buildUpdateTags(updateData: Partial<AOYieldAgent>): Tag[] {
+function buildUpdateTags(updateData: Partial<AOYieldAgent> & { fullPatch?: boolean }): Tag[] {
   const tags: Tag[] = [{ name: "Action", value: "Update-Agent" }];
 
   const tagMappings: Array<{
-    key: keyof Partial<AOYieldAgent>;
+    key: keyof Partial<AOYieldAgent> | "fullPatch";
     tagName: string;
     transform?: (value: any) => string;
   }> = [
@@ -392,6 +392,8 @@ function buildUpdateTags(updateData: Partial<AOYieldAgent>): Tag[] {
     { key: "startDate", tagName: "Start-Date", transform: (v) => v.toString() },
     { key: "endDate", tagName: "End-Date", transform: (v) => v.toString() },
     { key: "runIndefinitely", tagName: "Run-Indefinitely", transform: (v) => v.toString() },
+    { key: "version", tagName: "Agent-Version" },
+    { key: "fullPatch", tagName: "Full-Patch", transform: (v) => v.toString() },
     { key: "status", tagName: "Status" },
   ];
 
@@ -431,7 +433,7 @@ function updateAgentProperties(agent: AOYieldAgent, updateData: Partial<AOYieldA
   return agent;
 }
 
-export async function updateAOYieldAgent(agentId: string, updateData: Partial<AOYieldAgent>) {
+export async function updateAOYieldAgent(agentId: string, updateData: Partial<AOYieldAgent> & { fullPatch?: boolean }) {
   try {
     const aoInstance = connect(defaultConfig);
 
