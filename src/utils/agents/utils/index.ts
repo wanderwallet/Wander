@@ -22,6 +22,7 @@ import { isURL } from "~utils/urls/isURL";
 import { queryClient } from "~utils/tanstack";
 import { Mutex } from "~utils/mutex";
 import { Id, Owner, WAR_PROCESS_ID, WUSDC_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
+import { log, LOG_GROUP } from "~utils/log/log.utils";
 
 const agentStorageMutex = new Mutex();
 
@@ -318,8 +319,7 @@ export async function getAOYieldAgentInfo(agentId: string, currentAgentVersion?:
       throw new Error("Agent version is required & must be greater than 1.0.2");
     }
 
-    console.log("Fetching agent info from the HB node with agent version: ", currentAgentVersion);
-    // TODO: Update this with the prod HB node
+    log(LOG_GROUP.AGENTS, `Fetching agent info from the HB node with agent version: ${currentAgentVersion}`);
     const response = await fetch(
       `https://forward.computer/${agentId}/~process@1.0/now/agent-info/~json@1.0/serialize?bundle`,
     );

@@ -90,9 +90,8 @@ export async function getActiveTier(walletAddress: string, retry = false): Promi
     let parsedData: ActiveTierFromApi;
 
     if (response.status === 404) {
-      // TODO: Update this with the prod HB node
       const response = await fetch(
-        `https://forward.computer/QC6z9NZYtVYn0Elx40iUmeIYvzKvuqk-OmfoleUxpSQ~process@1.0/now/tier-info/~json@1.0/serialize`,
+        `https://forward.computer/${TIER_PROCESS_ID}~process@1.0/now/tier-info/~json@1.0/serialize`,
       );
       const responseData = await response.json();
       parsedData = {
