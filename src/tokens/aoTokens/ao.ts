@@ -92,11 +92,32 @@ export function getTokenInfoFromData(res: any, id: string): TokenInfo {
         }
       } catch {}
     }
-    const Ticker = getTagValue("Ticker", msg.Tags);
-    const Name = getTagValue("Name", msg.Tags);
-    const Denomination = getTagValue("Denomination", msg.Tags);
-    const Logo = getTagValue("Logo", msg.Tags);
-    const Transferable = getTagValue("Transferable", msg.Tags);
+
+    let Ticker: string, Name: string, Denomination: string, Logo: string, Transferable: string;
+
+    for (let i = 0; i < msg.Tags.length; i++) {
+      const tag = msg.Tags[i];
+      const name = tag.name.toLowerCase();
+      const value = tag.value;
+
+      switch (name) {
+        case "ticker":
+          Ticker ??= value;
+          break;
+        case "name":
+          Name ??= value;
+          break;
+        case "denomination":
+          Denomination ??= value;
+          break;
+        case "logo":
+          Logo ??= value;
+          break;
+        case "transferable":
+          Transferable ??= value;
+          break;
+      }
+    }
 
     if (!Ticker && !Name) continue;
 
