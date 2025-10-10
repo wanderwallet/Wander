@@ -4609,5 +4609,9 @@
     "update_agent": {
       "message": "更新代理",
       "description": "Update agent text"
+    },
+    "success_updating_agent": {
+      "message": "更新代理成功",
+      "description": "Success updating agent text"
     }
 }
