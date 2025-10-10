@@ -69,8 +69,7 @@ export async function getActiveTier(walletAddress: string, retry = false): Promi
 
     data = responseData;
   } catch {
-    // TODO: Update this with the prod HB node & process ID
-    const url = `https://forward.computer/QC6z9NZYtVYn0Elx40iUmeIYvzKvuqk-OmfoleUxpSQ~process@1.0/now/wallets-tier-info/${walletAddress}/~json@1.0/serialize`;
+    const url = `https://forward.computer/${TIER_PROCESS_ID}~process@1.0/now/wallets-tier-info/${walletAddress}/~json@1.0/serialize`;
 
     const response = retry
       ? await retryWithDelay(
