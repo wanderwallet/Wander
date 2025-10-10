@@ -8,6 +8,7 @@ import { deployContract } from "~utils/agents/deploy";
 import aoYieldAgentContract from "raw:/assets/agents/contracts/ao-yield-agent.lua";
 import { AGENT_VERSION } from "~utils/agents/constants";
 import { updateAOYieldAgent } from "~utils/agents/utils";
+import { useAoRateLimitedToast } from "~utils/toast/toast.hooks";
 
 interface AgentUpdateModalProps {
   open: boolean;
@@ -18,8 +19,9 @@ interface AgentUpdateModalProps {
 export function AgentUpdateModal({ open, onClose, agentId }: AgentUpdateModalProps) {
   const [isLoading, setIsLoading] = useState(false);
   const toasts = useToasts();
+  const { showAoRateLimitedToast } = useAoRateLimitedToast();
 
-  async function handleCancel(e: React.FormEvent<HTMLFormElement>) {
+  async function handleUpdate(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
     if (!agentId) return;
@@ -48,6 +50,7 @@ export function AgentUpdateModal({ open, onClose, agentId }: AgentUpdateModalPro
         type: "error",
         duration: 2400,
       });
+      showAoRateLimitedToast(error);
     } finally {
       setIsLoading(false);
     }
@@ -55,7 +58,7 @@ export function AgentUpdateModal({ open, onClose, agentId }: AgentUpdateModalPro
 
   return (
     <SliderMenu isOpen={open} onClose={onClose} paddingVertical={32}>
-      <form onSubmit={handleCancel} noValidate>
+      <form onSubmit={handleUpdate} noValidate>
         <Flex direction="column" gap={24} height="100%" width="100%">
           <Flex direction="column" gap={16} align="center">
             <img src={HedgehogHeadIcon} alt="Hedgehog Head" height={80} width={80} />
