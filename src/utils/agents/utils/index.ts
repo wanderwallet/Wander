@@ -260,7 +260,7 @@ export async function getAOYieldActiveAgent() {
   return agents[agents.length - 1];
 }
 
-export async function getAOYieldAgentInfo(agentId: string, currentAgentVersion?: string) {
+export async function getAOYieldAgentInfo(agentId: string, currentAgentVersion: string = "1.0.0", attempt: number = 0) {
   try {
     if (currentAgentVersion && isVersionGte(currentAgentVersion, "1.0.2")) {
       throw new Error("Fetch agent info from the HB node");
@@ -320,9 +320,8 @@ export async function getAOYieldAgentInfo(agentId: string, currentAgentVersion?:
     }
 
     log(LOG_GROUP.AGENTS, `Fetching agent info from the HB node with agent version: ${currentAgentVersion}`);
-    const response = await fetch(
-      `https://forward.computer/${agentId}/~process@1.0/now/agent-info/~json@1.0/serialize?bundle`,
-    );
+    const hbNode = attempt % 2 === 0 ? "https://forward.computer" : "https://hyperbeam.ar";
+    const response = await fetch(`${hbNode}/${agentId}/~process@1.0/now/agent-info/~json@1.0/serialize?bundle`);
     if (!response.ok) {
       throw new Error("Failed to fetch agent info");
     }

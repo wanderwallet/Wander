@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getAOYieldAgentInfo, getAOYieldAgents, getWanderFee, processTransactions, tokenIdInfoMap } from "./utils";
 import type {
   AOYieldAgent,
@@ -83,9 +83,18 @@ export function useAOYieldAgent(agentId: string, status?: AOYieldAgentStatus) {
 }
 
 export function useAOYieldAgentInfo(agentId: string, currentAgentVersion?: string) {
+  const attemptRef = useRef(-1);
+
+  useEffect(() => {
+    attemptRef.current = -1;
+  }, [agentId]);
+
   return useQuery<AOYieldAgentInfo>({
     queryKey: ["ao-yield-agent-info", agentId],
-    queryFn: () => getAOYieldAgentInfo(agentId, currentAgentVersion),
+    queryFn: () => {
+      attemptRef.current++;
+      return getAOYieldAgentInfo(agentId, currentAgentVersion, attemptRef.current);
+    },
     enabled: !!agentId,
     refetchInterval: 60_000,
     staleTime: 60_000,
