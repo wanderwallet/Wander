@@ -11,7 +11,7 @@ import { ExtensionStorage } from "~utils/storage";
 import { scheduleRefreshWalletLifetimeSavings } from "./alarms";
 import { retryWithDelay } from "~utils/promises/retry";
 import { Id } from "~tokens/aoTokens/ao.constants";
-import { CACHE_API } from "~constants/api";
+import { CACHE_API, WNDR_HB_NODE } from "~constants/api";
 
 const ONE_HUNDRED = BigNumber(100);
 const THREE_HOURS_MS = 10_800_000;
@@ -69,7 +69,7 @@ export async function getActiveTier(walletAddress: string, retry = false): Promi
 
     data = responseData;
   } catch {
-    const url = `https://forward.computer/${TIER_PROCESS_ID}~process@1.0/now/wallets-tier-info/${walletAddress}/~json@1.0/serialize`;
+    const url = `${WNDR_HB_NODE}/${TIER_PROCESS_ID}~process@1.0/now/wallets-tier-info/${walletAddress}/~json@1.0/serialize`;
 
     const response = retry
       ? await retryWithDelay(
@@ -90,9 +90,7 @@ export async function getActiveTier(walletAddress: string, retry = false): Promi
     let parsedData: ActiveTierFromApi;
 
     if (response.status === 404) {
-      const response = await fetch(
-        `https://forward.computer/${TIER_PROCESS_ID}~process@1.0/now/tier-info/~json@1.0/serialize`,
-      );
+      const response = await fetch(`${WNDR_HB_NODE}/${TIER_PROCESS_ID}~process@1.0/now/tier-info/~json@1.0/serialize`);
       const responseData = await response.json();
       parsedData = {
         balance: "0",

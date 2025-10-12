@@ -23,6 +23,7 @@ import { queryClient } from "~utils/tanstack";
 import { Mutex } from "~utils/mutex";
 import { Id, Owner, WAR_PROCESS_ID, WUSDC_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
+import { FWD_HB_NODE, WNDR_HB_NODE } from "~constants/api";
 
 const agentStorageMutex = new Mutex();
 
@@ -320,7 +321,7 @@ export async function getAOYieldAgentInfo(agentId: string, currentAgentVersion: 
     }
 
     log(LOG_GROUP.AGENTS, `Fetching agent info from the HB node with agent version: ${currentAgentVersion}`);
-    const hbNode = attempt % 2 === 0 ? "https://forward.computer" : "https://hyperbeam.ar";
+    const hbNode = attempt % 2 === 0 ? FWD_HB_NODE : WNDR_HB_NODE;
     const response = await fetch(`${hbNode}/${agentId}/~process@1.0/now/agent-info/~json@1.0/serialize?bundle`);
     if (!response.ok) {
       throw new Error("Failed to fetch agent info");
