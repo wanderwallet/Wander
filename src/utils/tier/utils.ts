@@ -98,9 +98,9 @@ export async function getActiveTier(walletAddress: string, retry = false): Promi
         balance: "0",
         progress: 0,
         rank: "",
-        snapshotTimestamp: responseData.snapshotTimestamp,
+        snapshotTimestamp: responseData["snapshot-timestamp"],
         tier: 5,
-        totalHolders: responseData.totalHolders,
+        totalHolders: responseData["total-holders"],
       } as ActiveTierFromApi;
     } else {
       const responseData = await response.json();
@@ -108,9 +108,9 @@ export async function getActiveTier(walletAddress: string, retry = false): Promi
         balance: responseData.balance,
         progress: responseData.progress,
         rank: responseData.rank,
-        snapshotTimestamp: responseData.snapshotTimestamp,
+        snapshotTimestamp: responseData["snapshot-timestamp"],
         tier: responseData.tier,
-        totalHolders: responseData.totalHolders,
+        totalHolders: responseData["total-holders"],
       } as ActiveTierFromApi;
     }
 

@@ -329,20 +329,20 @@ export async function getAOYieldAgentInfo(agentId: string, currentAgentVersion: 
 
     const dex = data.dex;
     const status = data.status;
-    const tokenOut = data.tokenOut ?? data.tokenout;
-    const conversionPercentage = data.conversionPercentage ?? data.conversionpercentage;
-    const startDate = data.startDate ?? data.startdate;
-    const endDate = data.endDate ?? data.enddate;
-    const runIndefinitely = data.runIndefinitely ?? data.runindefinitely;
-    const slippage = data.slippage ?? data.slippage;
-    const totalAOSold = data.totalAOSold ?? data.totalaosold;
-    const totalBought = data.totalBought ?? data.totalbought;
-    const totalTransactions = data.totalTransactions ?? data.totaltransactions;
-    const totalWanderFee = data.totalWanderFee ?? data.totalwanderfee;
-    const swapInProgress = data.swapInProgress ?? data.swapinprogress;
-    const processedUpToDate = data.processedUpToDate ?? data.processeduptodate;
-    const swappedUpToDate = data.swappedUpToDate ?? data.swappeduptodate;
-    const agentVersion = data.agentVersion ?? data.agentversion;
+    const tokenOut = data["token-out"] ?? data.tokenOut;
+    const conversionPercentage = data["conversion-percentage"] ?? data.conversionPercentage;
+    const startDate = data["start-date"] ?? data.startDate;
+    const endDate = data["end-date"] ?? data.endDate;
+    const runIndefinitely = data["run-indefinitely"] ?? data.runIndefinitely;
+    const slippage = data.slippage;
+    const totalAOSold = data["total-ao-sold"] ?? data.totalAOSold;
+    const totalBought = data["total-bought"] ?? data.totalBought;
+    const totalTransactions = data["total-transactions"] ?? data.totalTransactions;
+    const totalWanderFee = data["total-wander-fee"] ?? data.totalWanderFee;
+    const swapInProgress = data["swap-in-progress"] ?? data.swapInProgress;
+    const processedUpToDate = data["processed-up-to-date"] ?? data.processedUpToDate;
+    const swappedUpToDate = data["swapped-up-to-date"] ?? data.swappedUpToDate;
+    const agentVersion = data["agent-version"] ?? data.agentVersion;
 
     let totalBoughtObj = {};
     if (typeof totalBought === "object" && totalBought !== null) {
