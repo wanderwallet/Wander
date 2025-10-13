@@ -1,7 +1,16 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useScript } from "~utils/script/script.hooks";
 import type { AppDataFile } from "../cloud.types";
 import type { JWKInterface } from "arweave/web/lib/wallet";
+import {
+  GOOGLE_DRIVE_OAUTH_SUCCESS_MSG_TYPE,
+  GOOGLE_DRIVE_OAUTH_ERROR_MSG_TYPE,
+  isGoogleDriveOAuthSuccessMessage,
+  isGoogleDriveOAuthErrorMessage,
+  POPUP_CHECK_INTERVAL_MS,
+  POPUP_AUTHENTICATION_TIMEOUT_MS,
+  OAuthErrorCode,
+  getAuthErrorMessage,
+} from "~utils/authentication/authentication.utils";
 
 interface GoogleCloudAuthState {
   isAuthenticated: boolean;
@@ -24,7 +33,7 @@ interface UseGoogleCloudReturn {
 
   // Auth methods
   authenticate: () => Promise<{ email?: string | null }>;
-  revokeAuth: () => void;
+  revokeAuth: () => Promise<void>;
 
   // File operations methods
   uploadFile: (file: File | Blob, fileName: string, walletAddress: string, mimeType?: string) => Promise<AppDataFile>;
@@ -74,23 +83,12 @@ const clearStoredToken = (): void => {
   localStorage.removeItem(TOKEN_STORAGE_KEY);
 };
 
-declare global {
-  interface Window {
-    google: {
-      accounts: {
-        oauth2: {
-          initTokenClient: (config: {
-            client_id: string;
-            scope: string;
-            callback: (response: { error?: string; access_token?: string; expires_in?: number }) => void;
-            error_callback: (error: any) => void;
-          }) => { requestAccessToken: () => void };
-          revoke: (token: string) => void;
-        };
-      };
-    };
-  }
-}
+// OAuth configuration
+const GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
+const GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v2/userinfo";
+const GOOGLE_REVOKE_URL = "https://oauth2.googleapis.com/revoke";
+const SCOPES = "https://www.googleapis.com/auth/drive.appdata email";
+const GOOGLE_DRIVE_OAUTH_CALLBACK_URL = "/google-drive-oauth-callback.html";
 
 export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
   const accessTokenRef = useRef<string | null>(null);
@@ -118,7 +116,7 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
           return {
             ...prev,
             isAuthenticated: newIsAuthenticated,
-            email: newIsAuthenticated ? prev.email : null, // Clear email when not authenticated
+            email: newIsAuthenticated ? prev.email : null,
           };
         }
         return prev;
@@ -128,13 +126,10 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
     syncAuthState();
   }, []);
 
-  // Google cloud script
-  useScript("https://accounts.google.com/gsi/client", { removeOnUnmount: true });
-
   // Function to fetch user email using the access token
   const fetchUserEmail = useCallback(async (accessToken: string): Promise<string | null> => {
     try {
-      const response = await fetch("https://www.googleapis.com/oauth2/v2/userinfo", {
+      const response = await fetch(GOOGLE_USERINFO_URL, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
@@ -155,11 +150,6 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
 
   const authenticate = useCallback((): Promise<{ email: string | null }> => {
     return new Promise((resolve, reject) => {
-      if (!window.google) {
-        setAuthState((prev) => ({ ...prev, isLoading: false }));
-        reject(new Error("Google authentication failed. Please try again."));
-      }
-
       if (authState.isAuthenticated) {
         resolve({ email: authState.email });
         return;
@@ -167,59 +157,131 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
 
       setAuthState((prev) => ({ ...prev, isLoading: true }));
 
-      window.google.accounts.oauth2
-        .initTokenClient({
-          client_id: clientId,
-          scope: "https://www.googleapis.com/auth/drive.appdata email",
-          callback: async (response: { error?: string; access_token?: string; expires_in?: number }) => {
-            if (response.error) {
-              setAuthState((prev) => ({ ...prev, isLoading: false }));
-              reject(new Error(response.error || "Google authentication failed. Please try again."));
-            } else {
-              const accessToken = response.access_token || "";
-              const expiresIn = response.expires_in || 3600; // Default to 1 hour
+      // Build OAuth URL
+      const redirectUri = `${window.location.origin}${GOOGLE_DRIVE_OAUTH_CALLBACK_URL}`;
+      const authParams = new URLSearchParams({
+        client_id: clientId,
+        redirect_uri: redirectUri,
+        response_type: "token",
+        scope: SCOPES,
+        state: "google_drive_oauth",
+        prompt: "select_account", // Force account selection
+        access_type: "online", // Don't allow offline access which could skip selection
+      });
 
-              // Fetch user email
-              const email = await fetchUserEmail(accessToken);
+      const authUrl = `${GOOGLE_AUTH_URL}?${authParams.toString()}`;
 
-              // Store the token with expiry information
-              storeToken(accessToken, expiresIn, email);
+      // Calculate popup position (same as authenticateWithOAuth)
+      const width = Math.min(500, document.documentElement.offsetWidth);
+      const height = Math.min(600, window.screen.availHeight - 32);
+      const left = window.screenX + (window.outerWidth - width) / 2;
+      const top = window.screenY + (window.outerHeight - height) / 2;
 
-              // Update ref immediately
-              accessTokenRef.current = accessToken;
+      // Open popup window
+      const popup = window.open(
+        authUrl,
+        "Google Drive Auth",
+        [
+          `width=${width}`,
+          `height=${height}`,
+          `left=${left}`,
+          `top=${top}`,
+          "popup=1",
+          "location=1",
+          "status=1",
+          "resizable=no",
+          "toolbar=no",
+          "menubar=no",
+        ].join(","),
+      );
 
-              setAuthState((prev) => ({
-                ...prev,
-                isAuthenticated: true,
-                isLoading: false,
-                email,
-              }));
-              resolve({ email });
-            }
-          },
-          error_callback: (error) => {
-            setAuthState((prev) => ({ ...prev, isLoading: false }));
-            if (!error?.type) return;
-            switch (error.type) {
-              case "popup_failed_to_open":
-                reject(new Error("Failed to open Google authentication popup. Please try again."));
-                break;
-              case "popup_closed":
-                reject(new Error("Google authentication was cancelled. Please try again."));
-                break;
-              default:
-                reject(new Error(error?.message || "Google authentication failed. Please try again."));
-                break;
-            }
-          },
-        })
-        .requestAccessToken();
+      if (!popup) {
+        setAuthState((prev) => ({ ...prev, isLoading: false }));
+        reject(new Error(getAuthErrorMessage(OAuthErrorCode.CANNOT_OPEN_POPUP)));
+        return;
+      }
+
+      // Message handler for postMessage from callback page
+      async function authCompleteMessageHandler(event: MessageEvent) {
+        // Verify origin for security
+        if (
+          event.origin !== window.location.origin ||
+          (event.data?.type !== GOOGLE_DRIVE_OAUTH_SUCCESS_MSG_TYPE &&
+            event.data?.type !== GOOGLE_DRIVE_OAUTH_ERROR_MSG_TYPE)
+        ) {
+          return;
+        }
+
+        cleanup();
+        popup.close();
+
+        if (isGoogleDriveOAuthErrorMessage(event.data)) {
+          setAuthState((prev) => ({ ...prev, isLoading: false }));
+          reject(new Error(event.data.errorDescription, { cause: event.data }));
+          return;
+        }
+
+        if (!isGoogleDriveOAuthSuccessMessage(event.data)) {
+          setAuthState((prev) => ({ ...prev, isLoading: false }));
+          reject(new Error(getAuthErrorMessage(OAuthErrorCode.INVALID_OAUTH_MESSAGE)));
+          return;
+        }
+
+        const { accessToken, expiresIn } = event.data;
+
+        // Fetch user email
+        const email = await fetchUserEmail(accessToken);
+
+        // Store the token
+        storeToken(accessToken, expiresIn, email);
+        accessTokenRef.current = accessToken;
+
+        setAuthState({
+          isAuthenticated: true,
+          isLoading: false,
+          email,
+        });
+
+        resolve({ email });
+      }
+
+      // Check if popup was closed manually
+      const popupCheckInterval = setInterval(() => {
+        if (popup.closed) {
+          cleanup();
+          setAuthState((prev) => ({ ...prev, isLoading: false }));
+          reject(new Error(getAuthErrorMessage(OAuthErrorCode.POPUP_CLOSED)));
+        }
+      }, POPUP_CHECK_INTERVAL_MS);
+
+      // Timeout if authentication takes too long
+      const timeoutId = setTimeout(() => {
+        cleanup();
+        setAuthState((prev) => ({ ...prev, isLoading: false }));
+        reject(new Error(getAuthErrorMessage(OAuthErrorCode.POPUP_TIMEOUT)));
+      }, POPUP_AUTHENTICATION_TIMEOUT_MS);
+
+      // Cleanup function
+      const cleanup = () => {
+        window.removeEventListener("message", authCompleteMessageHandler);
+        clearInterval(popupCheckInterval);
+        clearTimeout(timeoutId);
+      };
+
+      window.addEventListener("message", authCompleteMessageHandler);
     });
-  }, [clientId, authState.isAuthenticated]);
+  }, [clientId, authState.isAuthenticated, fetchUserEmail]);
 
-  const revokeAuth = useCallback(() => {
-    if (accessTokenRef.current && window.google) {
-      window.google.accounts.oauth2.revoke(accessTokenRef.current);
+  const revokeAuth = useCallback(async () => {
+    if (accessTokenRef.current) {
+      try {
+        // Revoke token on Google's servers
+        await fetch(`${GOOGLE_REVOKE_URL}?token=${accessTokenRef.current}`, {
+          method: "POST",
+        });
+      } catch (error) {
+        console.error("Error revoking token:", error);
+      }
     }
 
     // Clear stored token and ref

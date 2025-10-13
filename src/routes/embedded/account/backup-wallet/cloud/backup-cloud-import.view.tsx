@@ -14,6 +14,7 @@ import { signOut } from "~utils/embedded/embedded.utils";
 import { sleep } from "~utils/promises/sleep";
 import { Loading } from "@arconnect/components-rebrand";
 import { toast } from "react-toastify";
+import { getFriendlyAuthErrorMessage } from "~utils/authentication/authentication.utils";
 
 const clientId = import.meta.env?.VITE_GOOGLE_CLIENT_ID;
 const containerIdentifier = import.meta.env?.VITE_APPLE_CONTAINER_IDENTIFIER;

@@ -16,6 +16,7 @@ import { toast } from "react-toastify";
 import type { JWKInterface } from "@dha-team/arbundles/node";
 import type { LocalWallet } from "~wallets/wallets.types";
 import { freeDecryptedWallet } from "~wallets/encryption";
+import { getFriendlyAuthErrorMessage } from "~utils/authentication/authentication.utils";
 
 const clientId = import.meta.env?.VITE_GOOGLE_CLIENT_ID;
 const containerIdentifier = import.meta.env?.VITE_APPLE_CONTAINER_IDENTIFIER;
