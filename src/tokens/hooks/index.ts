@@ -13,8 +13,6 @@ import BigNumber from "bignumber.js";
 import { ExtensionStorage, PersistentStorage } from "~utils/storage";
 import { useStorage } from "@plasmohq/storage/hook";
 import { useArPrice } from "~lib/coingecko";
-import { defaultConfig } from "../aoTokens/config";
-import { connect } from "@permaweb/aoconnect";
 import { retryWithDelay } from "~utils/promises/retry";
 import {
   AR_PROCESS_ID,
@@ -24,6 +22,7 @@ import {
   USDA_PROCESS_ID,
   EXP_PROCESS_ID,
 } from "~tokens/aoTokens/ao.constants";
+import { defaultAoInstance } from "~utils/aoconnect";
 
 export const defaultOptions = {
   refetchInterval: 300_000,
@@ -218,7 +217,7 @@ export function useTotalFiatBalance() {
 
 export function useAo() {
   // ao instance
-  const ao = useMemo(() => connect(defaultConfig), []);
+  const ao = useMemo(() => defaultAoInstance, []);
 
   return ao;
 }

@@ -1,6 +1,4 @@
-import { connect } from "@permaweb/aoconnect";
-import { createDataItemKeystoneSigner, createDataItemSigner, getTagValue, type TokenInfo } from "~tokens/aoTokens/ao";
-import { defaultConfig } from "~tokens/aoTokens/config";
+import { getTagValue, type TokenInfo } from "~tokens/aoTokens/ao";
 import { retryWithDelay } from "~utils/promises/retry";
 import { getActiveAddress, getActiveKeyfile, type DecryptedWallet } from "~wallets";
 import type { FlpTokenInfo } from "./fair_launch.types";
@@ -15,6 +13,7 @@ import { LOG_GROUP, log } from "~utils/log/log.utils";
 import { PI_FLP_ID } from "./fair_launch.constants";
 import { KeystoneSigner } from "~wallets/hardware/keystone";
 import { Id, Owner, WNDR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
+import { createDataItemSigner, defaultAoInstance } from "~utils/aoconnect";
 
 interface RawFlpToken {
   flp_token_name: string;
@@ -72,8 +71,6 @@ const MANUAL_CLAIMABLE_FLP_IDS = new Set([
   "Wc8Rg-owsWSvrmb5XAlmSs3_4UtHo9i5ui2o9UCFuTk", // Protocol Land
 ]);
 
-const aoInstance = connect(defaultConfig);
-
 /**
  * Get the total delegation of AO by project.
  * This is used to sort the flp tokens by the total delegation of AO.
@@ -81,7 +78,7 @@ const aoInstance = connect(defaultConfig);
 async function getTotalAODelegationByProject(): Promise<DelegationRecord> {
   try {
     const result = await retryWithDelay(() =>
-      aoInstance.dryrun({
+      defaultAoInstance.dryrun({
         process: FLP_AO_DELEGATION_TRACKER_PROCESS_ID,
         tags: [{ name: "Action", value: "Get-Total-Delegated-AO-By-Project" }],
       }),
@@ -100,7 +97,7 @@ async function getTotalAODelegationByProject(): Promise<DelegationRecord> {
  */
 async function getFlpTokensFromAo(): Promise<FlpToken[]> {
   const result = await retryWithDelay(() =>
-    aoInstance.dryrun({
+    defaultAoInstance.dryrun({
       process: FLP_REGISTRY_PROCESS_ID,
       tags: [{ name: "Action", value: "Get-FLPs" }],
     }),
@@ -175,7 +172,7 @@ export async function getFairLaunchTokens<T extends boolean = false>(
 export async function getDelegationInfo(address?: string): Promise<Record<string, number>> {
   address = address || (await getActiveAddress());
 
-  const dryrunRes = await aoInstance.dryrun({
+  const dryrunRes = await defaultAoInstance.dryrun({
     Id,
     Owner,
     process: FLP_DELEGATION_PROCESS_ID,
@@ -216,27 +213,26 @@ export async function updateDelegationInfo(
   keystoneSigner?: KeystoneSigner,
 ) {
   let decryptedWallet: DecryptedWallet;
-  let dataItemSigner: KeystoneSigner | ReturnType<typeof createDataItemSigner>;
+  let dataItemSigner: ReturnType<typeof createDataItemSigner>;
 
   try {
-    const aoInstance = connect(defaultConfig);
     decryptedWallet = await getActiveKeyfile();
 
     if (!keystoneSigner || decryptedWallet.type === "local") {
       isLocalWallet(decryptedWallet);
       dataItemSigner = createDataItemSigner(decryptedWallet.keyfile);
     } else {
-      dataItemSigner = createDataItemKeystoneSigner(keystoneSigner);
+      dataItemSigner = createDataItemSigner(keystoneSigner);
     }
 
     const delegationInfoArray = Object.entries(delegationInfo);
     delegationInfoArray.sort(([key1]) => (key1 === address ? -1 : 1));
 
     for (const [key, value] of delegationInfoArray) {
-      await aoInstance.message({
+      await defaultAoInstance.message({
         process: FLP_DELEGATION_PROCESS_ID,
         tags: [{ name: "Action", value: "Set-Delegation" }],
-        signer: dataItemSigner as any,
+        signer: dataItemSigner,
         data: JSON.stringify({
           walletFrom: address,
           walletTo: key,
@@ -255,9 +251,7 @@ export async function updateDelegationInfo(
 }
 
 export async function getClaimableBalance(token: FlpTokenInfo, recipient: string) {
-  const aoInstance = connect(defaultConfig);
-
-  const dryrunRes = await aoInstance.dryrun({
+  const dryrunRes = await defaultAoInstance.dryrun({
     Id,
     Owner,
     process: token.flpId,
@@ -278,7 +272,6 @@ export async function claimBalance(token: FlpTokenInfo) {
   let decryptedWallet: DecryptedWallet;
   try {
     const activeAddress = await getActiveAddress();
-    const aoInstance = connect(defaultConfig);
 
     decryptedWallet = await getActiveKeyfile();
     isLocalWallet(decryptedWallet);
@@ -286,7 +279,7 @@ export async function claimBalance(token: FlpTokenInfo) {
 
     const signer = createDataItemSigner(keyfile);
 
-    await aoInstance.message({
+    await defaultAoInstance.message({
       process: token.flpId,
       tags: [{ name: "Action", value: "Withdraw-FLP-Token" }],
       signer,

@@ -2,9 +2,7 @@ import Arweave from "arweave";
 import { defaultGateway } from "~gateways/gateway";
 import { ExtensionStorage } from "~utils/storage";
 import type { AOYieldAgent, AOYieldAgentInfo, AOYieldAgentStatus, MintingStatus, RecentTx, Tag } from "../types";
-import { connect } from "@permaweb/aoconnect";
-import { defaultConfig } from "~tokens/aoTokens/config";
-import { createDataItemSigner, getTagValue } from "~tokens/aoTokens/ao";
+import { getTagValue } from "~tokens/aoTokens/ao";
 import { getActiveAddress, getActiveKeyfile } from "~wallets";
 import { isLocalWallet } from "~utils/assertions";
 import { retryWithDelay } from "~utils/promises/retry";
@@ -22,6 +20,7 @@ import { isURL } from "~utils/urls/isURL";
 import { queryClient } from "~utils/tanstack";
 import { Mutex } from "~utils/mutex";
 import { Id, Owner, WAR_PROCESS_ID, WUSDC_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
+import { createDataItemSigner, defaultAoInstance } from "~utils/aoconnect";
 
 const agentStorageMutex = new Mutex();
 
@@ -233,9 +232,7 @@ export async function getAOYieldActiveAgent() {
 }
 
 export async function getAOYieldAgentInfo(agentId: string) {
-  const aoInstance = connect(defaultConfig);
-
-  const dryrunRes = await aoInstance.dryrun({
+  const dryrunRes = await defaultAoInstance.dryrun({
     Id,
     Owner,
     process: agentId,
@@ -340,8 +337,6 @@ function updateAgentProperties(agent: AOYieldAgent, updateData: Partial<AOYieldA
 
 export async function updateAOYieldAgent(agentId: string, updateData: Partial<AOYieldAgent>) {
   try {
-    const aoInstance = connect(defaultConfig);
-
     const decryptedWallet = await getActiveKeyfile();
     isLocalWallet(decryptedWallet);
     const keyfile = decryptedWallet.keyfile;
@@ -349,7 +344,7 @@ export async function updateAOYieldAgent(agentId: string, updateData: Partial<AO
     const signer = createDataItemSigner(keyfile);
     const tags = buildUpdateTags(updateData);
 
-    const messageId = await aoInstance.message({
+    const messageId = await defaultAoInstance.message({
       process: agentId,
       tags,
       signer,
@@ -358,7 +353,7 @@ export async function updateAOYieldAgent(agentId: string, updateData: Partial<AO
     // Free the keyfile from memory
     freeDecryptedWallet(decryptedWallet.keyfile);
 
-    const result = await aoInstance
+    const result = await defaultAoInstance
       .result({
         process: agentId,
         message: messageId,
@@ -447,9 +442,7 @@ export function formatDate(date: Date | null, fallbackLabel: string) {
 export async function getWanderFee() {
   const defaultFee = "0.25";
   try {
-    const aoInstance = connect(defaultConfig);
-
-    const dryrunRes = await aoInstance.dryrun({
+    const dryrunRes = await defaultAoInstance.dryrun({
       Id,
       Owner,
       process: WANDER_FEE_PROCESS_ID,

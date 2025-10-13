@@ -4,11 +4,11 @@ import { APP_NAME, defaultServices } from "./constants";
 import { getArweave, isArweaveAddress, isCronPattern, parseToInt, pollForProcessSpawn } from "./utils";
 import { ExtensionStorage } from "~utils/storage";
 import { getActiveKeyfile } from "~wallets";
-import { createDataItemSigner } from "~tokens/aoTokens/ao";
 import { retryWithDelay } from "~utils/promises/retry";
 import { AOS_QUERY } from "./queries";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { isURL } from "~utils/urls/isURL";
+import { createDataItemSigner } from "~utils/aoconnect";
 
 /**
  * Manages deployments of contracts to AO.
@@ -36,6 +36,7 @@ export class DeploymentsManager {
       (!services.muUrl || services.muUrl === defaultServices.muUrl)
     ) {
       return connect({
+        MODE: "legacy",
         GATEWAY_URL: defaultServices.gatewayUrl,
         MU_URL: defaultServices.muUrl,
         CU_URL: defaultServices.cuUrl,
@@ -43,6 +44,7 @@ export class DeploymentsManager {
     }
 
     return connect({
+      MODE: "legacy",
       GATEWAY_URL: services.gatewayUrl,
       MU_URL: services.muUrl,
       CU_URL: services.cuUrl,

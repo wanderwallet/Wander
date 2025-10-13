@@ -1,10 +1,4 @@
-import {
-  createDataItemKeystoneSigner,
-  createDataItemSigner,
-  getTagValue,
-  getTagValueMap,
-  type TokenInfo,
-} from "~tokens/aoTokens/ao";
+import { getTagValue, getTagValueMap, type TokenInfo } from "~tokens/aoTokens/ao";
 import {
   type SwapData,
   type BotegaPool,
@@ -49,11 +43,8 @@ import browser from "webextension-polyfill";
 import { generateAnchor, KeystoneSigner } from "~wallets/hardware/keystone";
 import { retryWithGateways } from "~gateways/wayfinder";
 import Arweave from "arweave/web/common";
-import { connect } from "@permaweb/aoconnect";
-import { defaultConfig } from "~tokens/aoTokens/config";
 import type { DecodedTag } from "~api/modules/sign/tags";
-
-const aoInstance = connect(defaultConfig);
+import { createDataItemSigner, DATAITEM_SIGNER_KIND, defaultAoInstance } from "~utils/aoconnect";
 
 const BOTEGA_POOL_OPTIONS = {
   headers: {
@@ -748,7 +739,7 @@ export async function createKeystoneFeeTransaction<P extends PoolType, T extends
 interface CreateAoMessageArgs {
   poolType: PoolType;
   process: string;
-  signer: ReturnType<typeof createDataItemSigner> | ReturnType<typeof createDataItemKeystoneSigner>;
+  signer: ReturnType<typeof createDataItemSigner>;
   tags: Tag[];
   wanderFee: string;
   keystoneSigner?: KeystoneSigner;
@@ -776,7 +767,10 @@ export async function createSwapMessage({
       ...tags,
     ];
     const data = Math.floor(1000 + Math.random() * 9000).toString();
-    const { id, raw } = await signer({ data, tags: updatedTags, target: process });
+    const { id, raw } = await signer(
+      () => Promise.resolve({ data, tags: updatedTags, target: process }),
+      DATAITEM_SIGNER_KIND,
+    );
     dataItemRaw = Buffer.from(raw);
 
     const feeTx = await createKeystoneFeeTransaction(poolType, process, id, wanderFee, keystoneSigner);
@@ -819,7 +813,7 @@ export async function createSwapMessage({
         }
       }
     } else {
-      const transferId = await aoInstance.message({ process, signer, tags });
+      const transferId = await defaultAoInstance.message({ process, signer, tags });
       return transferId;
     }
   }
@@ -846,7 +840,7 @@ export async function assertTransferResult(
   let transferError = "";
 
   try {
-    const { Error, Messages } = await aoInstance.result({ message, process });
+    const { Error, Messages } = await defaultAoInstance.result({ message, process });
     if (Error) {
       transferError = errorMessage;
     } else if (Messages.length > 0) {

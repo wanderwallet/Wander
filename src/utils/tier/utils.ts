@@ -1,5 +1,4 @@
-import { dryrun, message } from "@permaweb/aoconnect/browser";
-import { createDataItemSigner, getTagValue } from "~tokens/aoTokens/ao";
+import { getTagValue } from "~tokens/aoTokens/ao";
 import { tierIdToTierName, TIER_PROCESS_ID } from "./constants";
 import type { ActiveTier, ActiveTierFromApi, DefiFeeDetails, Tier, WalletSavings } from "./types";
 import { defiFeePercent, defiFeeReductionsInPercent } from "./constants";
@@ -12,6 +11,7 @@ import { scheduleRefreshWalletLifetimeSavings } from "./alarms";
 import { retryWithDelay } from "~utils/promises/retry";
 import { Id } from "~tokens/aoTokens/ao.constants";
 import { CACHE_API } from "~constants/api";
+import { createDataItemSigner, defaultAoInstance } from "~utils/aoconnect";
 
 const ONE_HUNDRED = BigNumber(100);
 const THREE_HOURS_MS = 10_800_000;
@@ -78,12 +78,12 @@ export async function getActiveTier(walletAddress: string, retry = false): Promi
 
     const dryrunRes = retry
       ? await retryWithDelay(
-          () => dryrun(dryrunParams),
+          () => defaultAoInstance.dryrun(dryrunParams),
           3,
           1000,
           (attempt) => Math.min(1000 * 2 ** attempt, 30000),
         )
-      : await dryrun(dryrunParams);
+      : await defaultAoInstance.dryrun(dryrunParams);
 
     const message = dryrunRes.Messages?.[0];
     const parsedData = JSON.parse(message?.Data || "{}");
@@ -129,7 +129,7 @@ export async function getWalletLifetimeSavings(walletAddress: string): Promise<s
     return savedSavings.lifetimeSavings;
   }
 
-  const dryrunRes = await dryrun({
+  const dryrunRes = await defaultAoInstance.dryrun({
     Id,
     Owner: walletAddress,
     process: TIER_PROCESS_ID,
@@ -155,7 +155,7 @@ export async function saveWalletLifetimeSavings(walletAddress: string, savingsIn
     const keyfile = decryptedWallet.keyfile;
 
     const signer = createDataItemSigner(keyfile);
-    const messageId = await message({
+    const messageId = await defaultAoInstance.message({
       process: TIER_PROCESS_ID,
       signer,
       tags: [

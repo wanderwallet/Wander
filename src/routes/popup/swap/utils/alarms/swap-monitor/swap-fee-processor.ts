@@ -2,11 +2,9 @@ import { getKeyfile, type DecryptedWallet } from "~wallets";
 import { freeDecryptedWallet } from "~wallets/encryption";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import type { SwapData } from "../../swap.types";
-import { connect } from "@permaweb/aoconnect";
-import { defaultConfig } from "~tokens/aoTokens/config";
 import { queryClient } from "~utils/tanstack";
 import { defaultOptions } from "~tokens/hooks";
-import { createDataItemSigner, fetchTokenBalance, getBotegaPrice, getTagValue } from "~tokens/aoTokens/ao";
+import { fetchTokenBalance, getBotegaPrice, getTagValue } from "~tokens/aoTokens/ao";
 import { isWalletUnlocked } from "~wallets/auth";
 import { AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 import { Mutex } from "~utils/mutex";
@@ -26,8 +24,7 @@ import Arweave from "arweave";
 import { WANDER_FEE_RECIPIENT } from "../../swap.constants";
 import { gql } from "~gateways/api";
 import { retryWithDelay } from "~utils/promises/retry";
-
-const aoInstance = connect(defaultConfig);
+import { createDataItemSigner, defaultAoInstance } from "~utils/aoconnect";
 
 // Mutex instances for each transaction to prevent duplicate fee processing
 const feeProcessingMutexes = new Map<string, Mutex>();
@@ -135,7 +132,7 @@ export async function processWanderFee(swap: SwapData): Promise<boolean> {
           feeTransferId = transaction.id;
         } else {
           const signer = createDataItemSigner(keyfile);
-          feeTransferId = await aoInstance.message({
+          feeTransferId = await defaultAoInstance.message({
             process: swap.sendToken.processId,
             signer,
             tags: [

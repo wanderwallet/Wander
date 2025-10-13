@@ -7,7 +7,16 @@ export interface Config {
   GATEWAY_URL?: string;
 }
 
-export const defaultConfig: Config = {
+export const defaultConfig: {
+  MODE: "legacy";
+  GATEWAY_URL?: string;
+  GRAPHQL_URL?: string;
+  GRAPHQL_MAX_RETRIES?: number;
+  GRAPHQL_RETRY_BACKOFF?: number;
+  MU_URL?: string;
+  CU_URL?: string;
+} = {
+  MODE: "legacy",
   CU_URL: "https://cu.ao-testnet.xyz",
   MU_URL: "https://mu.ao-testnet.xyz",
   GATEWAY_URL: "https://g8way.io:443",
