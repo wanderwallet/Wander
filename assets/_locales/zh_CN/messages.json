@@ -4613,5 +4613,9 @@
     "success_updating_agent": {
       "message": "更新代理成功",
       "description": "Success updating agent text"
+    },
+    "no_changes_to_save": {
+      "message": "没有需要保存的更改",
+      "description": "No changes to save text"
     }
 }

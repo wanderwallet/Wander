@@ -4653,5 +4653,9 @@
   "success_updating_agent": {
     "message": "Agent updated successfully",
     "description": "Success updating agent text"
+  },
+  "no_changes_to_save": {
+    "message": "No changes to save",
+    "description": "No changes to save text"
   }
 }
