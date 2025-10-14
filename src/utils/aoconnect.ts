@@ -20,19 +20,15 @@ function createANS104Signer(wallet) {
      * set passthrough in order to receive the arguements as they were passed
      * to toDataItemSigner
      */
-    const {
-      data,
-      tags,
-      target,
-      anchor = generateAnchor(),
-    } = await create({
+    const { data, tags, target, anchor } = await create({
       alg: "rsa-v1_5-sha256",
       passthrough: true,
     });
 
     if (wallet instanceof KeystoneSigner) {
       const signer = wallet;
-      const dataItem = createData(data, signer, { tags, target, anchor });
+      let _anchor = anchor || generateAnchor();
+      const dataItem = createData(data, signer, { tags, target, anchor: _anchor });
       const serial = dataItem.getRaw();
       const signature = await signer.sign(serial);
       dataItem.setSignature(Buffer.from(signature));
