@@ -57,10 +57,7 @@ type DataItemResult = {
 const { dryrun: customDryrun } = connect({ CU_URL: "https://cu.ardrive.io" });
 
 const getDryrunForProcess = (processId: string) => {
-  return processId === ARIO_MAINNET_PROCESS_ID ||
-    processId === ARIO_TESTNET_PROCESS_ID ||
-    processId === USDA_PROCESS_ID ||
-    processId === WNDR_PROCESS_ID
+  return processId === ARIO_MAINNET_PROCESS_ID || processId === ARIO_TESTNET_PROCESS_ID || processId === USDA_PROCESS_ID
     ? { dryrunFn: customDryrun, isCustomDryrun: true }
     : { dryrunFn: dryrun, isCustomDryrun: false };
 };
