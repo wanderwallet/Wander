@@ -37,7 +37,7 @@ import { getActiveTier, saveWalletLifetimeSavings } from "~utils/tier/utils";
 import { queryClient } from "~utils/tanstack";
 import { balanceToFractioned } from "~tokens/currency";
 import { AO_PROCESS_ID, defaultTokens } from "~tokens/aoTokens/ao.constants";
-import { defaultAoInstance } from "~utils/aoconnect";
+import { aoInstance } from "~utils/aoconnect";
 
 let isSwapExecutionInProgress = false;
 let isSchedulingInProgress = false;
@@ -418,7 +418,7 @@ async function executeTokenSwap(
   log(LOG_GROUP.AGENTS, "Transferring AO tokens to agent: ", activeAgent.id, "from wallet:", walletAddress);
 
   const messageId = await sendAoTransferForWallet(
-    defaultAoInstance,
+    aoInstance,
     AO_PROCESS_ID,
     activeAgent.id,
     swapQuantity,
@@ -435,7 +435,7 @@ async function executeTokenSwap(
   }
 
   try {
-    const { Error, Messages } = await defaultAoInstance.result({ message: messageId, process: AO_PROCESS_ID });
+    const { Error, Messages } = await aoInstance.result({ message: messageId, process: AO_PROCESS_ID });
     const hasValidTag = Messages?.some((message) =>
       message?.Tags?.some(
         (tag: DecodedTag) => tag.name === "Action" && (tag.value === "Debit-Notice" || tag.value === "Credit-Notice"),

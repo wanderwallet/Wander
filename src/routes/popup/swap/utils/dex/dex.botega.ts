@@ -19,7 +19,7 @@ import { retryWithDelay } from "~utils/promises/retry";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { queryClient } from "~utils/tanstack";
 import { assertTransferResult, createSwapMessage } from "../swap.utils";
-import { createDataItemSigner, defaultAoInstance } from "~utils/aoconnect";
+import { createDataItemSigner, aoInstance } from "~utils/aoconnect";
 
 /**
  * Fetch the result of a swap message
@@ -53,7 +53,7 @@ export async function getExpectedOutput({
 
   swapper = swapper || (await getActiveAddress());
   const amountInWithoutWanderFee = BigNumber(amountIn).minus(wanderFee).toFixed(0, BigNumber.ROUND_DOWN);
-  const response = await defaultAoInstance.dryrun({
+  const response = await aoInstance.dryrun({
     process: poolId,
     tags: [
       { name: "Action", value: "Get-Swap-Output" },
@@ -152,7 +152,7 @@ export async function executeSwap({
 }
 
 export async function getLiquidity({ poolId, tokenIn, tokenOut }: GetLiquidityParams): Promise<GetLiquidityResponse> {
-  const response = await defaultAoInstance.dryrun({
+  const response = await aoInstance.dryrun({
     process: poolId,
     tags: [{ name: "Action", value: "Get-Reserves" }],
   });
@@ -161,7 +161,7 @@ export async function getLiquidity({ poolId, tokenIn, tokenOut }: GetLiquidityPa
   const reserveIn = getTagValue(tokenIn, tags) || "0";
   const reserveOut = getTagValue(tokenOut, tags) || "0";
 
-  const infoResponse = await defaultAoInstance.dryrun({
+  const infoResponse = await aoInstance.dryrun({
     process: poolId,
     tags: [{ name: "Action", value: "Info" }],
   });

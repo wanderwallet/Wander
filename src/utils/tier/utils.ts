@@ -10,7 +10,7 @@ import { ExtensionStorage } from "~utils/storage";
 import { scheduleRefreshWalletLifetimeSavings } from "./alarms";
 import { retryWithDelay } from "~utils/promises/retry";
 import { Id } from "~tokens/aoTokens/ao.constants";
-import { createDataItemSigner, defaultAoInstance } from "~utils/aoconnect";
+import { createDataItemSigner, aoInstance } from "~utils/aoconnect";
 import { CACHE_API, WNDR_HB_NODE } from "~constants/api";
 
 const ONE_HUNDRED = BigNumber(100);
@@ -153,7 +153,7 @@ export async function getWalletLifetimeSavings(walletAddress: string): Promise<s
     return savedSavings.lifetimeSavings;
   }
 
-  const dryrunRes = await defaultAoInstance.dryrun({
+  const dryrunRes = await aoInstance.dryrun({
     Id,
     Owner: walletAddress,
     process: TIER_PROCESS_ID,
@@ -179,7 +179,7 @@ export async function saveWalletLifetimeSavings(walletAddress: string, savingsIn
     const keyfile = decryptedWallet.keyfile;
 
     const signer = createDataItemSigner(keyfile);
-    const messageId = await defaultAoInstance.message({
+    const messageId = await aoInstance.message({
       process: TIER_PROCESS_ID,
       signer,
       tags: [

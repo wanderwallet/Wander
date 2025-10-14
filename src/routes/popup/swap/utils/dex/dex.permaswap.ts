@@ -20,7 +20,7 @@ import { getLinkedMessages, OrderError } from "./dex.utils";
 import { queryClient } from "~utils/tanstack";
 import { assertTransferResult, createSwapMessage } from "../swap.utils";
 import browser from "webextension-polyfill";
-import { createDataItemSigner, defaultAoInstance } from "~utils/aoconnect";
+import { createDataItemSigner, aoInstance } from "~utils/aoconnect";
 
 enum SettlementStatus {
   Open = "Open",
@@ -64,7 +64,7 @@ export async function readSwapResult({
   noteSettle,
   swapper,
 }: ReadSwapResult): Promise<ReadSwapResultResponse> {
-  // const result = await defaultAoInstance.dryrun({
+  // const result = await aoInstance.dryrun({
   //   process: poolId,
   //   tags: [
   //     { name: "Action", value: "GetSettled" },
@@ -114,7 +114,7 @@ export async function readSwapResult({
  * Fetch the result of a swap message
  */
 export async function readRequestOrderResult(poolId: string, requestOrderId: string) {
-  const result = await defaultAoInstance.dryrun({
+  const result = await aoInstance.dryrun({
     process: poolId,
     tags: [
       { name: "Action", value: "GetNote" },
@@ -143,7 +143,7 @@ export async function getExpectedOutput({
 
   swapper = swapper || (await getActiveAddress());
   const amountInWithoutWanderFee = BigNumber(amountIn).minus(wanderFee).toFixed(0, BigNumber.ROUND_DOWN);
-  const response = await defaultAoInstance.dryrun({
+  const response = await aoInstance.dryrun({
     process: poolId,
     tags: [
       { name: "Action", value: "GetAmountOut" },
@@ -204,7 +204,7 @@ export async function executeSwap({
       signer = createDataItemSigner(decryptedWallet.keyfile);
     }
 
-    const requestMessageId = await defaultAoInstance.message({
+    const requestMessageId = await aoInstance.message({
       process: poolId,
       signer,
       tags: [
@@ -217,7 +217,7 @@ export async function executeSwap({
     });
 
     try {
-      const result = await defaultAoInstance.result({ process: poolId, message: requestMessageId });
+      const result = await aoInstance.result({ process: poolId, message: requestMessageId });
       const tags = result?.Messages?.[0]?.Tags || [];
       const error = getTagValue("Error", tags);
       if (error?.trim() === "err_invalid_amount_out") {
@@ -273,7 +273,7 @@ export async function executeSwap({
 }
 
 export async function getLiquidity({ poolId, tokenIn, tokenOut }: GetLiquidityParams): Promise<GetLiquidityResponse> {
-  const response = await defaultAoInstance.dryrun({
+  const response = await aoInstance.dryrun({
     process: poolId,
     tags: [{ name: "Action", value: "Info" }],
   });

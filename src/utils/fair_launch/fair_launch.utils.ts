@@ -13,7 +13,7 @@ import { LOG_GROUP, log } from "~utils/log/log.utils";
 import { PI_FLP_ID } from "./fair_launch.constants";
 import { KeystoneSigner } from "~wallets/hardware/keystone";
 import { Id, Owner, WNDR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
-import { createDataItemSigner, defaultAoInstance } from "~utils/aoconnect";
+import { createDataItemSigner, aoInstance } from "~utils/aoconnect";
 
 interface RawFlpToken {
   flp_token_name: string;
@@ -78,7 +78,7 @@ const MANUAL_CLAIMABLE_FLP_IDS = new Set([
 async function getTotalAODelegationByProject(): Promise<DelegationRecord> {
   try {
     const result = await retryWithDelay(() =>
-      defaultAoInstance.dryrun({
+      aoInstance.dryrun({
         process: FLP_AO_DELEGATION_TRACKER_PROCESS_ID,
         tags: [{ name: "Action", value: "Get-Total-Delegated-AO-By-Project" }],
       }),
@@ -97,7 +97,7 @@ async function getTotalAODelegationByProject(): Promise<DelegationRecord> {
  */
 async function getFlpTokensFromAo(): Promise<FlpToken[]> {
   const result = await retryWithDelay(() =>
-    defaultAoInstance.dryrun({
+    aoInstance.dryrun({
       process: FLP_REGISTRY_PROCESS_ID,
       tags: [{ name: "Action", value: "Get-FLPs" }],
     }),
@@ -172,7 +172,7 @@ export async function getFairLaunchTokens<T extends boolean = false>(
 export async function getDelegationInfo(address?: string): Promise<Record<string, number>> {
   address = address || (await getActiveAddress());
 
-  const dryrunRes = await defaultAoInstance.dryrun({
+  const dryrunRes = await aoInstance.dryrun({
     Id,
     Owner,
     process: FLP_DELEGATION_PROCESS_ID,
@@ -229,7 +229,7 @@ export async function updateDelegationInfo(
     delegationInfoArray.sort(([key1]) => (key1 === address ? -1 : 1));
 
     for (const [key, value] of delegationInfoArray) {
-      await defaultAoInstance.message({
+      await aoInstance.message({
         process: FLP_DELEGATION_PROCESS_ID,
         tags: [{ name: "Action", value: "Set-Delegation" }],
         signer: dataItemSigner,
@@ -251,7 +251,7 @@ export async function updateDelegationInfo(
 }
 
 export async function getClaimableBalance(token: FlpTokenInfo, recipient: string) {
-  const dryrunRes = await defaultAoInstance.dryrun({
+  const dryrunRes = await aoInstance.dryrun({
     Id,
     Owner,
     process: token.flpId,
@@ -279,7 +279,7 @@ export async function claimBalance(token: FlpTokenInfo) {
 
     const signer = createDataItemSigner(keyfile);
 
-    await defaultAoInstance.message({
+    await aoInstance.message({
       process: token.flpId,
       tags: [{ name: "Action", value: "Withdraw-FLP-Token" }],
       signer,

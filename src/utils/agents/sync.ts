@@ -76,7 +76,7 @@ export async function checkAndSyncAgents(address: string): Promise<void> {
             queryKey: ["ao-yield-agent-info", agentId],
             queryFn: () => {
               attempt++;
-              return getAOYieldAgentInfo(agentId, agentVersion);
+              return getAOYieldAgentInfo(agentId, agentVersion, attempt);
             },
             staleTime: 0, // Force fresh data
             gcTime: 0,

@@ -44,7 +44,7 @@ import { generateAnchor, KeystoneSigner } from "~wallets/hardware/keystone";
 import { retryWithGateways } from "~gateways/wayfinder";
 import Arweave from "arweave/web/common";
 import type { DecodedTag } from "~api/modules/sign/tags";
-import { createDataItemSigner, DATAITEM_SIGNER_KIND, defaultAoInstance } from "~utils/aoconnect";
+import { createDataItemSigner, DATAITEM_SIGNER_KIND, aoInstance } from "~utils/aoconnect";
 
 const BOTEGA_POOL_OPTIONS = {
   headers: {
@@ -813,7 +813,7 @@ export async function createSwapMessage({
         }
       }
     } else {
-      const transferId = await defaultAoInstance.message({ process, signer, tags });
+      const transferId = await aoInstance.message({ process, signer, tags });
       return transferId;
     }
   }
@@ -840,7 +840,7 @@ export async function assertTransferResult(
   let transferError = "";
 
   try {
-    const { Error, Messages } = await defaultAoInstance.result({ message, process });
+    const { Error, Messages } = await aoInstance.result({ message, process });
     if (Error) {
       transferError = errorMessage;
     } else if (Messages.length > 0) {

@@ -20,7 +20,7 @@ import { isURL } from "~utils/urls/isURL";
 import { queryClient } from "~utils/tanstack";
 import { Mutex } from "~utils/mutex";
 import { Id, Owner, WAR_PROCESS_ID, WUSDC_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
-import { createDataItemSigner, defaultAoInstance } from "~utils/aoconnect";
+import { createDataItemSigner, aoInstance } from "~utils/aoconnect";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { FWD_HB_NODE, WNDR_HB_NODE } from "~constants/api";
 
@@ -266,7 +266,7 @@ export async function getAOYieldAgentInfo(agentId: string, currentAgentVersion: 
       throw new Error("Fetch agent info from the HB node");
     }
 
-    const dryrunRes = await defaultAoInstance.dryrun({
+    const dryrunRes = await aoInstance.dryrun({
       Id,
       Owner,
       process: agentId,
@@ -439,7 +439,7 @@ export async function updateAOYieldAgent(agentId: string, updateData: Partial<AO
     const signer = createDataItemSigner(keyfile);
     const tags = buildUpdateTags(updateData);
 
-    const messageId = await defaultAoInstance.message({
+    const messageId = await aoInstance.message({
       process: agentId,
       tags,
       signer,
@@ -448,7 +448,7 @@ export async function updateAOYieldAgent(agentId: string, updateData: Partial<AO
     // Free the keyfile from memory
     freeDecryptedWallet(decryptedWallet.keyfile);
 
-    const result = await defaultAoInstance
+    const result = await aoInstance
       .result({
         process: agentId,
         message: messageId,
@@ -537,7 +537,7 @@ export function formatDate(date: Date | null, fallbackLabel: string) {
 export async function getWanderFee() {
   const defaultFee = "0.25";
   try {
-    const dryrunRes = await defaultAoInstance.dryrun({
+    const dryrunRes = await aoInstance.dryrun({
       Id,
       Owner,
       process: WANDER_FEE_PROCESS_ID,

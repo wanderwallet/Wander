@@ -25,13 +25,13 @@ import {
 import type { Token } from "~tokens/token";
 import { ARIO_MAINNET_PROCESS_ID, ARIO_TESTNET_PROCESS_ID } from "@ar.io/sdk/web";
 import type { FlpTokenInfo } from "~utils/fair_launch/fair_launch.types";
-import { createDataItemSigner, cuAoInstance, defaultAoInstance } from "~utils/aoconnect";
+import { createDataItemSigner, cuAoInstance, aoInstance } from "~utils/aoconnect";
 
 export let tokens: TokenInfo[] = null;
 export let flpTokens: FlpTokenInfo[] = null;
 export let tokenInfoMap = new Map<string, TokenInfo | Token>();
 
-export type AoInstance = typeof defaultAoInstance;
+export type AoInstance = typeof aoInstance;
 
 export interface Message {
   Anchor: string;
@@ -43,7 +43,7 @@ export interface Message {
 const getDryrunForProcess = (processId: string) => {
   return processId === ARIO_MAINNET_PROCESS_ID || processId === ARIO_TESTNET_PROCESS_ID || processId === USDA_PROCESS_ID
     ? { dryrunFn: cuAoInstance.dryrun, isCustomDryrun: true }
-    : { dryrunFn: defaultAoInstance.dryrun, isCustomDryrun: false };
+    : { dryrunFn: aoInstance.dryrun, isCustomDryrun: false };
 };
 
 export function getTokenInfoFromData(res: any, id: string): TokenInfo {
@@ -133,7 +133,7 @@ export async function getTokenInfo(id: string): Promise<TokenInfo> {
     return { ...data.tokenInfo, processId: id };
   } catch {
     // query ao
-    const res = await defaultAoInstance.dryrun({
+    const res = await aoInstance.dryrun({
       Id,
       Owner,
       process: id,
@@ -270,7 +270,7 @@ export async function getAoCollectibleBalance(
   collectible: TokenInfoWithBalance | TokenInfo,
   address: string,
 ): Promise<Quantity> {
-  const res = await defaultAoInstance.dryrun({
+  const res = await aoInstance.dryrun({
     Id,
     Owner: address,
     // @ts-ignore

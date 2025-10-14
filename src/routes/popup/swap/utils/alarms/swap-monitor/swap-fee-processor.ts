@@ -24,7 +24,7 @@ import Arweave from "arweave";
 import { WANDER_FEE_RECIPIENT } from "../../swap.constants";
 import { gql } from "~gateways/api";
 import { retryWithDelay } from "~utils/promises/retry";
-import { createDataItemSigner, defaultAoInstance } from "~utils/aoconnect";
+import { createDataItemSigner, aoInstance } from "~utils/aoconnect";
 
 // Mutex instances for each transaction to prevent duplicate fee processing
 const feeProcessingMutexes = new Map<string, Mutex>();
@@ -132,7 +132,7 @@ export async function processWanderFee(swap: SwapData): Promise<boolean> {
           feeTransferId = transaction.id;
         } else {
           const signer = createDataItemSigner(keyfile);
-          feeTransferId = await defaultAoInstance.message({
+          feeTransferId = await aoInstance.message({
             process: swap.sendToken.processId,
             signer,
             tags: [

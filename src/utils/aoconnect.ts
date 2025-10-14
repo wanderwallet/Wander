@@ -11,7 +11,7 @@ export const DATAITEM_SIGNER_KIND = "ans104";
 export const HTTP_SIGNER_KIND = "httpsig";
 
 export const arweave = Arweave.init(defaultGateway);
-export const defaultAoInstance = connect(defaultConfig);
+export const aoInstance = connect(defaultConfig);
 export const cuAoInstance = connect({ MODE: "legacy", CU_URL: ARDRIVE_CU_URL });
 
 function createANS104Signer(wallet) {

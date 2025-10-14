@@ -3,7 +3,7 @@ import type { Alarms } from "webextension-polyfill";
 import { type TokenInfo, getTokenInfoFromData } from "~tokens/aoTokens/ao";
 import { timeoutPromise } from "~utils/promises/timeout";
 import { AR_PROCESS_ID, Id, Owner } from "~tokens/aoTokens/ao.constants";
-import { defaultAoInstance } from "~utils/aoconnect";
+import { aoInstance } from "~utils/aoconnect";
 
 /**
  * Alarm handler for syncing ao tokens
@@ -19,7 +19,7 @@ export const handleAoTokenCacheAlarm = async (alarmInfo?: Alarms.Alarm) => {
     if (token.processId === AR_PROCESS_ID) continue;
     try {
       const res = await timeoutPromise(
-        defaultAoInstance.dryrun({
+        aoInstance.dryrun({
           Id,
           Owner,
           process: token.processId,
