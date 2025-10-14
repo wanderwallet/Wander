@@ -4597,5 +4597,25 @@
     "not_enough_ao_tokens": {
       "message": "没有足够的 $$AO 代币。",
       "description": "Not enough $AO tokens text"
+    },
+    "agent_update_title": {
+      "message": "更新代理",
+      "description": "Agent update title text"
+    },
+    "agent_update_description": {
+      "message": "更新代理至最新版本。",
+      "description": "Agent update description text"
+    },
+    "update_agent": {
+      "message": "更新代理",
+      "description": "Update agent text"
+    },
+    "success_updating_agent": {
+      "message": "更新代理成功",
+      "description": "Success updating agent text"
+    },
+    "no_changes_to_save": {
+      "message": "没有需要保存的更改",
+      "description": "No changes to save text"
     }
 }

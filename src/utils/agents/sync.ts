@@ -15,6 +15,7 @@ import { pLimit } from "plimit-lit";
 import { ExtensionStorage } from "~utils/storage";
 import { queryClient } from "~utils/tanstack";
 import { isWalletUnlocked } from "~wallets/auth";
+import { getTagValue } from "~tokens/aoTokens/ao";
 
 const limit = pLimit(10);
 
@@ -52,7 +53,10 @@ export async function checkAndSyncAgents(address: string): Promise<void> {
       return aDate.getTime() - bDate.getTime();
     });
 
-    const agentIds = sortedEdges.map((edge) => edge.node.id);
+    const foundAgents = sortedEdges.map((edge) => {
+      const agentVersion = getTagValue("Agent-Version", edge?.node?.tags) || "1.0.0";
+      return { agentId: edge.node.id, agentVersion };
+    });
 
     // Set extension storage values immediately since we know agents exist
     await ExtensionStorage.set(HAS_SHOWN_AGENTS_EXPLAINER_POPUP, true);
@@ -60,16 +64,20 @@ export async function checkAndSyncAgents(address: string): Promise<void> {
 
     // Read existing agents once and maintain ordered slots
     const currentAgents = await getAOYieldAgents(address);
-    const agentSlots: (AOYieldAgent | null)[] = new Array(agentIds.length).fill(null);
+    const agentSlots: (AOYieldAgent | null)[] = new Array(foundAgents.length).fill(null);
     let successCount = 0;
 
-    const agentInfoPromises = agentIds.map((agentId, index) =>
+    const agentInfoPromises = foundAgents.map(({ agentId, agentVersion }, index) =>
       limit(async () => {
         try {
           log(LOG_GROUP.AGENTS, `Fetching agent info for ${agentId}`);
+          let attempt = -1;
           const agentInfo = await queryClient.fetchQuery({
             queryKey: ["ao-yield-agent-info", agentId],
-            queryFn: () => getAOYieldAgentInfo(agentId),
+            queryFn: () => {
+              attempt++;
+              return getAOYieldAgentInfo(agentId, agentVersion);
+            },
             staleTime: 0, // Force fresh data
             gcTime: 0,
             retry: 1,
@@ -105,7 +113,7 @@ export async function checkAndSyncAgents(address: string): Promise<void> {
           const orderedNewAgents = agentSlots.filter((agent): agent is AOYieldAgent => agent !== null);
           await setAOYieldAgents(address, [...currentAgents, ...orderedNewAgents]);
           successCount++;
-          log(LOG_GROUP.AGENTS, `Agent ${agentId} added at position ${index} (${successCount}/${agentIds.length})`);
+          log(LOG_GROUP.AGENTS, `Agent ${agentId} added at position ${index} (${successCount}/${foundAgents.length})`);
 
           return agent;
         } catch (error) {

@@ -22,7 +22,7 @@ import { getAOYieldAgents, setAOYieldAgents } from "~utils/agents/utils";
 import { EventType, PageType, trackEvent, trackPage } from "~utils/analytics";
 import { scheduleSwapExecution } from "~utils/agents/swap";
 import { AGENT_VERSION } from "~utils/agents/constants";
-import { useAOYieldAgentProperties } from "~utils/agents/hooks";
+import { useAOYieldAgentProperties, useHasActiveAOYieldAgent } from "~utils/agents/hooks";
 import { useDefiFeeDetails } from "~utils/tier/hooks";
 import { useAoRateLimitedToast } from "~utils/toast/toast.hooks";
 
@@ -34,6 +34,7 @@ export function ConfirmAOYieldAgentView() {
   const passwordInput = useInput();
   const theme = useTheme();
   const [aoYieldAgent] = useStorage<AOYieldAgentCreate>({ key: "ao-yield-agent", instance: TempTransactionStorage });
+  const hasActiveAOYieldAgent = useHasActiveAOYieldAgent();
   const defiFeeDetails = useDefiFeeDetails();
   const { showAoRateLimitedToast } = useAoRateLimitedToast();
   const [transferRequirePassword] = useStorage(
@@ -98,6 +99,10 @@ export function ConfirmAOYieldAgentView() {
           {
             name: "Slippage",
             value: aoYieldAgent.slippage.toString(),
+          },
+          {
+            name: "Agent-Version",
+            value: AGENT_VERSION,
           },
         ],
         forceSpawn: true,
@@ -214,7 +219,11 @@ export function ConfirmAOYieldAgentView() {
           )}
         </Content>
         <Flex gap={8}>
-          <Button type="submit" disabled={isButtonDisabled || isLoading} loading={isLoading} fullWidth>
+          <Button
+            type="submit"
+            disabled={isButtonDisabled || isLoading || hasActiveAOYieldAgent}
+            loading={isLoading}
+            fullWidth>
             {browser.i18n.getMessage(isButtonDisabled ? "enter_password" : "activate_agent")}
           </Button>
         </Flex>

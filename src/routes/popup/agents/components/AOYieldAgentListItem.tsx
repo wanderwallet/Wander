@@ -63,7 +63,7 @@ const AOYieldAgentCreateListItem = () => {
 const AOYieldAgentActiveListItem = ({ aoAgent, isHistory }: AOYieldAgentListItemProps) => {
   const { navigate } = useLocation();
   const { data: mintingStatus } = useAOMintingStatus();
-  const { data: agentInfo } = useAOYieldAgentInfo(aoAgent?.id);
+  const { data: agentInfo } = useAOYieldAgentInfo(aoAgent?.id, aoAgent?.version);
   const theme = useTheme();
 
   useAsyncEffect(async () => {

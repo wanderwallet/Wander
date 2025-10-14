@@ -9,7 +9,7 @@ import { InputButton } from "~components/common/InputButton";
 import { HorizontalLine } from "~components/HorizontalLine";
 import { AssetSelectorModal } from "../components/ao-yield/AssetSelectorModal";
 import { DateSelectorModal } from "../components/ao-yield/DateSelectorModal";
-import type { Asset } from "~utils/agents/types";
+import type { AOYieldAgent, Asset } from "~utils/agents/types";
 import { assets, formatDate, getAOYieldActiveAgent, updateAOYieldAgent } from "~utils/agents/utils";
 import { trackPage, PageType } from "~utils/analytics";
 import { SlippageInputButton } from "~routes/popup/swap/components/SlippageInputButton";
@@ -18,6 +18,7 @@ import { useAoRateLimitedToast } from "~utils/toast/toast.hooks";
 export function EditAOYieldAgentView() {
   const theme = useTheme();
   const toasts = useToasts();
+  const [agent, setAgent] = useState<AOYieldAgent | null>(null);
   const { showAoRateLimitedToast } = useAoRateLimitedToast();
   const [isLoading, setIsLoading] = useState(false);
   const [agentId, setAgentId] = useState<string | null>(null);
@@ -57,17 +58,31 @@ export function EditAOYieldAgentView() {
   };
 
   async function handleSave() {
-    if (!agentId) return;
+    if (!agentId || !agent) return;
 
     try {
       setIsLoading(true);
-      await updateAOYieldAgent(agentId, {
-        slippage: selectedSlippage,
-        tokenOut: selectedAsset.id,
-        startDate: startDate.getTime(),
-        endDate: endDate.getTime(),
-        runIndefinitely,
-      });
+      const updateData: Partial<AOYieldAgent> = {
+        ...(selectedSlippage !== agent.slippage && { slippage: selectedSlippage }),
+        ...(selectedAsset.id !== agent.tokenOut && { tokenOut: selectedAsset.id }),
+        ...(startDate.getTime() !== agent.startDate && { startDate: startDate.getTime() }),
+        ...(endDate.getTime() !== agent.endDate && { endDate: endDate.getTime() }),
+        ...(runIndefinitely !== agent.runIndefinitely && { runIndefinitely }),
+      };
+
+      if (!Object.keys(updateData).length) {
+        toasts.setToast({
+          content: browser.i18n.getMessage("no_changes_to_save"),
+          type: "info",
+          duration: 2400,
+        });
+        return;
+      }
+
+      await updateAOYieldAgent(agentId, updateData);
+
+      const currentAgent = await getAOYieldActiveAgent();
+      setAgent(currentAgent);
 
       toasts.setToast({
         content: browser.i18n.getMessage("agent_updated"),
@@ -99,6 +114,7 @@ export function EditAOYieldAgentView() {
   useEffect(() => {
     getAOYieldActiveAgent().then((agent) => {
       if (agent) {
+        setAgent(agent);
         const asset = assets.find((asset) => asset.id === agent.tokenOut);
         setAgentId(agent.id);
         setSelectedAsset(asset || assets[0]);

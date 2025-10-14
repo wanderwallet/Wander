@@ -1,6 +1,6 @@
 import browser from "webextension-polyfill";
 import { Flex } from "~components/common/Flex";
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import SliderMenu from "~components/SliderMenu";
 import { Button, Text, useToasts } from "@arconnect/components-rebrand";
 import { AlertTriangle } from "@untitled-ui/icons-react";
@@ -116,6 +116,10 @@ export function SlippageSelectorModal({
     onSelect(selectedSlippage);
     onClose();
   };
+
+  useEffect(() => {
+    setSelectedSlippage(slippage);
+  }, [slippage]);
 
   return (
     <SliderMenu title={browser.i18n.getMessage("slippage")} isOpen={open} onClose={onClose}>

@@ -4637,5 +4637,25 @@
   "not_enough_ao_tokens": {
     "message": "Not enough $$AO tokens.",
     "description": "Not enough $AO tokens text"
+  },
+  "agent_update_title": {
+    "message": "Update Agent",
+    "description": "Agent update title text"
+  },
+  "agent_update_description": {
+    "message": "Update agent to latest version.",
+    "description": "Agent update description text"
+  },
+  "update_agent": {
+    "message": "Update agent",
+    "description": "Update agent text"
+  },
+  "success_updating_agent": {
+    "message": "Agent updated successfully",
+    "description": "Success updating agent text"
+  },
+  "no_changes_to_save": {
+    "message": "No changes to save",
+    "description": "No changes to save text"
   }
 }

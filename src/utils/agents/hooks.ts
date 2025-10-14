@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getAOYieldAgentInfo, getAOYieldAgents, getWanderFee, processTransactions, tokenIdInfoMap } from "./utils";
 import type {
   AOYieldAgent,
@@ -62,6 +62,19 @@ export function useAOYieldLatestAgent() {
   }, [agents]);
 }
 
+export function useHasActiveAOYieldAgent() {
+  const [activeAddress] = useStorage({ key: "active_address", instance: ExtensionStorage });
+  const [agents = []] = useStorage<AOYieldAgent[]>(
+    {
+      key: `ao_yield_agents_${activeAddress}`,
+      instance: ExtensionStorage,
+    },
+    [],
+  );
+
+  return useMemo(() => agents.some((agent) => agent.status === "Active"), [agents]);
+}
+
 export function useAOYieldAgent(agentId: string, status?: AOYieldAgentStatus) {
   const [activeAddress] = useStorage({ key: "active_address", instance: ExtensionStorage });
   const [agents] = useStorage<AOYieldAgent[]>(
@@ -82,10 +95,19 @@ export function useAOYieldAgent(agentId: string, status?: AOYieldAgentStatus) {
   }, [agents, agentId, status]);
 }
 
-export function useAOYieldAgentInfo(agentId: string) {
+export function useAOYieldAgentInfo(agentId: string, currentAgentVersion?: string) {
+  const attemptRef = useRef(-1);
+
+  useEffect(() => {
+    attemptRef.current = -1;
+  }, [agentId]);
+
   return useQuery<AOYieldAgentInfo>({
     queryKey: ["ao-yield-agent-info", agentId],
-    queryFn: () => getAOYieldAgentInfo(agentId),
+    queryFn: () => {
+      attemptRef.current++;
+      return getAOYieldAgentInfo(agentId, currentAgentVersion, attemptRef.current);
+    },
     enabled: !!agentId,
     refetchInterval: 60_000,
     staleTime: 60_000,

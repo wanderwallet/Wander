@@ -10,8 +10,8 @@ import { ExtensionStorage } from "~utils/storage";
 import { scheduleRefreshWalletLifetimeSavings } from "./alarms";
 import { retryWithDelay } from "~utils/promises/retry";
 import { Id } from "~tokens/aoTokens/ao.constants";
-import { CACHE_API } from "~constants/api";
 import { createDataItemSigner, defaultAoInstance } from "~utils/aoconnect";
+import { CACHE_API, WNDR_HB_NODE } from "~constants/api";
 
 const ONE_HUNDRED = BigNumber(100);
 const THREE_HOURS_MS = 10_800_000;
@@ -69,27 +69,51 @@ export async function getActiveTier(walletAddress: string, retry = false): Promi
 
     data = responseData;
   } catch {
-    const dryrunParams = {
-      Id,
-      Owner: walletAddress,
-      process: TIER_PROCESS_ID,
-      tags: [{ name: "Action", value: "Get-Wallet-Info" }],
-    };
+    const url = `${WNDR_HB_NODE}/${TIER_PROCESS_ID}~process@1.0/now/wallets-tier-info/${walletAddress}/~json@1.0/serialize`;
 
-    const dryrunRes = retry
+    const response = retry
       ? await retryWithDelay(
-          () => defaultAoInstance.dryrun(dryrunParams),
+          async () => {
+            const response = await fetch(url);
+            console.log(response.ok, response.status, typeof response.status);
+            if (!response.ok && response.status !== 404) {
+              throw new Error("Failed to fetch tier info from HB node");
+            }
+            return response;
+          },
           3,
           1000,
           (attempt) => Math.min(1000 * 2 ** attempt, 30000),
         )
-      : await defaultAoInstance.dryrun(dryrunParams);
+      : await fetch(url);
 
-    const message = dryrunRes.Messages?.[0];
-    const parsedData = JSON.parse(message?.Data || "{}");
+    let parsedData: ActiveTierFromApi;
+
+    if (response.status === 404) {
+      const response = await fetch(`${WNDR_HB_NODE}/${TIER_PROCESS_ID}~process@1.0/now/tier-info/~json@1.0/serialize`);
+      const responseData = await response.json();
+      parsedData = {
+        balance: "0",
+        progress: 0,
+        rank: "",
+        snapshotTimestamp: responseData["snapshot-timestamp"],
+        tier: 5,
+        totalHolders: responseData["total-holders"],
+      } as ActiveTierFromApi;
+    } else {
+      const responseData = await response.json();
+      parsedData = {
+        balance: responseData.balance,
+        progress: responseData.progress,
+        rank: responseData.rank,
+        snapshotTimestamp: responseData["snapshot-timestamp"],
+        tier: responseData.tier,
+        totalHolders: responseData["total-holders"],
+      } as ActiveTierFromApi;
+    }
 
     if (!isValidTierInfo(parsedData)) {
-      throw new Error("Invalid tier info data from WNDR tier process");
+      throw new Error("Invalid tier info data from HB node");
     }
 
     data = parsedData;
