@@ -59,8 +59,8 @@ const { dryrun: aoDevDryrun } = connect({ CU_URL: "https://aodev.fun/ao/cu" });
 const ARDRIVE_PROCESSES = [ARIO_MAINNET_PROCESS_ID, ARIO_TESTNET_PROCESS_ID, USDA_PROCESS_ID];
 
 export const getDryrunForProcess = (processId: string) => {
-  if (ARDRIVE_PROCESSES.includes(processId)) return { dryrunFn: arDriveDryrun, isCustomDryrun: true };
   if (processId === UTD_PROCESS_ID) return { dryrunFn: aoDevDryrun, isCustomDryrun: true };
+  if (ARDRIVE_PROCESSES.includes(processId)) return { dryrunFn: arDriveDryrun, isCustomDryrun: true };
 
   return { dryrunFn: dryrun, isCustomDryrun: false };
 };
