@@ -21,6 +21,7 @@ export const SMONEY_PROCESS_ID = "K59Wi9uKXBQfTn3zw7L_t-lwHAoq3Fx-V9sCyOY3dFE" a
 export const APUS_PROCESS_ID = "mqBYxpDsolZmJyBdTK8TJp_ftOuIUXVYcSQ8MYZdJg0" as const;
 export const LOAD_PROCESS_ID = "gx_jKk-hy8-sB4Wv5WEuvTTVyIRWW3We7rRHthcohBQ" as const;
 export const VAR_PROCESS_ID = "y-p7CPhs6JMUStAuE4KeTnMXN7qYBvEi2hiBFk8ZhjM" as const;
+export const UTD_PROCESS_ID = "1WV-nkLFcoaykJb7ztfScjcBRM6e83BB2dRzr-FjTHQ" as const;
 
 export const AO_PROCESS_BALANCE_MIRROR = "Pi-WmAQp2-mh-oWH9lWpz5EthlUDj_W0IusAv-RXhRk" as const;
 export const AO_AUTHORITY_ID = "fcoN_xJeisVsPXA-trzVAuIiqO3ydLQxM-L4XbrQKzY" as const;
