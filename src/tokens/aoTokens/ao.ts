@@ -53,8 +53,12 @@ type DataItemResult = {
   raw: ArrayBuffer;
 };
 
-const { dryrun: arDriveDryrun } = connect({ CU_URL: "https://cu.ardrive.io" });
-const { dryrun: aoDevDryrun } = connect({ CU_URL: "https://aodev.fun/ao/cu" });
+export const ARDRIVE_CU_URL = "https://cu.ardrive.io";
+export const AO_DEV_CU_URL = "https://aodev.fun/ao/cu";
+export const DEFAULT_CU_URL = "https://cu.ao-testnet.xyz";
+
+const { dryrun: arDriveDryrun } = connect({ CU_URL: ARDRIVE_CU_URL });
+const { dryrun: aoDevDryrun } = connect({ CU_URL: AO_DEV_CU_URL });
 
 const ARDRIVE_PROCESSES = [ARIO_MAINNET_PROCESS_ID, ARIO_TESTNET_PROCESS_ID, USDA_PROCESS_ID];
 
