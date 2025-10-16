@@ -12,17 +12,7 @@ import { queryClient } from "~utils/tanstack";
 import { getTagValue } from "~tokens/aoTokens/ao";
 import { sleep } from "~utils/promises/sleep";
 
-interface SyncMetrics {
-  lastSyncTimestamp: number;
-  syncCount: number;
-  failureCount: number;
-  averageSyncDuration: number;
-  addressesProcessed: number;
-}
-
 interface AgentSyncConfig {
-  cooldownMs: number;
-  maxFailuresBeforeCooldown: number;
   retryAttempts: number;
   retryDelayMs: number;
   alarmName: string;
@@ -37,33 +27,22 @@ type SyncTrigger = "alarm" | "manual";
 
 const STORAGE_KEYS = {
   SYNC_QUEUE: "ao_yield_agent_sync_queue",
-  SYNC_METRICS: "ao_yield_agent_sync_metrics",
+  SYNC_PROCESSING: "ao_yield_agent_sync_processing",
 };
 
 class AgentSyncManager {
   private static instance: AgentSyncManager | null = null;
   private syncQueue: Set<string> = new Set();
   private isProcessingQueue = false;
-  private metrics: SyncMetrics;
   private config: AgentSyncConfig;
   private limit = pLimit(10);
   private isInitialized = false;
 
   private constructor() {
     this.config = {
-      cooldownMs: 30000, // 30 seconds
-      maxFailuresBeforeCooldown: 3,
       retryAttempts: 3,
       retryDelayMs: 2000,
       alarmName: "ao_yield_agent_sync_alarm",
-    };
-
-    this.metrics = {
-      lastSyncTimestamp: 0,
-      syncCount: 0,
-      failureCount: 0,
-      averageSyncDuration: 0,
-      addressesProcessed: 0,
     };
   }
 
@@ -82,12 +61,11 @@ class AgentSyncManager {
     // Check if alarm exists - if not, no sync is scheduled/running, safe to clear flag
     const existingAlarm = await browser.alarms.get(this.config.alarmName);
     if (!existingAlarm && !this.isProcessingQueue) {
-      await ExtensionStorage.set("ao_yield_agent_sync_processing", false);
+      await ExtensionStorage.set(STORAGE_KEYS.SYNC_PROCESSING, false);
       log(LOG_GROUP.AGENTS, "No alarm found and no sync is in progress, clearing processing flag");
     }
 
     // Load persisted data
-    await this.loadMetrics();
     await this.loadQueue();
 
     // Log restored addresses if any
@@ -130,7 +108,7 @@ class AgentSyncManager {
   // Process the sync queue
   private async processQueueIfNeeded(trigger: SyncTrigger): Promise<void> {
     // Check storage-based processing flag (works across contexts)
-    const isProcessingInStorage = await ExtensionStorage.get<boolean>("ao_yield_agent_sync_processing");
+    const isProcessingInStorage = await ExtensionStorage.get<boolean>(STORAGE_KEYS.SYNC_PROCESSING);
 
     if (isProcessingInStorage || this.isProcessingQueue) {
       log(
@@ -145,15 +123,9 @@ class AgentSyncManager {
       return;
     }
 
-    if (!this.shouldSync() && trigger !== "manual") {
-      log(LOG_GROUP.AGENTS, `Skipping ${trigger} sync - cooldown active`);
-      return;
-    }
-
     // Set both flags (storage for cross-context, local for same-context)
     this.isProcessingQueue = true;
-    await ExtensionStorage.set("ao_yield_agent_sync_processing", true);
-    const syncStartTime = Date.now();
+    await ExtensionStorage.set(STORAGE_KEYS.SYNC_PROCESSING, true);
 
     try {
       log(LOG_GROUP.AGENTS, `Processing queue (${this.syncQueue.size} addresses) - trigger: ${trigger}`);
@@ -167,21 +139,15 @@ class AgentSyncManager {
         const address = addressesToProcess[index];
         if (result.status === "fulfilled") {
           this.syncQueue.delete(address);
-          this.metrics.addressesProcessed++;
           successCount++;
           log(LOG_GROUP.AGENTS, `Successfully synced agents for address: ${address}`);
         } else {
           log(LOG_GROUP.AGENTS, `Failed to sync agents for address: ${address}`, result.reason);
-          this.metrics.failureCount++;
         }
       });
 
       // Persist the updated queue after processing
       await this.saveQueue();
-
-      // Update metrics
-      const syncDuration = Date.now() - syncStartTime;
-      this.updateSyncMetrics(syncDuration, trigger);
 
       log(LOG_GROUP.AGENTS, `Queue processing complete. Synced: ${successCount}, Remaining: ${this.syncQueue.size}`);
 
@@ -193,11 +159,9 @@ class AgentSyncManager {
       }
     } catch (error) {
       log(LOG_GROUP.AGENTS, "Error processing queue:", error);
-      this.metrics.failureCount++;
     } finally {
       this.isProcessingQueue = false;
-      await ExtensionStorage.set("ao_yield_agent_sync_processing", false);
-      await this.saveMetrics();
+      await ExtensionStorage.set(STORAGE_KEYS.SYNC_PROCESSING, false);
     }
   }
 
@@ -422,56 +386,6 @@ class AgentSyncManager {
     await this.processQueueIfNeeded("alarm");
   }
 
-  // Utility methods
-  private shouldSync(): boolean {
-    const now = Date.now();
-    const timeSinceLastSync = now - this.metrics.lastSyncTimestamp;
-
-    if (timeSinceLastSync < this.config.cooldownMs) {
-      return false;
-    }
-
-    if (this.metrics.failureCount >= this.config.maxFailuresBeforeCooldown) {
-      const extendedCooldown = this.config.cooldownMs * 2;
-      return timeSinceLastSync >= extendedCooldown;
-    }
-
-    return true;
-  }
-
-  private updateSyncMetrics(duration: number, trigger: SyncTrigger): void {
-    this.metrics.lastSyncTimestamp = Date.now();
-    this.metrics.syncCount++;
-
-    // Update average duration
-    if (this.metrics.averageSyncDuration === 0) {
-      this.metrics.averageSyncDuration = duration;
-    } else {
-      this.metrics.averageSyncDuration = (this.metrics.averageSyncDuration + duration) / 2;
-    }
-
-    log(LOG_GROUP.AGENTS, `Sync completed - Duration: ${duration}ms, Trigger: ${trigger}`);
-  }
-
-  private async loadMetrics(): Promise<void> {
-    try {
-      const storedMetrics = await ExtensionStorage.get<SyncMetrics>(STORAGE_KEYS.SYNC_METRICS);
-      if (storedMetrics) {
-        this.metrics = storedMetrics;
-      }
-    } catch (error) {
-      log(LOG_GROUP.AGENTS, "Error loading metrics:", error);
-    }
-  }
-
-  private async saveMetrics(): Promise<void> {
-    try {
-      await ExtensionStorage.set(STORAGE_KEYS.SYNC_METRICS, this.metrics);
-    } catch (error) {
-      log(LOG_GROUP.AGENTS, "Error saving metrics:", error);
-    }
-  }
-
   // Public utility methods
   public getQueueSize(): number {
     return this.syncQueue.size;
@@ -479,10 +393,6 @@ class AgentSyncManager {
 
   public getQueueAddresses(): string[] {
     return Array.from(this.syncQueue);
-  }
-
-  public getMetrics(): SyncMetrics {
-    return { ...this.metrics };
   }
 
   public isProcessing(): boolean {
@@ -515,13 +425,6 @@ class AgentSyncManager {
     if (this.syncQueue.size > 0) {
       await this.processQueueIfNeeded("manual");
     }
-  }
-
-  public async clearQueueManually(): Promise<void> {
-    this.syncQueue.clear();
-    await this.clearAlarm();
-    await this.clearQueue();
-    log(LOG_GROUP.AGENTS, "Manually cleared sync queue and alarm");
   }
 
   public destroy(): void {
