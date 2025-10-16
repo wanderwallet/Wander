@@ -2,8 +2,6 @@ import Arweave from "arweave";
 import { defaultGateway } from "~gateways/gateway";
 import { ExtensionStorage } from "~utils/storage";
 import type { AOYieldAgent, AOYieldAgentInfo, AOYieldAgentStatus, MintingStatus, RecentTx, Tag } from "../types";
-import { connect } from "@permaweb/aoconnect";
-import { defaultConfig } from "~tokens/aoTokens/config";
 import { createDataItemSigner, getTagValue } from "~tokens/aoTokens/ao";
 import { getActiveAddress, getActiveKeyfile } from "~wallets";
 import { isLocalWallet } from "~utils/assertions";
@@ -24,6 +22,7 @@ import { Mutex } from "~utils/mutex";
 import { Id, Owner, WAR_PROCESS_ID, WUSDC_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { FWD_HB_NODE, WNDR_HB_NODE } from "~constants/api";
+import { aoInstance, wndrAoInstance } from "~utils/aoconnect";
 
 const agentStorageMutex = new Mutex();
 
@@ -267,9 +266,8 @@ export async function getAOYieldAgentInfo(agentId: string, currentAgentVersion: 
       throw new Error("Fetch agent info from the HB node");
     }
 
-    const aoInstance = connect(defaultConfig);
-
-    const dryrunRes = await aoInstance.dryrun({
+    const aoInstanceToUse = attempt % 2 === 0 ? wndrAoInstance : aoInstance;
+    const dryrunRes = await aoInstanceToUse.dryrun({
       Id,
       Owner,
       process: agentId,
@@ -321,7 +319,7 @@ export async function getAOYieldAgentInfo(agentId: string, currentAgentVersion: 
     }
 
     log(LOG_GROUP.AGENTS, `Fetching agent info from the HB node with agent version: ${currentAgentVersion}`);
-    const hbNode = attempt % 2 === 0 ? FWD_HB_NODE : WNDR_HB_NODE;
+    const hbNode = attempt % 2 === 0 ? WNDR_HB_NODE : FWD_HB_NODE;
     const response = await fetch(`${hbNode}/${agentId}/~process@1.0/now/agent-info/~json@1.0/serialize?bundle`);
     if (!response.ok) {
       throw new Error("Failed to fetch agent info");
@@ -433,10 +431,12 @@ function updateAgentProperties(agent: AOYieldAgent, updateData: Partial<AOYieldA
   return agent;
 }
 
-export async function updateAOYieldAgent(agentId: string, updateData: Partial<AOYieldAgent> & { fullPatch?: boolean }) {
+export async function updateAOYieldAgent(
+  agentId: string,
+  updateData: Partial<AOYieldAgent> & { fullPatch?: boolean },
+  skipLocalUpdate: boolean = false,
+) {
   try {
-    const aoInstance = connect(defaultConfig);
-
     const decryptedWallet = await getActiveKeyfile();
     isLocalWallet(decryptedWallet);
     const keyfile = decryptedWallet.keyfile;
@@ -453,19 +453,26 @@ export async function updateAOYieldAgent(agentId: string, updateData: Partial<AO
     // Free the keyfile from memory
     freeDecryptedWallet(decryptedWallet.keyfile);
 
-    const result = await aoInstance
-      .result({
-        process: agentId,
-        message: messageId,
-      })
-      .catch(() => ({ Error: undefined }));
+    const result = await retryWithDelay(
+      (attempt) => {
+        const aoInstanceToUse = attempt % 2 === 0 ? wndrAoInstance : aoInstance;
+        return aoInstanceToUse.result({
+          process: agentId,
+          message: messageId,
+        });
+      },
+      2,
+      1000,
+    ).catch(() => ({ Error: undefined }));
 
     if (result.Error) {
       throw new Error(`Failed to update agent: ${result.Error}`);
     }
 
-    await updateLocalAOYieldAgent(agentId, updateData);
-    await queryClient.invalidateQueries({ queryKey: ["ao-yield-agent-info", agentId] });
+    if (!skipLocalUpdate) {
+      await updateLocalAOYieldAgent(agentId, updateData);
+      await queryClient.invalidateQueries({ queryKey: ["ao-yield-agent-info", agentId] });
+    }
   } catch (error) {
     throw new Error(`Failed to update AO Yield Agent: ${error instanceof Error ? error.message : String(error)}`);
   }
@@ -542,8 +549,6 @@ export function formatDate(date: Date | null, fallbackLabel: string) {
 export async function getWanderFee() {
   const defaultFee = "0.25";
   try {
-    const aoInstance = connect(defaultConfig);
-
     const dryrunRes = await aoInstance.dryrun({
       Id,
       Owner,

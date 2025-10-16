@@ -106,6 +106,10 @@ export function ConfirmAOYieldAgentView() {
           },
         ],
         forceSpawn: true,
+        retry: {
+          count: 3,
+          delay: 1000,
+        },
       });
 
       const activeAddress = await getActiveAddress();

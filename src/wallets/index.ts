@@ -13,7 +13,7 @@ import type { ModuleAppData } from "~api/background/background-modules";
 import { isNotCancelError } from "~utils/assertions";
 import type { StoredWallet, LocalWallet } from "./wallets.types";
 import { getWallets, getActiveAddress, openOrSelectWelcomePage } from "./wallets.utils";
-import { scheduleAgentsSync } from "~utils/agents/sync";
+import { agentSyncManager } from "~utils/agents/sync";
 
 /**
  * Get active wallet
@@ -218,7 +218,7 @@ export async function addWallet(
       continue;
     }
 
-    scheduleAgentsSync(address);
+    agentSyncManager.scheduleAgentsSync([address]);
 
     // push wallet
     wallets.push({
