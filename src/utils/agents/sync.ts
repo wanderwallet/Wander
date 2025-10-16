@@ -145,8 +145,8 @@ class AgentSyncManager {
       return;
     }
 
-    if (!this.shouldSync()) {
-      log(LOG_GROUP.AGENTS, "Skipping sync - cooldown active");
+    if (!this.shouldSync() && trigger !== "manual") {
+      log(LOG_GROUP.AGENTS, `Skipping ${trigger} sync - cooldown active`);
       return;
     }
 
