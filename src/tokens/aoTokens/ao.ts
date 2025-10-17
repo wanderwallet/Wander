@@ -61,7 +61,7 @@ export const DEFAULT_CU_URL = "https://cu.ao-testnet.xyz";
 const { dryrun: arDriveDryrun } = connect({ CU_URL: ARDRIVE_CU_URL });
 const { dryrun: aoDevDryrun } = connect({ CU_URL: AO_DEV_CU_URL });
 
-const ARDRIVE_PROCESSES = [ARIO_MAINNET_PROCESS_ID, ARIO_TESTNET_PROCESS_ID, WNDR_PROCESS_ID, USDA_PROCESS_ID];
+const ARDRIVE_PROCESSES = [ARIO_MAINNET_PROCESS_ID, ARIO_TESTNET_PROCESS_ID, USDA_PROCESS_ID];
 
 export const getDryrunForProcess = (processId: string) => {
   if (processId === UTD_PROCESS_ID) return { dryrunFn: aoDevDryrun, isCustomDryrun: true };
