@@ -80,7 +80,7 @@ export function AgentsView() {
     <>
       <HeadV2
         title={
-          <Flex align="center" justify="center" gap={8}>
+          <Flex align="center" justify="center" gap={4}>
             <PageTitle>{browser.i18n.getMessage("agents")}</PageTitle>
             <RefreshButton onClick={handleRefresh} disabled={isRefreshing} title="Refresh agents">
               <RefreshCw01
