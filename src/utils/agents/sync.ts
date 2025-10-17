@@ -10,7 +10,7 @@ import { pLimit } from "plimit-lit";
 import { ExtensionStorage } from "~utils/storage";
 import { queryClient } from "~utils/tanstack";
 import { getTagValue } from "~tokens/aoTokens/ao";
-import { sleep } from "~utils/promises/sleep";
+import { createStorageArray } from "~routes/popup/swap/utils/storage/storage.array";
 
 interface AgentSyncConfig {
   retryAttempts: number;
@@ -18,21 +18,17 @@ interface AgentSyncConfig {
   alarmName: string;
 }
 
-interface PersistedSyncQueue {
-  addresses: string[];
-  lastUpdated: number;
-}
-
 type SyncTrigger = "alarm" | "manual";
 
 const STORAGE_KEYS = {
   SYNC_QUEUE: "ao_yield_agent_sync_queue",
-  SYNC_PROCESSING: "ao_yield_agent_sync_processing",
+  ACTIVE_SYNCS: "ao_yield_agent_active_syncs",
 };
 
 class AgentSyncManager {
   private static instance: AgentSyncManager | null = null;
-  private syncQueue: Set<string> = new Set();
+  private syncQueue = createStorageArray<string>(STORAGE_KEYS.SYNC_QUEUE, { preventDuplicates: true });
+  private activeSyncs = createStorageArray<string>(STORAGE_KEYS.ACTIVE_SYNCS, { preventDuplicates: true });
   private isProcessingQueue = false;
   private config: AgentSyncConfig;
   private limit = pLimit(10);
@@ -56,25 +52,33 @@ class AgentSyncManager {
   public async initialize(): Promise<void> {
     if (this.isInitialized) return;
 
-    log(LOG_GROUP.AGENTS, "Initializing AgentSyncManager...");
+    log(LOG_GROUP.AGENTS_SYNC, "Initializing AgentSyncManager...");
 
-    // Check if alarm exists - if not, no sync is scheduled/running, safe to clear flag
+    const queueSize = await this.syncQueue.length();
+    const activeSyncsSize = await this.activeSyncs.length();
+
+    // Check if alarm exists - if not, no sync is scheduled/running, safe to clear stale active syncs
     const existingAlarm = await browser.alarms.get(this.config.alarmName);
+
     if (!existingAlarm && !this.isProcessingQueue) {
-      await ExtensionStorage.set(STORAGE_KEYS.SYNC_PROCESSING, false);
-      log(LOG_GROUP.AGENTS, "No alarm found and no sync is in progress, clearing processing flag");
+      // No alarm and no local processing - clean up stale active syncs
+      if (activeSyncsSize > 0) {
+        log(LOG_GROUP.AGENTS_SYNC, `Clearing ${activeSyncsSize} stale active syncs (no alarm, no processing)`);
+        await this.activeSyncs.clear();
+      }
+      log(LOG_GROUP.AGENTS_SYNC, "No alarm found and no sync is in progress, cleared stale state");
     }
 
-    // Load persisted data
-    await this.loadQueue();
-
     // Log restored addresses if any
-    if (this.syncQueue.size > 0) {
-      log(LOG_GROUP.AGENTS, `Restored ${this.syncQueue.size} addresses from persistent queue`);
+    if (queueSize > 0) {
+      log(LOG_GROUP.AGENTS_SYNC, `Restored ${queueSize} addresses from persistent queue`);
+    }
+    if (activeSyncsSize > 0) {
+      log(LOG_GROUP.AGENTS_SYNC, `Restored ${activeSyncsSize} active syncs from storage`);
     }
 
     this.isInitialized = true;
-    log(LOG_GROUP.AGENTS, "Initialization complete");
+    log(LOG_GROUP.AGENTS_SYNC, "Initialization complete");
   }
 
   // Entry point for scheduling agent sync (called when adding/importing wallets)
@@ -83,130 +87,90 @@ class AgentSyncManager {
 
     await this.initialize(); // Ensure initialized
 
-    log(LOG_GROUP.AGENTS, `Scheduling sync for ${addresses.length} addresses:`, addresses);
+    log(LOG_GROUP.AGENTS_SYNC, `Scheduling sync for ${addresses.length} addresses:`, addresses);
 
-    // Add addresses to sync queue
-    const initialSize = this.syncQueue.size;
-    addresses.forEach((address) => {
-      if (address && address.trim()) {
-        this.syncQueue.add(address.trim());
-      }
-    });
+    // Add addresses to sync queue (automatically persists)
+    const initialSize = await this.syncQueue.length();
+    const validAddresses = addresses.filter((addr) => addr && addr.trim()).map((addr) => addr.trim());
+    await this.syncQueue.push(...validAddresses);
 
-    const newAddresses = this.syncQueue.size - initialSize;
-    log(LOG_GROUP.AGENTS, `Added ${newAddresses} new addresses. Queue size: ${this.syncQueue.size}`);
-
-    // Persist the updated queue
-    await this.saveQueue();
+    const newSize = await this.syncQueue.length();
+    const newAddresses = newSize - initialSize;
+    log(LOG_GROUP.AGENTS_SYNC, `Added ${newAddresses} new addresses. Queue size: ${newSize}`);
 
     // Setup instant one-time alarm (fires immediately, works even if extension closes)
-    if (this.syncQueue.size > 0) {
+    if (newSize > 0 && !this.isProcessingQueue) {
       await this.setupAlarm();
     }
   }
 
   // Process the sync queue
   private async processQueueIfNeeded(trigger: SyncTrigger): Promise<void> {
-    // Check storage-based processing flag (works across contexts)
-    const isProcessingInStorage = await ExtensionStorage.get<boolean>(STORAGE_KEYS.SYNC_PROCESSING);
+    const queueSize = await this.syncQueue.length();
 
-    if (isProcessingInStorage || this.isProcessingQueue) {
-      log(
-        LOG_GROUP.AGENTS,
-        `Skipping ${trigger} sync - another sync is already in progress (storage: ${isProcessingInStorage}, local: ${this.isProcessingQueue})`,
-      );
+    if (this.isProcessingQueue) {
+      log(LOG_GROUP.AGENTS_SYNC, `Skipping ${trigger} sync - another sync is already in progress`);
       return;
     }
 
-    if (this.syncQueue.size === 0) {
-      log(LOG_GROUP.AGENTS, `Skipping ${trigger} sync - queue is empty`);
+    if (queueSize === 0) {
+      log(LOG_GROUP.AGENTS_SYNC, `Skipping ${trigger} sync - queue is empty`);
       return;
     }
 
-    // Set both flags (storage for cross-context, local for same-context)
+    // Set local processing flag
     this.isProcessingQueue = true;
-    await ExtensionStorage.set(STORAGE_KEYS.SYNC_PROCESSING, true);
 
     try {
-      log(LOG_GROUP.AGENTS, `Processing queue (${this.syncQueue.size} addresses) - trigger: ${trigger}`);
+      log(LOG_GROUP.AGENTS_SYNC, `Processing queue (${queueSize} addresses) - trigger: ${trigger}`);
 
-      const addressesToProcess = Array.from(this.syncQueue);
+      const addressesToProcess = await this.syncQueue.getAll();
       const results = await Promise.allSettled(addressesToProcess.map((address) => this.syncAgentsForAddress(address)));
 
       // Process results and remove successful syncs from queue
       let successCount = 0;
-      results.forEach((result, index) => {
-        const address = addressesToProcess[index];
+      for (let i = 0; i < results.length; i++) {
+        const result = results[i];
+        const address = addressesToProcess[i];
         if (result.status === "fulfilled") {
-          this.syncQueue.delete(address);
+          await this.syncQueue.removeWhere((addr) => addr === address);
           successCount++;
-          log(LOG_GROUP.AGENTS, `Successfully synced agents for address: ${address}`);
+          log(LOG_GROUP.AGENTS_SYNC, `Successfully synced agents for address: ${address}`);
         } else {
-          log(LOG_GROUP.AGENTS, `Failed to sync agents for address: ${address}`, result.reason);
+          log(LOG_GROUP.AGENTS_SYNC, `Failed to sync agents for address: ${address}`, result.reason);
         }
-      });
+      }
 
-      // Persist the updated queue after processing
-      await this.saveQueue();
-
-      log(LOG_GROUP.AGENTS, `Queue processing complete. Synced: ${successCount}, Remaining: ${this.syncQueue.size}`);
+      const remainingSize = await this.syncQueue.length();
+      log(LOG_GROUP.AGENTS_SYNC, `Queue processing complete. Synced: ${successCount}, Remaining: ${remainingSize}`);
 
       // Clear queue and alarm if empty
-      if (this.syncQueue.size === 0) {
+      if (remainingSize === 0) {
         await this.clearAlarm();
-        await this.clearQueue();
-        log(LOG_GROUP.AGENTS, "Queue empty - cleared queue and alarm");
+        await this.syncQueue.clear();
+        log(LOG_GROUP.AGENTS_SYNC, "Queue empty - cleared queue and alarm");
       }
     } catch (error) {
-      log(LOG_GROUP.AGENTS, "Error processing queue:", error);
+      log(LOG_GROUP.AGENTS_SYNC, "Error processing queue:", error);
     } finally {
       this.isProcessingQueue = false;
-      await ExtensionStorage.set(STORAGE_KEYS.SYNC_PROCESSING, false);
-    }
-  }
-
-  private async loadQueue(): Promise<void> {
-    try {
-      const persistedQueue = await ExtensionStorage.get<PersistedSyncQueue>(STORAGE_KEYS.SYNC_QUEUE);
-
-      if (persistedQueue?.addresses?.length) {
-        this.syncQueue = new Set(persistedQueue.addresses);
-        log(LOG_GROUP.AGENTS, `Loaded ${this.syncQueue.size} addresses from persistent storage`);
-        log(LOG_GROUP.AGENTS, `Queue last updated: ${new Date(persistedQueue.lastUpdated).toISOString()}`);
-      }
-    } catch (error) {
-      log(LOG_GROUP.AGENTS, "Error loading queue from storage:", error);
-      this.syncQueue = new Set();
-    }
-  }
-
-  private async saveQueue(): Promise<void> {
-    try {
-      const queueData: PersistedSyncQueue = {
-        addresses: Array.from(this.syncQueue),
-        lastUpdated: Date.now(),
-      };
-
-      await ExtensionStorage.set(STORAGE_KEYS.SYNC_QUEUE, queueData);
-      log(LOG_GROUP.AGENTS, `Persisted queue with ${this.syncQueue.size} addresses`);
-    } catch (error) {
-      log(LOG_GROUP.AGENTS, "Error saving queue to storage:", error);
-    }
-  }
-
-  private async clearQueue(): Promise<void> {
-    try {
-      await ExtensionStorage.remove(STORAGE_KEYS.SYNC_QUEUE);
-      log(LOG_GROUP.AGENTS, "Cleared persistent queue");
-    } catch (error) {
-      log(LOG_GROUP.AGENTS, "Error clearing queue from storage:", error);
     }
   }
 
   // Core sync logic for a specific address
   private async syncAgentsForAddress(address: string): Promise<void> {
+    // Check if already syncing this address
+    const isAlreadySyncing = await this.activeSyncs.includes(address);
+    if (isAlreadySyncing) {
+      log(LOG_GROUP.AGENTS_SYNC, `Skipping sync for ${address} - already in progress`);
+      return;
+    }
+
+    // Mark address as being synced (automatically persisted)
+    await this.activeSyncs.push(address);
+
     try {
-      log(LOG_GROUP.AGENTS, `Syncing agents for address: ${address}`);
+      log(LOG_GROUP.AGENTS_SYNC, `Syncing agents for address: ${address}`);
 
       let existingAgents = await getAOYieldAgents(address);
       const existingAgentIds = new Set(existingAgents.map((agent) => agent.id));
@@ -215,7 +179,7 @@ class AgentSyncManager {
       const filteredEdges = edges.filter((edge) => !existingAgentIds.has(edge.node.id));
 
       if (filteredEdges.length === 0) {
-        log(LOG_GROUP.AGENTS, "No new agents found");
+        log(LOG_GROUP.AGENTS_SYNC, "No new agents found");
         return;
       }
 
@@ -245,7 +209,7 @@ class AgentSyncManager {
       const agentInfoPromises = foundAgents.map(({ agentId, agentVersion }, index) =>
         this.limit(async () => {
           try {
-            log(LOG_GROUP.AGENTS, `Fetching agent info for ${agentId}`);
+            log(LOG_GROUP.AGENTS_SYNC, `Fetching agent info for ${agentId}`);
             let attempt = -1;
             const agentInfo = await queryClient.fetchQuery<AOYieldAgentInfo>({
               queryKey: ["ao-yield-agent-info", agentId],
@@ -269,11 +233,11 @@ class AgentSyncManager {
               !agentInfo.slippage ||
               !agentInfo.agentVersion
             ) {
-              log(LOG_GROUP.AGENTS, `Agent info not found for ${agentId}`);
+              log(LOG_GROUP.AGENTS_SYNC, `Agent info not found for ${agentId}`);
               return null;
             }
 
-            log(LOG_GROUP.AGENTS, `Agent info fetched for ${agentId}`);
+            log(LOG_GROUP.AGENTS_SYNC, `Agent info fetched for ${agentId}`);
 
             const agent: AOYieldAgent = {
               id: agentId,
@@ -305,11 +269,14 @@ class AgentSyncManager {
             });
             await setAOYieldAgents(address, updatedAgents);
             successCount++;
-            log(LOG_GROUP.AGENTS, `Agent ${agentId} added at position ${index} (${successCount}/${agentIds.length})`);
+            log(
+              LOG_GROUP.AGENTS_SYNC,
+              `Agent ${agentId} added at position ${index} (${successCount}/${agentIds.length})`,
+            );
 
             return agent;
           } catch (error) {
-            log(LOG_GROUP.AGENTS, `Error fetching agent info for ${agentId}:`, error);
+            log(LOG_GROUP.AGENTS_SYNC, `Error fetching agent info for ${agentId}:`, error);
             return null;
           }
         }),
@@ -326,17 +293,21 @@ class AgentSyncManager {
       // Update storage only if duplicates were found
       if (uniqueAgents.length !== updatedAgents.length) {
         await setAOYieldAgents(address, uniqueAgents);
-        log(LOG_GROUP.AGENTS, `Removed ${updatedAgents.length - uniqueAgents.length} duplicate agents`);
+        log(LOG_GROUP.AGENTS_SYNC, `Removed ${updatedAgents.length - uniqueAgents.length} duplicate agents`);
       }
 
       if (successCount > 0) {
-        log(LOG_GROUP.AGENTS, `Successfully synced ${successCount} agents progressively`);
+        log(LOG_GROUP.AGENTS_SYNC, `Successfully synced ${successCount} agents progressively`);
       } else {
-        log(LOG_GROUP.AGENTS, "No valid agents were fetched successfully");
+        log(LOG_GROUP.AGENTS_SYNC, "No valid agents were fetched successfully");
       }
     } catch (error) {
-      log(LOG_GROUP.AGENTS, `Error syncing agents for address ${address}:`, error);
+      log(LOG_GROUP.AGENTS_SYNC, `Error syncing agents for address ${address}:`, error);
       throw error;
+    } finally {
+      // Always remove address from active syncs when done (automatically persisted)
+      await this.activeSyncs.removeWhere((addr) => addr === address);
+      log(LOG_GROUP.AGENTS_SYNC, `Sync completed for address: ${address}`);
     }
   }
 
@@ -348,7 +319,7 @@ class AgentSyncManager {
         await ExtensionStorage.set(SHOW_CREATE_WANDER_AGENT_CTA, false);
       }
     } catch (error) {
-      log(LOG_GROUP.AGENTS, "Error updating feature flags:", error);
+      log(LOG_GROUP.AGENTS_SYNC, "Error updating feature flags:", error);
     }
   }
 
@@ -361,18 +332,18 @@ class AgentSyncManager {
       // Create alarm that fires immediately to check queue
       browser.alarms.create(this.config.alarmName, { when: Date.now() });
 
-      log(LOG_GROUP.AGENTS, "Setup immediate alarm for queue processing");
+      log(LOG_GROUP.AGENTS_SYNC, "Setup immediate alarm for queue processing");
     } catch (error) {
-      log(LOG_GROUP.AGENTS, "Error setting up alarm:", error);
+      log(LOG_GROUP.AGENTS_SYNC, "Error setting up alarm:", error);
     }
   }
 
   private async clearAlarm(): Promise<void> {
     try {
       await browser.alarms.clear(this.config.alarmName);
-      log(LOG_GROUP.AGENTS, "Cleared alarm");
+      log(LOG_GROUP.AGENTS_SYNC, "Cleared alarm");
     } catch (error) {
-      log(LOG_GROUP.AGENTS, "Error clearing alarm:", error);
+      log(LOG_GROUP.AGENTS_SYNC, "Error clearing alarm:", error);
     }
   }
 
@@ -380,55 +351,93 @@ class AgentSyncManager {
   public async handleAlarm(alarmName: string): Promise<void> {
     if (alarmName !== this.config.alarmName) return;
 
-    log(LOG_GROUP.AGENTS, "Alarm triggered, processing queue");
+    log(LOG_GROUP.AGENTS_SYNC, "Alarm triggered, processing queue");
     await this.initialize();
-    await sleep(100);
     await this.processQueueIfNeeded("alarm");
   }
 
   // Public utility methods
-  public getQueueSize(): number {
-    return this.syncQueue.size;
+  public async getQueueSize(): Promise<number> {
+    return await this.syncQueue.length();
   }
 
-  public getQueueAddresses(): string[] {
-    return Array.from(this.syncQueue);
+  public async getQueueAddresses(): Promise<string[]> {
+    return await this.syncQueue.getAll();
   }
 
   public isProcessing(): boolean {
     return this.isProcessingQueue;
   }
 
+  public async isAddressSyncing(address: string): Promise<boolean> {
+    return await this.activeSyncs.includes(address);
+  }
+
+  public async getActiveSyncs(): Promise<string[]> {
+    return await this.activeSyncs.getAll();
+  }
+
   // Manual sync - immediate sync without setting up alarms
   public async manualAgentsSync(addresses: string[]): Promise<void> {
     if (IS_EMBEDDED_APP) return;
 
-    await this.initialize(); // Ensure initialized
+    await this.initialize();
 
-    log(LOG_GROUP.AGENTS, `Manual sync triggered for addresses: ${addresses.join(", ")}`);
+    log(LOG_GROUP.AGENTS_SYNC, `Manual sync triggered for ${addresses.length} address(es): ${addresses.join(", ")}`);
 
-    // Add address to sync queue
-    addresses.forEach((address) => {
-      if (address && address.trim()) {
-        this.syncQueue.add(address.trim());
+    // Filter and validate addresses
+    const validAddresses = addresses.filter((addr) => addr && addr.trim()).map((addr) => addr.trim());
+
+    if (validAddresses.length === 0) {
+      log(LOG_GROUP.AGENTS_SYNC, "No valid addresses to sync manually");
+      return;
+    }
+
+    // Filter out addresses that are already being synced
+    const activeSyncsList = await this.activeSyncs.getAll();
+    const activeSyncsSet = new Set(activeSyncsList);
+    const availableAddresses = validAddresses.filter((addr) => !activeSyncsSet.has(addr));
+    const alreadySyncing = validAddresses.filter((addr) => activeSyncsSet.has(addr));
+
+    if (alreadySyncing.length > 0) {
+      log(
+        LOG_GROUP.AGENTS_SYNC,
+        `Skipping ${alreadySyncing.length} address(es) already syncing: ${alreadySyncing.join(", ")}`,
+      );
+    }
+
+    if (availableAddresses.length === 0) {
+      log(LOG_GROUP.AGENTS_SYNC, "All requested addresses are already syncing");
+      return;
+    }
+
+    const results = await Promise.allSettled(availableAddresses.map((address) => this.syncAgentsForAddress(address)));
+
+    // Log results
+    let successCount = 0;
+    results.forEach((result, index) => {
+      const address = availableAddresses[index];
+      if (result.status === "fulfilled") {
+        successCount++;
+        log(LOG_GROUP.AGENTS_SYNC, `Manual sync successful for address: ${address}`);
+      } else {
+        log(LOG_GROUP.AGENTS_SYNC, `Manual sync failed for address: ${address}`, result.reason);
       }
     });
 
-    // Persist the updated queue
-    await this.saveQueue();
-
-    // Process immediately with manual trigger (no alarm setup)
-    await this.processQueueIfNeeded("manual");
+    log(LOG_GROUP.AGENTS_SYNC, `Manual sync complete. Success: ${successCount}/${availableAddresses.length}`);
   }
 
   public async forceSync(): Promise<void> {
-    if (this.syncQueue.size > 0) {
+    const queueSize = await this.syncQueue.length();
+    if (queueSize > 0) {
       await this.processQueueIfNeeded("manual");
     }
   }
 
-  public destroy(): void {
-    this.syncQueue.clear();
+  public async destroy(): Promise<void> {
+    await this.syncQueue.clear();
+    await this.activeSyncs.clear();
     this.isProcessingQueue = false;
   }
 }
