@@ -153,7 +153,6 @@ export interface AOYieldAgentInfo extends AOYieldAgent {
   swapInProgress: boolean;
   processedUpToDate?: number;
   swappedUpToDate?: number;
-  agentVersion: string;
 }
 
 export interface AOYieldAgentCreate {

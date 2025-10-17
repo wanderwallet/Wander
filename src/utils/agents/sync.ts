@@ -227,7 +227,7 @@ class AgentSyncManager {
               !agentInfo.conversionPercentage ||
               !agentInfo.tokenOut ||
               !agentInfo.slippage ||
-              !agentInfo.agentVersion
+              !agentInfo.version
             ) {
               log(LOG_GROUP.AGENTS_SYNC, `Agent info not found for ${agentId}`);
               return null;
@@ -244,7 +244,7 @@ class AgentSyncManager {
               endDate: agentInfo.endDate,
               runIndefinitely: agentInfo.runIndefinitely,
               slippage: agentInfo.slippage,
-              version: agentInfo.agentVersion,
+              version: agentInfo.version,
               totalTransactions: agentInfo.totalTransactions ?? 0,
             };
 

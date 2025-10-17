@@ -317,7 +317,7 @@ export async function getAOYieldAgentInfo(agentId: string, currentAgentVersion: 
       swapInProgress: swapInProgress === "true",
       processedUpToDate: processedUpToDate && processedUpToDate !== "nil" ? Number(processedUpToDate) : undefined,
       swappedUpToDate: swappedUpToDate && swappedUpToDate !== "nil" ? Number(swappedUpToDate) : undefined,
-      agentVersion,
+      version: agentVersion,
     } as AOYieldAgentInfo;
   } catch (error) {
     log(LOG_GROUP.AGENTS, `Fetching agent info from the CU node with agent version: ${currentAgentVersion}`);
@@ -366,7 +366,7 @@ export async function getAOYieldAgentInfo(agentId: string, currentAgentVersion: 
       swapInProgress: swapInProgress === "true",
       processedUpToDate: processedUpToDate && processedUpToDate !== "nil" ? Number(processedUpToDate) : undefined,
       swappedUpToDate: swappedUpToDate && swappedUpToDate !== "nil" ? Number(swappedUpToDate) : undefined,
-      agentVersion,
+      version: agentVersion,
     } as AOYieldAgentInfo;
   }
 }
