@@ -125,6 +125,7 @@ export function ConfirmAOYieldAgentView() {
         runIndefinitely: aoYieldAgent.runIndefinitely,
         slippage: aoYieldAgent.slippage,
         version: AGENT_VERSION,
+        createdAt: Date.now(),
       });
 
       await setAOYieldAgents(activeAddress, agents);

@@ -142,6 +142,7 @@ export interface AOYieldAgent {
   slippage: number;
   totalTransactions?: number;
   version: string;
+  createdAt?: number;
 }
 
 export interface AOYieldAgentInfo extends AOYieldAgent {

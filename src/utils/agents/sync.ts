@@ -193,7 +193,8 @@ class AgentSyncManager {
       const agentIds = sortedEdges.map((edge) => edge.node.id);
       const foundAgents = sortedEdges.map((edge) => {
         const agentVersion = getTagValue("Agent-Version", edge?.node?.tags) || "1.0.0";
-        return { agentId: edge.node.id, agentVersion };
+        const createdAt = edge.node.block?.timestamp ? edge.node.block.timestamp * 1000 : Date.now();
+        return { agentId: edge.node.id, agentVersion, createdAt };
       });
 
       // Update feature flags
@@ -202,7 +203,7 @@ class AgentSyncManager {
       const currentDate = Date.now();
       let successCount = 0;
 
-      const agentInfoPromises = foundAgents.map(({ agentId, agentVersion }) =>
+      const agentInfoPromises = foundAgents.map(({ agentId, agentVersion, createdAt }) =>
         this.limit(async () => {
           try {
             log(LOG_GROUP.AGENTS_SYNC, `Fetching agent info for ${agentId}`);
@@ -246,6 +247,7 @@ class AgentSyncManager {
               slippage: agentInfo.slippage,
               version: agentInfo.version,
               totalTransactions: agentInfo.totalTransactions ?? 0,
+              createdAt,
             };
 
             if (agent.status === "Active" && currentDate > agent.endDate) {
@@ -267,7 +269,7 @@ class AgentSyncManager {
             // Sort and save
             const updatedAgents = Array.from(agentsMap.values());
             updatedAgents.sort((a, b) => {
-              const diff = a.startDate - b.startDate;
+              const diff = (a.createdAt || a.startDate) - (b.createdAt || b.startDate);
               if (diff !== 0) return diff;
               return Number(a.status === "Active") - Number(b.status === "Active");
             });
