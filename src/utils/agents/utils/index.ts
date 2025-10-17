@@ -262,60 +262,8 @@ export async function getAOYieldActiveAgent() {
 
 export async function getAOYieldAgentInfo(agentId: string, currentAgentVersion: string = "1.0.0", attempt: number = 0) {
   try {
-    if (currentAgentVersion && isVersionGte(currentAgentVersion, "1.0.2")) {
-      throw new Error("Fetch agent info from the HB node");
-    }
-
-    const aoInstanceToUse = attempt % 2 === 0 ? wndrAoInstance : aoInstance;
-    const dryrunRes = await aoInstanceToUse.dryrun({
-      Id,
-      Owner,
-      process: agentId,
-      tags: [{ name: "Action", value: "Info" }],
-    });
-
-    const message = dryrunRes.Messages?.[0];
-    const tags = message?.Tags;
-
-    const dex = getTagValue("Dex", tags);
-    const status = getTagValue("Status", tags);
-    const tokenOut = getTagValue("Token-Out", tags);
-    const conversionPercentage = getTagValue("Conversion-Percentage", tags);
-    const startDate = getTagValue("Start-Date", tags);
-    const endDate = getTagValue("End-Date", tags);
-    const runIndefinitely = getTagValue("Run-Indefinitely", tags);
-    const slippage = getTagValue("Slippage", tags);
-    const totalAOSold = getTagValue("Total-AO-Sold", tags);
-    const totalBought = getTagValue("Total-Bought", tags);
-    const totalTransactions = getTagValue("Total-Transactions", tags);
-    const totalWanderFee = getTagValue("Total-Wander-Fee", tags);
-    const swapInProgress = getTagValue("Swap-In-Progress", tags);
-    const processedUpToDate = getTagValue("Processed-Up-To-Date", tags);
-    const swappedUpToDate = getTagValue("Swapped-Up-To-Date", tags);
-    const agentVersion = getTagValue("Agent-Version", tags);
-
-    return {
-      id: agentId,
-      status,
-      dex,
-      tokenOut,
-      conversionPercentage: Number(conversionPercentage),
-      startDate: Number(startDate),
-      endDate: Number(endDate),
-      runIndefinitely: runIndefinitely === "true",
-      slippage: Number(slippage),
-      totalAOSold,
-      totalBought: JSON.parse(totalBought),
-      totalTransactions: Number(totalTransactions),
-      totalWanderFee,
-      swapInProgress: swapInProgress === "true",
-      processedUpToDate: processedUpToDate && processedUpToDate !== "nil" ? Number(processedUpToDate) : undefined,
-      swappedUpToDate: swappedUpToDate && swappedUpToDate !== "nil" ? Number(swappedUpToDate) : undefined,
-      agentVersion,
-    } as AOYieldAgentInfo;
-  } catch (error) {
     if (!isVersionGte(currentAgentVersion, "1.0.2")) {
-      throw new Error("Agent version is required & must be greater than 1.0.2");
+      throw new Error("Agent version must be greater or equal to 1.0.2");
     }
 
     log(LOG_GROUP.AGENTS, `Fetching agent info from the HB node with agent version: ${currentAgentVersion}`);
@@ -364,6 +312,55 @@ export async function getAOYieldAgentInfo(agentId: string, currentAgentVersion: 
       slippage: Number(slippage),
       totalAOSold,
       totalBought: totalBoughtObj,
+      totalTransactions: Number(totalTransactions),
+      totalWanderFee,
+      swapInProgress: swapInProgress === "true",
+      processedUpToDate: processedUpToDate && processedUpToDate !== "nil" ? Number(processedUpToDate) : undefined,
+      swappedUpToDate: swappedUpToDate && swappedUpToDate !== "nil" ? Number(swappedUpToDate) : undefined,
+      agentVersion,
+    } as AOYieldAgentInfo;
+  } catch (error) {
+    log(LOG_GROUP.AGENTS, `Fetching agent info from the CU node with agent version: ${currentAgentVersion}`);
+    const aoInstanceToUse = attempt % 2 === 0 ? wndrAoInstance : aoInstance;
+    const dryrunRes = await aoInstanceToUse.dryrun({
+      Id,
+      Owner,
+      process: agentId,
+      tags: [{ name: "Action", value: "Info" }],
+    });
+
+    const message = dryrunRes.Messages?.[0];
+    const tags = message?.Tags;
+
+    const dex = getTagValue("Dex", tags);
+    const status = getTagValue("Status", tags);
+    const tokenOut = getTagValue("Token-Out", tags);
+    const conversionPercentage = getTagValue("Conversion-Percentage", tags);
+    const startDate = getTagValue("Start-Date", tags);
+    const endDate = getTagValue("End-Date", tags);
+    const runIndefinitely = getTagValue("Run-Indefinitely", tags);
+    const slippage = getTagValue("Slippage", tags);
+    const totalAOSold = getTagValue("Total-AO-Sold", tags);
+    const totalBought = getTagValue("Total-Bought", tags);
+    const totalTransactions = getTagValue("Total-Transactions", tags);
+    const totalWanderFee = getTagValue("Total-Wander-Fee", tags);
+    const swapInProgress = getTagValue("Swap-In-Progress", tags);
+    const processedUpToDate = getTagValue("Processed-Up-To-Date", tags);
+    const swappedUpToDate = getTagValue("Swapped-Up-To-Date", tags);
+    const agentVersion = getTagValue("Agent-Version", tags);
+
+    return {
+      id: agentId,
+      status,
+      dex,
+      tokenOut,
+      conversionPercentage: Number(conversionPercentage),
+      startDate: Number(startDate),
+      endDate: Number(endDate),
+      runIndefinitely: runIndefinitely === "true",
+      slippage: Number(slippage),
+      totalAOSold,
+      totalBought: JSON.parse(totalBought),
       totalTransactions: Number(totalTransactions),
       totalWanderFee,
       swapInProgress: swapInProgress === "true",
