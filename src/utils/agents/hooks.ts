@@ -3,6 +3,8 @@ import {
   getAOYieldAgentInfo,
   getAOYieldAgents,
   getWanderFee,
+  isArweaveAddress,
+  isVersionGte,
   processTransactions,
   tokenIdInfoMap,
   updateLocalAOYieldAgent,
@@ -317,14 +319,14 @@ export function useWanderFee() {
 
 // Field validation rules
 const FIELD_VALIDATORS = {
-  startDate: (value: number) => !isNaN(value) && value >= 0,
-  endDate: (value: number) => !isNaN(value) && value >= 0,
+  startDate: (value: number) => !isNaN(value) && value > 0,
+  endDate: (value: number) => !isNaN(value) && value > 0,
   totalTransactions: (value: number) => !isNaN(value) && value >= 0,
-  slippage: (value: number) => !isNaN(value) && value >= 0 && value <= 100,
-  conversionPercentage: (value: number) => !isNaN(value) && value >= 0 && value <= 100,
+  slippage: (value: number) => !isNaN(value) && value >= 0.5 && value <= 10,
+  conversionPercentage: (value: number) => !isNaN(value) && value > 0 && value <= 100,
   runIndefinitely: (value: boolean) => typeof value === "boolean",
-  tokenOut: (value: string) => value.trim().length > 0,
-  version: (value: string) => value.trim().length > 0,
+  tokenOut: (value: string) => isArweaveAddress(value),
+  version: (value: string) => isVersionGte(value, "1.0.0"),
   status: (value: string) => ["Active", "Cancelled", "Completed", "Paused"].includes(value),
 } as const;
 
