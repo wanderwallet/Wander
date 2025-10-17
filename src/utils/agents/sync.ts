@@ -172,8 +172,8 @@ class AgentSyncManager {
     try {
       log(LOG_GROUP.AGENTS_SYNC, `Syncing agents for address: ${address}`);
 
-      let existingAgents = await getAOYieldAgents(address);
-      const existingAgentIds = new Set(existingAgents.map((agent) => agent.id));
+      const currentAgents = await getAOYieldAgents(address);
+      const existingAgentIds = new Set(currentAgents.map((agent) => agent.id));
 
       const edges = await gqlAll(AO_YIELD_AGENT_SYNC_QUERY, { address });
       const filteredEdges = edges.filter((edge) => !existingAgentIds.has(edge.node.id));
@@ -199,14 +199,10 @@ class AgentSyncManager {
       // Update feature flags
       await this.updateFeatureFlags(agentIds);
 
-      // Read existing agents once and maintain ordered slots
-      const currentAgents = await getAOYieldAgents(address);
-      const agentSlots: (AOYieldAgent | null)[] = new Array(agentIds.length).fill(null);
+      const currentDate = Date.now();
       let successCount = 0;
 
-      const currentDate = Date.now();
-
-      const agentInfoPromises = foundAgents.map(({ agentId, agentVersion }, index) =>
+      const agentInfoPromises = foundAgents.map(({ agentId, agentVersion }) =>
         this.limit(async () => {
           try {
             log(LOG_GROUP.AGENTS_SYNC, `Fetching agent info for ${agentId}`);
@@ -258,10 +254,18 @@ class AgentSyncManager {
               updateAOYieldAgent(agentId, { status: newStatus }, true);
             }
 
-            // Store agent in correct position and update storage with ordered agents
-            agentSlots[index] = agent;
-            const orderedNewAgents = agentSlots.filter((agent): agent is AOYieldAgent => agent !== null);
-            const updatedAgents = [...currentAgents, ...orderedNewAgents];
+            // Progressive update: Add agent immediately and write to storage
+            const existingAgents = await getAOYieldAgents(address);
+            const agentsMap = new Map<string, AOYieldAgent>();
+
+            // Add existing agents
+            existingAgents.forEach((a) => agentsMap.set(a.id, a));
+
+            // Add/update new agent
+            agentsMap.set(agent.id, agent);
+
+            // Sort and save
+            const updatedAgents = Array.from(agentsMap.values());
             updatedAgents.sort((a, b) => {
               const diff = a.startDate - b.startDate;
               if (diff !== 0) return diff;
@@ -269,10 +273,8 @@ class AgentSyncManager {
             });
             await setAOYieldAgents(address, updatedAgents);
             successCount++;
-            log(
-              LOG_GROUP.AGENTS_SYNC,
-              `Agent ${agentId} added at position ${index} (${successCount}/${agentIds.length})`,
-            );
+
+            log(LOG_GROUP.AGENTS_SYNC, `Agent ${agentId} added (${successCount}/${agentIds.length})`);
 
             return agent;
           } catch (error) {
@@ -284,23 +286,12 @@ class AgentSyncManager {
 
       await Promise.allSettled(agentInfoPromises);
 
-      // Remove duplicates based on agent ID
-      const updatedAgents = await getAOYieldAgents(address);
-      const uniqueAgentsMap = new Map<string, AOYieldAgent>();
-      updatedAgents.forEach((agent) => uniqueAgentsMap.set(agent.id, agent));
-      const uniqueAgents = Array.from(uniqueAgentsMap.values());
-
-      // Update storage only if duplicates were found
-      if (uniqueAgents.length !== updatedAgents.length) {
-        await setAOYieldAgents(address, uniqueAgents);
-        log(LOG_GROUP.AGENTS_SYNC, `Removed ${updatedAgents.length - uniqueAgents.length} duplicate agents`);
-      }
-
-      if (successCount > 0) {
-        log(LOG_GROUP.AGENTS_SYNC, `Successfully synced ${successCount} agents progressively`);
-      } else {
+      if (successCount === 0) {
         log(LOG_GROUP.AGENTS_SYNC, "No valid agents were fetched successfully");
+        return;
       }
+
+      log(LOG_GROUP.AGENTS_SYNC, `Successfully synced ${successCount} agents for address: ${address}`);
     } catch (error) {
       log(LOG_GROUP.AGENTS_SYNC, `Error syncing agents for address ${address}:`, error);
       throw error;
