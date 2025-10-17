@@ -13,7 +13,7 @@ import { LiquidOpsAgentListItem } from "./components/LiquidOpsAgentListItem";
 import { useLocation } from "~wallets/router/router.utils";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import { AOMintingPausedListItem } from "./components/AOMintingPausedListItem";
-import { useAOYieldLatestAgent } from "~utils/agents/hooks";
+import { useAOYieldAgentInfo, useAOYieldLatestAgent, useSyncAOYieldAgent } from "~utils/agents/hooks";
 import { PageType, trackPage } from "~utils/analytics";
 import { useActiveTokens } from "./liquidops/utils/hooks/useAvailableTokens";
 import { HAS_SHOWN_AGENTS_EXPLAINER_POPUP } from "~utils/agents/constants";
@@ -24,6 +24,7 @@ export function AgentsView() {
   const { navigate } = useLocation();
   const [open, setOpen] = useState(false);
   const aoAgent = useAOYieldLatestAgent();
+  const { data: aoAgentInfo } = useAOYieldAgentInfo(aoAgent?.id);
   const {
     data: activeTokens,
     refetch: refetchActiveLiquidOpsTokens,
@@ -69,6 +70,9 @@ export function AgentsView() {
     isRefetchingActiveLiquidOpsTokens,
     refetchActiveLiquidOpsTokens,
   ]);
+
+  // Sync agent data with agent info
+  useSyncAOYieldAgent(aoAgent, aoAgentInfo);
 
   useEffect(() => {
     checkAndShowAgentExplainerPopup();
