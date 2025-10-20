@@ -1,5 +1,5 @@
-import { dryrun, message } from "@permaweb/aoconnect/browser";
-import { createDataItemSigner, getTagValue } from "~tokens/aoTokens/ao";
+import { message } from "@permaweb/aoconnect/browser";
+import { createDataItemSigner } from "~tokens/aoTokens/ao";
 import { tierIdToTierName, TIER_PROCESS_ID } from "./constants";
 import type { ActiveTier, ActiveTierFromApi, DefiFeeDetails, Tier, WalletSavings } from "./types";
 import { defiFeePercent, defiFeeReductionsInPercent } from "./constants";
@@ -10,7 +10,6 @@ import { isLocalWallet } from "~utils/assertions";
 import { ExtensionStorage } from "~utils/storage";
 import { scheduleRefreshWalletLifetimeSavings } from "./alarms";
 import { retryWithDelay } from "~utils/promises/retry";
-import { Id } from "~tokens/aoTokens/ao.constants";
 import { CACHE_API, WNDR_HB_NODE } from "~constants/api";
 
 const ONE_HUNDRED = BigNumber(100);
@@ -153,16 +152,14 @@ export async function getWalletLifetimeSavings(walletAddress: string): Promise<s
     return savedSavings.lifetimeSavings;
   }
 
-  const dryrunRes = await dryrun({
-    Id,
-    Owner: walletAddress,
-    process: TIER_PROCESS_ID,
-    tags: [{ name: "Action", value: "Get-Savings" }],
-  });
+  const response = await fetch(
+    `${WNDR_HB_NODE}/${TIER_PROCESS_ID}~process@1.0/now/wallets-tier-info/${walletAddress}/fee-savings`,
+  );
+  if (!response.ok && response.status !== 404) {
+    throw new Error("Failed to fetch savings from HB node");
+  }
 
-  const message = dryrunRes.Messages?.[0];
-  const tags = message?.Tags || [];
-  const savings = getTagValue("Savings", tags) || "0";
+  const savings = response.status === 404 ? "0" : await response.text();
 
   await saveWalletLifetimeSavingsToStorage(walletAddress, savings);
 
