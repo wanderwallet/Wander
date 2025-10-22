@@ -9,6 +9,8 @@ import HedgehogHeadIcon from "url:/assets/agents/images/hedgehog-head.svg";
 import { useAOMintingStatus } from "~utils/agents/hooks";
 import { EventType, trackEvent } from "~utils/analytics";
 import { useHasClaimableBalance } from "~utils/fair_launch/fair_launch.hooks";
+import { Tooltip } from "@arconnect/components-rebrand";
+import { MaintenanceTag } from "./home/MaintenanceTag";
 
 const Home05Active = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="25" height="24" viewBox="0 0 25 24" fill="none">
@@ -48,14 +50,21 @@ const buttons = [
     iconActive: <Home05Active />,
     size: "24px",
     route: "/",
+    disabled: false,
   },
   {
     title: "Agents",
     dictionaryKey: "agents",
-    icon: <HedgehogIcon active={false} />,
+    icon: (
+      <Tooltip content="Paused while tokens migrate">
+        <HedgehogIcon active={false} />
+      </Tooltip>
+    ),
     iconActive: <HedgehogIcon active={true} />,
     size: "24px",
     route: "/agents",
+    // TODO: Remove  this when agents are re-enabled
+    disabled: true,
   },
   {
     title: "Earn",
@@ -64,6 +73,7 @@ const buttons = [
     iconActive: <CurrencyDollarCircleActive />,
     size: "24px",
     route: "/earn",
+    disabled: false,
   },
   {
     title: "Menu",
@@ -72,6 +82,7 @@ const buttons = [
     iconActive: <Grid01 color="#6B57F9" fill="#6B57F9" />,
     size: "24px",
     route: "/quick-settings",
+    disabled: false,
   },
 ] as const;
 
@@ -109,6 +120,7 @@ export const NavigationBar = () => {
           <NavigationButton
             active={active}
             data-active={active ? "true" : "false"}
+            disabled={button.disabled ?? false}
             key={index}
             onClick={() => {
               if (button.route === "/agents") {

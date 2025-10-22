@@ -160,7 +160,8 @@ export function HomeView() {
         <Balance />
         <WalletActions />
         {isAnnouncementsCarouselOpen && <AnnouncementsCarousel />}
-        <CreateWanderAgentCTA />
+        {/* TODO: Uncomment this when agents are re-enabled */}
+        {/* <CreateWanderAgentCTA /> */}
         <Tabs />
       </HomeContent>
     </HomeWrapper>
