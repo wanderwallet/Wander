@@ -1,9 +1,9 @@
 // import { TierTypes } from "~utils/tier/constants";
 // import { WanderIcon } from "./WanderIcon";
 import styled, { useTheme } from "styled-components";
-import { InfoCircle, InfoHexagon } from "@untitled-ui/icons-react";
 import { InfoIcon } from "~components/embed";
 import { Tooltip } from "@arconnect/components-rebrand";
+import browser from "webextension-polyfill";
 
 interface MaintenanceTagProps {
   onClick: () => void;
@@ -13,7 +13,7 @@ export function MaintenanceTag({ onClick }: MaintenanceTagProps) {
   const theme = useTheme();
 
   return (
-    <Tooltip content="Paused. Tokens migrating to AO mainnet" position="left">
+    <Tooltip content={browser.i18n.getMessage("paused_while_tokens_migrate_to_ao_mainnet")} position="left">
       <Wrapper onClick={onClick}>
         <InfoIcon height={16} width={16} color={theme.displayTheme === "light" ? "#111" : "#EEE"} />
       </Wrapper>

@@ -56,7 +56,7 @@ const buttons = [
     title: "Agents",
     dictionaryKey: "agents",
     icon: (
-      <Tooltip content="Paused while tokens migrate">
+      <Tooltip content={browser.i18n.getMessage("paused_while_tokens_migrate")}>
         <HedgehogIcon active={false} />
       </Tooltip>
     ),
