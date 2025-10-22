@@ -15,6 +15,7 @@ import { tokenData } from "liquidops";
 
 import hedgehogHeadIcon from "url:/assets/agents/images/hedgehog-head.svg";
 import arLogoDark from "url:/assets/ar/ar-logo-dark.svg";
+import { MaintenanceTag } from "../home/MaintenanceTag";
 
 interface TokenActionButtonsProps {
   id: string;
@@ -47,6 +48,9 @@ const agentsButtonConfigWithoutText: ButtonConfig = {
   icon: <img src={hedgehogHeadIcon} style={{ height: 26, width: 26 }} alt="Agents" />,
   href: "/agents",
   variant: "secondary",
+  // TODO: Remove this when agents are re-enabled
+  disabledTag: <MaintenanceTag onClick={() => {}} />,
+  disabled: true,
 };
 
 const agentsButtonConfig: ButtonConfig = {

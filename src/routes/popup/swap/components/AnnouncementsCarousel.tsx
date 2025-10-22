@@ -89,9 +89,11 @@ export function AnnouncementsCarousel() {
   };
 
   const carouselData = useMemo(() => {
-    const swapUpdatedData = { ...swapData, disabled: isSwapGated };
+    // TODO: Remove this when swap is re-enabled
+    const items = [earnData];
+    // const swapUpdatedData = { ...swapData, disabled: isSwapGated };
 
-    const items = [swapUpdatedData, agentData, earnData];
+    // const items = [swapUpdatedData, agentData, earnData];
 
     if (!hasArnsNames) {
       const arnsHref = isArNSPurchaseGated
