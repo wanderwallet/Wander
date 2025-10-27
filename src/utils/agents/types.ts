@@ -142,6 +142,7 @@ export interface AOYieldAgent {
   slippage: number;
   totalTransactions?: number;
   version: string;
+  createdAt?: number;
 }
 
 export interface AOYieldAgentInfo extends AOYieldAgent {
@@ -153,7 +154,6 @@ export interface AOYieldAgentInfo extends AOYieldAgent {
   swapInProgress: boolean;
   processedUpToDate?: number;
   swappedUpToDate?: number;
-  agentVersion: string;
 }
 
 export interface AOYieldAgentCreate {

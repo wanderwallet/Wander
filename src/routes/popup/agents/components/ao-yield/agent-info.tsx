@@ -14,17 +14,8 @@ import { Settings01 } from "@untitled-ui/icons-react";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import { useLocation } from "~wallets/router/router.utils";
 import { AgentCancelModal } from "./AgentCancelModal";
-import {
-  assets,
-  formatTokenQuantity,
-  getStatusColor,
-  getStatusText,
-  isVersionGte,
-  updateLocalAOYieldAgent,
-} from "~utils/agents/utils";
+import { assets, formatTokenQuantity, getStatusColor, getStatusText, isVersionGte } from "~utils/agents/utils";
 import type { MintingStatus } from "~utils/agents/types";
-import { useAsyncEffect } from "~utils/react/useAsyncEffect";
-import { EventType, trackEvent } from "~utils/analytics";
 import { AgentUpdateModal } from "./AgentUpdateModal";
 import { AGENT_VERSION } from "~utils/agents/constants";
 
@@ -97,22 +88,6 @@ export function AgentInfo({ agentId, headerTitle, mintingStatus, isHistory = fal
   async function handleCancelAgent() {
     setShowCancelModal(true);
   }
-
-  useAsyncEffect(async () => {
-    if (!agent || !agentInfo) return;
-
-    try {
-      if (agent.status === "Active" && agent.status !== agentInfo.status) {
-        const isCompleted = agent.status === "Active" && agentInfo.status === "Completed";
-        const updated = await updateLocalAOYieldAgent(agentId, { status: agentInfo.status });
-        if (updated && isCompleted) {
-          await trackEvent(EventType.AO_YIELD_AGENT_END, {});
-        }
-      }
-    } catch (error) {
-      console.error("Error updating AO Yield Agent status", error);
-    }
-  }, [agent, agentInfo]);
 
   useEffect(() => {
     if (agent && agent.status === "Active" && !isVersionGte(agent.version, AGENT_VERSION)) {

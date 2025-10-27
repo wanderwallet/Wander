@@ -9,6 +9,7 @@ import { AOS_QUERY } from "./queries";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { isURL } from "~utils/urls/isURL";
 import { createDataItemSigner } from "~utils/aoconnect";
+import { wndrAoInstance } from "~utils/aoconnect";
 
 /**
  * Manages deployments of contracts to AO.
@@ -217,11 +218,13 @@ export class DeploymentsManager {
       );
 
       const { Output, Error: error } = await retryWithDelay(
-        async () =>
-          aoInstance.result({
+        async (attempt) => {
+          const aoInstanceToUse = attempt % 2 === 0 ? wndrAoInstance : aoInstance;
+          return aoInstanceToUse.result({
             process: processId!,
             message: messageId,
-          }),
+          });
+        },
         retry.count,
         retry.delay,
       );

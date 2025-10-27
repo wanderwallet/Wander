@@ -1,5 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { getAOYieldAgentInfo, getAOYieldAgents, getWanderFee, processTransactions, tokenIdInfoMap } from "./utils";
+import {
+  getAOYieldAgentInfo,
+  getAOYieldAgents,
+  getWanderFee,
+  isArweaveAddress,
+  isVersionGte,
+  processTransactions,
+  tokenIdInfoMap,
+  updateLocalAOYieldAgent,
+} from "./utils";
 import type {
   AOYieldAgent,
   AOYieldAgentCreate,
@@ -21,6 +30,8 @@ import browser from "webextension-polyfill";
 import type { DefiFeeDetails } from "~utils/tier/types";
 import { useDelegationInfo } from "~utils/fair_launch/fair_launch.hooks";
 import { useActiveAddress } from "~wallets/hooks";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import { EventType, trackEvent } from "~utils/analytics";
 
 interface UseAOYieldAgentsProps {
   status?: AOYieldAgentStatus;
@@ -58,7 +69,14 @@ export function useAOYieldLatestAgent() {
   return useMemo(() => {
     if (!agents.length) return undefined;
 
-    return agents.find((agent) => agent.status === "Active") || agents[agents.length - 1];
+    for (let i = agents.length - 1; i >= 0; i--) {
+      if (agents[i].status === "Active") {
+        return agents[i];
+      }
+    }
+
+    // If no active agents found, return the last one
+    return agents[agents.length - 1];
   }, [agents]);
 }
 
@@ -297,4 +315,60 @@ export function useWanderFee() {
     queryFn: () => getWanderFee(),
     ...defaultOptions,
   });
+}
+
+// Field validation rules
+const FIELD_VALIDATORS = {
+  startDate: (value: number) => !isNaN(value) && value > 0,
+  endDate: (value: number) => !isNaN(value) && value > 0,
+  totalTransactions: (value: number) => !isNaN(value) && value >= 0,
+  slippage: (value: number) => !isNaN(value) && value >= 0.5 && value <= 10,
+  conversionPercentage: (value: number) => !isNaN(value) && value > 0 && value <= 100,
+  runIndefinitely: (value: boolean) => typeof value === "boolean",
+  tokenOut: (value: string) => isArweaveAddress(value),
+  version: (value: string) => isVersionGte(value, "1.0.0"),
+  status: (value: string) => ["Active", "Cancelled", "Completed", "Paused"].includes(value),
+} as const;
+
+export function useSyncAOYieldAgent(agent: AOYieldAgent | undefined, agentInfo: AOYieldAgentInfo | undefined) {
+  useAsyncEffect(async () => {
+    if (!agent || !agentInfo || agent?.status !== "Active") return;
+
+    try {
+      const updateData: Partial<AOYieldAgent> = {};
+      let hasChanges = false;
+
+      // Validate and update status
+      if (agent.status === "Active" && agentInfo.status && agent.status !== agentInfo.status) {
+        updateData.status = agentInfo.status;
+        hasChanges = true;
+
+        if (agentInfo.status === "Completed") {
+          trackEvent(EventType.AO_YIELD_AGENT_END, {});
+        }
+      }
+
+      // Validate and update fields
+      for (const [field, validator] of Object.entries(FIELD_VALIDATORS)) {
+        const agentValue = agent[field as keyof AOYieldAgent];
+        const agentInfoValue = agentInfo[field as keyof AOYieldAgentInfo];
+
+        if (
+          agentInfoValue !== undefined &&
+          agentInfoValue !== null &&
+          agentValue !== agentInfoValue &&
+          validator(agentInfoValue as never)
+        ) {
+          (updateData as any)[field] = agentInfoValue;
+          hasChanges = true;
+        }
+      }
+
+      if (hasChanges) {
+        await updateLocalAOYieldAgent(agent.id, updateData);
+      }
+    } catch (error) {
+      console.error("Error updating AO Yield Agent", error);
+    }
+  }, [agent, agentInfo]);
 }

@@ -16,16 +16,16 @@ import Arweave from "arweave";
 import { queryClient } from "~utils/tanstack";
 import {
   USDA_PROCESS_ID,
-  WNDR_PROCESS_ID,
   Id,
   Owner,
   AR_PROCESS_ID,
   AO_PROCESS_ID,
+  UTD_PROCESS_ID,
 } from "~tokens/aoTokens/ao.constants";
 import type { Token } from "~tokens/token";
 import { ARIO_MAINNET_PROCESS_ID, ARIO_TESTNET_PROCESS_ID } from "@ar.io/sdk/web";
 import type { FlpTokenInfo } from "~utils/fair_launch/fair_launch.types";
-import { createDataItemSigner, ardriveAoInstance, aoInstance } from "~utils/aoconnect";
+import { createDataItemSigner, ardriveAoInstance, aoInstance, utdAoInstance } from "~utils/aoconnect";
 
 export let tokens: TokenInfo[] = null;
 export let flpTokens: FlpTokenInfo[] = null;
@@ -40,10 +40,13 @@ export interface Message {
   Data: string;
 }
 
-const getDryrunForProcess = (processId: string) => {
-  return processId === ARIO_MAINNET_PROCESS_ID || processId === ARIO_TESTNET_PROCESS_ID || processId === USDA_PROCESS_ID
-    ? { dryrunFn: ardriveAoInstance.dryrun, isCustomDryrun: true }
-    : { dryrunFn: aoInstance.dryrun, isCustomDryrun: false };
+const ARDRIVE_PROCESSES = [ARIO_MAINNET_PROCESS_ID, ARIO_TESTNET_PROCESS_ID, USDA_PROCESS_ID];
+
+export const getDryrunForProcess = (processId: string) => {
+  if (processId === UTD_PROCESS_ID) return { dryrunFn: utdAoInstance.dryrun, isCustomDryrun: true };
+  if (ARDRIVE_PROCESSES.includes(processId)) return { dryrunFn: ardriveAoInstance.dryrun, isCustomDryrun: true };
+
+  return { dryrunFn: aoInstance.dryrun, isCustomDryrun: false };
 };
 
 export function getTokenInfoFromData(res: any, id: string): TokenInfo {
@@ -133,7 +136,8 @@ export async function getTokenInfo(id: string): Promise<TokenInfo> {
     return { ...data.tokenInfo, processId: id };
   } catch {
     // query ao
-    const res = await aoInstance.dryrun({
+    const dryrunFn = id === UTD_PROCESS_ID ? utdAoInstance.dryrun : aoInstance.dryrun;
+    const res = await dryrunFn({
       Id,
       Owner,
       process: id,

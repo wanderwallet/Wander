@@ -2,16 +2,22 @@ import { connect } from "@permaweb/aoconnect";
 import { defaultConfig } from "~tokens/aoTokens/config";
 import { ArweaveSigner, createData } from "@dha-team/arbundles";
 import { generateAnchor, KeystoneSigner } from "~wallets/hardware/keystone";
-import Arweave from "arweave";
 import { defaultGateway } from "~gateways/gateway";
 import { getActiveAddress } from "~wallets";
+import Arweave from "arweave";
 
-const ARDRIVE_CU_URL = "https://cu.ardrive.io";
+export const ARDRIVE_CU_URL = "https://cu.ardrive.io";
+export const WNDR_CU_URL = "https://gateway.ar";
+export const AO_DEV_CU_URL = "https://aodev.fun/ao/cu";
+export const DEFAULT_CU_URL = "https://cu.ao-testnet.xyz";
+
 export const DATAITEM_SIGNER_KIND = "ans104";
 export const HTTP_SIGNER_KIND = "httpsig";
 
 export const arweave = Arweave.init(defaultGateway);
 export const aoInstance = connect(defaultConfig);
+export const wndrAoInstance = connect({ MODE: "legacy", CU_URL: WNDR_CU_URL });
+export const utdAoInstance = connect({ MODE: "legacy", CU_URL: AO_DEV_CU_URL });
 export const ardriveAoInstance = connect({ MODE: "legacy", CU_URL: ARDRIVE_CU_URL });
 
 function createANS104Signer(wallet) {

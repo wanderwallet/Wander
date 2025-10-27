@@ -20,7 +20,7 @@ import { isURL } from "~utils/urls/isURL";
 import { queryClient } from "~utils/tanstack";
 import { Mutex } from "~utils/mutex";
 import { Id, Owner, WAR_PROCESS_ID, WUSDC_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
-import { createDataItemSigner, aoInstance } from "~utils/aoconnect";
+import { createDataItemSigner, aoInstance, wndrAoInstance } from "~utils/aoconnect";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { FWD_HB_NODE, WNDR_HB_NODE } from "~constants/api";
 
@@ -262,63 +262,12 @@ export async function getAOYieldActiveAgent() {
 
 export async function getAOYieldAgentInfo(agentId: string, currentAgentVersion: string = "1.0.0", attempt: number = 0) {
   try {
-    if (currentAgentVersion && isVersionGte(currentAgentVersion, "1.0.2")) {
-      throw new Error("Fetch agent info from the HB node");
-    }
-
-    const dryrunRes = await aoInstance.dryrun({
-      Id,
-      Owner,
-      process: agentId,
-      tags: [{ name: "Action", value: "Info" }],
-    });
-
-    const message = dryrunRes.Messages?.[0];
-    const tags = message?.Tags;
-
-    const dex = getTagValue("Dex", tags);
-    const status = getTagValue("Status", tags);
-    const tokenOut = getTagValue("Token-Out", tags);
-    const conversionPercentage = getTagValue("Conversion-Percentage", tags);
-    const startDate = getTagValue("Start-Date", tags);
-    const endDate = getTagValue("End-Date", tags);
-    const runIndefinitely = getTagValue("Run-Indefinitely", tags);
-    const slippage = getTagValue("Slippage", tags);
-    const totalAOSold = getTagValue("Total-AO-Sold", tags);
-    const totalBought = getTagValue("Total-Bought", tags);
-    const totalTransactions = getTagValue("Total-Transactions", tags);
-    const totalWanderFee = getTagValue("Total-Wander-Fee", tags);
-    const swapInProgress = getTagValue("Swap-In-Progress", tags);
-    const processedUpToDate = getTagValue("Processed-Up-To-Date", tags);
-    const swappedUpToDate = getTagValue("Swapped-Up-To-Date", tags);
-    const agentVersion = getTagValue("Agent-Version", tags);
-
-    return {
-      id: agentId,
-      status,
-      dex,
-      tokenOut,
-      conversionPercentage: Number(conversionPercentage),
-      startDate: Number(startDate),
-      endDate: Number(endDate),
-      runIndefinitely: runIndefinitely === "true",
-      slippage: Number(slippage),
-      totalAOSold,
-      totalBought: JSON.parse(totalBought),
-      totalTransactions: Number(totalTransactions),
-      totalWanderFee,
-      swapInProgress: swapInProgress === "true",
-      processedUpToDate: processedUpToDate && processedUpToDate !== "nil" ? Number(processedUpToDate) : undefined,
-      swappedUpToDate: swappedUpToDate && swappedUpToDate !== "nil" ? Number(swappedUpToDate) : undefined,
-      agentVersion,
-    } as AOYieldAgentInfo;
-  } catch (error) {
     if (!isVersionGte(currentAgentVersion, "1.0.2")) {
-      throw new Error("Agent version is required & must be greater than 1.0.2");
+      throw new Error("Agent version must be greater or equal to 1.0.2");
     }
 
     log(LOG_GROUP.AGENTS, `Fetching agent info from the HB node with agent version: ${currentAgentVersion}`);
-    const hbNode = attempt % 2 === 0 ? FWD_HB_NODE : WNDR_HB_NODE;
+    const hbNode = attempt % 2 === 0 ? WNDR_HB_NODE : FWD_HB_NODE;
     const response = await fetch(`${hbNode}/${agentId}/~process@1.0/now/agent-info/~json@1.0/serialize?bundle`);
     if (!response.ok) {
       throw new Error("Failed to fetch agent info");
@@ -368,7 +317,56 @@ export async function getAOYieldAgentInfo(agentId: string, currentAgentVersion: 
       swapInProgress: swapInProgress === "true",
       processedUpToDate: processedUpToDate && processedUpToDate !== "nil" ? Number(processedUpToDate) : undefined,
       swappedUpToDate: swappedUpToDate && swappedUpToDate !== "nil" ? Number(swappedUpToDate) : undefined,
-      agentVersion,
+      version: agentVersion,
+    } as AOYieldAgentInfo;
+  } catch (error) {
+    log(LOG_GROUP.AGENTS, `Fetching agent info from the CU node with agent version: ${currentAgentVersion}`);
+    const aoInstanceToUse = attempt % 2 === 0 ? wndrAoInstance : aoInstance;
+    const dryrunRes = await aoInstanceToUse.dryrun({
+      Id,
+      Owner,
+      process: agentId,
+      tags: [{ name: "Action", value: "Info" }],
+    });
+
+    const message = dryrunRes.Messages?.[0];
+    const tags = message?.Tags;
+
+    const dex = getTagValue("Dex", tags);
+    const status = getTagValue("Status", tags);
+    const tokenOut = getTagValue("Token-Out", tags);
+    const conversionPercentage = getTagValue("Conversion-Percentage", tags);
+    const startDate = getTagValue("Start-Date", tags);
+    const endDate = getTagValue("End-Date", tags);
+    const runIndefinitely = getTagValue("Run-Indefinitely", tags);
+    const slippage = getTagValue("Slippage", tags);
+    const totalAOSold = getTagValue("Total-AO-Sold", tags);
+    const totalBought = getTagValue("Total-Bought", tags);
+    const totalTransactions = getTagValue("Total-Transactions", tags);
+    const totalWanderFee = getTagValue("Total-Wander-Fee", tags);
+    const swapInProgress = getTagValue("Swap-In-Progress", tags);
+    const processedUpToDate = getTagValue("Processed-Up-To-Date", tags);
+    const swappedUpToDate = getTagValue("Swapped-Up-To-Date", tags);
+    const agentVersion = getTagValue("Agent-Version", tags);
+
+    return {
+      id: agentId,
+      status,
+      dex,
+      tokenOut,
+      conversionPercentage: Number(conversionPercentage),
+      startDate: Number(startDate),
+      endDate: Number(endDate),
+      runIndefinitely: runIndefinitely === "true",
+      slippage: Number(slippage),
+      totalAOSold,
+      totalBought: JSON.parse(totalBought),
+      totalTransactions: Number(totalTransactions),
+      totalWanderFee,
+      swapInProgress: swapInProgress === "true",
+      processedUpToDate: processedUpToDate && processedUpToDate !== "nil" ? Number(processedUpToDate) : undefined,
+      swappedUpToDate: swappedUpToDate && swappedUpToDate !== "nil" ? Number(swappedUpToDate) : undefined,
+      version: agentVersion,
     } as AOYieldAgentInfo;
   }
 }
@@ -430,7 +428,11 @@ function updateAgentProperties(agent: AOYieldAgent, updateData: Partial<AOYieldA
   return agent;
 }
 
-export async function updateAOYieldAgent(agentId: string, updateData: Partial<AOYieldAgent> & { fullPatch?: boolean }) {
+export async function updateAOYieldAgent(
+  agentId: string,
+  updateData: Partial<AOYieldAgent> & { fullPatch?: boolean },
+  skipLocalUpdate: boolean = false,
+) {
   try {
     const decryptedWallet = await getActiveKeyfile();
     isLocalWallet(decryptedWallet);
@@ -448,19 +450,26 @@ export async function updateAOYieldAgent(agentId: string, updateData: Partial<AO
     // Free the keyfile from memory
     freeDecryptedWallet(decryptedWallet.keyfile);
 
-    const result = await aoInstance
-      .result({
-        process: agentId,
-        message: messageId,
-      })
-      .catch(() => ({ Error: undefined }));
+    const result = await retryWithDelay(
+      (attempt) => {
+        const aoInstanceToUse = attempt % 2 === 0 ? wndrAoInstance : aoInstance;
+        return aoInstanceToUse.result({
+          process: agentId,
+          message: messageId,
+        });
+      },
+      2,
+      1000,
+    ).catch(() => ({ Error: undefined }));
 
     if (result.Error) {
       throw new Error(`Failed to update agent: ${result.Error}`);
     }
 
-    await updateLocalAOYieldAgent(agentId, updateData);
-    await queryClient.invalidateQueries({ queryKey: ["ao-yield-agent-info", agentId] });
+    if (!skipLocalUpdate) {
+      await updateLocalAOYieldAgent(agentId, updateData);
+      await queryClient.invalidateQueries({ queryKey: ["ao-yield-agent-info", agentId] });
+    }
   } catch (error) {
     throw new Error(`Failed to update AO Yield Agent: ${error instanceof Error ? error.message : String(error)}`);
   }

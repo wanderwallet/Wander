@@ -33,6 +33,10 @@ export function AgentUpdateModal({ open, onClose, agentId }: AgentUpdateModalPro
         name: "ao-yield-agent",
         contractPath: aoYieldAgentContract,
         processId: agentId,
+        retry: {
+          count: 3,
+          delay: 1000,
+        },
       });
 
       // Update agent version to the latest version

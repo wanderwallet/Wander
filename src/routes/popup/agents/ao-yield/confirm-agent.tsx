@@ -106,6 +106,10 @@ export function ConfirmAOYieldAgentView() {
           },
         ],
         forceSpawn: true,
+        retry: {
+          count: 3,
+          delay: 1000,
+        },
       });
 
       const activeAddress = await getActiveAddress();
@@ -121,6 +125,7 @@ export function ConfirmAOYieldAgentView() {
         runIndefinitely: aoYieldAgent.runIndefinitely,
         slippage: aoYieldAgent.slippage,
         version: AGENT_VERSION,
+        createdAt: Date.now(),
       });
 
       await setAOYieldAgents(activeAddress, agents);
