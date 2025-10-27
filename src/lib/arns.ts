@@ -30,7 +30,7 @@ import type { NameServiceProfile } from "./types";
 import { useActiveTier } from "~utils/tier/hooks";
 import { tierNameToId, TierTypes } from "~utils/tier/constants";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
-import { cuAoInstance } from "~utils/aoconnect";
+import { ardriveAoInstance } from "~utils/aoconnect";
 
 export const LANDING_PAGE_TXID = "oork_YifB3-JQQZg8EgMPQJytua_QCHKNmMqt5kmnCo";
 export const DEFAULT_ANT_LOGO = "Sie_26dvgyok0PZD_-iQAFOhOd5YxDTkczOLoqTTL_A";
@@ -68,7 +68,7 @@ export const ARIO_PROCESS_ID = process.env.PLASMO_PUBLIC_ARIO_PROCESS_ID ?? ARIO
 export const ARIO_READ_SDK = ARIO.init({
   process: new AOProcess({
     processId: ARIO_PROCESS_ID,
-    ao: cuAoInstance,
+    ao: ardriveAoInstance,
   }),
 });
 
@@ -99,7 +99,7 @@ export async function getArNSRecord(name: string): Promise<AoArNSNameData | unde
 
 export async function getANTInfo(processId: string): Promise<AoANTInfo> {
   const ant = ANT.init({
-    process: new AOProcess({ processId, ao: cuAoInstance }),
+    process: new AOProcess({ processId, ao: ardriveAoInstance }),
   });
 
   return ant.getInfo();
@@ -107,7 +107,7 @@ export async function getANTInfo(processId: string): Promise<AoANTInfo> {
 
 export async function getANTState(processId: string): Promise<AoANTState> {
   const ant = ANT.init({
-    process: new AOProcess({ processId, ao: cuAoInstance }),
+    process: new AOProcess({ processId, ao: ardriveAoInstance }),
   });
 
   return ant.getState();
@@ -289,7 +289,7 @@ export async function purchaseArNSName({
       signer,
       process: new AOProcess({
         processId: ARIO_PROCESS_ID,
-        ao: cuAoInstance,
+        ao: ardriveAoInstance,
       }),
     });
 
@@ -360,7 +360,7 @@ export async function setPrimaryName({
       signer,
       process: new AOProcess({
         processId: ARIO_PROCESS_ID,
-        ao: cuAoInstance,
+        ao: ardriveAoInstance,
       }),
     });
 

@@ -25,7 +25,7 @@ import {
 import type { Token } from "~tokens/token";
 import { ARIO_MAINNET_PROCESS_ID, ARIO_TESTNET_PROCESS_ID } from "@ar.io/sdk/web";
 import type { FlpTokenInfo } from "~utils/fair_launch/fair_launch.types";
-import { createDataItemSigner, cuAoInstance, aoInstance } from "~utils/aoconnect";
+import { createDataItemSigner, ardriveAoInstance, aoInstance } from "~utils/aoconnect";
 
 export let tokens: TokenInfo[] = null;
 export let flpTokens: FlpTokenInfo[] = null;
@@ -42,7 +42,7 @@ export interface Message {
 
 const getDryrunForProcess = (processId: string) => {
   return processId === ARIO_MAINNET_PROCESS_ID || processId === ARIO_TESTNET_PROCESS_ID || processId === USDA_PROCESS_ID
-    ? { dryrunFn: cuAoInstance.dryrun, isCustomDryrun: true }
+    ? { dryrunFn: ardriveAoInstance.dryrun, isCustomDryrun: true }
     : { dryrunFn: aoInstance.dryrun, isCustomDryrun: false };
 };
 

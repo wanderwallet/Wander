@@ -12,7 +12,7 @@ export const HTTP_SIGNER_KIND = "httpsig";
 
 export const arweave = Arweave.init(defaultGateway);
 export const aoInstance = connect(defaultConfig);
-export const cuAoInstance = connect({ MODE: "legacy", CU_URL: ARDRIVE_CU_URL });
+export const ardriveAoInstance = connect({ MODE: "legacy", CU_URL: ARDRIVE_CU_URL });
 
 function createANS104Signer(wallet) {
   const signer = async (create) => {
