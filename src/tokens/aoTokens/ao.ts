@@ -18,12 +18,12 @@ import Arweave from "arweave";
 import { queryClient } from "~utils/tanstack";
 import {
   USDA_PROCESS_ID,
-  WNDR_PROCESS_ID,
   Id,
   Owner,
   AR_PROCESS_ID,
   AO_PROCESS_ID,
-  WAR_PROCESS_ID,
+  UTD_PROCESS_ID,
+  WNDR_PROCESS_ID,
 } from "~tokens/aoTokens/ao.constants";
 import type { Token } from "~tokens/token";
 import { ARIO_MAINNET_PROCESS_ID, ARIO_TESTNET_PROCESS_ID } from "@ar.io/sdk/web";
@@ -54,18 +54,20 @@ type DataItemResult = {
   raw: ArrayBuffer;
 };
 
-const { dryrun: customDryrun } = connect({ CU_URL: "https://cu.ardrive.io" });
-const { dryrun: wARDryrun } = connect({ CU_URL: "https://ao.arweave.asia" });
+export const ARDRIVE_CU_URL = "https://cu.ardrive.io";
+export const AO_DEV_CU_URL = "https://aodev.fun/ao/cu";
+export const DEFAULT_CU_URL = "https://cu.ao-testnet.xyz";
 
-const getDryrunForProcess = (processId: string) => {
-  return processId === ARIO_MAINNET_PROCESS_ID ||
-    processId === ARIO_TESTNET_PROCESS_ID ||
-    processId === USDA_PROCESS_ID ||
-    processId === WNDR_PROCESS_ID
-    ? { dryrunFn: customDryrun, isCustomDryrun: true }
-    : processId === WAR_PROCESS_ID
-      ? { dryrunFn: wARDryrun, isCustomDryrun: true }
-      : { dryrunFn: dryrun, isCustomDryrun: false };
+const { dryrun: arDriveDryrun } = connect({ CU_URL: ARDRIVE_CU_URL });
+const { dryrun: aoDevDryrun } = connect({ CU_URL: AO_DEV_CU_URL });
+
+const ARDRIVE_PROCESSES = [ARIO_MAINNET_PROCESS_ID, ARIO_TESTNET_PROCESS_ID, WNDR_PROCESS_ID, USDA_PROCESS_ID];
+
+export const getDryrunForProcess = (processId: string) => {
+  if (processId === UTD_PROCESS_ID) return { dryrunFn: aoDevDryrun, isCustomDryrun: true };
+  if (ARDRIVE_PROCESSES.includes(processId)) return { dryrunFn: arDriveDryrun, isCustomDryrun: true };
+
+  return { dryrunFn: dryrun, isCustomDryrun: false };
 };
 
 export function getTokenInfoFromData(res: any, id: string): TokenInfo {
@@ -134,7 +136,8 @@ export async function getTokenInfo(id: string): Promise<TokenInfo> {
     return { ...data.tokenInfo, processId: id };
   } catch {
     // query ao
-    const res = await dryrun({
+    const dryrunFn = id === UTD_PROCESS_ID ? aoDevDryrun : dryrun;
+    const res = await dryrunFn({
       Id,
       Owner,
       process: id,

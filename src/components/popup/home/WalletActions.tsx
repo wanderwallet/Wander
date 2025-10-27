@@ -8,6 +8,7 @@ import { useIsSwapGated } from "~routes/popup/swap/utils/swap.hooks";
 import { TierGatedTag } from "../tier/TierGatedTag";
 
 import arLogoDark from "url:/assets/ar/ar-logo-dark.svg";
+import { MaintenanceTag } from "./MaintenanceTag";
 
 const purchaseButtonConfig: ButtonConfig = {
   text: browser.i18n.getMessage("buy_ar_button"),
@@ -34,8 +35,11 @@ export default function WalletActions() {
       icon: <SwapIcon />,
       href: "/swap",
       variant: "secondary",
-      disabled: isSwapGated,
-      disabledTag: <TierGatedTag onClick={() => setIsOpen((prev) => !prev)} />,
+      // TODO: Remove this when swap is re-enabled
+      disabled: true,
+      disabledTag: <MaintenanceTag onClick={() => {}} />,
+      // disabled: isSwapGated,
+      // disabledTag: <TierGatedTag onClick={() => setIsOpen((prev) => !prev)} />,
     };
 
     return [purchaseButtonConfig, sendButtonConfig, swapButtonConfig];
