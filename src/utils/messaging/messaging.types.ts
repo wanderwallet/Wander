@@ -1,4 +1,4 @@
-import type { IBridgeMessage, ProtocolMap } from "@arconnect/webext-bridge";
+import type { IBridgeMessage, ProtocolMap } from "@wanderapp/webext-bridge";
 
 // sendMessage():
 

@@ -13,7 +13,7 @@ import { defaultGateway } from "~gateways/gateway";
 import Arweave from "arweave";
 import { bytesFromChunks, constructTransaction, type SplitTransaction } from "~api/modules/sign/transaction_builder";
 import { isomorphicOnMessage } from "~isomorphic-messaging";
-import type { IBridgeMessage } from "@arconnect/webext-bridge";
+import type { IBridgeMessage } from "@wanderapp/webext-bridge";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { isError } from "~utils/error/error.utils";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";

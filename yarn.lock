@@ -59,16 +59,6 @@
     qrcode.react "3.1.0"
     react-qr-reader "2.2.1"
 
-"@arconnect/webext-bridge@https://arweave.net/37OdN5bUTjIFRScBJn0ViGyJn0F935GbMgoe-tqxa1E":
-  version "5.0.6"
-  resolved "https://arweave.net/37OdN5bUTjIFRScBJn0ViGyJn0F935GbMgoe-tqxa1E#32dc909f319fb2cde12bd59437d8bdd7d943e4cc"
-  dependencies:
-    "@types/webextension-polyfill" "^0.8.3"
-    nanoevents "^6.0.2"
-    serialize-error "^9.0.0"
-    tiny-uid "^1.1.1"
-    webextension-polyfill "^0.9.0"
-
 "@asamuzakjp/css-color@^3.2.0":
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/@asamuzakjp/css-color/-/css-color-3.2.0.tgz#cc42f5b85c593f79f1fa4f25d2b9b321e61d1794"
@@ -4722,7 +4712,7 @@
 
 "@types/webextension-polyfill@^0.8.3":
   version "0.8.3"
-  resolved "https://registry.yarnpkg.com/@types/webextension-polyfill/-/webextension-polyfill-0.8.3.tgz#eb601b3fcf524f0ecf7d7579ccbd237928d0dda7"
+  resolved "https://registry.npmjs.org/@types/webextension-polyfill/-/webextension-polyfill-0.8.3.tgz#eb601b3fcf524f0ecf7d7579ccbd237928d0dda7"
   integrity sha512-GN+Hjzy9mXjWoXKmaicTegv3FJ0WFZ3aYz77Wk8TMp1IY3vEzvzj1vnsa0ggV7vMI1i+PUxe4qqnIJKCzf9aTg==
 
 "@types/ws@^8.18.1":
@@ -4966,6 +4956,17 @@
   version "3.5.18"
   resolved "https://registry.yarnpkg.com/@vue/shared/-/shared-3.5.18.tgz#529f24a88d3ed678d50fd5c07455841fbe8ac95e"
   integrity sha512-cZy8Dq+uuIXbxCZpuLd2GJdeSO/lIzIspC2WtkqIpje5QyFbvLaI5wZtdUjLHjGZrlVX6GilejatWwVYYRc8tA==
+
+"@wanderapp/webext-bridge@^5.0.7":
+  version "5.0.7"
+  resolved "https://registry.npmjs.org/@wanderapp/webext-bridge/-/webext-bridge-5.0.7.tgz#7123b7e03a1ad65744ccac4420474942c39d40c6"
+  integrity sha512-rBGBrFBl9sx+T/khrTmTygrcvJAjKc4e0nqM5SqKozGSL/I6jlacvxaN/0YOc/X7YwB4NJkwvAUuqyJsm3+JWA==
+  dependencies:
+    "@types/webextension-polyfill" "^0.8.3"
+    nanoevents "^6.0.2"
+    serialize-error "^9.0.0"
+    tiny-uid "^1.1.1"
+    webextension-polyfill "^0.9.0"
 
 JSONStream@^1.3.5:
   version "1.3.5"
@@ -9543,7 +9544,7 @@ nano-spawn@^1.0.2:
 
 nanoevents@^6.0.2:
   version "6.0.2"
-  resolved "https://registry.yarnpkg.com/nanoevents/-/nanoevents-6.0.2.tgz#3824031c7beab754b04ae5a17936c0fc7b6a183c"
+  resolved "https://registry.npmjs.org/nanoevents/-/nanoevents-6.0.2.tgz#3824031c7beab754b04ae5a17936c0fc7b6a183c"
   integrity sha512-FRS2otuFcPPYDPYViNWQ42+1iZqbXydinkRHTHFxrF4a1CpBfmydR9zkI44WSXAXCyPrkcGtPk5CnpW6Y3lFKQ==
 
 nanoid@5.0.4:
@@ -11510,7 +11511,7 @@ semver@^7.7.2:
 
 serialize-error@^9.0.0:
   version "9.1.1"
-  resolved "https://registry.yarnpkg.com/serialize-error/-/serialize-error-9.1.1.tgz#b66744b6287b538996a153103e67af7179d0831a"
+  resolved "https://registry.npmjs.org/serialize-error/-/serialize-error-9.1.1.tgz#b66744b6287b538996a153103e67af7179d0831a"
   integrity sha512-6uZQLGyUkNA4N+Zii9fYukmNu9PEA1F5rqcwXzN/3LtBjwl2dFBbVZ1Zyn08/CGkB4H440PIemdOQBt1Wvjbrg==
   dependencies:
     type-fest "^2.5.3"
@@ -12283,7 +12284,7 @@ tiny-relative-date@^1.3.0:
 
 tiny-uid@^1.1.1:
   version "1.1.2"
-  resolved "https://registry.yarnpkg.com/tiny-uid/-/tiny-uid-1.1.2.tgz#6ccf1bd9877151daedada63f896a4b20d315c0dc"
+  resolved "https://registry.npmjs.org/tiny-uid/-/tiny-uid-1.1.2.tgz#6ccf1bd9877151daedada63f896a4b20d315c0dc"
   integrity sha512-0beRFXR+fv4C40ND2PqgNjq6iyB1dKXciKJjslLw0kPYCcR82aNd2b+Tt2yy06LimIlvtoehgvrm/fUZCutSfg==
 
 tinybench@^2.9.0:
@@ -12903,7 +12904,7 @@ webextension-polyfill@^0.12.0:
 
 webextension-polyfill@^0.9.0:
   version "0.9.0"
-  resolved "https://registry.yarnpkg.com/webextension-polyfill/-/webextension-polyfill-0.9.0.tgz#de6c1941d0ef1b0858b20e9c7b46bbc042c5a960"
+  resolved "https://registry.npmjs.org/webextension-polyfill/-/webextension-polyfill-0.9.0.tgz#de6c1941d0ef1b0858b20e9c7b46bbc042c5a960"
   integrity sha512-LTtHb0yR49xa9irkstDxba4GATDAcDw3ncnFH9RImoFwDlW47U95ME5sn5IiQX2ghfaECaf6xyXM8yvClIBkkw==
 
 webidl-conversions@^3.0.0:
