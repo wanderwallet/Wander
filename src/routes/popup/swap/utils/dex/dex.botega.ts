@@ -1,6 +1,4 @@
-import { connect } from "@permaweb/aoconnect";
-import { createDataItemKeystoneSigner, createDataItemSigner, getTagValue } from "~tokens/aoTokens/ao";
-import { defaultConfig } from "~tokens/aoTokens/config";
+import { getTagValue } from "~tokens/aoTokens/ao";
 import { getActiveAddress, getActiveKeyfile, type DecryptedWallet } from "~wallets";
 import BigNumber from "bignumber.js";
 import type {
@@ -21,6 +19,7 @@ import { retryWithDelay } from "~utils/promises/retry";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { queryClient } from "~utils/tanstack";
 import { assertTransferResult, createSwapMessage } from "../swap.utils";
+import { createDataItemSigner, aoInstance } from "~utils/aoconnect";
 
 /**
  * Fetch the result of a swap message
@@ -41,8 +40,6 @@ export async function readSwapResult({ orderId }: ReadSwapResult): Promise<ReadS
 
   return { amountOut, confirmationTxId: confirmation.id };
 }
-
-const aoInstance = connect(defaultConfig);
 
 export async function getExpectedOutput({
   poolId,
@@ -107,10 +104,10 @@ export async function executeSwap({
 
     decryptedWallet = await getActiveKeyfile();
 
-    let signer: ReturnType<typeof createDataItemSigner> | ReturnType<typeof createDataItemKeystoneSigner>;
+    let signer: ReturnType<typeof createDataItemSigner>;
     if (keystoneSigner) {
       // Hardware wallet case
-      signer = createDataItemKeystoneSigner(keystoneSigner);
+      signer = createDataItemSigner(keystoneSigner);
     } else {
       // Local wallet case
       isLocalWallet(decryptedWallet);

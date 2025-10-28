@@ -1,12 +1,10 @@
-import { connect, dryrun } from "@permaweb/aoconnect";
 import { type Tag } from "arweave/web/lib/transaction";
 import { PersistentStorage } from "~utils/storage";
 import { Quantity } from "ao-tokens";
-import { ArweaveSigner, createData } from "@dha-team/arbundles";
 import { getActiveKeyfile, getKeyfile, type DecryptedWallet } from "~wallets";
 import { isLocalWallet } from "~utils/assertions";
 import { freeDecryptedWallet } from "~wallets/encryption";
-import { generateAnchor, type KeystoneSigner } from "~wallets/hardware/keystone";
+import { type KeystoneSigner } from "~wallets/hardware/keystone";
 import browser from "webextension-polyfill";
 import type { DecodedTag } from "~api/modules/sign/tags";
 import { isNetworkError, NetworkError, BalanceFetchError } from "~utils/error/error.utils";
@@ -23,17 +21,17 @@ import {
   AR_PROCESS_ID,
   AO_PROCESS_ID,
   UTD_PROCESS_ID,
-  WNDR_PROCESS_ID,
 } from "~tokens/aoTokens/ao.constants";
 import type { Token } from "~tokens/token";
 import { ARIO_MAINNET_PROCESS_ID, ARIO_TESTNET_PROCESS_ID } from "@ar.io/sdk/web";
 import type { FlpTokenInfo } from "~utils/fair_launch/fair_launch.types";
+import { createDataItemSigner, ardriveAoInstance, aoInstance, utdAoInstance } from "~utils/aoconnect";
 
 export let tokens: TokenInfo[] = null;
 export let flpTokens: FlpTokenInfo[] = null;
 export let tokenInfoMap = new Map<string, TokenInfo | Token>();
 
-export type AoInstance = ReturnType<typeof connect>;
+export type AoInstance = typeof aoInstance;
 
 export interface Message {
   Anchor: string;
@@ -42,32 +40,13 @@ export interface Message {
   Data: string;
 }
 
-type CreateDataItemArgs = {
-  data: any;
-  tags?: Tag[];
-  target?: string;
-  anchor?: string;
-};
-
-type DataItemResult = {
-  id: string;
-  raw: ArrayBuffer;
-};
-
-export const ARDRIVE_CU_URL = "https://cu.ardrive.io";
-export const AO_DEV_CU_URL = "https://aodev.fun/ao/cu";
-export const DEFAULT_CU_URL = "https://cu.ao-testnet.xyz";
-
-const { dryrun: arDriveDryrun } = connect({ CU_URL: ARDRIVE_CU_URL });
-const { dryrun: aoDevDryrun } = connect({ CU_URL: AO_DEV_CU_URL });
-
 const ARDRIVE_PROCESSES = [ARIO_MAINNET_PROCESS_ID, ARIO_TESTNET_PROCESS_ID, USDA_PROCESS_ID];
 
 export const getDryrunForProcess = (processId: string) => {
-  if (processId === UTD_PROCESS_ID) return { dryrunFn: aoDevDryrun, isCustomDryrun: true };
-  if (ARDRIVE_PROCESSES.includes(processId)) return { dryrunFn: arDriveDryrun, isCustomDryrun: true };
+  if (processId === UTD_PROCESS_ID) return { dryrunFn: utdAoInstance.dryrun, isCustomDryrun: true };
+  if (ARDRIVE_PROCESSES.includes(processId)) return { dryrunFn: ardriveAoInstance.dryrun, isCustomDryrun: true };
 
-  return { dryrunFn: dryrun, isCustomDryrun: false };
+  return { dryrunFn: aoInstance.dryrun, isCustomDryrun: false };
 };
 
 export function getTokenInfoFromData(res: any, id: string): TokenInfo {
@@ -157,7 +136,7 @@ export async function getTokenInfo(id: string): Promise<TokenInfo> {
     return { ...data.tokenInfo, processId: id };
   } catch {
     // query ao
-    const dryrunFn = id === UTD_PROCESS_ID ? aoDevDryrun : dryrun;
+    const dryrunFn = id === UTD_PROCESS_ID ? utdAoInstance.dryrun : aoInstance.dryrun;
     const res = await dryrunFn({
       Id,
       Owner,
@@ -295,7 +274,7 @@ export async function getAoCollectibleBalance(
   collectible: TokenInfoWithBalance | TokenInfo,
   address: string,
 ): Promise<Quantity> {
-  const res = await dryrun({
+  const res = await aoInstance.dryrun({
     Id,
     Owner: address,
     // @ts-ignore
@@ -335,61 +314,6 @@ export const flattenTags = (tags: Tag[]) =>
     },
     {} as Record<string, string>,
   );
-
-export const createDataItemSigner =
-  (jwkOrSigner: any) =>
-  async ({
-    data,
-    tags = [],
-    target,
-    anchor,
-  }: {
-    data: any;
-    tags?: { name: string; value: string }[];
-    target?: string;
-    anchor?: string;
-  }): Promise<{ id: string; raw: ArrayBuffer }> => {
-    const signer = jwkOrSigner instanceof ArweaveSigner ? jwkOrSigner : new ArweaveSigner(jwkOrSigner);
-    const dataItem = createData(data, signer, { tags, target, anchor });
-
-    await dataItem.sign(signer);
-
-    return {
-      id: dataItem.id,
-      // @ts-ignore
-      raw: dataItem.getRaw(),
-    };
-  };
-
-export const createDataItemKeystoneSigner =
-  (keystoneSigner: KeystoneSigner) =>
-  async ({
-    data,
-    tags = [],
-    target,
-    anchor,
-  }: {
-    data: any;
-    tags?: { name: string; value: string }[];
-    target?: string;
-    anchor?: string;
-  }): Promise<{ id: string; raw: ArrayBuffer }> => {
-    const signer = keystoneSigner;
-    if (!anchor) {
-      // @ts-ignore - anchor can be uint8array or string
-      anchor = generateAnchor();
-    }
-    const dataItem = createData(data, signer, { tags, target, anchor });
-    const serial = dataItem.getRaw();
-    const signature = await signer.sign(serial);
-    dataItem.setSignature(Buffer.from(signature));
-
-    return {
-      id: dataItem.id,
-      // @ts-ignore
-      raw: dataItem.getRaw(),
-    };
-  };
 
 export const sendAoTransfer = async (
   ao: AoInstance,
@@ -459,7 +383,7 @@ export const sendAoTransferKeystone = async (
   keystoneSigner: KeystoneSigner,
 ) => {
   try {
-    const dataItemSigner = createDataItemKeystoneSigner(keystoneSigner);
+    const dataItemSigner = createDataItemSigner(keystoneSigner);
     const transferID = await ao.message({
       process,
       signer: dataItemSigner,

@@ -2,7 +2,7 @@ import Arweave from "arweave";
 import { defaultGateway } from "~gateways/gateway";
 import { ExtensionStorage } from "~utils/storage";
 import type { AOYieldAgent, AOYieldAgentInfo, AOYieldAgentStatus, MintingStatus, RecentTx, Tag } from "../types";
-import { createDataItemSigner, getTagValue } from "~tokens/aoTokens/ao";
+import { getTagValue } from "~tokens/aoTokens/ao";
 import { getActiveAddress, getActiveKeyfile } from "~wallets";
 import { isLocalWallet } from "~utils/assertions";
 import { retryWithDelay } from "~utils/promises/retry";
@@ -20,9 +20,9 @@ import { isURL } from "~utils/urls/isURL";
 import { queryClient } from "~utils/tanstack";
 import { Mutex } from "~utils/mutex";
 import { Id, Owner, WAR_PROCESS_ID, WUSDC_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
+import { createDataItemSigner, aoInstance, wndrAoInstance } from "~utils/aoconnect";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { FWD_HB_NODE, WNDR_HB_NODE } from "~constants/api";
-import { aoInstance, wndrAoInstance } from "~utils/aoconnect";
 
 const agentStorageMutex = new Mutex();
 

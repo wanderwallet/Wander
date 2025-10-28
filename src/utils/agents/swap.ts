@@ -17,8 +17,6 @@ import { getActiveAddress } from "~wallets/wallets.utils";
 import { getWallets } from "~wallets";
 import BigNumber from "bignumber.js";
 import { fetchTokenBalance, getAOTokenPrice, getTagValue, sendAoTransferForWallet } from "~tokens/aoTokens/ao";
-import { connect } from "@permaweb/aoconnect";
-import { defaultConfig } from "~tokens/aoTokens/config";
 import { defaultOptions } from "~tokens/hooks";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import {
@@ -39,6 +37,7 @@ import { getActiveTier, saveWalletLifetimeSavings } from "~utils/tier/utils";
 import { queryClient } from "~utils/tanstack";
 import { balanceToFractioned } from "~tokens/currency";
 import { AO_PROCESS_ID, defaultTokens } from "~tokens/aoTokens/ao.constants";
+import { aoInstance } from "~utils/aoconnect";
 
 let isSwapExecutionInProgress = false;
 let isSchedulingInProgress = false;
@@ -418,9 +417,8 @@ async function executeTokenSwap(
 ): Promise<string> {
   log(LOG_GROUP.AGENTS, "Transferring AO tokens to agent: ", activeAgent.id, "from wallet:", walletAddress);
 
-  const ao = connect(defaultConfig);
   const messageId = await sendAoTransferForWallet(
-    ao,
+    aoInstance,
     AO_PROCESS_ID,
     activeAgent.id,
     swapQuantity,
@@ -437,7 +435,7 @@ async function executeTokenSwap(
   }
 
   try {
-    const { Error, Messages } = await ao.result({ message: messageId, process: AO_PROCESS_ID });
+    const { Error, Messages } = await aoInstance.result({ message: messageId, process: AO_PROCESS_ID });
     const hasValidTag = Messages?.some((message) =>
       message?.Tags?.some(
         (tag: DecodedTag) => tag.name === "Action" && (tag.value === "Debit-Notice" || tag.value === "Credit-Notice"),

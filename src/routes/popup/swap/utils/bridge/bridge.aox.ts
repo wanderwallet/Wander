@@ -1,5 +1,3 @@
-import { connect } from "@permaweb/aoconnect";
-import { defaultConfig } from "~tokens/aoTokens/config";
 import { getActiveAddress, getActiveKeyfile, type DecryptedWallet } from "~wallets";
 import type {
   GetExpectedOutputParams,
@@ -23,12 +21,12 @@ import { defaultOptions } from "~tokens/hooks";
 import { retryWithGateways } from "~gateways/wayfinder";
 import browser from "webextension-polyfill";
 import { AR_PROCESS_ID, WAR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
-import { createDataItemKeystoneSigner, createDataItemSigner } from "~tokens/aoTokens/ao";
 import BigNumber from "bignumber.js";
 import type { AoxBridgeTransactionStatus } from "./bridge.types";
 import type { JWKInterface } from "arweave/web/lib/wallet";
 import type { HardwareWallet } from "~wallets/hardware";
 import { assertTransferResult, createKeystoneFeeTransaction, createSwapMessage } from "../swap.utils";
+import { createDataItemSigner } from "~utils/aoconnect";
 
 const FAILED_STATUSES = new Set<AoxBridgeTransactionStatus>(["failed", "submintAosFailed", "notOnChain", "refunded"]);
 
@@ -46,8 +44,6 @@ export async function readSwapResult({ orderId }: ReadSwapResult): Promise<ReadS
 
   return { amountOut: transaction.quantity, confirmationTxId: transaction.targetChainTxHash };
 }
-
-const aoInstance = connect(defaultConfig);
 
 export async function getExpectedOutput({
   poolId,
@@ -142,7 +138,7 @@ export async function executeSwap({
 
       transferId = transaction.id;
     } else {
-      const signer = keystoneSigner ? createDataItemKeystoneSigner(keystoneSigner) : createDataItemSigner(keyfile);
+      const signer = createDataItemSigner(keystoneSigner || keyfile);
 
       const { keystoneTx: keystoneTx_, sendMessage } = await createSwapMessage({
         process: tokenIn,

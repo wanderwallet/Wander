@@ -4,11 +4,12 @@ import { getAoTokensCache } from "~tokens";
 import type { GQLTransactionsResultInterface } from "ar-gql/dist/faces";
 import { PersistentStorage } from "~utils/storage";
 import { getActiveAddress } from "~wallets";
-import { type TokenInfo, getTokenInfoFromData, DEFAULT_CU_URL, AO_DEV_CU_URL } from "./ao";
+import { type TokenInfo, getTokenInfoFromData } from "./ao";
 import { withRetry } from "~utils/promises/retry";
 import { timeoutPromise } from "~utils/promises/timeout";
 import { Mutex } from "~utils/mutex";
 import { Id, Owner, UTD_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
+import { AO_DEV_CU_URL, DEFAULT_CU_URL } from "~utils/aoconnect";
 
 /** Tokens storage name */
 export const AO_TOKENS = "ao_tokens";

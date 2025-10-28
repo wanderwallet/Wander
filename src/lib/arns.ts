@@ -14,7 +14,6 @@ import {
   type PaginationParams,
   type WalletAddress,
 } from "@ar.io/sdk/web";
-import { connect } from "@permaweb/aoconnect/browser";
 import { QueryClient, useQuery } from "@tanstack/react-query";
 import { persistQueryClient } from "@tanstack/react-query-persist-client";
 import { useMemo } from "react";
@@ -31,6 +30,7 @@ import type { NameServiceProfile } from "./types";
 import { useActiveTier } from "~utils/tier/hooks";
 import { tierNameToId, TierTypes } from "~utils/tier/constants";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
+import { ardriveAoInstance } from "~utils/aoconnect";
 
 export const LANDING_PAGE_TXID = "oork_YifB3-JQQZg8EgMPQJytua_QCHKNmMqt5kmnCo";
 export const DEFAULT_ANT_LOGO = "Sie_26dvgyok0PZD_-iQAFOhOd5YxDTkczOLoqTTL_A";
@@ -63,18 +63,12 @@ persistQueryClient({
   buster: "v1",
 });
 
-const aoCuUrl = "https://cu.ardrive.io";
-
-export const AO_CLIENT = connect({
-  CU_URL: aoCuUrl,
-});
-
 export const ARIO_PROCESS_ID = process.env.PLASMO_PUBLIC_ARIO_PROCESS_ID ?? ARIO_MAINNET_PROCESS_ID;
 
 export const ARIO_READ_SDK = ARIO.init({
   process: new AOProcess({
     processId: ARIO_PROCESS_ID,
-    ao: AO_CLIENT,
+    ao: ardriveAoInstance,
   }),
 });
 
@@ -105,7 +99,7 @@ export async function getArNSRecord(name: string): Promise<AoArNSNameData | unde
 
 export async function getANTInfo(processId: string): Promise<AoANTInfo> {
   const ant = ANT.init({
-    process: new AOProcess({ processId, ao: AO_CLIENT }),
+    process: new AOProcess({ processId, ao: ardriveAoInstance }),
   });
 
   return ant.getInfo();
@@ -113,7 +107,7 @@ export async function getANTInfo(processId: string): Promise<AoANTInfo> {
 
 export async function getANTState(processId: string): Promise<AoANTState> {
   const ant = ANT.init({
-    process: new AOProcess({ processId, ao: AO_CLIENT }),
+    process: new AOProcess({ processId, ao: ardriveAoInstance }),
   });
 
   return ant.getState();
@@ -295,7 +289,7 @@ export async function purchaseArNSName({
       signer,
       process: new AOProcess({
         processId: ARIO_PROCESS_ID,
-        ao: AO_CLIENT,
+        ao: ardriveAoInstance,
       }),
     });
 
@@ -366,7 +360,7 @@ export async function setPrimaryName({
       signer,
       process: new AOProcess({
         processId: ARIO_PROCESS_ID,
-        ao: AO_CLIENT,
+        ao: ardriveAoInstance,
       }),
     });
 

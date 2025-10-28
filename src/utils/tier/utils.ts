@@ -1,5 +1,3 @@
-import { message } from "@permaweb/aoconnect/browser";
-import { createDataItemSigner } from "~tokens/aoTokens/ao";
 import { tierIdToTierName, TIER_PROCESS_ID } from "./constants";
 import type { ActiveTier, ActiveTierFromApi, DefiFeeDetails, Tier, WalletSavings } from "./types";
 import { defiFeePercent, defiFeeReductionsInPercent } from "./constants";
@@ -10,6 +8,7 @@ import { isLocalWallet } from "~utils/assertions";
 import { ExtensionStorage } from "~utils/storage";
 import { scheduleRefreshWalletLifetimeSavings } from "./alarms";
 import { retryWithDelay } from "~utils/promises/retry";
+import { createDataItemSigner, aoInstance } from "~utils/aoconnect";
 import { CACHE_API, WNDR_HB_NODE } from "~constants/api";
 
 const ONE_HUNDRED = BigNumber(100);
@@ -176,7 +175,7 @@ export async function saveWalletLifetimeSavings(walletAddress: string, savingsIn
     const keyfile = decryptedWallet.keyfile;
 
     const signer = createDataItemSigner(keyfile);
-    const messageId = await message({
+    const messageId = await aoInstance.message({
       process: TIER_PROCESS_ID,
       signer,
       tags: [

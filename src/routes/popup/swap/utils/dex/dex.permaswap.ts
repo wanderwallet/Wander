@@ -1,6 +1,4 @@
-import { connect } from "@permaweb/aoconnect";
-import { createDataItemKeystoneSigner, createDataItemSigner, getTagValue } from "~tokens/aoTokens/ao";
-import { defaultConfig } from "~tokens/aoTokens/config";
+import { getTagValue } from "~tokens/aoTokens/ao";
 import { getActiveAddress, getActiveKeyfile, type DecryptedWallet } from "~wallets";
 import BigNumber from "bignumber.js";
 import type {
@@ -22,8 +20,7 @@ import { getLinkedMessages, OrderError } from "./dex.utils";
 import { queryClient } from "~utils/tanstack";
 import { assertTransferResult, createSwapMessage } from "../swap.utils";
 import browser from "webextension-polyfill";
-
-const aoInstance = connect(defaultConfig);
+import { createDataItemSigner, aoInstance } from "~utils/aoconnect";
 
 enum SettlementStatus {
   Open = "Open",
@@ -197,10 +194,10 @@ export async function executeSwap({
   try {
     decryptedWallet = await getActiveKeyfile();
 
-    let signer: ReturnType<typeof createDataItemSigner> | ReturnType<typeof createDataItemKeystoneSigner>;
+    let signer: ReturnType<typeof createDataItemSigner>;
     if (keystoneSigner) {
       // Hardware wallet case
-      signer = createDataItemKeystoneSigner(keystoneSigner);
+      signer = createDataItemSigner(keystoneSigner);
     } else {
       // Local wallet case
       isLocalWallet(decryptedWallet);
