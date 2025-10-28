@@ -4,3 +4,4 @@ export * from "./header";
 export * from "./tabBar";
 export * from "./popover";
 export * from "./theme-toggle";
+export * from "./tooltip";

@@ -1,0 +1,133 @@
+.tooltip-wrapper {
+  position: static;
+  display: inline-block;
+  vertical-align: middle;
+  line-height: 0;
+}
+
+.tooltip {
+  position: fixed;
+  z-index: 10000;
+  padding: 8px 12px;
+  background-color: var(--color-card-background-default, rgba(0, 0, 0, 0.9));
+  color: var(--color-font-heading, #fff);
+  border: 1px solid var(--color-border-default, rgba(255, 255, 255, 0.1));
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.4;
+  pointer-events: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  max-width: 280px;
+  width: max-content;
+  text-align: center;
+}
+
+.tooltip::before,
+.tooltip::after {
+  content: "";
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  pointer-events: none;
+}
+
+.tooltip::after {
+  z-index: 1;
+}
+
+.tooltip--top::before,
+.tooltip--topStart::before,
+.tooltip--topEnd::before {
+  top: 100%;
+  border-width: 7px 7px 0 7px;
+  border-color: var(--color-border-default, rgba(255, 255, 255, 0.1)) transparent transparent transparent;
+}
+
+.tooltip--top::after,
+.tooltip--topStart::after,
+.tooltip--topEnd::after {
+  top: 100%;
+  border-width: 6px 6px 0 6px;
+  border-color: var(--color-card-background-default, rgba(0, 0, 0, 0.9)) transparent transparent transparent;
+}
+
+.tooltip--top::before,
+.tooltip--top::after {
+  left: 50%;
+  transform: translate(-50%, 0);
+}
+
+.tooltip--topStart::before,
+.tooltip--topStart::after {
+  left: 15px;
+}
+
+.tooltip--topEnd::before,
+.tooltip--topEnd::after {
+  right: 15px;
+}
+
+.tooltip--bottom::before,
+.tooltip--bottomStart::before,
+.tooltip--bottomEnd::before {
+  bottom: 100%;
+  border-width: 0 7px 7px 7px;
+  border-color: transparent transparent var(--color-border-default, rgba(255, 255, 255, 0.1)) transparent;
+}
+
+.tooltip--bottom::after,
+.tooltip--bottomStart::after,
+.tooltip--bottomEnd::after {
+  bottom: 100%;
+  border-width: 0 6px 6px 6px;
+  border-color: transparent transparent var(--color-card-background-default, rgba(0, 0, 0, 0.9)) transparent;
+}
+
+.tooltip--bottom::before,
+.tooltip--bottom::after {
+  left: 50%;
+  transform: translate(-50%, 0);
+}
+
+.tooltip--bottomStart::before,
+.tooltip--bottomStart::after {
+  left: 15px;
+}
+
+.tooltip--bottomEnd::before,
+.tooltip--bottomEnd::after {
+  right: 15px;
+}
+
+.tooltip--left::before {
+  left: 100%;
+  top: 50%;
+  transform: translate(0, -50%);
+  border-width: 7px 0 7px 7px;
+  border-color: transparent transparent transparent var(--color-border-default, rgba(255, 255, 255, 0.1));
+}
+
+.tooltip--left::after {
+  left: 100%;
+  top: 50%;
+  transform: translate(0, -50%);
+  border-width: 6px 0 6px 6px;
+  border-color: transparent transparent transparent var(--color-card-background-default, rgba(0, 0, 0, 0.9));
+}
+
+.tooltip--right::before {
+  right: 100%;
+  top: 50%;
+  transform: translate(0, -50%);
+  border-width: 7px 7px 7px 0;
+  border-color: transparent var(--color-border-default, rgba(255, 255, 255, 0.1)) transparent transparent;
+}
+
+.tooltip--right::after {
+  right: 100%;
+  top: 50%;
+  transform: translate(0, -50%);
+  border-width: 6px 6px 6px 0;
+  border-color: transparent var(--color-card-background-default, rgba(0, 0, 0, 0.9)) transparent transparent;
+}

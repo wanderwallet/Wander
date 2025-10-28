@@ -1,6 +1,6 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useEffect, useRef, useState } from "react";
-import { Button, Column, ICloudIcon, GoogleCloudIcon, Row, Switch, Text } from "~components/embed";
+import { Button, Column, ICloudIcon, GoogleCloudIcon, Row, Switch, Text, Tooltip, InfoIcon } from "~components/embed";
 import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 import { CloudProvider, type AppDataFile } from "~utils/embedded/cloud/cloud.types";
@@ -218,6 +218,13 @@ export function AccountBackupCloudEmbeddedView() {
               isLoading={isLoading}
               isDisabled={isLoading}>
               Delete backup
+              <Tooltip
+                style={{ marginLeft: 4 }}
+                width={240}
+                content="Deletes your wallet backup from the cloud. Make sure you're signed in with the same cloud account you used to create the backup."
+                position="top">
+                <InfoIcon />
+              </Tooltip>
             </Button>
           )}
 
