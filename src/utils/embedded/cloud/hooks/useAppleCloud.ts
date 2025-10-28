@@ -31,7 +31,11 @@ interface UseAppleCloudReturn {
 
 const RECORD_TYPE = "WalletBackup";
 
-export const useAppleCloud = (containerIdentifier: string, apiToken: string): UseAppleCloudReturn => {
+const CONTAINER_IDENTIFIER = import.meta.env?.VITE_APPLE_CONTAINER_IDENTIFIER;
+const API_TOKEN = import.meta.env?.VITE_APPLE_API_TOKEN;
+const ENVIRONMENT = import.meta.env?.VITE_APPLE_ENVIRONMENT || "development";
+
+export const useAppleCloud = (): UseAppleCloudReturn => {
   const [authState, setAuthState] = useState<AppleAuthState>({
     isAuthenticated: false,
     userIdentity: null,
@@ -46,21 +50,19 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
   useEffect(() => {
     const initializeCloudKit = async () => {
       try {
-        if (!containerIdentifier || !apiToken) {
+        if (!CONTAINER_IDENTIFIER || !API_TOKEN) {
           console.error("CloudKit initialization failed: Missing required configuration");
           return;
         }
 
-        // const environment = process.env.NODE_ENV === "development" ? "development" : "production";
-        const environment = "development"; // TODO: Remove this and uncomment the above line
-        console.log(`Initializing CloudKit with environment: ${environment}`);
+        console.log(`Initializing CloudKit with environment: ${ENVIRONMENT}`);
 
         const cloudKit = window.CloudKit.configure({
           containers: [
             {
-              containerIdentifier,
+              containerIdentifier: CONTAINER_IDENTIFIER,
               apiTokenAuth: {
-                apiToken,
+                apiToken: API_TOKEN,
                 persist: true,
                 signInButton: {
                   id: "apple-sign-in-button",
@@ -71,7 +73,7 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
                   theme: "black",
                 },
               },
-              environment,
+              environment: ENVIRONMENT,
             },
           ],
           services: {
@@ -120,7 +122,7 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
     if (status !== "ready") return;
 
     initializeCloudKit();
-  }, [containerIdentifier, apiToken, status]);
+  }, [status]);
 
   useEffect(() => {
     isAuthenticatedRef.current = authState.isAuthenticated;
@@ -174,10 +176,13 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
       return new Promise((resolve, reject) => {
         let authCheckInterval: NodeJS.Timeout | null = null;
         let authTimeout: NodeJS.Timeout | null = null;
+        let popupClosedTime: number | null = null;
+        let gracePeriodTimeout: NodeJS.Timeout | null = null;
 
         const cleanup = () => {
           if (authCheckInterval) clearInterval(authCheckInterval);
           if (authTimeout) clearTimeout(authTimeout);
+          if (gracePeriodTimeout) clearTimeout(gracePeriodTimeout);
         };
 
         const resolveAuth = (success: boolean, error?: string) => {
@@ -191,15 +196,23 @@ export const useAppleCloud = (containerIdentifier: string, apiToken: string): Us
           resolve({ email: null });
         };
 
-        // Check authentication status every 2 seconds
+        // Check authentication status every 500ms for faster response
         authCheckInterval = setInterval(() => {
-          if (isAuthenticatedRef.current || localStorage.getItem(containerIdentifier)) {
+          if (isAuthenticatedRef.current || localStorage.getItem(CONTAINER_IDENTIFIER)) {
             resolveAuth(true);
-          } else if (cloudKitPopup?.closed) {
-            // Only show cancelled error if popup closed without successful auth
-            resolveAuth(false, "iCloud authentication was cancelled. Please try again.");
+          } else if (cloudKitPopup?.closed && !popupClosedTime) {
+            // Popup just closed - start grace period
+            popupClosedTime = Date.now();
+
+            // Schedule cancellation check after grace period
+            gracePeriodTimeout = setTimeout(() => {
+              // Double-check auth state after grace period
+              if (!isAuthenticatedRef.current && !localStorage.getItem(CONTAINER_IDENTIFIER)) {
+                resolveAuth(false, "iCloud authentication was cancelled. Please try again.");
+              }
+            }, 4000); // 4 second grace period
           }
-        }, 2000);
+        }, 500);
 
         // Timeout after 5 minutes
         authTimeout = setTimeout(() => {

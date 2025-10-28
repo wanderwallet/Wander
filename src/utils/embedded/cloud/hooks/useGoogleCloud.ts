@@ -90,7 +90,9 @@ const GOOGLE_REVOKE_URL = "https://oauth2.googleapis.com/revoke";
 const SCOPES = "https://www.googleapis.com/auth/drive.appdata email";
 const GOOGLE_DRIVE_OAUTH_CALLBACK_URL = "/google-drive-oauth-callback.html";
 
-export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
+const CLIENT_ID = import.meta.env?.VITE_GOOGLE_CLIENT_ID;
+
+export const useGoogleCloud = (): UseGoogleCloudReturn => {
   const accessTokenRef = useRef<string | null>(null);
 
   const [authState, setAuthState] = useState<GoogleCloudAuthState>(() => {
@@ -160,7 +162,7 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
       // Build OAuth URL
       const redirectUri = `${window.location.origin}${GOOGLE_DRIVE_OAUTH_CALLBACK_URL}`;
       const authParams = new URLSearchParams({
-        client_id: clientId,
+        client_id: CLIENT_ID,
         redirect_uri: redirectUri,
         response_type: "token",
         scope: SCOPES,
@@ -246,11 +248,21 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
       }
 
       // Check if popup was closed manually
+      let popupClosedTime: number | null = null;
+      let gracePeriodTimeout: NodeJS.Timeout | null = null;
+
       const popupCheckInterval = setInterval(() => {
-        if (popup.closed) {
-          cleanup();
-          setAuthState((prev) => ({ ...prev, isLoading: false }));
-          reject(new Error(getAuthErrorMessage(OAuthErrorCode.POPUP_CLOSED)));
+        if (popup.closed && !popupClosedTime) {
+          // Popup just closed - start grace period to allow postMessage to be received
+          popupClosedTime = Date.now();
+
+          // Schedule cancellation check after grace period
+          gracePeriodTimeout = setTimeout(() => {
+            // If we're still here after grace period, user cancelled (postMessage never arrived)
+            cleanup();
+            setAuthState((prev) => ({ ...prev, isLoading: false }));
+            reject(new Error(getAuthErrorMessage(OAuthErrorCode.POPUP_CLOSED)));
+          }, 2000); // 2 second grace period for postMessage to arrive
         }
       }, POPUP_CHECK_INTERVAL_MS);
 
@@ -266,11 +278,12 @@ export const useGoogleCloud = (clientId: string): UseGoogleCloudReturn => {
         window.removeEventListener("message", authCompleteMessageHandler);
         clearInterval(popupCheckInterval);
         clearTimeout(timeoutId);
+        if (gracePeriodTimeout) clearTimeout(gracePeriodTimeout);
       };
 
       window.addEventListener("message", authCompleteMessageHandler);
     });
-  }, [clientId, authState.isAuthenticated, fetchUserEmail]);
+  }, [authState.isAuthenticated, fetchUserEmail]);
 
   const revokeAuth = useCallback(async () => {
     if (accessTokenRef.current) {

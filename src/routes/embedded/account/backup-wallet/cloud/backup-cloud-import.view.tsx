@@ -14,11 +14,6 @@ import { signOut } from "~utils/embedded/embedded.utils";
 import { sleep } from "~utils/promises/sleep";
 import { Loading } from "@arconnect/components-rebrand";
 import { toast } from "react-toastify";
-import { getFriendlyAuthErrorMessage } from "~utils/authentication/authentication.utils";
-
-const clientId = import.meta.env?.VITE_GOOGLE_CLIENT_ID;
-const containerIdentifier = import.meta.env?.VITE_APPLE_CONTAINER_IDENTIFIER;
-const apiToken = import.meta.env?.VITE_APPLE_API_TOKEN;
 
 export function AccountBackupCloudImportEmbeddedView() {
   const { authStatus, currentWallet, importTempWallet, recoverWallet, cloudBackup, setCloudBackup } = useEmbedded();
@@ -28,8 +23,8 @@ export function AccountBackupCloudImportEmbeddedView() {
 
   const isViewLoading = authStatus === "unknown" || authStatus === "loading" || authStatus === "authLoading";
 
-  const googleCloud = useGoogleCloud(clientId);
-  const appleCloud = useAppleCloud(containerIdentifier, apiToken);
+  const googleCloud = useGoogleCloud();
+  const appleCloud = useAppleCloud();
 
   const handleOtherOptions = () => {
     navigate(EmbeddedPaths.AuthRestoreShares);

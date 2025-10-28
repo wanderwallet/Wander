@@ -16,11 +16,6 @@ import { toast } from "react-toastify";
 import type { JWKInterface } from "@dha-team/arbundles/node";
 import type { LocalWallet } from "~wallets/wallets.types";
 import { freeDecryptedWallet } from "~wallets/encryption";
-import { getFriendlyAuthErrorMessage } from "~utils/authentication/authentication.utils";
-
-const clientId = import.meta.env?.VITE_GOOGLE_CLIENT_ID;
-const containerIdentifier = import.meta.env?.VITE_APPLE_CONTAINER_IDENTIFIER;
-const apiToken = import.meta.env?.VITE_APPLE_API_TOKEN;
 
 export function AccountBackupCloudEmbeddedView() {
   const {
@@ -42,8 +37,8 @@ export function AccountBackupCloudEmbeddedView() {
   const isViewLoading =
     authStatus === "unknown" || authStatus === "loading" || authStatus === "authLoading" || isBackupLoading;
 
-  const googleCloud = useGoogleCloud(clientId);
-  const appleCloud = useAppleCloud(containerIdentifier, apiToken);
+  const googleCloud = useGoogleCloud();
+  const appleCloud = useAppleCloud();
 
   const handleComplete = async () => {
     if (lastRegisteredWallet) {
