@@ -5,20 +5,19 @@ import { useEffect, useState } from "react";
 import styled, { useTheme } from "styled-components";
 import browser from "webextension-polyfill";
 import { ExtensionStorage } from "~utils/storage";
-import { useAo } from "~tokens/hooks";
 import { AO_PROCESS_BALANCE_MIRROR, Id } from "~tokens/aoTokens/ao.constants";
+import { aoInstance } from "~utils/aoconnect";
 
 interface AoBannerProps {
   activeAddress: string;
 }
 
 export default function AoBanner({ activeAddress }: AoBannerProps) {
-  const ao = useAo();
   const theme = useTheme();
   const [showBanner, setShowBanner] = useState(false);
 
   async function getAoNativeTokenBalance() {
-    const res = await ao.dryrun({
+    const res = await aoInstance.dryrun({
       Id,
       Owner: activeAddress,
       process: AO_PROCESS_BALANCE_MIRROR,
@@ -45,7 +44,7 @@ export default function AoBanner({ activeAddress }: AoBannerProps) {
   }
 
   useEffect(() => {
-    if (activeAddress && ao) {
+    if (activeAddress) {
       ExtensionStorage.get(`ao_hide_banner_${activeAddress}`).then((hideBanner) => {
         if (!hideBanner) {
           fetchAoNativeTokenBalance().catch(() => {});
@@ -54,7 +53,7 @@ export default function AoBanner({ activeAddress }: AoBannerProps) {
         }
       });
     }
-  }, [activeAddress, ao]);
+  }, [activeAddress]);
 
   if (!activeAddress || !showBanner) {
     return null;

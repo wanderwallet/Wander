@@ -26,7 +26,6 @@ import { AutoContactPic, generateProfileIcon, ProfilePicture } from "~components
 import { formatFiatBalance, fractionedToBalance } from "~tokens/currency";
 import { useContact } from "~contacts/hooks";
 import { sendAoTransfer, sendAoTransferKeystone, type TokenInfo } from "~tokens/aoTokens/ao";
-import { useAo } from "~tokens/hooks";
 import { useActiveWallet } from "~wallets/hooks";
 import { UR } from "@ngraveio/bc-ur";
 import { KeystoneSigner, decodeSignature, transactionToUR, type KeystoneInteraction } from "~wallets/hardware/keystone";
@@ -56,6 +55,7 @@ import { Flex } from "~components/common/Flex";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 import { useAoRateLimitedToast } from "~utils/toast/toast.hooks";
+import { aoInstance } from "~utils/aoconnect";
 
 export interface ConfirmViewParams {
   token: string;
@@ -87,7 +87,6 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
   const { setToast } = useToasts();
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const ao = useAo();
   const [currency] = useSetting("currency");
 
   // current address
@@ -316,7 +315,7 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
     if (isAo) {
       try {
         const res = await sendAoTransfer(
-          ao,
+          aoInstance,
           tokenID,
           recipient.address,
           fractionedToBalance(amount, { decimals: token.Denomination }, "AO"),
@@ -519,7 +518,7 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
         setPreparedTx(prepared);
 
         const res = await sendAoTransferKeystone(
-          ao,
+          aoInstance,
           tokenID,
           recipient.address,
           fractionedToBalance(amount, { decimals: token.Denomination }, "AO"),

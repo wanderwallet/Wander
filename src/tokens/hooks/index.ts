@@ -215,13 +215,6 @@ export function useTotalFiatBalance() {
   }, [tokens, address, conversionRateQuery.data, pricesQuery.data, tokenBalanceQueries, arPrice]);
 }
 
-export function useAo() {
-  // ao instance
-  const ao = useMemo(() => aoInstance, []);
-
-  return ao;
-}
-
 export function useAoTokens({
   type,
   hidden,
