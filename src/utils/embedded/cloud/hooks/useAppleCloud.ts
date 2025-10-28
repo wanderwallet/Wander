@@ -210,7 +210,7 @@ export const useAppleCloud = (): UseAppleCloudReturn => {
               if (!isAuthenticatedRef.current && !localStorage.getItem(CONTAINER_IDENTIFIER)) {
                 resolveAuth(false, "iCloud authentication was cancelled. Please try again.");
               }
-            }, 4000); // 4 second grace period
+            }, 2000); // 2 second grace period
           }
         }, 500);
 
