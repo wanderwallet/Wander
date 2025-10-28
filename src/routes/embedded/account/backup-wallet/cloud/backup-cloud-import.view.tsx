@@ -1,6 +1,16 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useState } from "react";
-import { Button, Column, ICloudIcon, GoogleCloudIcon, Row, Text, Spacer, Copyable } from "~components/embed";
+import {
+  Button,
+  Column,
+  ICloudIcon,
+  GoogleCloudIcon,
+  Row,
+  Text,
+  Spacer,
+  Copyable,
+  UploadIcon,
+} from "~components/embed";
 import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
 import { useAppleCloud } from "~utils/embedded/cloud/hooks/useAppleCloud";
 import { useGoogleCloud } from "~utils/embedded/cloud/hooks/useGoogleCloud";
@@ -14,6 +24,7 @@ import { signOut } from "~utils/embedded/embedded.utils";
 import { sleep } from "~utils/promises/sleep";
 import { Loading } from "@arconnect/components-rebrand";
 import { toast } from "react-toastify";
+import { Upload01 } from "@untitled-ui/icons-react";
 
 export function AccountBackupCloudImportEmbeddedView() {
   const { authStatus, currentWallet, importTempWallet, recoverWallet, cloudBackup, setCloudBackup } = useEmbedded();
@@ -112,8 +123,13 @@ export function AccountBackupCloudImportEmbeddedView() {
           Connect this wallet
         </Button>
 
-        <Button variant="secondary" isFullWidth isDisabled={isViewLoading} onClick={handleOtherOptions}>
-          Other options
+        <Button
+          variant="secondary"
+          isFullWidth
+          isDisabled={isViewLoading}
+          onClick={handleOtherOptions}
+          icon={<Upload01 height={24} width={24} />}>
+          Import another wallet
         </Button>
       </Column>
     </OnboardingCard>
