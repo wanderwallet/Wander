@@ -286,18 +286,6 @@ export const useGoogleCloud = (): UseGoogleCloudReturn => {
   }, [authState.isAuthenticated, fetchUserEmail]);
 
   const revokeAuth = useCallback(async () => {
-    if (accessTokenRef.current) {
-      try {
-        // Revoke token on Google's servers
-        await fetch(`${GOOGLE_REVOKE_URL}?token=${accessTokenRef.current}`, {
-          method: "POST",
-        });
-      } catch (error) {
-        console.error("Error revoking token:", error);
-      }
-    }
-
-    // Clear stored token and ref
     clearStoredToken();
     accessTokenRef.current = null;
 

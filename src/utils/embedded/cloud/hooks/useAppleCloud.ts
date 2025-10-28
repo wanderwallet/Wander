@@ -18,7 +18,7 @@ interface UseAppleCloudReturn {
 
   // Auth methods
   authenticate: () => Promise<{ email: string | null }>;
-  revokeAuth: () => void;
+  revokeAuth: () => Promise<void>;
 
   // File operations methods
   uploadFile: (file: File | Blob, fileName: string, walletAddress: string, mimeType?: string) => Promise<AppDataFile>;
@@ -78,9 +78,14 @@ export const useAppleCloud = (): UseAppleCloudReturn => {
           ],
           services: {
             authTokenStore: {
-              putToken: (containerIdentifier: string, authToken: string) =>
-                localStorage.setItem(containerIdentifier, authToken),
-              getToken: (containerIdentifier: string) => localStorage.getItem(containerIdentifier) || "",
+              putToken: (containerIdentifier: string, authToken: string) => {
+                if (!authToken) {
+                  localStorage.removeItem(containerIdentifier);
+                } else {
+                  localStorage.setItem(containerIdentifier, authToken);
+                }
+              },
+              getToken: (containerIdentifier: string) => localStorage.getItem(containerIdentifier),
             },
           },
         });
@@ -198,7 +203,8 @@ export const useAppleCloud = (): UseAppleCloudReturn => {
 
         // Check authentication status every 500ms for faster response
         authCheckInterval = setInterval(() => {
-          if (isAuthenticatedRef.current || localStorage.getItem(CONTAINER_IDENTIFIER)) {
+          const authToken = localStorage.getItem(CONTAINER_IDENTIFIER);
+          if (isAuthenticatedRef.current || authToken) {
             resolveAuth(true);
           } else if (cloudKitPopup?.closed && !popupClosedTime) {
             // Popup just closed - start grace period
@@ -207,7 +213,7 @@ export const useAppleCloud = (): UseAppleCloudReturn => {
             // Schedule cancellation check after grace period
             gracePeriodTimeout = setTimeout(() => {
               // Double-check auth state after grace period
-              if (!isAuthenticatedRef.current && !localStorage.getItem(CONTAINER_IDENTIFIER)) {
+              if (!isAuthenticatedRef.current && !authToken) {
                 resolveAuth(false, "iCloud authentication was cancelled. Please try again.");
               }
             }, 2000); // 2 second grace period
@@ -227,15 +233,19 @@ export const useAppleCloud = (): UseAppleCloudReturn => {
     }
   }, [authState.isAuthenticated]);
 
-  const revokeAuth = useCallback(() => {
-    setAuthState({
-      isAuthenticated: false,
-      userIdentity: null,
-      isLoading: false,
-    });
+  const revokeAuth = useCallback(async () => {
+    try {
+      setAuthState({
+        isAuthenticated: false,
+        userIdentity: null,
+        isLoading: false,
+      });
 
-    // @ts-ignore
-    containerRef.current?._auth.signOut();
+      // @ts-ignore
+      await containerRef.current?._auth.signOut();
+    } catch {
+      localStorage.removeItem(CONTAINER_IDENTIFIER);
+    }
   }, []);
 
   const ensureIsAuthenticated = useCallback(async () => {

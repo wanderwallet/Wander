@@ -37,6 +37,9 @@ export function AccountBackupCloudEmbeddedView() {
   const isViewLoading =
     authStatus === "unknown" || authStatus === "loading" || authStatus === "authLoading" || isBackupLoading;
 
+  const provider = cloudBackup?.provider || cloudProvider;
+  const providerName = provider === CloudProvider.APPLE ? "iCloud" : "Google";
+
   const googleCloud = useGoogleCloud();
   const appleCloud = useAppleCloud();
 
@@ -125,6 +128,24 @@ export function AccountBackupCloudEmbeddedView() {
     }
   }
 
+  async function handleSignout() {
+    if (!provider) return;
+
+    setIsLoading(true);
+    try {
+      if (provider === CloudProvider.GOOGLE) {
+        await googleCloud.revokeAuth();
+      } else if (provider === CloudProvider.APPLE) {
+        await appleCloud.revokeAuth();
+      }
+      toast.success(`Signed out of ${providerName} successfully`);
+    } catch {
+      toast.error(`Failed to sign out ${providerName}`);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   useEffect(() => {
     if (cloudProvider) return;
     const provider = browserInfo.isAppleDevice ? CloudProvider.APPLE : CloudProvider.GOOGLE;
@@ -155,10 +176,9 @@ export function AccountBackupCloudEmbeddedView() {
       <Column alignment="left">
         <Row justifyContent="between" isFullWidth>
           <Row justifyContent="start" isFullWidth>
-            {(cloudBackup?.provider || cloudProvider) === CloudProvider.APPLE ? <ICloudIcon /> : <GoogleCloudIcon />}
+            {provider === CloudProvider.APPLE ? <ICloudIcon /> : <GoogleCloudIcon />}
             <Text variant="bodyLg">
-              Store{cloudBackup ? "d" : ""} on{" "}
-              {(cloudBackup?.provider || cloudProvider) === CloudProvider.APPLE ? "iCloud" : "Google Cloud"}
+              Store{cloudBackup ? "d" : ""} on {provider === CloudProvider.APPLE ? "iCloud" : "Google Cloud"}
             </Text>
           </Row>
           {!cloudBackup && (
@@ -207,6 +227,12 @@ export function AccountBackupCloudEmbeddedView() {
             </Button>
           )}
         </Column>
+        {((provider === CloudProvider.GOOGLE && googleCloud.isAuthenticated) ||
+          (provider === CloudProvider.APPLE && appleCloud.isAuthenticated)) && (
+          <Button onClick={handleSignout} variant="link" isDisabled={isViewLoading || isLoading}>
+            Sign out of {providerName}
+          </Button>
+        )}
         <Button variant="link" isDisabled={isViewLoading} href="https://www.wander.app/help/what-is-a-json-keyfile">
           What is a keyfile?
         </Button>

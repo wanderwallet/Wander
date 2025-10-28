@@ -1,16 +1,6 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useState } from "react";
-import {
-  Button,
-  Column,
-  ICloudIcon,
-  GoogleCloudIcon,
-  Row,
-  Text,
-  Spacer,
-  Copyable,
-  UploadIcon,
-} from "~components/embed";
+import { Button, Column, ICloudIcon, GoogleCloudIcon, Row, Text, Spacer, Copyable } from "~components/embed";
 import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
 import { useAppleCloud } from "~utils/embedded/cloud/hooks/useAppleCloud";
 import { useGoogleCloud } from "~utils/embedded/cloud/hooks/useGoogleCloud";
@@ -25,6 +15,7 @@ import { sleep } from "~utils/promises/sleep";
 import { Loading } from "@arconnect/components-rebrand";
 import { toast } from "react-toastify";
 import { Upload01 } from "@untitled-ui/icons-react";
+import { CloudProvider } from "~utils/embedded/cloud/cloud.types";
 
 export function AccountBackupCloudImportEmbeddedView() {
   const { authStatus, currentWallet, importTempWallet, recoverWallet, cloudBackup, setCloudBackup } = useEmbedded();
@@ -33,6 +24,8 @@ export function AccountBackupCloudImportEmbeddedView() {
   const [isBackupLoading, setIsBackupLoading] = useState(false);
 
   const isViewLoading = authStatus === "unknown" || authStatus === "loading" || authStatus === "authLoading";
+  const provider = cloudBackup?.provider;
+  const providerName = provider === CloudProvider.APPLE ? "iCloud" : "Google";
 
   const googleCloud = useGoogleCloud();
   const appleCloud = useAppleCloud();
@@ -71,6 +64,24 @@ export function AccountBackupCloudImportEmbeddedView() {
       }
     } catch (error) {
       toast.error(error?.message || "Failed to import from cloud");
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function handleSignout() {
+    if (!provider) return;
+
+    setIsLoading(true);
+    try {
+      if (provider === CloudProvider.GOOGLE) {
+        await googleCloud.revokeAuth();
+      } else if (provider === CloudProvider.APPLE) {
+        await appleCloud.revokeAuth();
+      }
+      toast.success(`Signed out of ${providerName} successfully`);
+    } catch {
+      toast.error(`Failed to sign out ${providerName}`);
     } finally {
       setIsLoading(false);
     }
@@ -131,6 +142,12 @@ export function AccountBackupCloudImportEmbeddedView() {
           icon={<Upload01 height={24} width={24} />}>
           Import another wallet
         </Button>
+        {((provider === CloudProvider.GOOGLE && googleCloud.isAuthenticated) ||
+          (provider === CloudProvider.APPLE && appleCloud.isAuthenticated)) && (
+          <Button onClick={handleSignout} variant="link" isDisabled={isViewLoading || isLoading}>
+            Sign out of {providerName}
+          </Button>
+        )}
       </Column>
     </OnboardingCard>
   );
