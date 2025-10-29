@@ -19,6 +19,9 @@ export enum OAuthErrorCode {
   CANNOT_CREATE_SESSION = "CANNOT_CREATE_SESSION",
   POPUP_CLOSED = "POPUP_CLOSED",
   POPUP_TIMEOUT = "POPUP_TIMEOUT",
+  // Google Drive specific errors
+  GOOGLE_DRIVE_NO_ACCESS_TOKEN = "GOOGLE_DRIVE_NO_ACCESS_TOKEN",
+  GOOGLE_DRIVE_AUTH_FAILED = "GOOGLE_DRIVE_AUTH_FAILED",
 }
 
 const AUTH_ERRORS_BY_CODE: Record<string | OAuthErrorCode, string> = {
@@ -47,7 +50,13 @@ const AUTH_ERRORS_BY_CODE: Record<string | OAuthErrorCode, string> = {
   [OAuthErrorCode.CANNOT_CREATE_SESSION]: "Authentication error. Please, try again.",
   [OAuthErrorCode.POPUP_CLOSED]: "Authentication cancelled.",
   [OAuthErrorCode.POPUP_TIMEOUT]: "Authentication timeout. Please, try again.",
+  [OAuthErrorCode.GOOGLE_DRIVE_NO_ACCESS_TOKEN]: "Failed to receive access token from Google. Please try again.",
+  [OAuthErrorCode.GOOGLE_DRIVE_AUTH_FAILED]: "Google Drive authentication failed. Please try again.",
 };
+
+export function getAuthErrorMessage(errorCode: string | OAuthErrorCode): string {
+  return AUTH_ERRORS_BY_CODE[errorCode] || AUTH_ERRORS_BY_CODE.unknown_error;
+}
 
 export function getFriendlyAuthErrorMessage(
   error: Error | SupabaseAuthError | OAuthError,
@@ -90,6 +99,11 @@ export const OAUTH_SUCCESS_MSG_TYPE = "OAUTH_SUCCESS" as const;
 
 export const OAUTH_ERROR_MSG_TYPE = "OAUTH_ERROR" as const;
 
+// Google Drive OAuth message types
+export const GOOGLE_DRIVE_OAUTH_SUCCESS_MSG_TYPE = "GOOGLE_DRIVE_OAUTH_SUCCESS" as const;
+
+export const GOOGLE_DRIVE_OAUTH_ERROR_MSG_TYPE = "GOOGLE_DRIVE_OAUTH_ERROR" as const;
+
 export function isOAuthSuccessMessage(msg: OAuthResultMessage): msg is OAuthSuccessMessage {
   return (
     msg.type === OAUTH_SUCCESS_MSG_TYPE &&
@@ -105,6 +119,28 @@ export function isOAuthSuccessMessage(msg: OAuthResultMessage): msg is OAuthSucc
 export function isOAuthErrorMessage(msg: OAuthResultMessage): msg is OAuthErrorMessage {
   return (
     msg.type === OAUTH_ERROR_MSG_TYPE &&
+    typeof msg.errorCode === "string" &&
+    !!msg.errorCode &&
+    (msg.errorDescription === undefined || typeof msg.errorDescription === "string")
+  );
+}
+
+export function isGoogleDriveOAuthSuccessMessage(
+  msg: any,
+): msg is { type: typeof GOOGLE_DRIVE_OAUTH_SUCCESS_MSG_TYPE; accessToken: string; expiresIn: number } {
+  return (
+    msg?.type === GOOGLE_DRIVE_OAUTH_SUCCESS_MSG_TYPE &&
+    typeof msg.accessToken === "string" &&
+    !!msg.accessToken &&
+    typeof msg.expiresIn === "number"
+  );
+}
+
+export function isGoogleDriveOAuthErrorMessage(
+  msg: any,
+): msg is { type: typeof GOOGLE_DRIVE_OAUTH_ERROR_MSG_TYPE; errorCode: string; errorDescription?: string } {
+  return (
+    msg?.type === GOOGLE_DRIVE_OAUTH_ERROR_MSG_TYPE &&
     typeof msg.errorCode === "string" &&
     !!msg.errorCode &&
     (msg.errorDescription === undefined || typeof msg.errorDescription === "string")

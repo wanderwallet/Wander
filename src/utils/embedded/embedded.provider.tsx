@@ -1,7 +1,7 @@
 import type { JWKInterface } from "arweave/web/lib/wallet";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { setupBackgroundService } from "~api/background/background-setup";
-import { WalletService } from "~utils/wallets/wallets.service";
+import { WalletService, type CloudBackup } from "~utils/wallets/wallets.service";
 import { WalletUtils } from "~utils/wallets/wallets.utils";
 import { getKeyfile, getWallets, type LocalWallet } from "~wallets";
 import Arweave from "arweave";
@@ -79,6 +79,7 @@ import {
   EMBEDDED_CONTEXT_INITIAL_STATE,
   EmbeddedContext,
 } from "~utils/embedded/embedded.context";
+import { CloudProvider } from "./cloud/cloud.types";
 
 export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
   const mountedTimeRef = useRef(Date.now());
@@ -1010,6 +1011,29 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     [user],
   );
 
+  // CLOUD PROVIDER:
+
+  const setCloudProvider = useCallback((cloudProvider: CloudProvider) => {
+    setEmbeddedContextState((prevAuthContextState) => ({
+      ...prevAuthContextState,
+      cloudProvider,
+    }));
+  }, []);
+
+  const setCloudBackup = useCallback((cloudBackup: CloudBackup, updatedWallet?: Wallet) => {
+    setEmbeddedContextState((prevAuthContextState) => ({
+      ...prevAuthContextState,
+      cloudBackup,
+    }));
+
+    if (updatedWallet) {
+      updateCurrentWallet((currentWallet) => ({
+        ...currentWallet,
+        ...updatedWallet,
+      }));
+    }
+  }, []);
+
   // INITIALIZATION:
 
   const lastUserIdRef = useRef<string | null>(null);
@@ -1293,6 +1317,9 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
         importTempWallet,
         deleteImportedTempWallet,
+
+        setCloudProvider,
+        setCloudBackup,
 
         registerWallet,
         clearLastRegisteredWallet,

@@ -1,5 +1,5 @@
 import { Flex } from "~components/common/Flex";
-import { useCallback, useImperativeHandle, useRef } from "react";
+import React, { useCallback, useImperativeHandle, useRef } from "react";
 import { OTP_LENGTH } from "~utils/otp/otp.utils";
 
 import styles from "./CodeInput.module.scss";
@@ -152,21 +152,23 @@ export function CodeInput({ className, name, inputRef, onChange, disabled, readO
   return (
     <Flex direction="row" gap={8} width="100%" justify="center" className={className}>
       {Array.from({ length: OTP_LENGTH }).map((_, index) => (
-        <input
-          key={index}
-          type="text"
-          className={styles["input"]}
-          name={`${name}-${index}`}
-          ref={(el) => (inputRefs.current[index] = el)}
-          maxLength={1}
-          disabled={disabled}
-          readOnly={readOnly}
-          onInput={handleInputOrPaste}
-          onPaste={handleInputOrPaste}
-          onKeyDown={handleKeyDown}
-          onMouseDown={handleMouseDown}
-          autoFocus={autoFocus && index === 0}
-        />
+        <React.Fragment key={index}>
+          <input
+            type="text"
+            className={styles["input"]}
+            name={`${name}-${index}`}
+            ref={(el) => (inputRefs.current[index] = el)}
+            maxLength={1}
+            disabled={disabled}
+            readOnly={readOnly}
+            onInput={handleInputOrPaste}
+            onPaste={handleInputOrPaste}
+            onKeyDown={handleKeyDown}
+            onMouseDown={handleMouseDown}
+            autoFocus={autoFocus && index === 0}
+          />
+          {index === 2 && <span className={styles["separator"]}>-</span>}
+        </React.Fragment>
       ))}
     </Flex>
   );

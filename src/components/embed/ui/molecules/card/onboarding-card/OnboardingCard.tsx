@@ -4,13 +4,20 @@ import type { CardBaseProps } from "~components/embed/ui/molecules/card/Card.typ
 import { WanderFooter } from "~components/embed/ui/templates/wander-footer/WanderFooter";
 
 import styles from "./OnboardingCard.module.scss";
+import type { TextVariants } from "~components/embed/types";
 
 export interface OnboardingCardProps
   extends Omit<CardBaseProps, "footerElement" | "size" | "onCloseButtonClick" | "closeButtonStyles"> {
   onSubmit?: React.FormEventHandler;
+  headerTextVariant?: TextVariants;
 }
 
-export function OnboardingCard({ onSubmit, children: childrenProp, ...cardProps }: OnboardingCardProps) {
+export function OnboardingCard({
+  onSubmit,
+  children: childrenProp,
+  headerTextVariant = "headingLg",
+  ...cardProps
+}: OnboardingCardProps) {
   const children = onSubmit ? (
     <form onSubmit={onSubmit} noValidate className={styles.childrenWrapper}>
       {childrenProp}
@@ -19,5 +26,7 @@ export function OnboardingCard({ onSubmit, children: childrenProp, ...cardProps 
     <div className={styles.childrenWrapper}>{childrenProp}</div>
   );
 
-  return <Card {...cardProps} footerElement={<WanderFooter />} children={children} />;
+  return (
+    <Card {...cardProps} headerTextVariant={headerTextVariant} footerElement={<WanderFooter />} children={children} />
+  );
 }

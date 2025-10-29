@@ -1,1 +1,1 @@
-export type Sizes = "xs" | "sm" | "md" | "lg" | "xl" | "xxl" | "auto";
+export type Sizes = "none" | "xs" | "sm" | "md" | "lg" | "xl" | "xxl" | "auto";

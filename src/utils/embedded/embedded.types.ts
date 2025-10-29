@@ -10,6 +10,8 @@ import type {
 } from "embed-api";
 import type { LocalWallet } from "~wallets/wallets.types";
 import type { UnpartitionedStateStatus } from "~iframe/storage/unpartitioned-storage/unpartitioned-storage.utils";
+import type { CloudProvider } from "./cloud/cloud.types";
+import type { CloudBackup } from "~utils/wallets/wallets.service";
 
 export type AuthStatus =
   | "unknown"
@@ -77,6 +79,8 @@ export interface EmbeddedContextState {
   requestPasswordChange: boolean;
   backupsNeeded: number;
   backupMessage?: string;
+  cloudProvider: null | CloudProvider;
+  cloudBackup: CloudBackup | null | undefined;
 }
 
 export interface EmbeddedContextAuth {
@@ -137,6 +141,9 @@ export interface EmbeddedContextData extends EmbeddedContextState, EmbeddedConte
 
   registerWallet: (sourceType: WalletSourceType) => Promise<Wallet>;
   clearLastRegisteredWallet: () => void;
+
+  setCloudProvider: (cloudProvider: string) => void;
+  setCloudBackup: (cloudBackup: CloudBackup, updatedWallet?: Wallet) => void;
 
   downloadKeyfile: () => Promise<void>;
   copySeedphrase: () => Promise<boolean>;
