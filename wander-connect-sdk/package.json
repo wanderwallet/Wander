@@ -23,8 +23,9 @@
   "jsdelivr": "sdk-dist/index.global.js",
   "types": "sdk-dist/index.d.ts",
   "scripts": {
-    "build": "cross-env NODE_ENV=production tsup",
-    "dev": "tsup --watch",
+    "clean-dist": "rm -rf sdk-dist",
+    "build": "pnpm clean-dist && cross-env NODE_ENV=production tsup",
+    "dev": "pnpm clean-dist && tsup --watch",
     "clean": "rm -rf sdk-dist wallet-api-dist",
     "nuke": "pnpm clean && rm -rf pnpm-lock.yaml node_modules",
     "prepare": "pnpm build"

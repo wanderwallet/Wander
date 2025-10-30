@@ -4,7 +4,6 @@ const env = process.env.NODE_ENV;
 
 const common: Options = {
   splitting: false,
-  clean: true, // clean up the dist folder
   bundle: true,
   skipNodeModulesBundle: true,
   entryPoints: ["src/index.ts"],
@@ -34,6 +33,7 @@ const iifeOptions: Options = {
   format: ["iife"],
   minify: true,
   sourcemap: false,
+  globalName: "WanderConnect",
   ...common,
 };
 
