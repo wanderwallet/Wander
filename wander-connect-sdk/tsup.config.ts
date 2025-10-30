@@ -1,14 +1,10 @@
 import type { Options } from "tsup";
-import fs from "node:fs";
 
 const env = process.env.NODE_ENV;
 
-export const tsup: Options = {
+const common: Options = {
   splitting: false,
   clean: true, // clean up the dist folder
-  dts: true, // generate dts files
-  format: ["cjs", "esm", "iife"], // generate cjs, iife and esm files
-  minify: env === "production",
   bundle: true,
   skipNodeModulesBundle: true,
   entryPoints: ["src/index.ts"],
@@ -17,14 +13,28 @@ export const tsup: Options = {
   outDir: "sdk-dist",
   entry: ["src/index.ts", "!src/**/__tests__/**", "!src/**/*.test.*"], //include all files under src
   shims: true,
-  sourcemap: true,
   treeshake: true,
   esbuildOptions: (options) => {
     options.alias = {
       "wallet-api": "./wallet-api-dist",
     };
   },
-  onSuccess: () => {
-    return Promise.resolve(fs.rmSync("sdk-dist/index.global.js.map", { force: true }));
-  },
 };
+
+const cjsEsmOptions: Options = {
+  dts: true, // generate dts files
+  format: ["cjs", "esm"], // generate cjs and esm files
+  minify: env === "production",
+  sourcemap: true,
+  ...common,
+};
+
+const iifeOptions: Options = {
+  dts: false,
+  format: ["iife"],
+  minify: true,
+  sourcemap: false,
+  ...common,
+};
+
+export default [cjsEsmOptions, iifeOptions];
