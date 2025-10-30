@@ -1,4 +1,5 @@
 import type { Options } from "tsup";
+import fs from "node:fs";
 
 const env = process.env.NODE_ENV;
 
@@ -14,7 +15,7 @@ export const tsup: Options = {
   watch: env === "development",
   target: "es2020",
   outDir: "sdk-dist",
-  entry: ["src/**/*.ts", "!src/**/__tests__/**", "!src/**/*.test.*"], //include all files under src
+  entry: ["src/index.ts", "!src/**/__tests__/**", "!src/**/*.test.*"], //include all files under src
   shims: true,
   sourcemap: true,
   treeshake: true,
@@ -22,5 +23,8 @@ export const tsup: Options = {
     options.alias = {
       "wallet-api": "./wallet-api-dist",
     };
+  },
+  onSuccess: () => {
+    return Promise.resolve(fs.rmSync("sdk-dist/index.global.js.map", { force: true }));
   },
 };
