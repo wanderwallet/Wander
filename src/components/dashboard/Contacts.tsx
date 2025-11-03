@@ -133,7 +133,7 @@ export function ContactsDashboardView({ isQuickSetting }: ContactsDashboardViewP
       </SearchWrapper>
       <Title>{browser.i18n.getMessage("your_contacts")}</Title>
       <Spacer y={0.5} />
-      <SettingsList style={{ flex: 1, overflowY: "auto", minHeight: 0 }}>
+      <SettingsList>
         {Object.entries(groupedContacts).map(([letter, contacts]) => {
           const filteredContacts = (contacts as SettingsContactData[]).filter(filterSearchResults);
 
