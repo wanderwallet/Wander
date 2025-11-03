@@ -120,10 +120,9 @@ const Wrapper = styled.div`
 
 const SearchWrapper = styled.div`
   position: sticky;
-  inset: -32px 0 auto;
+  top: -32px;
   margin-top: -32px;
-  padding-top: 32px;
-  padding-bottom: 24px;
+  padding: 32px 0 24px;
   z-index: 20;
   background-color: ${(props) => props.theme.cardBackground};
 `;

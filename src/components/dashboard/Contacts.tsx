@@ -205,10 +205,9 @@ const SearchWrapper = styled.div<{ small?: boolean }>`
   position: sticky;
   display: grid;
   gap: 8px;
-  inset: -32px 0 auto;
+  top: -32px;
   margin-top: -32px;
-  padding-top: 32px;
-  padding-bottom: 24px;
+  padding: 32px 0 24px;
   z-index: 20;
   grid-template-columns: auto auto;
   ${(props) => !props.small && `background-color: ${props.theme.cardBackground}`}
