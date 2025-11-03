@@ -2,7 +2,6 @@ import { ButtonV2, ModalV2, Spacer } from "@arconnect/components";
 import { useRef } from "react";
 import browser from "webextension-polyfill";
 import expLogo from "url:/assets/ecosystem/exp-token-logo.png";
-import wndrLogo from "url:/assets/ecosystem/wndr-token-logo.svg";
 import { HeaderText, CenterText, Content, ContentWrapper } from "~components/modals/Components";
 import { useTheme } from "styled-components";
 
@@ -16,10 +15,6 @@ const tokenData: Record<string, TokenData> = {
   EXP: {
     learnMoreLink: "https://x.com/ar_io_network/status/1879961321170706490",
     image: expLogo,
-  },
-  WNDR: {
-    learnMoreLink: "https://www.wander.app/blog/wander-network-and-the-wndr-token",
-    image: wndrLogo,
   },
 } as const;
 

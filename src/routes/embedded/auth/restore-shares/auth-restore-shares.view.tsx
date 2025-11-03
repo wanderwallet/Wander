@@ -6,10 +6,13 @@ import { formatDate } from "~utils/agents/utils";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { signOut } from "~utils/embedded/embedded.utils";
 import browser from "webextension-polyfill";
+import { useLocation } from "~wallets/router/router.utils";
 
 export function AuthRestoreSharesEmbeddedView() {
-  const { wallets, unpartitionedStateStatus } = useEmbedded();
+  const { back } = useLocation();
+  const { currentWallet, wallets, unpartitionedStateStatus } = useEmbedded();
   const hasMultipleWallets = wallets.length > 1;
+  const hasCloudBackup = currentWallet.totalCloudBackups > 0;
 
   // TODO: Let them know what type of backup/export they made and where? Let them check all available options?
 
@@ -17,9 +20,14 @@ export function AuthRestoreSharesEmbeddedView() {
     let lastRecovery = 0;
     let hasRecoverableWallets = false;
 
-    wallets.forEach(({ canBeRecovered, lastBackedUpAt, lastExportedAt }) => {
+    wallets.forEach(({ canBeRecovered, lastBackedUpAt, lastExportedAt, lastCloudBackedUpAt }) => {
       lastRecovery = canBeRecovered
-        ? Math.max(lastRecovery, lastBackedUpAt?.getTime() || 0, lastExportedAt?.getTime() || 0)
+        ? Math.max(
+            lastRecovery,
+            lastBackedUpAt?.getTime() || 0,
+            lastExportedAt?.getTime() || 0,
+            lastCloudBackedUpAt?.getTime() || 0,
+          )
         : lastRecovery;
       hasRecoverableWallets = hasRecoverableWallets || canBeRecovered;
     });
@@ -58,7 +66,7 @@ export function AuthRestoreSharesEmbeddedView() {
     <OnboardingCard
       headerText="Restore Wallet"
       subtitle="We need to restore you wallet on this device."
-      onBackButtonClick={() => signOut(false)}>
+      onBackButtonClick={() => (hasCloudBackup ? back() : signOut(false))}>
       <Snackbar title={title} variant={snackbarVariant}>
         <p>{message}</p>
         {unpartitionedStorageMessage ? <p>{unpartitionedStorageMessage} </p> : null}

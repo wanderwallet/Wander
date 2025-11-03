@@ -3234,6 +3234,14 @@
         "message": "已暂停",
         "description": "Paused text"
     },
+    "paused_while_tokens_migrate": {
+        "message": "暂停中，代币迁移到 AO 主网中",
+        "description": "Paused text"
+    },
+    "paused_while_tokens_migrate_to_ao_mainnet": {
+        "message": "暂停中，代币迁移到 AO 主网中",
+        "description": "Paused text"
+    },
     "percentage_of_each_conversion": {
         "message": "$PERCENTAGE$% 每次转换",
         "description": "Percentage of each conversion text",

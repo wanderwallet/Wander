@@ -20,7 +20,7 @@
   line-height: var(--line-height-snug);
   letter-spacing: var(--letter-spacing-wide);
   padding: 0 16px;
-  margin: var(--input-child-offset);
+  margin: var(--input-child-offset) 6px;
   border-radius: calc(var(--input-border-radius) - var(--input-child-offset));
   overflow: visible;
   background: var(--color-background-default);

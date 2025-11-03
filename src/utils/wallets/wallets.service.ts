@@ -294,6 +294,31 @@ async function registerAuthShare(registerAuthShareData: RegisterAuthShareData) {
   return trpcVanilla.registerAuthShare.mutate(registerAuthShareData);
 }
 
+export type CreateCloudBackupData = Exclude<Parameters<typeof trpcVanilla.createCloudBackup.mutate>[0], void>;
+
+async function createCloudBackup(createCloudBackupData: CreateCloudBackupData) {
+  return trpcVanilla.createCloudBackup.mutate(createCloudBackupData);
+}
+
+export type FetchCloudBackupData = Exclude<Parameters<typeof trpcVanilla.fetchCloudBackup.query>[0], void>;
+export type CloudBackup = Awaited<ReturnType<typeof fetchCloudBackup>>["cloudBackup"];
+
+async function fetchCloudBackup(fetchCloudBackupData: FetchCloudBackupData) {
+  return trpcVanilla.fetchCloudBackup.query(fetchCloudBackupData);
+}
+
+export type UpdateCloudBackupData = Exclude<Parameters<typeof trpcVanilla.updateCloudBackup.mutate>[0], void>;
+
+async function updateCloudBackup(updateCloudBackupData: UpdateCloudBackupData) {
+  return trpcVanilla.updateCloudBackup.mutate(updateCloudBackupData);
+}
+
+export type DeleteCloudBackupData = Exclude<Parameters<typeof trpcVanilla.deleteCloudBackup.mutate>[0], void>;
+
+async function deleteCloudBackup(deleteCloudBackupData: DeleteCloudBackupData) {
+  return trpcVanilla.deleteCloudBackup.mutate(deleteCloudBackupData);
+}
+
 export const WalletService = {
   fetchWallets,
   createPublicWallet,
@@ -304,4 +329,8 @@ export const WalletService = {
   generateWalletRecoveryChallenge,
   recoverWallet,
   registerAuthShare,
+  createCloudBackup,
+  fetchCloudBackup,
+  updateCloudBackup,
+  deleteCloudBackup,
 };

@@ -3240,6 +3240,14 @@
     "message": "Paused",
     "description": "Paused text"
   },
+  "paused_while_tokens_migrate": {
+    "message": "Paused while tokens migrate",
+    "description": "Paused text"
+  },
+  "paused_while_tokens_migrate_to_ao_mainnet": {
+    "message": "Paused. Tokens migrating to AO mainnet",
+    "description": "Paused text"
+  },
   "percentage_of_each_conversion": {
     "message": "$PERCENTAGE$% of each conversion",
     "description": "Percentage of each conversion text",

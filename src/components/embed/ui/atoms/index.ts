@@ -3,6 +3,7 @@ export * from "./box";
 export * from "./button";
 export * from "./copyable";
 export * from "./checkbox";
+export * from "./column";
 export * from "./row";
 export * from "./radio";
 export * from "./text";
