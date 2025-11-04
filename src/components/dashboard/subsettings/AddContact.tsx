@@ -28,6 +28,7 @@ import { useLocation, useSearchParams } from "~wallets/router/router.utils";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import { RemoveButton } from "~routes/popup/settings/wallets/[address]";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import { isArweaveAddress } from "~utils/agents/utils";
 // import { isAddressFormat } from "~utils/format";
 
 export interface AddContactDashboardViewProps extends CommonRouteProps {
@@ -182,6 +183,15 @@ export function AddContactDashboardView({ isQuickSetting }: AddContactDashboardV
   }, [contact.address, activeAddress]);
 
   const saveNewContact = async () => {
+    if (!isArweaveAddress(contact.address)) {
+      setToast({
+        type: "error",
+        content: browser.i18n.getMessage("invalid_address"),
+        duration: 3000,
+      });
+      return;
+    }
+
     // check if the contact address already exists
     const addressUsed = storedContacts.some((existingContact) => existingContact.address === contact.address);
 
@@ -240,7 +250,7 @@ export function AddContactDashboardView({ isQuickSetting }: AddContactDashboardV
   };
 
   const areFieldsEmpty = () => {
-    return !contact.address;
+    return !contact.name || contact.name.trim() === "" || !contact.address || contact.address.trim() === "";
   };
 
   return (

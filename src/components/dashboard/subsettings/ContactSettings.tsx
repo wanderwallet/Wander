@@ -26,6 +26,7 @@ import { useLocation } from "~wallets/router/router.utils";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import { RemoveButton } from "~routes/popup/settings/wallets/[address]";
 import { Flex } from "~components/common/Flex";
+import { isArweaveAddress } from "~utils/agents/utils";
 // import { isAddressFormat } from "~utils/format";
 
 export interface ContactSettingsDashboardViewParams {
@@ -111,6 +112,15 @@ export function ContactSettingsDashboardView({
   };
 
   const saveContact = async () => {
+    if (!isArweaveAddress(contact.address)) {
+      setToast({
+        type: "error",
+        content: browser.i18n.getMessage("invalid_address"),
+        duration: 3000,
+      });
+      return;
+    }
+
     // check if the address has been changed to a different one that's already in use
     const addressChanged = contact.address !== storedContacts[contactIndex].address;
     const addressUsedByAnotherContact = storedContacts.some(
@@ -294,7 +304,7 @@ export function ContactSettingsDashboardView({
   };
 
   const areFieldsEmpty = () => {
-    return !contact.address;
+    return !contact.name || contact.name.trim() === "" || !contact.address || contact.address.trim() === "";
   };
 
   return (
@@ -355,6 +365,25 @@ export function ContactSettingsDashboardView({
           ) : null}
         </PicWrapper>
         <Spacer y={1} />
+        <SubTitle color="primary">{browser.i18n.getMessage("name")}*</SubTitle>
+        {editable ? (
+          <InputWrapper>
+            <ContactInput
+              fullWidth
+              style={{ paddingLeft: "0px" }}
+              small={isQuickSetting}
+              name="name"
+              placeholder={browser.i18n.getMessage("first_last_name")}
+              value={contact.name}
+              onChange={handleInputChange}
+            />
+          </InputWrapper>
+        ) : (
+          <Text size="lg" weight="medium" noMargin>
+            {contact.name}
+          </Text>
+        )}
+        <Spacer y={1} />
         <AddressWrapper>
           <SubTitle>
             {browser.i18n.getMessage("arweave_account_address")}
@@ -394,6 +423,7 @@ export function ContactSettingsDashboardView({
           style={{
             height: editable ? (isQuickSetting ? "78px" : "235px") : isQuickSetting ? "78px" : "269px",
           }}
+          readOnly={!editable}
         />
       </div>
 

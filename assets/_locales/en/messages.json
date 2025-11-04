@@ -1076,7 +1076,7 @@
     "description": "estimated"
   },
   "invalid_address": {
-    "message": "Target is not a valid address",
+    "message": "Invalid address",
     "description": "Invalid address message"
   },
   "sent_tx": {
@@ -1969,7 +1969,8 @@
   },
   "address_in_use": {
     "message": "Address is already in use.",
-    "description": "Contacts error message if address is already in use"},
+    "description": "Contacts error message if address is already in use"
+  },
   "add": {
     "message": "Add",
     "description" : "add button text"

@@ -1064,7 +1064,7 @@
     "description": "estimated"
   },
   "invalid_address": {
-      "message": "目标地址无效",
+      "message": "地址无效",
       "description": "Invalid address message"
   },
   "sent_tx": {
