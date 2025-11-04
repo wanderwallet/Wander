@@ -63,5 +63,6 @@ export const EmbeddedContext = createContext<EmbeddedContextData>({
   copySeedphrase: async () => null,
   getSeedphrase: async () => null,
   getDecryptedWallet: async () => null,
+  generateRecovery: async () => null,
   generateRecoveryAndDownload: async () => null,
 });

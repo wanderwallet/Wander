@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import type { AppDataFile } from "../cloud.types";
-import type { JWKInterface } from "arweave/web/lib/wallet";
 import {
   GOOGLE_DRIVE_OAUTH_SUCCESS_MSG_TYPE,
   GOOGLE_DRIVE_OAUTH_ERROR_MSG_TYPE,
@@ -11,6 +10,7 @@ import {
   OAuthErrorCode,
   getAuthErrorMessage,
 } from "~utils/authentication/authentication.utils";
+import type { RecoveryJSON } from "~utils/embedded/embedded.types";
 
 interface GoogleCloudAuthState {
   isAuthenticated: boolean;
@@ -37,7 +37,7 @@ interface UseGoogleCloudReturn {
 
   // File operations methods
   uploadFile: (file: File | Blob, fileName: string, walletAddress: string, mimeType?: string) => Promise<AppDataFile>;
-  getFileContent: (fileId: string) => Promise<JWKInterface>;
+  getFileContent: (fileId: string) => Promise<RecoveryJSON>;
   getFile: (walletAddress: string, fileId?: string) => Promise<AppDataFile | null>;
   updateFile: (fileId: string, file: File | Blob, fileName?: string, mimeType?: string) => Promise<AppDataFile>;
   downloadFile: (fileId: string, fileName: string) => Promise<void>;
@@ -422,7 +422,7 @@ export const useGoogleCloud = (): UseGoogleCloudReturn => {
   );
 
   const getFileContent = useCallback(
-    async (fileId: string): Promise<JWKInterface> => {
+    async (fileId: string): Promise<RecoveryJSON> => {
       try {
         const token = await ensureValidToken();
 
@@ -438,7 +438,7 @@ export const useGoogleCloud = (): UseGoogleCloudReturn => {
         }
 
         const blob = await response.json();
-        return blob as JWKInterface;
+        return blob as unknown as RecoveryJSON;
       } catch (err) {
         const errorMessage = err?.message || err?.reason || "Failed to get wallet backup.";
         throw new Error(errorMessage);

@@ -357,8 +357,8 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
   // WALLET RECOVERY:
 
-  const generateRecoveryAndDownload = useCallback(async () => {
-    log(LOG_GROUP.EMBEDDED_FLOWS, `generateRecoveryAndDownload()`);
+  const generateRecovery = useCallback(async () => {
+    log(LOG_GROUP.EMBEDDED_FLOWS, `generateRecovery()`);
 
     const decryptedWallet = (await getKeyfile(walletAddress)) as LocalWallet<JWKInterface>;
 
@@ -418,12 +418,20 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       }
     }
 
-    // Download the recovery file for the user
-    downloadRecoveryFile(walletAddress, recoveryFileData);
-
     // TODO: Make sure we use `freeDecryptedWallet` all over the place in the new code for Embedded:
     freeDecryptedWallet(jwk);
+
+    return recoveryFileData;
   }, [walletId, walletAddress, session]);
+
+  const generateRecoveryAndDownload = useCallback(async () => {
+    log(LOG_GROUP.EMBEDDED_FLOWS, `generateRecoveryAndDownload()`);
+
+    const recoveryFileData = await generateRecovery();
+
+    // Download the recovery file for the user
+    downloadRecoveryFile(walletAddress, recoveryFileData);
+  }, [generateRecovery, walletAddress]);
 
   // Check if a wallet has a stored recovery share
   const hasStoredRecoveryShare = useCallback(async (): Promise<boolean> => {
@@ -1327,6 +1335,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         copySeedphrase,
         getSeedphrase,
         getDecryptedWallet,
+        generateRecovery,
         generateRecoveryAndDownload,
       }}>
       {children}

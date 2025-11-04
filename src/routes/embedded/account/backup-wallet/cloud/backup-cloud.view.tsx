@@ -13,20 +13,19 @@ import { sleep } from "~utils/promises/sleep";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import type { Wallet } from "~utils/embedded/embedded.types";
 import { toast } from "react-toastify";
-import type { JWKInterface } from "@dha-team/arbundles/node";
-import type { LocalWallet } from "~wallets/wallets.types";
 import { freeDecryptedWallet } from "~wallets/encryption";
+import type { DownloadRecoveryFileData } from "~utils/file";
 
 export function AccountBackupCloudEmbeddedView() {
   const {
     authStatus,
     cloudProvider,
-    getDecryptedWallet,
     currentWallet,
     lastRegisteredWallet,
     setCloudProvider,
     setCloudBackup,
     cloudBackup,
+    generateRecovery,
   } = useEmbedded();
 
   const fileRef = useRef<AppDataFile | null>(null);
@@ -55,14 +54,14 @@ export function AccountBackupCloudEmbeddedView() {
   };
 
   async function handleStoreOnCloud() {
-    let wallet: LocalWallet<JWKInterface> | null = null;
+    let recoveryFileData: DownloadRecoveryFileData | null = null;
     try {
       if (!currentWallet) return;
       setIsLoading(true);
 
-      wallet = await getDecryptedWallet();
-      const blob = new Blob([JSON.stringify(wallet.keyfile)], { type: "application/json" });
-      const fileName = "backup-jwk.json";
+      recoveryFileData = await generateRecovery();
+      const blob = new Blob([JSON.stringify(recoveryFileData)], { type: "application/json" });
+      const fileName = "backup-recovery-file.json";
       const mimeType = "application/json";
 
       let googleEmail: string | null = null;
@@ -167,8 +166,8 @@ export function AccountBackupCloudEmbeddedView() {
 
   return (
     <OnboardingCard
-      headerText="Store your keyfile on the cloud"
-      subtitle="Upload your keyfile to the cloud to easily sign in and connect your wallet on new devices."
+      headerText="Store your recovery key on the cloud"
+      subtitle="Upload your recovery key to the cloud to easily sign in and connect your wallet on new devices."
       hasBackButton={!lastRegisteredWallet}
       hasCloseButton={false}
       isLoading={isViewLoading}
@@ -240,8 +239,11 @@ export function AccountBackupCloudEmbeddedView() {
             Sign out of {providerName}
           </Button>
         )}
-        <Button variant="link" isDisabled={isViewLoading} href="https://www.wander.app/help/what-is-a-json-keyfile">
-          What is a keyfile?
+        <Button
+          variant="link"
+          isDisabled={isViewLoading}
+          href="https://www.wander.app/help/what-is-a-wander-connect-recovery-file">
+          What is a recovery file?
         </Button>
       </Column>
     </OnboardingCard>

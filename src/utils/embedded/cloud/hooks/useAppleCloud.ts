@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import type { Container, UserIdentity, RecordField, RecordToCreate, RecordToSave, Asset } from "tsl-apple-cloudkit";
 import { useScript } from "~utils/script/script.hooks";
 import type { AppDataFile } from "../cloud.types";
-import type { JWKInterface } from "arweave/web/lib/wallet";
+import type { RecoveryJSON } from "~utils/embedded/embedded.types";
 
 interface AppleAuthState {
   isAuthenticated: boolean;
@@ -22,7 +22,7 @@ interface UseAppleCloudReturn {
 
   // File operations methods
   uploadFile: (file: File | Blob, fileName: string, walletAddress: string, mimeType?: string) => Promise<AppDataFile>;
-  getFileContent: (fileId: string) => Promise<JWKInterface>;
+  getFileContent: (fileId: string) => Promise<RecoveryJSON>;
   getFile: (walletAddress: string, fileId?: string) => Promise<AppDataFile | null>;
   updateFile: (fileId: string, file: File | Blob, fileName?: string, mimeType?: string) => Promise<AppDataFile>;
   downloadFile: (fileId: string, fileName: string) => Promise<void>;
@@ -315,7 +315,7 @@ export const useAppleCloud = (): UseAppleCloudReturn => {
   );
 
   const getFileContent = useCallback(
-    async (fileId: string): Promise<JWKInterface> => {
+    async (fileId: string): Promise<RecoveryJSON> => {
       try {
         await ensureIsAuthenticated();
 
@@ -340,7 +340,7 @@ export const useAppleCloud = (): UseAppleCloudReturn => {
           throw new Error("Failed to get wallet backup.");
         }
 
-        const jsonData = (await downloadResponse.json()) as JWKInterface;
+        const jsonData = (await downloadResponse.json()) as RecoveryJSON;
 
         return jsonData;
       } catch (err: any) {

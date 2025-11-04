@@ -12,6 +12,7 @@ import type { LocalWallet } from "~wallets/wallets.types";
 import type { UnpartitionedStateStatus } from "~iframe/storage/unpartitioned-storage/unpartitioned-storage.utils";
 import type { CloudProvider } from "./cloud/cloud.types";
 import type { CloudBackup } from "~utils/wallets/wallets.service";
+import type { DownloadRecoveryFileData } from "~utils/file";
 
 export type AuthStatus =
   | "unknown"
@@ -149,5 +150,6 @@ export interface EmbeddedContextData extends EmbeddedContextState, EmbeddedConte
   copySeedphrase: () => Promise<boolean>;
   getDecryptedWallet: () => Promise<LocalWallet<JWKInterface>>;
   getSeedphrase: (callbackFn?: (seedPhrase: string) => Promise<boolean>) => Promise<string>;
+  generateRecovery: () => Promise<RecoveryJSON>;
   generateRecoveryAndDownload: () => Promise<void>;
 }
