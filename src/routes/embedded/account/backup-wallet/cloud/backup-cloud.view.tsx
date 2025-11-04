@@ -11,10 +11,8 @@ import { navigate } from "wouter/use-hash-location";
 import { browserInfo } from "~utils/browser-info/browser-info.utils";
 import { sleep } from "~utils/promises/sleep";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
-import type { Wallet } from "~utils/embedded/embedded.types";
+import type { RecoveryJSON, Wallet } from "~utils/embedded/embedded.types";
 import { toast } from "react-toastify";
-import { freeDecryptedWallet } from "~wallets/encryption";
-import type { DownloadRecoveryFileData } from "~utils/file";
 
 export function AccountBackupCloudEmbeddedView() {
   const {
@@ -54,13 +52,13 @@ export function AccountBackupCloudEmbeddedView() {
   };
 
   async function handleStoreOnCloud() {
-    let recoveryFileData: DownloadRecoveryFileData | null = null;
+    let recoveryData: RecoveryJSON | null = null;
     try {
       if (!currentWallet) return;
       setIsLoading(true);
 
-      recoveryFileData = await generateRecovery();
-      const blob = new Blob([JSON.stringify(recoveryFileData)], { type: "application/json" });
+      recoveryData = await generateRecovery();
+      const blob = new Blob([JSON.stringify(recoveryData)], { type: "application/json" });
       const fileName = "backup-recovery-file.json";
       const mimeType = "application/json";
 

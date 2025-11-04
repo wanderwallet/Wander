@@ -89,26 +89,9 @@ export function downloadKeyfile(address: string, jwk: JWKInterface) {
   downloadFile(JSON.stringify(jwk, null, 2), "application/json", `arweave-keyfile-${address}.json`);
 }
 
-export interface DownloadRecoveryFileData {
-  walletId: string;
-  recoveryBackupShare: string;
-  recoveryFileServerSignature: string;
-}
-
-export function downloadRecoveryFile(address: string, downloadRecoveryFileData: DownloadRecoveryFileData) {
-  const { walletId, recoveryBackupShare, recoveryFileServerSignature } = downloadRecoveryFileData;
-
+export function downloadRecoveryFile(address: string, recoveryData: RecoveryJSON) {
   downloadFile(
-    JSON.stringify(
-      {
-        version: "1",
-        walletId,
-        recoveryBackupShare,
-        recoveryFileServerSignature,
-      } satisfies RecoveryJSON,
-      null,
-      2,
-    ),
+    JSON.stringify(recoveryData, null, 2),
     "application/json",
     `wander-embedded-recovery-file-${address}.json`,
   );

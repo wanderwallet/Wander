@@ -7,11 +7,7 @@ import { getKeyfile, getWallets, type LocalWallet } from "~wallets";
 import Arweave from "arweave";
 import { defaultGateway } from "~gateways/gateway";
 import { freeDecryptedWallet } from "~wallets/encryption";
-import {
-  downloadKeyfile as downloadKeyfileUtil,
-  downloadRecoveryFile,
-  type DownloadRecoveryFileData,
-} from "~utils/file";
+import { downloadKeyfile as downloadKeyfileUtil, downloadRecoveryFile } from "~utils/file";
 import { sleep } from "~utils/promises/sleep";
 import type {
   EmbeddedContextState,
@@ -364,7 +360,8 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
     const jwk = decryptedWallet.keyfile;
 
-    let recoveryFileData: DownloadRecoveryFileData = {
+    let recoveryFileData: RecoveryJSON = {
+      version: "1",
       walletId,
       recoveryBackupShare: "",
       recoveryFileServerSignature: "",
@@ -405,13 +402,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       // Store encrypted recovery share in local storage if feature flag is enabled
       if (EMBEDDED_FEATURE_FLAGS.STORE_RECOVERY_SHARES) {
         try {
-          // Create the recovery file data
-          const recoveryData = {
-            version: "1",
-            ...recoveryFileData,
-          } as RecoveryJSON;
-
-          await WalletUtils.storeEncryptedRecoveryShare(walletId, recoveryData, jwk);
+          await WalletUtils.storeEncryptedRecoveryShare(walletId, recoveryFileData, jwk);
         } catch (error) {
           console.error("Failed to store recovery share:", error);
         }

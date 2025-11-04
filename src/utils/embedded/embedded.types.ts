@@ -12,7 +12,6 @@ import type { LocalWallet } from "~wallets/wallets.types";
 import type { UnpartitionedStateStatus } from "~iframe/storage/unpartitioned-storage/unpartitioned-storage.utils";
 import type { CloudProvider } from "./cloud/cloud.types";
 import type { CloudBackup } from "~utils/wallets/wallets.service";
-import type { DownloadRecoveryFileData } from "~utils/file";
 
 export type AuthStatus =
   | "unknown"
