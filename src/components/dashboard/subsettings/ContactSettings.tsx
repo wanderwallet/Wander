@@ -393,7 +393,7 @@ export function ContactSettingsDashboardView({
         <SubTitle>{browser.i18n.getMessage("notes")}</SubTitle>
         <ContactNotes
           small={isQuickSetting}
-          placeholder={browser.i18n.getMessage("type_message_here")}
+          placeholder={editable ? browser.i18n.getMessage("type_message_here") : ""}
           value={contact.notes || ""}
           onChange={(e) => setContact({ ...contact, notes: e.target.value })}
           style={{ height: isQuickSetting ? "78px" : "235px" }}
