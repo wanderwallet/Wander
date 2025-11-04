@@ -1067,6 +1067,10 @@
       "message": "地址无效",
       "description": "Invalid address message"
   },
+  "cancel_changes": {
+    "message": "取消更改",
+    "description": "Cancel changes button text"
+  },
   "sent_tx": {
       "message": "已发送交易",
       "description": "Transaction sent successfully notification"

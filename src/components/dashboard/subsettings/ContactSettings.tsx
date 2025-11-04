@@ -310,30 +310,6 @@ export function ContactSettingsDashboardView({
   return (
     <Wrapper>
       <div>
-        {!isQuickSetting && (
-          <div>
-            <Spacer y={0.45} />
-            <Header>
-              {editable ? (
-                <Flex direction="column" gap={8} width="100%">
-                  {contact.name && <SubTitle>{browser.i18n.getMessage("name")}</SubTitle>}
-                  <InputWrapper>
-                    <Input
-                      fullWidth
-                      name="name"
-                      placeholder={contact.name ? contact.name : browser.i18n.getMessage("first_last_name")}
-                      value={contact.name}
-                      onChange={handleInputChange}
-                    />
-                  </InputWrapper>
-                </Flex>
-              ) : (
-                <Title>{contact.name ? contact.name : browser.i18n.getMessage("contact_info")}</Title>
-              )}
-            </Header>
-          </div>
-        )}
-        <Spacer y={1} />
         <SubTitle color="primary">{browser.i18n.getMessage("contact_avatar")}</SubTitle>
         <PicWrapper>
           {contact.avatarId && !avatarLoading ? (
@@ -364,24 +340,24 @@ export function ContactSettingsDashboardView({
             </>
           ) : null}
         </PicWrapper>
-        <Spacer y={1} />
-        <SubTitle color="primary">{browser.i18n.getMessage("name")}*</SubTitle>
+        <Spacer y={0.5} />
         {editable ? (
-          <InputWrapper>
-            <ContactInput
-              fullWidth
-              style={{ paddingLeft: "0px" }}
-              small={isQuickSetting}
-              name="name"
-              placeholder={browser.i18n.getMessage("first_last_name")}
-              value={contact.name}
-              onChange={handleInputChange}
-            />
-          </InputWrapper>
+          <>
+            <SubTitle color="primary">{browser.i18n.getMessage("name")}*</SubTitle>
+            <InputWrapper>
+              <ContactInput
+                fullWidth
+                style={{ paddingLeft: "0px" }}
+                small={isQuickSetting}
+                name="name"
+                placeholder={browser.i18n.getMessage("first_last_name")}
+                value={contact.name}
+                onChange={handleInputChange}
+              />
+            </InputWrapper>
+          </>
         ) : (
-          <Text size="lg" weight="medium" noMargin>
-            {contact.name}
-          </Text>
+          <Title>{contact.name ? contact.name : browser.i18n.getMessage("contact_info")}</Title>
         )}
         <Spacer y={1} />
         <AddressWrapper>
@@ -420,9 +396,7 @@ export function ContactSettingsDashboardView({
           placeholder={browser.i18n.getMessage("type_message_here")}
           value={contact.notes || ""}
           onChange={(e) => setContact({ ...contact, notes: e.target.value })}
-          style={{
-            height: editable ? (isQuickSetting ? "78px" : "235px") : isQuickSetting ? "78px" : "269px",
-          }}
+          style={{ height: isQuickSetting ? "78px" : "235px" }}
           readOnly={!editable}
         />
       </div>
@@ -437,8 +411,11 @@ export function ContactSettingsDashboardView({
             {browser.i18n.getMessage("edit_contact")}
           </Button>
         )}
-        <RemoveButton fullWidth variant="secondary" onClick={() => removeContactModal.setOpen(true)}>
-          {browser.i18n.getMessage("remove_contact")}
+        <RemoveButton
+          fullWidth
+          variant="secondary"
+          onClick={() => (editable ? toggleEdit() : removeContactModal.setOpen(true))}>
+          {browser.i18n.getMessage(editable ? "cancel_changes" : "remove_contact")}
         </RemoveButton>
       </Footer>
       <Modal

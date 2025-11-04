@@ -1079,6 +1079,10 @@
     "message": "Invalid address",
     "description": "Invalid address message"
   },
+  "cancel_changes": {
+    "message": "Cancel changes",
+    "description": "Cancel changes button text"
+  },
   "sent_tx": {
     "message": "Sent transaction",
     "description": "Transaction sent successfuly notification"
