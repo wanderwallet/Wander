@@ -97,9 +97,6 @@ export function AccountBackupCloudEmbeddedView() {
       toast.error(error?.message || "Failed to store on cloud");
     } finally {
       setIsLoading(false);
-      if (wallet?.keyfile) {
-        freeDecryptedWallet(wallet.keyfile);
-      }
     }
   }
 
