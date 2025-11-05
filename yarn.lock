@@ -6815,9 +6815,9 @@ elliptic@6.6.1, elliptic@^6.5.3, elliptic@^6.5.5, elliptic@^6.5.7:
     minimalistic-assert "^1.0.1"
     minimalistic-crypto-utils "^1.0.1"
 
-"embed-api@https://arweave.net/a1zlwkepP6RA_LBwQraH4s_to5nRhs8fVa70RKlRLjQ":
+"embed-api@https://github.com/wanderwallet/embed-api#e00e433b96f055d4df0adb372a3a79c09f7ec330":
   version "0.1.0"
-  resolved "https://arweave.net/a1zlwkepP6RA_LBwQraH4s_to5nRhs8fVa70RKlRLjQ#d50f80f68104c1fbe03e0131de086c79571744ea"
+  resolved "https://github.com/wanderwallet/embed-api#e00e433b96f055d4df0adb372a3a79c09f7ec330"
   dependencies:
     "@noble/curves" "^1.9.4"
     "@prisma/client" "6.11.1"
