@@ -24,10 +24,12 @@ const AUTH_STATUS_TO_OVERRIDE: Record<AuthStatus, null | ExtensionRouteOverride>
 export function useEmbeddedOverride(location?: RoutePath) {
   const {
     authStatus,
+    currentWallet,
     recoverableAccount,
     requestPasswordChange,
     unpartitionedStateStatus,
     unpartitionedStateConfirmed,
+    lastRegisteredWallet,
   } = useEmbedded();
 
   if (!location || authStatus === "unknown") {
@@ -100,31 +102,50 @@ export function useEmbeddedOverride(location?: RoutePath) {
   }
 
   if (authStatus === "noShares") {
-    return routeTrapMatches(
-      location,
-      [
-        // Restore:
-        EmbeddedPaths.AuthRestoreShares,
-        EmbeddedPaths.AuthRestoreSharesCreateConfirmation,
-        EmbeddedPaths.AuthRestoreSharesRecoveryFile,
-        EmbeddedPaths.AuthRestoreSharesSeedPhrase,
-        EmbeddedPaths.AuthRestoreSharesKeyfile,
-        EmbeddedPaths.AuthRestoreSharesQrCode,
+    const hasCloudBackup = currentWallet.totalCloudBackups > 0;
+    const redirectTo = hasCloudBackup ? EmbeddedPaths.AccountBackupCloudImport : EmbeddedPaths.AuthRestoreShares;
 
-        // Add wallet:
-        EmbeddedPaths.AuthAddWallet,
-        EmbeddedPaths.AuthImportWallet,
-        EmbeddedPaths.AuthImportSeedPhrase,
-        EmbeddedPaths.AuthAddWithQRCode,
-        EmbeddedPaths.AuthQRCodeScanner,
-        EmbeddedPaths.AuthImportKeyfile,
-        EmbeddedPaths.AuthImportQrCode,
-      ],
+    const validRoutes = [
+      // Restore:
       EmbeddedPaths.AuthRestoreShares,
-    );
+      EmbeddedPaths.AuthRestoreSharesCreateConfirmation,
+      EmbeddedPaths.AuthRestoreSharesRecoveryFile,
+      EmbeddedPaths.AuthRestoreSharesSeedPhrase,
+      EmbeddedPaths.AuthRestoreSharesKeyfile,
+      EmbeddedPaths.AuthRestoreSharesQrCode,
+
+      // Add wallet:
+      EmbeddedPaths.AuthAddWallet,
+      EmbeddedPaths.AuthImportWallet,
+      EmbeddedPaths.AuthImportSeedPhrase,
+      EmbeddedPaths.AuthAddWithQRCode,
+      EmbeddedPaths.AuthQRCodeScanner,
+      EmbeddedPaths.AuthImportKeyfile,
+      EmbeddedPaths.AuthImportQrCode,
+    ] as RoutePath[];
+
+    if (hasCloudBackup) {
+      validRoutes.unshift(EmbeddedPaths.AccountBackupCloudImportSuccess);
+      validRoutes.unshift(EmbeddedPaths.AccountBackupCloudImport);
+    }
+
+    return routeTrapMatches(location, validRoutes, redirectTo);
   }
 
   if (authStatus === "unlocked") {
+    // Show cloud backup screen for first-time wallet creation/import
+    if (lastRegisteredWallet && currentWallet.totalCloudBackups === 0) {
+      return routeTrapMatches(
+        location,
+        [
+          EmbeddedPaths.AccountBackupCloud,
+          EmbeddedPaths.AccountBackupCloudChangeProvider,
+          EmbeddedPaths.AccountCongratulations,
+        ],
+        EmbeddedPaths.AccountBackupCloud,
+      );
+    }
+
     if (requestPasswordChange) {
       // TODO: Consider also including this as a box in the dashboard?
       return routeTrapMatches(location, [EmbeddedPaths.AccountChangePassword], EmbeddedPaths.AccountChangePassword);

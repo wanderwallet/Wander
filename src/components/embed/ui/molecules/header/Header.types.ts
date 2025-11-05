@@ -1,3 +1,5 @@
+import type { TextVariants } from "~components/embed/types";
+
 export type HeaderBaseProps = {
   /**
    * Optional prop for the position of the title in the Header component
@@ -9,6 +11,11 @@ export type HeaderBaseProps = {
    * Default value is an empty string
    */
   title?: string;
+  /**
+   * Optional prop for the variant of the title in the Header component
+   * Default value is 'headingLg'
+   */
+  titleVariant?: TextVariants;
   /**
    * Optional prop for the subtitle of the Header component
    * Default value is an empty string

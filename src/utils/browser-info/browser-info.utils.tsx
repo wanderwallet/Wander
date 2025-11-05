@@ -13,6 +13,7 @@ function getBrowserInfo() {
       isOpera: false,
       isSafari: false,
       isInAppAndroidBrowser: false,
+      isAppleDevice: false,
     };
   }
 
@@ -38,6 +39,9 @@ function getBrowserInfo() {
   const isInAppAndroidBrowser =
     userAgent.includes("Android") && (userAgent.includes("wv") || userAgent.includes("WebView"));
 
+  // Detect Apple devices (iOS, iPadOS, macOS)
+  const isAppleDevice = /iPad|iPhone|iPod|Macintosh|Mac OS X|MacIntel/.test(userAgent) || isSafari || isChromeIOS;
+
   return {
     isBrave,
     isChromium,
@@ -49,6 +53,7 @@ function getBrowserInfo() {
     isOpera,
     isSafari,
     isInAppAndroidBrowser,
+    isAppleDevice,
   };
 }
 

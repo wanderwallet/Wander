@@ -2,11 +2,11 @@ import { XClose } from "@untitled-ui/icons-react";
 import copy from "copy-to-clipboard";
 import { useState, useCallback } from "react";
 import { toast } from "react-toastify";
-import { Flex } from "~components/common/Flex";
-import { Button, Copyable, Snackbar } from "~components/embed/ui";
+import { Button, Copyable, GoogleCloudIcon, ICloudIcon, Row, Snackbar } from "~components/embed/ui";
 import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { Link } from "~wallets/router/components/link/Link";
+import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 import { useLocation } from "~wallets/router/router.utils";
 
 export function AccountBackupWalletRecoveryFileEmbeddedView() {
@@ -68,6 +68,38 @@ export function AccountBackupWalletRecoveryFileEmbeddedView() {
       <Button isFullWidth isDisabled={isLoading} onClick={handleGenerateRecoveryAndDownload}>
         Download
       </Button>
+
+      <Button variant="outlined" isFullWidth onClick={() => navigate(EmbeddedPaths.AccountBackupCloud)}>
+        <Row alignment="center">
+          Back up to
+          <IconWrapper>
+            <ICloudIcon />
+          </IconWrapper>
+          <IconWrapper style={{ marginLeft: "-12px" }}>
+            <GoogleCloudIcon />
+          </IconWrapper>
+        </Row>
+      </Button>
     </OnboardingCard>
   );
 }
+
+const IconWrapper = ({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) => {
+  return (
+    <div
+      style={{
+        display: "flex",
+        width: "24px",
+        height: "24px",
+        padding: "4px 3px 3.918px 3px",
+        justifyContent: "center",
+        alignItems: "center",
+        borderRadius: "50px",
+        border: "1px solid #E4E4EB",
+        background: "var(--defaultBackgroundColor)",
+        ...style,
+      }}>
+      {children}
+    </div>
+  );
+};

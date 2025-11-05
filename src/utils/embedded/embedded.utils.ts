@@ -8,7 +8,12 @@ import type { Wallet } from "~utils/embedded/embedded.types";
 
 export function getBackupsNeededAndMessage(wallets: Wallet[]) {
   const backupsNeeded = wallets.filter((wallet) => {
-    return wallet.totalExports === 0 && wallet.totalBackups === 0 && wallet.status === "ENABLED";
+    return (
+      wallet.totalExports === 0 &&
+      wallet.totalBackups === 0 &&
+      wallet.totalCloudBackups === 0 &&
+      wallet.status === "ENABLED"
+    );
   }).length;
 
   let backupMessage: undefined | string = undefined;

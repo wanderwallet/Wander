@@ -1,17 +1,13 @@
 import type { JWKInterface } from "arweave/web/lib/wallet";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { setupBackgroundService } from "~api/background/background-setup";
-import { WalletService } from "~utils/wallets/wallets.service";
+import { WalletService, type CloudBackup } from "~utils/wallets/wallets.service";
 import { WalletUtils } from "~utils/wallets/wallets.utils";
 import { getKeyfile, getWallets, type LocalWallet } from "~wallets";
 import Arweave from "arweave";
 import { defaultGateway } from "~gateways/gateway";
 import { freeDecryptedWallet } from "~wallets/encryption";
-import {
-  downloadKeyfile as downloadKeyfileUtil,
-  downloadRecoveryFile,
-  type DownloadRecoveryFileData,
-} from "~utils/file";
+import { downloadKeyfile as downloadKeyfileUtil, downloadRecoveryFile } from "~utils/file";
 import { sleep } from "~utils/promises/sleep";
 import type {
   EmbeddedContextState,
@@ -79,6 +75,7 @@ import {
   EMBEDDED_CONTEXT_INITIAL_STATE,
   EmbeddedContext,
 } from "~utils/embedded/embedded.context";
+import { CloudProvider } from "./cloud/cloud.types";
 
 export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
   const mountedTimeRef = useRef(Date.now());
@@ -356,14 +353,15 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
   // WALLET RECOVERY:
 
-  const generateRecoveryAndDownload = useCallback(async () => {
-    log(LOG_GROUP.EMBEDDED_FLOWS, `generateRecoveryAndDownload()`);
+  const generateRecovery = useCallback(async () => {
+    log(LOG_GROUP.EMBEDDED_FLOWS, `generateRecovery()`);
 
     const decryptedWallet = (await getKeyfile(walletAddress)) as LocalWallet<JWKInterface>;
 
     const jwk = decryptedWallet.keyfile;
 
-    let recoveryFileData: DownloadRecoveryFileData = {
+    let recoveryFileData: RecoveryJSON = {
+      version: "1",
       walletId,
       recoveryBackupShare: "",
       recoveryFileServerSignature: "",
@@ -404,25 +402,27 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       // Store encrypted recovery share in local storage if feature flag is enabled
       if (EMBEDDED_FEATURE_FLAGS.STORE_RECOVERY_SHARES) {
         try {
-          // Create the recovery file data
-          const recoveryData = {
-            version: "1",
-            ...recoveryFileData,
-          } as RecoveryJSON;
-
-          await WalletUtils.storeEncryptedRecoveryShare(walletId, recoveryData, jwk);
+          await WalletUtils.storeEncryptedRecoveryShare(walletId, recoveryFileData, jwk);
         } catch (error) {
           console.error("Failed to store recovery share:", error);
         }
       }
     }
 
-    // Download the recovery file for the user
-    downloadRecoveryFile(walletAddress, recoveryFileData);
-
     // TODO: Make sure we use `freeDecryptedWallet` all over the place in the new code for Embedded:
     freeDecryptedWallet(jwk);
+
+    return recoveryFileData;
   }, [walletId, walletAddress, session]);
+
+  const generateRecoveryAndDownload = useCallback(async () => {
+    log(LOG_GROUP.EMBEDDED_FLOWS, `generateRecoveryAndDownload()`);
+
+    const recoveryFileData = await generateRecovery();
+
+    // Download the recovery file for the user
+    downloadRecoveryFile(walletAddress, recoveryFileData);
+  }, [generateRecovery, walletAddress]);
 
   // Check if a wallet has a stored recovery share
   const hasStoredRecoveryShare = useCallback(async (): Promise<boolean> => {
@@ -1010,6 +1010,29 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     [user],
   );
 
+  // CLOUD PROVIDER:
+
+  const setCloudProvider = useCallback((cloudProvider: CloudProvider) => {
+    setEmbeddedContextState((prevAuthContextState) => ({
+      ...prevAuthContextState,
+      cloudProvider,
+    }));
+  }, []);
+
+  const setCloudBackup = useCallback((cloudBackup: CloudBackup, updatedWallet?: Wallet) => {
+    setEmbeddedContextState((prevAuthContextState) => ({
+      ...prevAuthContextState,
+      cloudBackup,
+    }));
+
+    if (updatedWallet) {
+      updateCurrentWallet((currentWallet) => ({
+        ...currentWallet,
+        ...updatedWallet,
+      }));
+    }
+  }, []);
+
   // INITIALIZATION:
 
   const lastUserIdRef = useRef<string | null>(null);
@@ -1294,12 +1317,16 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         importTempWallet,
         deleteImportedTempWallet,
 
+        setCloudProvider,
+        setCloudBackup,
+
         registerWallet,
         clearLastRegisteredWallet,
         downloadKeyfile,
         copySeedphrase,
         getSeedphrase,
         getDecryptedWallet,
+        generateRecovery,
         generateRecoveryAndDownload,
       }}>
       {children}

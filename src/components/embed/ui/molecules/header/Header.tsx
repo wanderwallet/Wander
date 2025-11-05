@@ -5,7 +5,7 @@ import type { HeaderBaseProps } from "./Header.types";
 import { Box, Text, Row } from "../../atoms";
 
 const Header = React.forwardRef<HTMLDivElement, HeaderBaseProps>(
-  ({ className, titlePosition = "center", icon, title, subtitle, ...props }, ref) => {
+  ({ className, titlePosition = "center", icon, title, subtitle, titleVariant = "headingLg", ...props }, ref) => {
     return (
       <Row
         ref={ref}
@@ -22,10 +22,11 @@ const Header = React.forwardRef<HTMLDivElement, HeaderBaseProps>(
           {icon}
           {title && (
             <Text
-              variant="headingLg"
+              variant={titleVariant}
               alignment="center"
               style={{
-                marginInline: 8,
+                // marginInline: 8, // TODO: Uncomment this if necessary
+                wordBreak: "break-word",
               }}>
               {title}
             </Text>

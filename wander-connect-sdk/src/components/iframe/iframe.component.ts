@@ -19,7 +19,7 @@ export class Iframe {
     background: "white",
     borderWidth: 2,
     borderColor: "rgba(0, 0, 0, .125)",
-    borderRadius: 10,
+    borderRadius: 24,
     boxShadow: "0 0 16px 0 rgba(0, 0, 0, 0.125)",
     zIndex: "9999",
     preferredWidth: 400,
@@ -38,7 +38,7 @@ export class Iframe {
     // Mobile-specific:
     mobilePadding: 0,
     mobileHeight: 0,
-    mobileBorderRadius: 0,
+    mobileBorderRadius: 24,
     mobileBorderWidth: 0,
     mobileBorderColor: "transparent",
     mobileBoxShadow: "none",
