@@ -166,7 +166,7 @@ export function AccountBackupCloudEmbeddedView() {
       hasBackButton={!lastRegisteredWallet}
       hasCloseButton={false}
       isLoading={isViewLoading}
-      onBackButtonClick={() => navigate(EmbeddedPaths.AccountBackupFullWallet)}>
+      onBackButtonClick={() => navigate(EmbeddedPaths.AccountBackupWalletRecoveryFile)}>
       <Column alignment="left">
         <Row justifyContent="between" isFullWidth>
           <Row justifyContent="start" isFullWidth>
