@@ -42,6 +42,14 @@
   gap: var(--spacing-6);
 }
 
+.row__spacing_xxl {
+  gap: var(--spacing-8);
+}
+
+.row__spacing_auto {
+  gap: auto;
+}
+
 /* Justify content variants */
 .row__justify_start {
   justify-content: flex-start;

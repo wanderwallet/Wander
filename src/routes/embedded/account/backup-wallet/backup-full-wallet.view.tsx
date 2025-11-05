@@ -1,7 +1,6 @@
 import { Key01, PasscodeLock } from "@untitled-ui/icons-react";
 import copy from "copy-to-clipboard";
 import { useState, useEffect } from "react";
-import { Flex } from "~components/common/Flex";
 import { Button, Copyable, Snackbar, CheckIcon } from "~components/embed/ui";
 import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";

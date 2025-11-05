@@ -12,6 +12,7 @@ import {
   RecoverHeaderIcon,
   Snackbar,
   KeyIcon,
+  Spacer,
 } from "~components/embed";
 import React, { useCallback, useRef, useState } from "react";
 import { getSupabaseClient } from "~utils/embedded/embedded.utils";
@@ -206,7 +207,7 @@ export function AuthEmbeddedView() {
   return (
     <OnboardingCard
       headerIcon={recoverableAccount ? <RecoverHeaderIcon /> : null}
-      headerText={recoverableAccount ? "Select New Sign In Method" : "Sign Up or Sign In"}
+      headerText={recoverableAccount ? "Select New Sign In Method" : "Sign up or sign in"}
       hasBackButton={false}
       isLoading={isViewLoading}
       onSubmit={handleCheckEmail}>
@@ -258,12 +259,13 @@ export function AuthEmbeddedView() {
         isFullWidth
         isDisabled={areButtonsDisabled}
         icon={<SocialsIcon fontSize={24} />}
+        style={{ marginTop: 4 }}
         href="/auth/more-providers">
         More options
       </Button>
 
       {!recoverableAccount ? (
-        <Text variant="bodySm" alignment="center">
+        <Text variant="bodySm" alignment="center" style={{ marginTop: 12 }}>
           Can't sign in?{" "}
           <Button variant="link" isDisabled={areButtonsDisabled} href={EmbeddedPaths.AuthRecoverAccount}>
             Recover account

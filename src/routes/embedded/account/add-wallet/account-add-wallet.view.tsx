@@ -31,7 +31,7 @@ export function AccountAddWalletEmbeddedView() {
   return (
     <Card
       headerText="Add a wallet"
-      subtitle="Add a wallet to your account to hold your funds. Create or add an existing wallet to continue."
+      subtitle="Create or import an existing wallet to hold your funds."
       footerElement={<WanderFooter />}
       hasBackButton={true}
       onBackButtonClick={back}>

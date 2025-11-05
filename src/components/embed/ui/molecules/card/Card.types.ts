@@ -1,6 +1,8 @@
 import React from "react";
+import type { TextVariants } from "~components/embed/types";
 
 export interface CardBaseProps {
+  headerTextVariant?: TextVariants;
   headerText?: string;
   headerIcon?: React.ReactNode;
   subtitle?: string;
