@@ -39,7 +39,7 @@ interface UseGoogleCloudReturn {
   // File operations methods
   uploadFile: (file: File | Blob, fileName: string, walletAddress: string, mimeType?: string) => Promise<AppDataFile>;
   getFileContent: (fileId: string) => Promise<RecoveryJSON>;
-  getFile: (uniqueId: string, fileId?: string) => Promise<AppDataFile | null>;
+  getFile: (contentId: string, fileId?: string) => Promise<AppDataFile | null>;
   updateFile: (fileId: string, file: File | Blob, fileName?: string, mimeType?: string) => Promise<AppDataFile>;
   downloadFile: (fileId: string, fileName: string) => Promise<void>;
   deleteFile: (fileId: string) => Promise<void>;
@@ -326,13 +326,13 @@ export const useGoogleCloud = (): UseGoogleCloudReturn => {
   }, []);
 
   const getFile = useCallback(
-    async (uniqueId: string, fileId?: string): Promise<AppDataFile | null> => {
+    async (contentId: string, fileId?: string): Promise<AppDataFile | null> => {
       try {
         const token = await ensureValidToken();
 
         const url = fileId
           ? `https://www.googleapis.com/drive/v3/files/${fileId}?fields=id,name,mimeType,createdTime,modifiedTime,appProperties`
-          : `https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=appProperties has { key='uniqueId' and value='${uniqueId}' }&fields=files(id,name,mimeType,createdTime,modifiedTime,appProperties)`;
+          : `https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=appProperties has { key='contentId' and value='${contentId}' }&fields=files(id,name,mimeType,createdTime,modifiedTime,appProperties)`;
 
         const response = await fetch(url, {
           headers: {
@@ -372,8 +372,8 @@ export const useGoogleCloud = (): UseGoogleCloudReturn => {
 
         setAuthState((prev) => ({ ...prev, isLoading: true }));
 
-        const uniqueId = await fileToId(file);
-        const existingFile = await getFile(uniqueId);
+        const contentId = await fileToId(file);
+        const existingFile = await getFile(contentId);
         if (existingFile) return existingFile;
 
         const fileType = mimeType || (file instanceof File ? file.type : "application/octet-stream");
@@ -383,7 +383,7 @@ export const useGoogleCloud = (): UseGoogleCloudReturn => {
           name: fileName,
           mimeType: fileType,
           parents: ["appDataFolder"], // This is key for storing in app data folder,
-          appProperties: { walletAddress, uniqueId },
+          appProperties: { walletAddress, contentId },
         };
 
         // Create form data for multipart upload

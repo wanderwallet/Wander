@@ -262,14 +262,14 @@ export const useAppleCloud = (): UseAppleCloudReturn => {
 
         setAuthState((prev) => ({ ...prev, isLoading: true }));
 
-        const uniqueId = await fileToId(file);
-        const existingFile = await getFile(uniqueId);
+        const contentId = await fileToId(file);
+        const existingFile = await getFile(contentId);
         if (existingFile) return existingFile;
 
         const fileType = mimeType || (file instanceof File ? file.type : "application/json");
 
         // Create a unique record name
-        const recordName = uniqueId;
+        const recordName = contentId;
 
         // Create the record with minimal data - CloudKit handles the rest
         const record: RecordToCreate = {
