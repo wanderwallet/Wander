@@ -149,5 +149,6 @@ export interface EmbeddedContextData extends EmbeddedContextState, EmbeddedConte
   copySeedphrase: () => Promise<boolean>;
   getDecryptedWallet: () => Promise<LocalWallet<JWKInterface>>;
   getSeedphrase: (callbackFn?: (seedPhrase: string) => Promise<boolean>) => Promise<string>;
+  generateRecovery: () => Promise<RecoveryJSON>;
   generateRecoveryAndDownload: () => Promise<void>;
 }

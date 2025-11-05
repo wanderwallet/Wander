@@ -7,7 +7,6 @@ import { useGoogleCloud } from "~utils/embedded/cloud/hooks/useGoogleCloud";
 import { WalletService } from "~utils/wallets/wallets.service";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import copy from "copy-to-clipboard";
-import type { JWKInterface } from "arweave/web/lib/wallet";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 import { navigate } from "wouter/use-hash-location";
 import { signOut } from "~utils/embedded/embedded.utils";
@@ -16,6 +15,8 @@ import { Loading } from "@arconnect/components-rebrand";
 import { toast } from "react-toastify";
 import { Upload01 } from "@untitled-ui/icons-react";
 import { CloudProvider } from "~utils/embedded/cloud/cloud.types";
+import type { RecoveryJSON } from "~utils/embedded/embedded.types";
+import { WalletUtils } from "~utils/wallets/wallets.utils";
 
 export function AccountBackupCloudImportEmbeddedView() {
   const { authStatus, currentWallet, importTempWallet, recoverWallet, cloudBackup, setCloudBackup } = useEmbedded();
@@ -38,24 +39,26 @@ export function AccountBackupCloudImportEmbeddedView() {
     if (!currentWallet) return;
     setIsLoading(true);
     try {
-      let jwk: JWKInterface | null = null;
+      let recoveryFileData: RecoveryJSON | null = null;
 
       if (cloudBackup?.provider === "GOOGLE") {
         await googleCloud.authenticate();
-        jwk = await googleCloud.getFileContent(cloudBackup?.fileId);
+        recoveryFileData = await googleCloud.getFileContent(cloudBackup?.fileId);
       } else if (cloudBackup?.provider === "APPLE") {
         await appleCloud.authenticate();
-        jwk = await appleCloud.getFileContent(cloudBackup?.fileId);
+        recoveryFileData = await appleCloud.getFileContent(cloudBackup?.fileId);
       }
 
-      if (jwk) {
-        const tempWallet = await importTempWallet(jwk);
+      if (recoveryFileData) {
+        if (WalletUtils.isJWK(recoveryFileData)) {
+          const tempWallet = await importTempWallet(recoveryFileData);
 
-        if (!tempWallet) {
-          return alert(`Something isn't right`);
+          if (!tempWallet) {
+            return alert(`Something isn't right`);
+          }
         }
 
-        await recoverWallet(jwk);
+        await recoverWallet(recoveryFileData);
 
         await sleep(100);
 
