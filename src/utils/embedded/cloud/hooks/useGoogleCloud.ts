@@ -368,8 +368,8 @@ export const useGoogleCloud = (): UseGoogleCloudReturn => {
 
         setAuthState((prev) => ({ ...prev, isLoading: true }));
 
-        const existingFile = await getFile(walletAddress);
-        if (existingFile) return existingFile;
+        // const existingFile = await getFile(walletAddress);
+        // if (existingFile) return existingFile;
 
         const fileType = mimeType || (file instanceof File ? file.type : "application/octet-stream");
 
