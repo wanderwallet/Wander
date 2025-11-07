@@ -60,6 +60,7 @@ const DivListItem = styled.div`
   border-radius: 10px;
   overflow: hidden;
   cursor: pointer;
+  flex-shrink: 0;
 
   &:hover {
     background-color: ${(props) => props.theme.secondaryItemHover};

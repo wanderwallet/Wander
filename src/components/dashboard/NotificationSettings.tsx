@@ -44,6 +44,7 @@ export function NotificationSettingsDashboardView() {
           </Text>
           <ToggleSwitch width={51} height={31} checked={notificationSettings} setChecked={toggleNotificationSetting} />
         </div>
+        <Spacer y={1.5} />
         <RadioWrapper>
           {/* AR AND AO TRANSFER NOTIFICATIONS  */}
           <Checkbox

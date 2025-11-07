@@ -9,6 +9,7 @@ export default function AppListItem({ name, url, icon, active, ...props }: Props
       title={name}
       subtitle={url}
       active={active}
+      style={{ flexShrink: 0 }}
       icon={icon && <Image height={40} width={40} src={icon} placeholderSrc="none" alt={`${name} logo`} />}
       height={64}
       hideSquircle={!!icon}

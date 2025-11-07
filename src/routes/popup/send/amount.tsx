@@ -499,13 +499,14 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
 
         <SliderMenu
           height="90%"
-          paddingVertical={32}
+          scrollable={false}
           title={browser.i18n.getMessage("select_token")}
           isOpen={showTokenSelector}
+          paddingVertical={0}
           onClose={() => {
             setShownTokenSelector(false);
           }}>
-          <Box>
+          <div>
             <Input
               variant="search"
               sizeVariant="small"
@@ -513,7 +514,18 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
               placeholder="Search token"
               {...tokenSearch.bindings}
             />
-            <Spacer y={1.5} />
+          </div>
+          <Spacer y={1.5} />
+          <Box
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              height: "100%",
+              minHeight: 0,
+              flex: 1,
+              overflowY: "auto",
+              gap: "1.25rem",
+            }}>
             <TokensList>
               {assets.filter(filterFn).map((token) => (
                 <Token
@@ -528,7 +540,6 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
                 />
               ))}
             </TokensList>
-            <Spacer y={1.25} />
             <CollectiblesList>
               {collectibles.filter(filterFn).map((token, i) => (
                 <Collectible

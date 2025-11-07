@@ -16,6 +16,7 @@ interface TabsProps {
   activeTab: number;
   setActiveTab: Dispatch<SetStateAction<number>>;
   containerStyle?: CSSProperties;
+  contentStyle?: CSSProperties;
 }
 
 interface TabProps {
@@ -35,7 +36,7 @@ const Tab = ({ tab, active, setActiveTab }: TabProps) => (
   </StyledTab>
 );
 
-export default function Tabs({ tabs, activeTab, setActiveTab, containerStyle }: TabsProps) {
+export default function Tabs({ tabs, activeTab, setActiveTab, containerStyle, contentStyle }: TabsProps) {
   const ActiveComponent = tabs[activeTab].component;
 
   return (
@@ -52,7 +53,7 @@ export default function Tabs({ tabs, activeTab, setActiveTab, containerStyle }: 
         ))}
         <ActiveTabIndicator activeTabId={activeTab} tabs={tabs} />
       </TabsWrapper>
-      <ContentWrapper>
+      <ContentWrapper style={contentStyle}>
         <ActiveComponent />
       </ContentWrapper>
     </Section>

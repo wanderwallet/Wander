@@ -527,7 +527,7 @@
       "message": "控制交易后的费用",
       "description": "Fee multiplier settings description"
   },
-  "setting_setting_currency_description": {
+  "setting_currency_description": {
       "message": "法定货币显示",
       "description": "Currency settings description"
   },
@@ -1064,8 +1064,12 @@
     "description": "estimated"
   },
   "invalid_address": {
-      "message": "目标地址无效",
+      "message": "地址无效",
       "description": "Invalid address message"
+  },
+  "cancel_changes": {
+    "message": "取消更改",
+    "description": "Cancel changes button text"
   },
   "sent_tx": {
       "message": "已发送交易",

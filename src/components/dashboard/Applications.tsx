@@ -1,4 +1,4 @@
-import { Spacer, Text, useInput } from "@arconnect/components-rebrand";
+import { Text, useInput } from "@arconnect/components-rebrand";
 import { useEffect, useMemo, useState } from "react";
 import { PersistentStorage, useStorage } from "~utils/storage";
 import { SettingsList } from "./list/BaseElement";
@@ -86,8 +86,7 @@ export function ApplicationsDashboardView() {
       <SearchWrapper>
         <SearchInput placeholder={browser.i18n.getMessage("search_apps")} {...searchInput.bindings} />
       </SearchWrapper>
-      <Spacer y={1} />
-      <SettingsList>
+      <SettingsList style={{ overflowY: "auto", height: "100%" }}>
         {apps.filter(filterSearchResults).map((app, i) => (
           <AppListItem
             name={app.name}
@@ -121,11 +120,11 @@ const Wrapper = styled.div`
 
 const SearchWrapper = styled.div`
   position: sticky;
-  top: 0;
-  left: 0;
-  right: 0;
+  top: -32px;
+  margin-top: -32px;
+  padding: 32px 0 24px;
   z-index: 20;
-  background-color: rgb(${(props) => props.theme.cardBackground});
+  background-color: ${(props) => props.theme.cardBackground};
 `;
 
 const NoAppsText = styled(Text)`
