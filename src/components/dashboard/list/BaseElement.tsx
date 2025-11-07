@@ -140,4 +140,8 @@ export const SettingsList = styled.div`
   flex-direction: column;
   gap: 0.5rem;
   padding-top: 0.5rem;
+
+  > * {
+    flex-shrink: 0;
+  }
 `;

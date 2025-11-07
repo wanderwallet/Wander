@@ -281,7 +281,7 @@ export function AddWalletDashboardView() {
 
   return (
     <Wrapper>
-      <div>
+      <div style={{ paddingBottom: "1.5rem" }}>
         {(!generating && isAddGeneratedWallet && generatedWallet?.seedphrase && (
           <BackupWalletPage seed={generatedWallet.seedphrase} />
         )) || (
@@ -317,6 +317,7 @@ export function AddWalletDashboardView() {
             <SeedInput onChange={(val) => setProvidedWallet(val)} inputType={inputType} />
           </>
         )}
+        <Spacer y={inputType === "seedphrase" ? 0 : 1} />
         <Input
           type="password"
           {...passwordInput.bindings}

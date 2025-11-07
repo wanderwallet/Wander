@@ -11,6 +11,7 @@ import {
   getAuthErrorMessage,
 } from "~utils/authentication/authentication.utils";
 import type { RecoveryJSON } from "~utils/embedded/embedded.types";
+import { fileToId } from "../cloud.utils";
 
 interface GoogleCloudAuthState {
   isAuthenticated: boolean;
@@ -38,7 +39,7 @@ interface UseGoogleCloudReturn {
   // File operations methods
   uploadFile: (file: File | Blob, fileName: string, walletAddress: string, mimeType?: string) => Promise<AppDataFile>;
   getFileContent: (fileId: string) => Promise<RecoveryJSON>;
-  getFile: (walletAddress: string, fileId?: string) => Promise<AppDataFile | null>;
+  getFile: (contentId: string, fileId?: string) => Promise<AppDataFile | null>;
   updateFile: (fileId: string, file: File | Blob, fileName?: string, mimeType?: string) => Promise<AppDataFile>;
   downloadFile: (fileId: string, fileName: string) => Promise<void>;
   deleteFile: (fileId: string) => Promise<void>;
@@ -325,15 +326,15 @@ export const useGoogleCloud = (): UseGoogleCloudReturn => {
   }, []);
 
   const getFile = useCallback(
-    async (walletAddress: string, fileId?: string): Promise<AppDataFile | null> => {
+    async (contentId: string, fileId?: string): Promise<AppDataFile | null> => {
       try {
         const token = await ensureValidToken();
 
         const url = fileId
-          ? `https://www.googleapis.com/drive/v3/files/${fileId}`
-          : `https://www.googleapis.com/drive/v3/files?q=appProperties has { key: 'walletAddress', value: '${walletAddress}' }`;
+          ? `https://www.googleapis.com/drive/v3/files/${fileId}?fields=id,name,mimeType,createdTime,modifiedTime,appProperties`
+          : `https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=appProperties has { key='contentId' and value='${contentId}' }&fields=files(id,name,mimeType,createdTime,modifiedTime,appProperties)`;
 
-        const response = await fetch(`${url}&fields=id,name,mimeType,createdTime,modifiedTime,appProperties`, {
+        const response = await fetch(url, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -344,13 +345,16 @@ export const useGoogleCloud = (): UseGoogleCloudReturn => {
         }
 
         const data = await response.json();
+        const fileData = fileId ? data : data.files?.[0];
+        if (!fileData) return null;
+
         return {
-          id: data.id,
-          name: data.name,
-          mimeType: data.mimeType,
-          createdTime: data.createdTime,
-          modifiedTime: data.modifiedTime,
-          walletAddress: data?.appProperties?.walletAddress || "",
+          id: fileData.id,
+          name: fileData.name,
+          mimeType: fileData.mimeType,
+          createdTime: fileData.createdTime,
+          modifiedTime: fileData.modifiedTime,
+          walletAddress: fileData?.appProperties?.walletAddress || "",
         } as AppDataFile;
       } catch (err) {
         const errorMessage = err?.message || err?.reason || "Failed to get wallet backup.";
@@ -368,7 +372,8 @@ export const useGoogleCloud = (): UseGoogleCloudReturn => {
 
         setAuthState((prev) => ({ ...prev, isLoading: true }));
 
-        const existingFile = await getFile(walletAddress);
+        const contentId = await fileToId(file);
+        const existingFile = await getFile(contentId);
         if (existingFile) return existingFile;
 
         const fileType = mimeType || (file instanceof File ? file.type : "application/octet-stream");
@@ -378,7 +383,7 @@ export const useGoogleCloud = (): UseGoogleCloudReturn => {
           name: fileName,
           mimeType: fileType,
           parents: ["appDataFolder"], // This is key for storing in app data folder,
-          appProperties: { walletAddress },
+          appProperties: { walletAddress, contentId },
         };
 
         // Create form data for multipart upload

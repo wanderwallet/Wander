@@ -4,6 +4,7 @@ import browser from "webextension-polyfill";
 import styled from "styled-components";
 import { resetStorage } from "~utils/storage.utils";
 import { RemoveButton } from "~routes/popup/settings/wallets/[address]";
+import { closeCurrentTab } from "~utils/tabs";
 
 export function ResetDashboardView() {
   // reset modal
@@ -18,7 +19,7 @@ export function ResetDashboardView() {
       await resetStorage();
 
       // close window
-      window.top.close();
+      closeCurrentTab();
     } catch (e) {
       console.log("Error resetting Wander", e);
       setToast({

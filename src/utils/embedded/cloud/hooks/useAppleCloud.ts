@@ -3,6 +3,7 @@ import type { Container, UserIdentity, RecordField, RecordToCreate, RecordToSave
 import { useScript } from "~utils/script/script.hooks";
 import type { AppDataFile } from "../cloud.types";
 import type { RecoveryJSON } from "~utils/embedded/embedded.types";
+import { fileToId } from "../cloud.utils";
 
 interface AppleAuthState {
   isAuthenticated: boolean;
@@ -261,13 +262,14 @@ export const useAppleCloud = (): UseAppleCloudReturn => {
 
         setAuthState((prev) => ({ ...prev, isLoading: true }));
 
-        const existingFile = await getFile(walletAddress);
+        const contentId = await fileToId(file);
+        const existingFile = await getFile(contentId);
         if (existingFile) return existingFile;
 
         const fileType = mimeType || (file instanceof File ? file.type : "application/json");
 
         // Create a unique record name
-        const recordName = walletAddress;
+        const recordName = contentId;
 
         // Create the record with minimal data - CloudKit handles the rest
         const record: RecordToCreate = {

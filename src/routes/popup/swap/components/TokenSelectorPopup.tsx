@@ -141,11 +141,13 @@ const SelectorWrapper = styled.div`
   width: 100%;
   display: flex;
   flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  flex: 1;
   gap: 16px;
 `;
 
 const TokenListContainer = styled.div`
-  height: 65vh;
   overflow-y: auto;
   margin: 0 -24px;
   padding: 0 24px;

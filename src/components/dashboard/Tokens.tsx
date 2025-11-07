@@ -71,7 +71,7 @@ export function TokensDashboardView() {
 
   return (
     <Wrapper>
-      <div style={{ overflowY: "auto" }}>
+      <div style={{ overflowY: "auto", marginBottom: "1rem" }}>
         <Reorder.Group
           as="div"
           axis="y"
