@@ -41,6 +41,7 @@ const FAIR_LAUNCH_TOKENS_URL = `${CACHE_API}/api/flp-tokens`;
 const FLP_DELEGATION_PROCESS_ID = "cuxSKjGJ-WDB9PzSkVkVVrIBSh3DrYHYz44usQOj5yE";
 const FLP_AO_DELEGATION_TRACKER_PROCESS_ID = "NRP0xtzeV9MHgwLmgD254erUB7mUjMBhBkYkNYkbNEo";
 const FLP_REGISTRY_PROCESS_ID = "It-_AKlEfARBmJdbJew1nG9_hIaZt0t20wQc28mFGBE";
+const ONE_HOUR_MS = 1000 * 60 * 60;
 
 /**
  * Test token FLP IDs that should be filtered out from the results.
@@ -72,7 +73,7 @@ const MANUAL_CLAIMABLE_FLP_IDS = new Set([
   "Wc8Rg-owsWSvrmb5XAlmSs3_4UtHo9i5ui2o9UCFuTk", // Protocol Land
 ]);
 
-const aoInstance = connect(defaultConfig);
+const aoInstance = connect({ ...defaultConfig, CU_URL: "https://cu-af.dataos.so" });
 
 /**
  * Get the total delegation of AO by project.
@@ -145,13 +146,31 @@ export async function getFairLaunchTokens<T extends boolean = false>(
 ): Promise<T extends true ? TokenInfo[] : FlpTokenInfo[]> {
   try {
     let flpTokens: FlpToken[] = [];
-    try {
-      const response = await retryWithDelay(() => fetch(FAIR_LAUNCH_TOKENS_URL));
-      if (!response.ok) throw new Error(`Failed to fetch tokens: ${response.status}`);
 
-      ({ flpTokens } = await response.json());
-    } catch {
-      flpTokens = await getFlpTokensFromAo();
+    const cachedTokens = await ExtensionStorage.get<{
+      tokens: FlpToken[];
+      timestamp: number;
+    }>("fair_launch_tokens");
+
+    if (cachedTokens && cachedTokens.timestamp && Date.now() - cachedTokens.timestamp < ONE_HOUR_MS) {
+      flpTokens = cachedTokens.tokens;
+    } else {
+      try {
+        const response = await retryWithDelay(() => fetch(FAIR_LAUNCH_TOKENS_URL));
+        if (!response.ok) throw new Error(`Failed to fetch tokens: ${response.status}`);
+
+        ({ flpTokens } = await response.json());
+      } catch {
+        flpTokens = await getFlpTokensFromAo();
+      }
+
+      if (flpTokens.length > 0) {
+        // Cache for 1 hour
+        await ExtensionStorage.set("fair_launch_tokens", {
+          tokens: flpTokens,
+          timestamp: Date.now(),
+        });
+      }
     }
 
     const { forImport = false } = options;
