@@ -28,30 +28,36 @@ export async function createContextMenus(hasPerms: boolean) {
   const actionContext = isManifestv3() ? "action" : "browser_action";
 
   if (wallets.length > 0) {
-    browser.contextMenus.create(
-      {
-        id: "copy_address_context_menu",
-        title: "Copy current address",
-        contexts: [actionContext],
-        onclick: !isManifestv3() ? onCopyAddressClicked : undefined,
-      },
-      () => browser.runtime.lastError,
-    );
+    const copyAddressMenuOptions: Menus.CreateCreatePropertiesType = {
+      id: "copy_address_context_menu",
+      title: "Copy current address",
+      contexts: [actionContext],
+    };
+
+    // Only add onclick for Manifest V2
+    if (!isManifestv3()) {
+      copyAddressMenuOptions.onclick = onCopyAddressClicked;
+    }
+
+    browser.contextMenus.create(copyAddressMenuOptions, () => browser.runtime.lastError);
   }
 
   // if the site has any perms,
   // display the disconnect
   // context menu
   if (hasPerms) {
-    browser.contextMenus.create(
-      {
-        id: "disconnect_context_menu",
-        title: "Disconnect from current site",
-        contexts: [actionContext, "page"],
-        onclick: !isManifestv3() ? (_, tab) => onDisconnectClicked(tab) : undefined,
-      },
-      () => browser.runtime.lastError,
-    );
+    const disconnectMenuOptions: Menus.CreateCreatePropertiesType = {
+      id: "disconnect_context_menu",
+      title: "Disconnect from current site",
+      contexts: [actionContext, "page"],
+    };
+
+    // Only add onclick for Manifest V2
+    if (!isManifestv3()) {
+      disconnectMenuOptions.onclick = (_, tab) => onDisconnectClicked(tab);
+    }
+
+    browser.contextMenus.create(disconnectMenuOptions, () => browser.runtime.lastError);
   }
 
   // if we are one manifest v3, we add an event

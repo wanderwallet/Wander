@@ -1,5 +1,4 @@
 import { PersistentStorage, useStorage } from "~utils/storage";
-import { ExtensionStorage } from "~utils/storage";
 import { useMemo } from "react";
 import type { Token, TokenType } from "~tokens/token";
 import styled from "styled-components";
@@ -91,7 +90,7 @@ export function TokensSettingsView() {
 
           <Spacer y={1} />
 
-          <div style={{ display: "flex", flexDirection: "column" }}>
+          <TokensList>
             {assets.length > 0 && (
               <>
                 <Label style={{ marginBottom: "1rem" }}>{browser.i18n.getMessage("assets")}</Label>
@@ -109,7 +108,7 @@ export function TokensSettingsView() {
                 ))}
               </>
             )}
-          </div>
+          </TokensList>
         </div>
 
         <ActionBar>
@@ -127,7 +126,8 @@ const Wrapper = styled.div`
   flex-direction: column;
   justify-content: space-between;
   padding: 0 1rem;
-  height: calc(100vh - 70px);
+  height: calc(100vh - 100px);
+  overflow: hidden;
 `;
 
 const Label = styled.p`
@@ -138,14 +138,13 @@ const Label = styled.p`
 `;
 
 export const ActionBar = styled.div`
-  position: sticky;
-  z-index: 3;
-  bottom: 0;
-  left: 0;
-  right: 0;
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 0.75rem 0;
-  background-color: rgb(${(props) => props.theme.background});
+`;
+
+const TokensList = styled.div`
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  height: calc(100vh - 216px);
 `;

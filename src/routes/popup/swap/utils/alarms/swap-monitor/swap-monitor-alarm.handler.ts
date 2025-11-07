@@ -286,7 +286,7 @@ async function handleSwapFailure(swap: SwapData) {
         ...s,
         status: "failed" as const,
         completedAt: Date.now(),
-        showCompletionScreen: true, // Mark for display to user
+        showCompletionScreen: s?.showCompletionScreen ?? true, // Mark for display to user
       }),
     );
 
@@ -561,7 +561,7 @@ async function markSwapForCompletionDisplay(transferId: string) {
       (swap) => swap.transferId === transferId && swap.showCompletionScreen !== true,
       (swap) => ({
         ...swap,
-        showCompletionScreen: true,
+        showCompletionScreen: swap?.showCompletionScreen ?? true,
       }),
     );
     log(LOG_GROUP.SWAP, `Marked swap ${transferId} to show completion screen on next popup open`);

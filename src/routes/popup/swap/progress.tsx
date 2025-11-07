@@ -103,7 +103,7 @@ export function SwapProgressView() {
       } else {
         await swapsArray.updateWhere(
           (s) => s.transferId === transferId,
-          (s) => ({ ...s, status: "failed" as const, completedAt: Date.now() }),
+          (s) => ({ ...s, status: "failed" as const, completedAt: Date.now(), showCompletionScreen: false }),
         );
         navigate(PopupPaths.SwapFailed);
       }

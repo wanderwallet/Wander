@@ -1,7 +1,6 @@
 import { currencies } from "~utils/currency";
 import Setting from "./setting";
 import { BarChart07, Compass01, CurrencyDollarCircle, Percent02, Star01, Sun } from "@untitled-ui/icons-react";
-import { ExtensionStorage } from "~utils/storage";
 
 /** All settings */
 const settings: Setting[] = [
@@ -25,7 +24,7 @@ const settings: Setting[] = [
     name: "currency",
     displayName: "setting_currency",
     icon: CurrencyDollarCircle,
-    description: "setting_setting_currency_description",
+    description: "setting_currency_description",
     type: "pick",
     options: currencies,
     defaultValue: "USD",

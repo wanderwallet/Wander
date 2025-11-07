@@ -368,7 +368,7 @@ export function usePoolQuote({
         return;
       }
 
-      setIsLoading(true);
+      setIsLoading((prev) => prev === false);
 
       const params = {
         tokenIn,
@@ -433,14 +433,12 @@ export function usePoolQuote({
 
     let cancelled = false;
 
-    const fetchPoolQuoteInterval = async () => {
+    const startPolling = async () => {
       const now = Date.now();
       const lastQuoteTime = (await TempTransactionStorage.get<number>("last_swap_quote_timestamp")) ?? now;
       const waitTime = Math.max(0, TEN_SECONDS_MS - (now - lastQuoteTime));
 
-      if (waitTime > 0) {
-        await sleep(waitTime);
-      }
+      if (waitTime > 0) await sleep(waitTime);
 
       if (cancelled) return;
 
@@ -448,7 +446,7 @@ export function usePoolQuote({
       intervalRef.current = setInterval(fetchPoolQuote, FIFTEEN_SECONDS_MS);
     };
 
-    fetchPoolQuoteInterval();
+    startPolling();
 
     return () => {
       cancelled = true;

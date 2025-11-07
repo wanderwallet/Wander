@@ -126,6 +126,7 @@ const RecipientsTab = ({
     <AddressesList>
       {recipients.map((recipient) => (
         <ListItem
+          style={{ flexShrink: 0 }}
           title={formatAddress(recipient.address, 4)}
           subtitle={recipient?.timestamp && humanizeTimestampForRecipient(recipient.timestamp)}
           img={recipient?.contact?.profileIcon}
@@ -346,7 +347,13 @@ export function SendView({ params: { id } }: SendViewProps) {
               {browser.i18n.getMessage("next")}
             </Button>
           </Flex>
-          <Tabs tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} containerStyle={{ paddingBottom: 24 }} />
+          <Tabs
+            tabs={tabs}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            containerStyle={{ minHeight: 0, height: "calc(100vh - 164px)" }}
+            contentStyle={{ height: "100%", overflowY: "auto" }}
+          />
         </Flex>
         <SliderMenu hasHeader={false} isOpen={open} onClose={() => setOpen(false)} paddingVertical={32}>
           <Section
@@ -395,6 +402,8 @@ export function SendView({ params: { id } }: SendViewProps) {
 
 const Wrapper = styled(Section)`
   height: calc(100vh - 100px);
+  min-height: 0;
+  overflow: hidden;
   padding-top: 0px;
   display: flex;
   flex-direction: column;

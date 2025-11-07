@@ -1,4 +1,4 @@
-import { Button, Spacer, useInput } from "@arconnect/components-rebrand";
+import { Button, useInput } from "@arconnect/components-rebrand";
 import { Reorder } from "framer-motion";
 import { useEffect, useMemo } from "react";
 import styled from "styled-components";
@@ -93,7 +93,6 @@ export function WalletsDashboardView() {
             {browser.i18n.getMessage("add_account")}
           </AddWalletButton>
         </SearchWrapper>
-        <Spacer y={1} />
         {wallets && (
           <Reorder.Group
             as="div"
@@ -127,12 +126,12 @@ const SearchWrapper = styled.div`
   position: sticky;
   display: grid;
   gap: 8px;
-  top: 0;
-  left: 0;
-  right: 0;
+  top: -32px;
+  margin-top: -32px;
+  padding: 32px 0 24px;
   z-index: 20;
   grid-template-columns: auto auto;
-  background-color: rgb(${(props) => props.theme.cardBackground});
+  background-color: ${(props) => props.theme.cardBackground};
 `;
 
 const AddWalletButton = styled(Button).attrs({

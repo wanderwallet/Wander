@@ -2,7 +2,7 @@ import {
   onMessage as webExtBridgeOnMessage,
   sendMessage as webExtBridgeSendMessage,
   type IBridgeMessage,
-} from "@arconnect/webext-bridge";
+} from "@wanderapp/webext-bridge";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import type { MessageData, MessageID, OnMessageCallback } from "~utils/messaging/messaging.types";
 
@@ -72,7 +72,7 @@ export async function isomorphicSendMessage<K extends MessageID>(messageData: Me
         log(LOG_GROUP.MSG, `[${currentMessage}] ${messageId} sent`);
 
         // The result could be both ApiResponseSuccess or ApiResponseError. The catch block below is used for other type
-        // of errors coming from `@arconnect/webext-bridge` (e.g. sending a message before there's a listener for it).
+        // of errors coming from `@wanderapp/webext-bridge` (e.g. sending a message before there's a listener for it).
         resolveAndClearTimeouts(result);
       })
       .catch((err) => {

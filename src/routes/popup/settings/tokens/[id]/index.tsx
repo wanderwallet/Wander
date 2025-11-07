@@ -68,7 +68,9 @@ export function TokenSettingsView({ params: { id } }: TokenSettingsProps) {
   return (
     <>
       <HeadV2
-        title={token?.name?.length <= 15 ? token.name : token.ticker}
+        title={
+          (token?.name?.length <= 15 ? token.name : token.ticker) || (token.type === "asset" ? "Asset" : "Collectible")
+        }
         back={() => navigate("/quick-settings/tokens")}
       />
       <Wrapper>
@@ -135,7 +137,7 @@ const Wrapper = styled.div`
   flex-direction: column;
   justify-content: space-between;
   padding: 0 1rem;
-  height: calc(100vh - 80px);
+  height: calc(100vh - 100px);
 `;
 
 const TokenAddress = styled(Text).attrs({

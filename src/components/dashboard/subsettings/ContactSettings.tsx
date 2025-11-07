@@ -26,6 +26,7 @@ import { useLocation } from "~wallets/router/router.utils";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import { RemoveButton } from "~routes/popup/settings/wallets/[address]";
 import { Flex } from "~components/common/Flex";
+import { isArweaveAddress } from "~utils/agents/utils";
 // import { isAddressFormat } from "~utils/format";
 
 export interface ContactSettingsDashboardViewParams {
@@ -111,6 +112,15 @@ export function ContactSettingsDashboardView({
   };
 
   const saveContact = async () => {
+    if (!isArweaveAddress(contact.address)) {
+      setToast({
+        type: "error",
+        content: browser.i18n.getMessage("invalid_address"),
+        duration: 3000,
+      });
+      return;
+    }
+
     // check if the address has been changed to a different one that's already in use
     const addressChanged = contact.address !== storedContacts[contactIndex].address;
     const addressUsedByAnotherContact = storedContacts.some(
@@ -294,36 +304,12 @@ export function ContactSettingsDashboardView({
   };
 
   const areFieldsEmpty = () => {
-    return !contact.address;
+    return !contact.name || contact.name.trim() === "" || !contact.address || contact.address.trim() === "";
   };
 
   return (
     <Wrapper>
       <div>
-        {!isQuickSetting && (
-          <div>
-            <Spacer y={0.45} />
-            <Header>
-              {editable ? (
-                <Flex direction="column" gap={8} width="100%">
-                  {contact.name && <SubTitle>{browser.i18n.getMessage("name")}</SubTitle>}
-                  <InputWrapper>
-                    <Input
-                      fullWidth
-                      name="name"
-                      placeholder={contact.name ? contact.name : browser.i18n.getMessage("first_last_name")}
-                      value={contact.name}
-                      onChange={handleInputChange}
-                    />
-                  </InputWrapper>
-                </Flex>
-              ) : (
-                <Title>{contact.name ? contact.name : browser.i18n.getMessage("contact_info")}</Title>
-              )}
-            </Header>
-          </div>
-        )}
-        <Spacer y={1} />
         <SubTitle color="primary">{browser.i18n.getMessage("contact_avatar")}</SubTitle>
         <PicWrapper>
           {contact.avatarId && !avatarLoading ? (
@@ -354,6 +340,25 @@ export function ContactSettingsDashboardView({
             </>
           ) : null}
         </PicWrapper>
+        <Spacer y={0.5} />
+        {editable ? (
+          <>
+            <SubTitle color="primary">{browser.i18n.getMessage("name")}*</SubTitle>
+            <InputWrapper>
+              <ContactInput
+                fullWidth
+                style={{ paddingLeft: "0px" }}
+                small={isQuickSetting}
+                name="name"
+                placeholder={browser.i18n.getMessage("first_last_name")}
+                value={contact.name}
+                onChange={handleInputChange}
+              />
+            </InputWrapper>
+          </>
+        ) : (
+          <Title>{contact.name ? contact.name : browser.i18n.getMessage("contact_info")}</Title>
+        )}
         <Spacer y={1} />
         <AddressWrapper>
           <SubTitle>
@@ -388,16 +393,15 @@ export function ContactSettingsDashboardView({
         <SubTitle>{browser.i18n.getMessage("notes")}</SubTitle>
         <ContactNotes
           small={isQuickSetting}
-          placeholder={browser.i18n.getMessage("type_message_here")}
+          placeholder={editable ? browser.i18n.getMessage("type_message_here") : ""}
           value={contact.notes || ""}
           onChange={(e) => setContact({ ...contact, notes: e.target.value })}
-          style={{
-            height: editable ? (isQuickSetting ? "78px" : "235px") : isQuickSetting ? "78px" : "269px",
-          }}
+          style={{ height: isQuickSetting ? "78px" : "235px" }}
+          readOnly={!editable}
         />
       </div>
 
-      <Footer>
+      <Footer style={{ padding: "24px 0" }}>
         {editable ? (
           <Button fullWidth onClick={saveContact} disabled={areFieldsEmpty()}>
             {browser.i18n.getMessage("save_changes")}
@@ -407,8 +411,11 @@ export function ContactSettingsDashboardView({
             {browser.i18n.getMessage("edit_contact")}
           </Button>
         )}
-        <RemoveButton fullWidth variant="secondary" onClick={() => removeContactModal.setOpen(true)}>
-          {browser.i18n.getMessage("remove_contact")}
+        <RemoveButton
+          fullWidth
+          variant="secondary"
+          onClick={() => (editable ? toggleEdit() : removeContactModal.setOpen(true))}>
+          {browser.i18n.getMessage(editable ? "cancel_changes" : "remove_contact")}
         </RemoveButton>
       </Footer>
       <Modal

@@ -7,7 +7,7 @@ import { EmbeddedMessage, EmbeddedCall } from "~utils/embedded/utils/messages/em
 import type { ThemeMode } from "~utils/theme/theme.hook";
 import type { DirectAccess } from "~wallets/router/iframe/iframe.routes";
 
-declare module "@arconnect/webext-bridge" {
+declare module "@wanderapp/webext-bridge" {
   export interface ProtocolMap {
     /**
      * `api/foreground/foreground-setup-wallet-sdk.ts` use `postMessage()` to send `arweaveWallet.*` calls that are

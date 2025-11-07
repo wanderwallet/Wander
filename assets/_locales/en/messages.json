@@ -531,7 +531,7 @@
     "message": "Control the fees paid after transactions",
     "description": "Fee multiplier settings description"
   },
-  "setting_setting_currency_description": {
+  "setting_currency_description": {
     "message": "Fiat display currency",
     "description": "Currency settings description"
   },
@@ -1076,8 +1076,12 @@
     "description": "estimated"
   },
   "invalid_address": {
-    "message": "Target is not a valid address",
+    "message": "Invalid address",
     "description": "Invalid address message"
+  },
+  "cancel_changes": {
+    "message": "Cancel changes",
+    "description": "Cancel changes button text"
   },
   "sent_tx": {
     "message": "Sent transaction",
@@ -1969,7 +1973,8 @@
   },
   "address_in_use": {
     "message": "Address is already in use.",
-    "description": "Contacts error message if address is already in use"},
+    "description": "Contacts error message if address is already in use"
+  },
   "add": {
     "message": "Add",
     "description" : "add button text"

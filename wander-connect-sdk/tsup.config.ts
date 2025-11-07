@@ -2,21 +2,16 @@ import type { Options } from "tsup";
 
 const env = process.env.NODE_ENV;
 
-export const tsup: Options = {
+const common: Options = {
   splitting: false,
-  clean: true, // clean up the dist folder
-  dts: true, // generate dts files
-  format: ["cjs", "esm", "iife"], // generate cjs, iife and esm files
-  minify: env === "production",
   bundle: true,
   skipNodeModulesBundle: true,
   entryPoints: ["src/index.ts"],
   watch: env === "development",
   target: "es2020",
   outDir: "sdk-dist",
-  entry: ["src/**/*.ts", "!src/**/__tests__/**", "!src/**/*.test.*"], //include all files under src
+  entry: ["src/index.ts", "!src/**/__tests__/**", "!src/**/*.test.*"], //include all files under src
   shims: true,
-  sourcemap: true,
   treeshake: true,
   esbuildOptions: (options) => {
     options.alias = {
@@ -24,3 +19,22 @@ export const tsup: Options = {
     };
   },
 };
+
+const cjsEsmOptions: Options = {
+  dts: true, // generate dts files
+  format: ["cjs", "esm"], // generate cjs and esm files
+  minify: env === "production",
+  sourcemap: true,
+  ...common,
+};
+
+const iifeOptions: Options = {
+  dts: false,
+  format: ["iife"],
+  minify: true,
+  sourcemap: false,
+  globalName: "WanderConnect",
+  ...common,
+};
+
+export default [cjsEsmOptions, iifeOptions];

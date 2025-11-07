@@ -42,7 +42,13 @@ export function ManageAssets({ open, close }: Props) {
   }, [tokens, searchInput.state]);
 
   return (
-    <SliderMenu hasHeader={true} title={browser.i18n.getMessage("manage_asset_list")} isOpen={open} onClose={close}>
+    <SliderMenu
+      height="90vh"
+      scrollable={false}
+      hasHeader={true}
+      title={browser.i18n.getMessage("manage_asset_list")}
+      isOpen={open}
+      onClose={close}>
       <Container>
         <Input sizeVariant="small" fullWidth variant="search" placeholder="Search asset" {...searchInput.bindings} />
         <TokensList>
@@ -68,17 +74,14 @@ export function ManageAssets({ open, close }: Props) {
             />
           ))}
         </TokensList>
-        <ManageButton
-          as={Button}
+        <Button
           fullWidth
-          // TODO: The base should be iframe.html for the extension and some domain for the iframe.
-          href="#/quick-settings/tokens"
           onClick={(e) => {
             e.preventDefault();
             navigate("/quick-settings/tokens/new");
           }}>
           {browser.i18n.getMessage("import_assets")}
-        </ManageButton>
+        </Button>
       </Container>
     </SliderMenu>
   );
@@ -89,6 +92,7 @@ const Container = styled.div`
   flex-direction: column;
   height: 100%;
   gap: 1.5rem;
+  min-height: 0;
 `;
 
 const TokensList = styled(Section)`
@@ -96,9 +100,6 @@ const TokensList = styled(Section)`
   flex-direction: column;
   gap: 1rem;
   padding: 0;
+  flex: 1;
+  overflow-y: auto;
 `;
-
-const ManageButton = styled.a.attrs({
-  rel: "noopener noreferrer",
-  target: "_blank",
-})``;
