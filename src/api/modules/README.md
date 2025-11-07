@@ -28,4 +28,4 @@ There are 3 contexts here:
 
 ### Wander Embedded
 
-TODO: Document `isomorphicSendMessage()` and `@arconnect/webext-bridge`'s `sendMessage()`.
+TODO: Document `isomorphicSendMessage()` and `@wanderapp/webext-bridge`'s `sendMessage()`.

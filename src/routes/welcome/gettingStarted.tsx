@@ -32,6 +32,7 @@ import { Link } from "~components/common/Link";
 import IconText from "~components/IconText";
 import WanderIcon from "url:assets/icon.svg";
 import { TempTransactionStorage, useStorage } from "~utils/storage";
+import { closeCurrentTab } from "~utils/tabs";
 
 const BASE_VIEWS = [
   GettingStartedWelcomeView,
@@ -85,10 +86,10 @@ export function GettingStartedSetupWelcomeView({ params: { page: pageParam } }: 
     return <Redirect to="/getting-started/1" />;
   }
 
-  const handleClose = () => {
+  const handleClose = async () => {
     // reset before unload
     window.onbeforeunload = null;
-    window.top.close();
+    closeCurrentTab();
   };
 
   const navigateToPage = useCallback(

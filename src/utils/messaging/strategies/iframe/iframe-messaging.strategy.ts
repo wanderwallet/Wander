@@ -1,4 +1,4 @@
-import type { ProtocolMap, RuntimeContext } from "@arconnect/webext-bridge";
+import type { ProtocolMap, RuntimeContext } from "@wanderapp/webext-bridge";
 import { nanoid } from "nanoid";
 import type { ApiCall, ApiResponse } from "shim";
 import { EMBEDDED_ANCESTOR_TAB_ID, EMBEDDED_IFRAME_TAB_ID } from "~utils/embedded/embedded.constants";
