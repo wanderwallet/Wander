@@ -4,25 +4,35 @@ import browser from "webextension-polyfill";
 import HeadV2 from "~components/popup/HeadV2";
 import HedgehogHeadIcon from "url:/assets/agents/images/hedgehog-head.svg";
 import { Flex } from "~components/common/Flex";
-import { ClockRewind } from "@untitled-ui/icons-react";
+import { ClockRewind, RefreshCw01 } from "@untitled-ui/icons-react";
 import WanderAgentExplainerPopup from "./components/WanderAgentExplainerPopup";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { ExtensionStorage, TempTransactionStorage } from "~utils/storage";
 import { AOYieldAgentListItem } from "./components/AOYieldAgentListItem";
 import { LiquidOpsAgentListItem } from "./components/LiquidOpsAgentListItem";
 import { useLocation } from "~wallets/router/router.utils";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import { AOMintingPausedListItem } from "./components/AOMintingPausedListItem";
-import { useAOYieldLatestAgent } from "~utils/agents/hooks";
+import { useAOYieldAgentInfo, useAOYieldLatestAgent, useSyncAOYieldAgent } from "~utils/agents/hooks";
 import { PageType, trackPage } from "~utils/analytics";
 import { useActiveTokens } from "./liquidops/utils/hooks/useAvailableTokens";
 import { HAS_SHOWN_AGENTS_EXPLAINER_POPUP } from "~utils/agents/constants";
+import { agentSyncManager } from "~utils/agents/sync";
+import { useActiveAddress } from "~wallets/hooks";
 
 export function AgentsView() {
   const { navigate } = useLocation();
   const [open, setOpen] = useState(false);
   const aoAgent = useAOYieldLatestAgent();
-  const { data: activeTokens } = useActiveTokens();
+  const { data: aoAgentInfo } = useAOYieldAgentInfo(aoAgent?.id);
+  const {
+    data: activeTokens,
+    refetch: refetchActiveLiquidOpsTokens,
+    isLoading: isLoadingActiveLiquidOpsTokens,
+    isRefetching: isRefetchingActiveLiquidOpsTokens,
+  } = useActiveTokens();
+  const activeAddress = useActiveAddress();
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const isAgentAvailable = useMemo(
     () => activeTokens?.length > 0 || aoAgent?.status === "Active",
@@ -37,6 +47,33 @@ export function AgentsView() {
     }
   }
 
+  const handleRefresh = useCallback(async () => {
+    if (!activeAddress || isRefreshing) return;
+
+    setIsRefreshing(true);
+    try {
+      const refreshPromises = [agentSyncManager.manualAgentsSync([activeAddress])];
+
+      if (!isLoadingActiveLiquidOpsTokens && !isRefetchingActiveLiquidOpsTokens) {
+        // @ts-ignore
+        refreshPromises.push(refetchActiveLiquidOpsTokens());
+      }
+
+      await Promise.allSettled(refreshPromises);
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [
+    activeAddress,
+    isRefreshing,
+    isLoadingActiveLiquidOpsTokens,
+    isRefetchingActiveLiquidOpsTokens,
+    refetchActiveLiquidOpsTokens,
+  ]);
+
+  // Sync agent data with agent info
+  useSyncAOYieldAgent(aoAgent, aoAgentInfo);
+
   useEffect(() => {
     checkAndShowAgentExplainerPopup();
     TempTransactionStorage.remove("ao-yield-agent");
@@ -46,7 +83,19 @@ export function AgentsView() {
   return (
     <>
       <HeadV2
-        title={browser.i18n.getMessage("agents")}
+        title={
+          <Flex align="center" justify="center" gap={4}>
+            <PageTitle>{browser.i18n.getMessage("agents")}</PageTitle>
+            <RefreshButton onClick={handleRefresh} disabled={isRefreshing} title="Refresh agents">
+              <RefreshCw01
+                fontSize={20}
+                style={{
+                  animation: isRefreshing ? "spin 1s linear infinite" : "none",
+                }}
+              />
+            </RefreshButton>
+          </Flex>
+        }
         backIcon={<ClockRewind fontSize={24} />}
         back={() => navigate(PopupPaths.AOYieldAgentHistory)}
       />
@@ -84,4 +133,49 @@ const Wrapper = styled(Section)`
   position: relative;
   overflow-y: auto;
   padding-bottom: 100px;
+`;
+
+const RefreshButton = styled.button`
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    opacity 0.2s,
+    transform 0.2s;
+
+  &:hover:not(:disabled) {
+    opacity: 0.7;
+    transform: scale(1.05);
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.95);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  svg {
+    color: ${(props) => props.theme.theme};
+  }
+
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+`;
+
+const PageTitle = styled(Text).attrs({ noMargin: true })`
+  font-size: 1.375rem;
+  font-weight: 500;
 `;

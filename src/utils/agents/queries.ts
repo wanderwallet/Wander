@@ -127,6 +127,7 @@ query ($address: String!, $after: String) {
     first: 100,
     after: $after,
     owners: [$address],
+    sort: INGESTED_AT_DESC,
     tags: [
       {name: "Data-Protocol", values: ["ao"]},
       {name: "Type", values: ["Process"]},
