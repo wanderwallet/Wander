@@ -33,18 +33,6 @@ export interface Message {
   Data: string;
 }
 
-type CreateDataItemArgs = {
-  data: any;
-  tags?: Tag[];
-  target?: string;
-  anchor?: string;
-};
-
-type DataItemResult = {
-  id: string;
-  raw: ArrayBuffer;
-};
-
 export const ARDRIVE_CU_URL = "https://cu.ardrive.io";
 export const AO_DEV_CU_URL = "https://aodev.fun/ao/cu";
 export const DEFAULT_CU_URL = "https://cu.ao-testnet.xyz";
