@@ -45,6 +45,8 @@ export function AccountBackupCloudEmbeddedView() {
     [lastRegisteredWallet, isOnboardingStore],
   );
 
+  const isOnboardingRef = useRef(isOnboarding);
+
   const isViewLoading =
     authStatus === "unknown" || authStatus === "loading" || authStatus === "authLoading" || isBackupLoading;
 
@@ -55,7 +57,7 @@ export function AccountBackupCloudEmbeddedView() {
   const appleCloud = useAppleCloud();
 
   const handleComplete = async () => {
-    if (isOnboarding) {
+    if (isOnboardingRef.current) {
       await sleep(100);
       navigate(EmbeddedPaths.AccountCongratulations);
     }
@@ -81,7 +83,7 @@ export function AccountBackupCloudEmbeddedView() {
       let googleEmail: string | null = null;
 
       if (!fileRef.current) {
-        const pendingOperation = isOnboarding ? PendingOperation.ONBOARDING_STORE : PendingOperation.STORE;
+        const pendingOperation = isOnboardingRef.current ? PendingOperation.ONBOARDING_STORE : PendingOperation.STORE;
         if (cloudProvider === CloudProvider.GOOGLE) {
           const { email } = await googleCloud.authenticate(pendingOperation);
           googleEmail = email;
@@ -231,6 +233,10 @@ export function AccountBackupCloudEmbeddedView() {
       setIsBackupLoading(false);
     }
   }, [currentWallet?.id, cloudBackup]);
+
+  useEffect(() => {
+    isOnboardingRef.current = isOnboarding;
+  }, [isOnboarding]);
 
   return (
     <OnboardingCard
