@@ -137,49 +137,6 @@ export const useAppleCloud = (): UseAppleCloudReturn => {
     isAuthenticatedRef.current = authState.isAuthenticated;
   }, [authState.isAuthenticated]);
 
-  // Check for authentication completion from redirect flow
-  useEffect(() => {
-    const checkAuthFromStorage = () => {
-      if (!CONTAINER_IDENTIFIER) return;
-
-      const authToken = localStorage.getItem(CONTAINER_IDENTIFIER);
-      if (authToken && !authState.isAuthenticated) {
-        // Token exists but we're not authenticated - might be from redirect
-        // Try to set up auth again to sync state
-        if (containerRef.current) {
-          containerRef.current.setUpAuth().then((userIdentity) => {
-            if (userIdentity) {
-              setAuthState({
-                isAuthenticated: true,
-                userIdentity,
-                isLoading: false,
-              });
-            }
-          });
-        }
-      }
-    };
-
-    // Check immediately
-    checkAuthFromStorage();
-
-    // Also listen for storage changes (cross-tab sync)
-    const storageListener = (e: StorageEvent) => {
-      if (e.key === CONTAINER_IDENTIFIER) {
-        checkAuthFromStorage();
-      }
-    };
-    window.addEventListener("storage", storageListener);
-
-    // Poll periodically in case storage event doesn't fire
-    const pollInterval = setInterval(checkAuthFromStorage, 1000);
-
-    return () => {
-      window.removeEventListener("storage", storageListener);
-      clearInterval(pollInterval);
-    };
-  }, [authState.isAuthenticated]);
-
   const authenticate = useCallback(
     async (pendingOperation?: PendingOperation): Promise<{ email: string | null }> => {
       try {
