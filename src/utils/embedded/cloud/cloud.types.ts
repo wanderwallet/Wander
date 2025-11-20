@@ -15,6 +15,7 @@ export interface AppDataFile {
 export enum CloudOperationType {
   STORE = "STORE",
   DELETE = "DELETE",
+  IMPORT = "IMPORT",
 }
 
 export interface PendingOperation {
