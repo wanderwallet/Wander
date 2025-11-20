@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import type { AppDataFile } from "../cloud.types";
+import { CloudProvider, type AppDataFile, type PendingOperation } from "../cloud.types";
 import {
   GOOGLE_DRIVE_OAUTH_SUCCESS_MSG_TYPE,
   GOOGLE_DRIVE_OAUTH_ERROR_MSG_TYPE,
@@ -11,6 +11,7 @@ import {
   getAuthErrorMessage,
 } from "~utils/authentication/authentication.utils";
 import type { RecoveryJSON } from "~utils/embedded/embedded.types";
+import { AUTH_REDIRECT_FLAG, CLOUD_PROVIDER_STORAGE_KEY, storePendingOperation } from "../cloud.utils";
 import { fileToId } from "../cloud.utils";
 
 interface GoogleCloudAuthState {
@@ -33,7 +34,7 @@ interface UseGoogleCloudReturn {
   email: string | null;
 
   // Auth methods
-  authenticate: () => Promise<{ email?: string | null }>;
+  authenticate: (pendingOperation?: PendingOperation) => Promise<{ email?: string | null }>;
   revokeAuth: () => Promise<void>;
 
   // File operations methods
@@ -87,7 +88,6 @@ const clearStoredToken = (): void => {
 // OAuth configuration
 const GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
 const GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v2/userinfo";
-const GOOGLE_REVOKE_URL = "https://oauth2.googleapis.com/revoke";
 const SCOPES = "https://www.googleapis.com/auth/drive.appdata email";
 const GOOGLE_DRIVE_OAUTH_CALLBACK_URL = "/google-drive-oauth-callback.html";
 
@@ -151,140 +151,152 @@ export const useGoogleCloud = (): UseGoogleCloudReturn => {
     }
   }, []);
 
-  const authenticate = useCallback((): Promise<{ email: string | null }> => {
-    return new Promise((resolve, reject) => {
-      if (authState.isAuthenticated) {
-        resolve({ email: authState.email });
-        return;
-      }
-
-      setAuthState((prev) => ({ ...prev, isLoading: true }));
-
-      // Build OAuth URL
-      const redirectUri = `${window.location.origin}${GOOGLE_DRIVE_OAUTH_CALLBACK_URL}`;
-      const authParams = new URLSearchParams({
-        client_id: CLIENT_ID,
-        redirect_uri: redirectUri,
-        response_type: "token",
-        scope: SCOPES,
-        state: "google_drive_oauth",
-        prompt: "select_account", // Force account selection
-        access_type: "online", // Don't allow offline access which could skip selection
-      });
-
-      const authUrl = `${GOOGLE_AUTH_URL}?${authParams.toString()}`;
-
-      // Calculate popup position (same as authenticateWithOAuth)
-      const width = Math.min(500, document.documentElement.offsetWidth);
-      const height = Math.min(600, window.screen.availHeight - 32);
-      const left = window.screenX + (window.outerWidth - width) / 2;
-      const top = window.screenY + (window.outerHeight - height) / 2;
-
-      // Open popup window
-      const popup = window.open(
-        authUrl,
-        "Google Drive Auth",
-        [
-          `width=${width}`,
-          `height=${height}`,
-          `left=${left}`,
-          `top=${top}`,
-          "popup=1",
-          "location=1",
-          "status=1",
-          "resizable=no",
-          "toolbar=no",
-          "menubar=no",
-        ].join(","),
-      );
-
-      if (!popup) {
-        setAuthState((prev) => ({ ...prev, isLoading: false }));
-        reject(new Error(getAuthErrorMessage(OAuthErrorCode.CANNOT_OPEN_POPUP)));
-        return;
-      }
-
-      // Message handler for postMessage from callback page
-      async function authCompleteMessageHandler(event: MessageEvent) {
-        // Verify origin for security
-        if (
-          event.origin !== window.location.origin ||
-          (event.data?.type !== GOOGLE_DRIVE_OAUTH_SUCCESS_MSG_TYPE &&
-            event.data?.type !== GOOGLE_DRIVE_OAUTH_ERROR_MSG_TYPE)
-        ) {
+  const authenticate = useCallback(
+    (pendingOperation?: PendingOperation): Promise<{ email: string | null }> => {
+      return new Promise(async (resolve, reject) => {
+        if (authState.isAuthenticated) {
+          resolve({ email: authState.email });
           return;
         }
 
-        cleanup();
-        popup.close();
+        setAuthState((prev) => ({ ...prev, isLoading: true }));
 
-        if (isGoogleDriveOAuthErrorMessage(event.data)) {
-          setAuthState((prev) => ({ ...prev, isLoading: false }));
-          reject(new Error(event.data.errorDescription, { cause: event.data }));
-          return;
-        }
-
-        if (!isGoogleDriveOAuthSuccessMessage(event.data)) {
-          setAuthState((prev) => ({ ...prev, isLoading: false }));
-          reject(new Error(getAuthErrorMessage(OAuthErrorCode.INVALID_OAUTH_MESSAGE)));
-          return;
-        }
-
-        const { accessToken, expiresIn } = event.data;
-
-        // Fetch user email
-        const email = await fetchUserEmail(accessToken);
-
-        // Store the token
-        storeToken(accessToken, expiresIn, email);
-        accessTokenRef.current = accessToken;
-
-        setAuthState({
-          isAuthenticated: true,
-          isLoading: false,
-          email,
+        // Build OAuth URL
+        const redirectUri = `${window.location.origin}${GOOGLE_DRIVE_OAUTH_CALLBACK_URL}`;
+        const authParams = new URLSearchParams({
+          client_id: CLIENT_ID,
+          redirect_uri: redirectUri,
+          response_type: "token",
+          scope: SCOPES,
+          state: "google_drive_oauth",
+          prompt: "select_account", // Force account selection
+          access_type: "online", // Don't allow offline access which could skip selection
         });
 
-        resolve({ email });
-      }
+        const authUrl = `${GOOGLE_AUTH_URL}?${authParams.toString()}`;
 
-      // Check if popup was closed manually
-      let popupClosedTime: number | null = null;
-      let gracePeriodTimeout: NodeJS.Timeout | null = null;
+        // Calculate popup position (same as authenticateWithOAuth)
+        const width = Math.min(500, document.documentElement.offsetWidth);
+        const height = Math.min(600, window.screen.availHeight - 32);
+        const left = window.screenX + (window.outerWidth - width) / 2;
+        const top = window.screenY + (window.outerHeight - height) / 2;
 
-      const popupCheckInterval = setInterval(() => {
-        if (popup.closed && !popupClosedTime) {
-          // Popup just closed - start grace period to allow postMessage to be received
-          popupClosedTime = Date.now();
+        // Open popup window
+        const popup = window.open(
+          authUrl,
+          "Google Drive Auth",
+          [
+            `width=${width}`,
+            `height=${height}`,
+            `left=${left}`,
+            `top=${top}`,
+            "popup=1",
+            "location=1",
+            "status=1",
+            "resizable=no",
+            "toolbar=no",
+            "menubar=no",
+          ].join(","),
+        );
 
-          // Schedule cancellation check after grace period
-          gracePeriodTimeout = setTimeout(() => {
-            // If we're still here after grace period, user cancelled (postMessage never arrived)
-            cleanup();
-            setAuthState((prev) => ({ ...prev, isLoading: false }));
-            reject(new Error(getAuthErrorMessage(OAuthErrorCode.POPUP_CLOSED)));
-          }, 2000); // 2 second grace period for postMessage to arrive
+        // Fallback to redirect if popup is blocked
+        if (!popup || popup.closed || typeof popup.closed === "undefined") {
+          try {
+            localStorage.setItem(AUTH_REDIRECT_FLAG, "true");
+            localStorage.setItem(CLOUD_PROVIDER_STORAGE_KEY, CloudProvider.GOOGLE);
+            if (pendingOperation) {
+              storePendingOperation(pendingOperation);
+            }
+          } catch (error) {
+            console.error("Error saving redirect state:", error);
+          }
+          window.location.href = authUrl;
+          return;
         }
-      }, POPUP_CHECK_INTERVAL_MS);
 
-      // Timeout if authentication takes too long
-      const timeoutId = setTimeout(() => {
-        cleanup();
-        setAuthState((prev) => ({ ...prev, isLoading: false }));
-        reject(new Error(getAuthErrorMessage(OAuthErrorCode.POPUP_TIMEOUT)));
-      }, POPUP_AUTHENTICATION_TIMEOUT_MS);
+        // Message handler for postMessage from callback page
+        async function authCompleteMessageHandler(event: MessageEvent) {
+          // Verify origin for security
+          if (
+            event.origin !== window.location.origin ||
+            (event.data?.type !== GOOGLE_DRIVE_OAUTH_SUCCESS_MSG_TYPE &&
+              event.data?.type !== GOOGLE_DRIVE_OAUTH_ERROR_MSG_TYPE)
+          ) {
+            return;
+          }
 
-      // Cleanup function
-      const cleanup = () => {
-        window.removeEventListener("message", authCompleteMessageHandler);
-        clearInterval(popupCheckInterval);
-        clearTimeout(timeoutId);
-        if (gracePeriodTimeout) clearTimeout(gracePeriodTimeout);
-      };
+          cleanup();
+          popup.close();
 
-      window.addEventListener("message", authCompleteMessageHandler);
-    });
-  }, [authState.isAuthenticated, fetchUserEmail]);
+          if (isGoogleDriveOAuthErrorMessage(event.data)) {
+            setAuthState((prev) => ({ ...prev, isLoading: false }));
+            reject(new Error(event.data.errorDescription, { cause: event.data }));
+            return;
+          }
+
+          if (!isGoogleDriveOAuthSuccessMessage(event.data)) {
+            setAuthState((prev) => ({ ...prev, isLoading: false }));
+            reject(new Error(getAuthErrorMessage(OAuthErrorCode.INVALID_OAUTH_MESSAGE)));
+            return;
+          }
+
+          const { accessToken, expiresIn } = event.data;
+
+          // Fetch user email
+          const email = await fetchUserEmail(accessToken);
+
+          // Store the token
+          storeToken(accessToken, expiresIn, email);
+          accessTokenRef.current = accessToken;
+
+          setAuthState({
+            isAuthenticated: true,
+            isLoading: false,
+            email,
+          });
+
+          resolve({ email });
+        }
+
+        // Check if popup was closed manually
+        let popupClosedTime: number | null = null;
+        let gracePeriodTimeout: NodeJS.Timeout | null = null;
+
+        const popupCheckInterval = setInterval(() => {
+          if (popup.closed && !popupClosedTime) {
+            // Popup just closed - start grace period to allow postMessage to be received
+            popupClosedTime = Date.now();
+
+            // Schedule cancellation check after grace period
+            gracePeriodTimeout = setTimeout(() => {
+              // If we're still here after grace period, user cancelled (postMessage never arrived)
+              cleanup();
+              setAuthState((prev) => ({ ...prev, isLoading: false }));
+              reject(new Error(getAuthErrorMessage(OAuthErrorCode.POPUP_CLOSED)));
+            }, 2000); // 2 second grace period for postMessage to arrive
+          }
+        }, POPUP_CHECK_INTERVAL_MS);
+
+        // Timeout if authentication takes too long
+        const timeoutId = setTimeout(() => {
+          cleanup();
+          setAuthState((prev) => ({ ...prev, isLoading: false }));
+          reject(new Error(getAuthErrorMessage(OAuthErrorCode.POPUP_TIMEOUT)));
+        }, POPUP_AUTHENTICATION_TIMEOUT_MS);
+
+        // Cleanup function
+        const cleanup = () => {
+          window.removeEventListener("message", authCompleteMessageHandler);
+          clearInterval(popupCheckInterval);
+          clearTimeout(timeoutId);
+          if (gracePeriodTimeout) clearTimeout(gracePeriodTimeout);
+        };
+
+        window.addEventListener("message", authCompleteMessageHandler);
+      });
+    },
+    [authState.isAuthenticated, fetchUserEmail],
+  );
 
   const revokeAuth = useCallback(async () => {
     clearStoredToken();

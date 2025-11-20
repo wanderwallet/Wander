@@ -61,16 +61,31 @@
 
     <script>
       (async function () {
+        // Function to fetch user email using the access token
+        const fetchUserEmail = async (accessToken) => {
+          try {
+            const response = await fetch("https://www.googleapis.com/oauth2/v2/userinfo", {
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+              },
+            });
+
+            if (!response.ok) {
+              console.error("Failed to fetch user info:", response.statusText);
+              return null;
+            }
+
+            const userInfo = await response.json();
+            return userInfo.email || null;
+          } catch (error) {
+            console.error("Error fetching user email:", error);
+            return null;
+          }
+        };
+
         const statusEl = document.getElementById("status");
 
         try {
-          // Verify this was opened by parent window
-          if (!window.opener) {
-            statusEl.textContent = "Error: Invalid authentication flow";
-            statusEl.className = "message error";
-            return;
-          }
-
           // Extract token from URL hash
           // Google returns: #access_token=xxx&token_type=Bearer&expires_in=3599&scope=...&state=google_drive_oauth
           const hash = window.location.hash.substring(1);
@@ -86,14 +101,28 @@
           if (state !== "google_drive_oauth") {
             statusEl.textContent = "Error: Invalid authentication state";
             statusEl.className = "message error";
-            setTimeout(() => window.close(), 2000);
+            if (window.opener) {
+              setTimeout(() => window.close(), 2000);
+            } else {
+              setTimeout(() => {
+                window.location.href =
+                  window.location.origin + "?target_hash=/account/backup-wallet/cloud&error=invalid_state";
+              }, 2000);
+            }
             return;
           }
 
           if (!scope.includes("drive.appdata")) {
             statusEl.textContent = "Error: Invalid permissions";
             statusEl.className = "message error";
-            setTimeout(() => window.close(), 2000);
+            if (window.opener) {
+              setTimeout(() => window.close(), 2000);
+            } else {
+              setTimeout(() => {
+                window.location.href =
+                  window.location.origin + "?target_hash=/account/backup-wallet/cloud&error=invalid_permissions";
+              }, 2000);
+            }
             return;
           }
 
@@ -101,35 +130,78 @@
           if (error) {
             const errorDescription = params.get("error_description") || "Authentication failed";
 
-            window.opener.postMessage(
-              {
-                type: "GOOGLE_DRIVE_OAUTH_ERROR",
-                errorCode: "GOOGLE_DRIVE_AUTH_FAILED",
-                errorDescription: errorDescription,
-              },
-              window.location.origin,
-            );
+            if (window.opener) {
+              window.opener.postMessage(
+                {
+                  type: "GOOGLE_DRIVE_OAUTH_ERROR",
+                  errorCode: "GOOGLE_DRIVE_AUTH_FAILED",
+                  errorDescription: errorDescription,
+                },
+                window.location.origin,
+              );
 
-            statusEl.textContent = "Error: " + errorDescription;
-            statusEl.className = "message error";
-            setTimeout(() => window.close(), 2000);
+              statusEl.textContent = "Error: " + errorDescription;
+              statusEl.className = "message error";
+              setTimeout(() => window.close(), 2000);
+            } else {
+              statusEl.textContent = "Error: " + errorDescription;
+              statusEl.className = "message error";
+              setTimeout(() => {
+                window.location.href =
+                  window.location.origin +
+                  "?target_hash=/account/backup-wallet/cloud&error=" +
+                  encodeURIComponent(errorDescription);
+              }, 2000);
+            }
             return;
           }
 
           // Handle missing token
           if (!accessToken) {
-            window.opener.postMessage(
-              {
-                type: "GOOGLE_DRIVE_OAUTH_ERROR",
-                errorCode: "GOOGLE_DRIVE_NO_ACCESS_TOKEN",
-                errorDescription: "No access token received from Google",
-              },
-              window.location.origin,
-            );
+            if (window.opener) {
+              window.opener.postMessage(
+                {
+                  type: "GOOGLE_DRIVE_OAUTH_ERROR",
+                  errorCode: "GOOGLE_DRIVE_NO_ACCESS_TOKEN",
+                  errorDescription: "No access token received from Google",
+                },
+                window.location.origin,
+              );
 
-            statusEl.textContent = "Error: No access token received";
-            statusEl.className = "message error";
-            setTimeout(() => window.close(), 2000);
+              statusEl.textContent = "Error: No access token received";
+              statusEl.className = "message error";
+              setTimeout(() => window.close(), 2000);
+            } else {
+              statusEl.textContent = "Error: No access token received";
+              statusEl.className = "message error";
+              setTimeout(() => {
+                window.location.href =
+                  window.location.origin + "?target_hash=/account/backup-wallet/cloud&error=no_access_token";
+              }, 2000);
+            }
+            return;
+          }
+
+          // Verify this was opened by parent window
+          if (!window.opener) {
+            // Fetch email and store token BEFORE redirecting
+            const email = await fetchUserEmail(accessToken);
+            // Calculate expiry with 5 minute buffer (must match TOKEN_EXPIRY_BUFFER in useGoogleCloud.ts)
+            const TOKEN_EXPIRY_BUFFER = 5 * 60 * 1000; // 5 minutes buffer before actual expiry
+            const expiresAt = Date.now() + expiresIn * 1000 - TOKEN_EXPIRY_BUFFER;
+            const tokenData = {
+              accessToken,
+              expiresAt,
+              timestamp: Date.now(),
+              email: email, // Can be null if email fetch fails
+            };
+            // Storage key must match TOKEN_STORAGE_KEY in useGoogleCloud.ts
+            localStorage.setItem("google_drive_token", JSON.stringify(tokenData));
+
+            statusEl.textContent = "Authentication successful! Redirecting...";
+            setTimeout(() => {
+              window.location.href = window.location.origin + "?target_hash=/account/backup-wallet/cloud";
+            }, 500);
             return;
           }
 
@@ -147,20 +219,31 @@
           // Close popup
           setTimeout(() => window.close(), 300);
         } catch (err) {
+          const errorMessage = err.message || "Unknown error";
+
           if (window.opener) {
             window.opener.postMessage(
               {
                 type: "GOOGLE_DRIVE_OAUTH_ERROR",
                 errorCode: "GOOGLE_DRIVE_AUTH_FAILED",
-                errorDescription: err.message || "Unknown error",
+                errorDescription: errorMessage,
               },
               window.location.origin,
             );
-          }
 
-          statusEl.textContent = "Error: " + (err.message || "Unknown error");
-          statusEl.className = "message error";
-          setTimeout(() => window.close(), 2000);
+            statusEl.textContent = "Error: " + errorMessage;
+            statusEl.className = "message error";
+            setTimeout(() => window.close(), 2000);
+          } else {
+            statusEl.textContent = "Error: " + errorMessage;
+            statusEl.className = "message error";
+            setTimeout(() => {
+              window.location.href =
+                window.location.origin +
+                "?target_hash=/account/backup-wallet/cloud&error=" +
+                encodeURIComponent(errorMessage);
+            }, 2000);
+          }
         }
       })();
     </script>

@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import type { Container, UserIdentity, RecordField, RecordToCreate, RecordToSave, Asset } from "tsl-apple-cloudkit";
 import { useScript } from "~utils/script/script.hooks";
-import type { AppDataFile } from "../cloud.types";
+import { CloudProvider, type AppDataFile, type PendingOperation } from "../cloud.types";
 import type { RecoveryJSON } from "~utils/embedded/embedded.types";
 import { fileToId } from "../cloud.utils";
+import { AUTH_REDIRECT_FLAG, CLOUD_PROVIDER_STORAGE_KEY, storePendingOperation } from "../cloud.utils";
 
 interface AppleAuthState {
   isAuthenticated: boolean;
@@ -18,7 +19,7 @@ interface UseAppleCloudReturn {
   isLoading: boolean;
 
   // Auth methods
-  authenticate: () => Promise<{ email: string | null }>;
+  authenticate: (pendingOperation?: PendingOperation) => Promise<{ email: string | null }>;
   revokeAuth: () => Promise<void>;
 
   // File operations methods
@@ -134,105 +135,167 @@ export const useAppleCloud = (): UseAppleCloudReturn => {
     isAuthenticatedRef.current = authState.isAuthenticated;
   }, [authState.isAuthenticated]);
 
-  const authenticate = useCallback(async (): Promise<{ email: string | null }> => {
-    try {
-      if (!containerRef.current) {
-        throw new Error("iCloud not initialized.");
+  // Check for authentication completion from redirect flow
+  useEffect(() => {
+    const checkAuthFromStorage = () => {
+      if (!CONTAINER_IDENTIFIER) return;
+
+      const authToken = localStorage.getItem(CONTAINER_IDENTIFIER);
+      if (authToken && !authState.isAuthenticated) {
+        // Token exists but we're not authenticated - might be from redirect
+        // Try to set up auth again to sync state
+        if (containerRef.current) {
+          containerRef.current.setUpAuth().then((userIdentity) => {
+            if (userIdentity) {
+              setAuthState({
+                isAuthenticated: true,
+                userIdentity,
+                isLoading: false,
+              });
+            }
+          });
+        }
       }
+    };
 
-      if (authState.isAuthenticated) return { email: null };
+    // Check immediately
+    checkAuthFromStorage();
 
-      setAuthState((prev) => ({ ...prev, isLoading: true }));
-
-      const userIdentity = await containerRef.current.setUpAuth();
-
-      if (userIdentity) {
-        setAuthState({
-          isAuthenticated: true,
-          userIdentity,
-          isLoading: false,
-        });
-        return { email: null };
+    // Also listen for storage changes (cross-tab sync)
+    const storageListener = (e: StorageEvent) => {
+      if (e.key === CONTAINER_IDENTIFIER) {
+        checkAuthFromStorage();
       }
+    };
+    window.addEventListener("storage", storageListener);
 
-      // User needs to authenticate via popup
-      const signInButton = document.getElementById("apple-sign-in-button");
-      const clickableElement = signInButton?.children[0] as HTMLElement;
+    // Poll periodically in case storage event doesn't fire
+    const pollInterval = setInterval(checkAuthFromStorage, 1000);
 
-      if (!clickableElement) throw new Error("iCloud authentication failed. Please try again.");
-
-      // Intercept window.open to capture popup reference
-      let cloudKitPopup: Window | null = null;
-      const originalWindowOpen = window.open;
-
-      window.open = function (...args) {
-        const popup = originalWindowOpen.apply(this, args);
-        cloudKitPopup = popup;
-        return popup;
-      };
-
-      clickableElement.click();
-
-      // Restore original window.open
-      setTimeout(() => {
-        window.open = originalWindowOpen;
-      }, 1000);
-
-      // Monitor authentication completion
-      return new Promise((resolve, reject) => {
-        let authCheckInterval: NodeJS.Timeout | null = null;
-        let authTimeout: NodeJS.Timeout | null = null;
-        let popupClosedTime: number | null = null;
-        let gracePeriodTimeout: NodeJS.Timeout | null = null;
-
-        const cleanup = () => {
-          if (authCheckInterval) clearInterval(authCheckInterval);
-          if (authTimeout) clearTimeout(authTimeout);
-          if (gracePeriodTimeout) clearTimeout(gracePeriodTimeout);
-        };
-
-        const resolveAuth = (success: boolean, error?: string) => {
-          cleanup();
-          setAuthState((prev) => ({
-            ...prev,
-            isAuthenticated: success,
-            isLoading: false,
-          }));
-          if (error) reject(new Error(error));
-          resolve({ email: null });
-        };
-
-        // Check authentication status every 500ms for faster response
-        authCheckInterval = setInterval(() => {
-          const authToken = localStorage.getItem(CONTAINER_IDENTIFIER);
-          if (isAuthenticatedRef.current || authToken) {
-            resolveAuth(true);
-          } else if (cloudKitPopup?.closed && !popupClosedTime) {
-            // Popup just closed - start grace period
-            popupClosedTime = Date.now();
-
-            // Schedule cancellation check after grace period
-            gracePeriodTimeout = setTimeout(() => {
-              // Double-check auth state after grace period
-              if (!isAuthenticatedRef.current && !authToken) {
-                resolveAuth(false, "iCloud authentication was cancelled. Please try again.");
-              }
-            }, 2000); // 2 second grace period
-          }
-        }, 500);
-
-        // Timeout after 5 minutes
-        authTimeout = setTimeout(() => {
-          resolveAuth(false, "iCloud authentication timeout. Please try again.");
-        }, 300000);
-      });
-    } catch (error) {
-      const errorMessage = error?.message || error?.reason || "iCloud authentication failed. Please try again.";
-      throw new Error(errorMessage);
-    } finally {
-      setAuthState((prev) => ({ ...prev, isLoading: false }));
-    }
+    return () => {
+      window.removeEventListener("storage", storageListener);
+      clearInterval(pollInterval);
+    };
   }, [authState.isAuthenticated]);
+
+  const authenticate = useCallback(
+    async (pendingOperation?: PendingOperation): Promise<{ email: string | null }> => {
+      try {
+        if (!containerRef.current) {
+          throw new Error("iCloud not initialized.");
+        }
+
+        if (authState.isAuthenticated) return { email: null };
+
+        setAuthState((prev) => ({ ...prev, isLoading: true }));
+
+        const userIdentity = await containerRef.current.setUpAuth();
+
+        if (userIdentity) {
+          setAuthState({
+            isAuthenticated: true,
+            userIdentity,
+            isLoading: false,
+          });
+          return { email: null };
+        }
+
+        // User needs to authenticate via popup
+        const signInButton = document.getElementById("apple-sign-in-button");
+        const clickableElement = signInButton?.children[0] as HTMLElement;
+
+        if (!clickableElement) throw new Error("iCloud authentication failed. Please try again.");
+
+        // Intercept window.open to capture popup reference
+        let cloudKitPopup: Window | null = null;
+        const originalWindowOpen = window.open;
+
+        window.open = function (...args) {
+          const popup = originalWindowOpen.apply(this, args);
+          cloudKitPopup = popup;
+
+          // Check if popup was blocked
+          if (!popup || popup.closed || typeof popup.closed === "undefined") {
+            try {
+              localStorage.setItem(AUTH_REDIRECT_FLAG, "true");
+              localStorage.setItem(CLOUD_PROVIDER_STORAGE_KEY, CloudProvider.APPLE);
+              if (pendingOperation) {
+                storePendingOperation(pendingOperation);
+              }
+            } catch (error) {
+              console.error("Error saving redirect state:", error);
+            }
+            window.location.href = args[0] as string;
+            return;
+          }
+
+          return popup;
+        };
+
+        clickableElement.click();
+
+        // Restore original window.open
+        setTimeout(() => {
+          window.open = originalWindowOpen;
+        }, 1000);
+
+        // Monitor authentication completion
+        return new Promise((resolve, reject) => {
+          let authCheckInterval: NodeJS.Timeout | null = null;
+          let authTimeout: NodeJS.Timeout | null = null;
+          let popupClosedTime: number | null = null;
+          let gracePeriodTimeout: NodeJS.Timeout | null = null;
+
+          const cleanup = () => {
+            if (authCheckInterval) clearInterval(authCheckInterval);
+            if (authTimeout) clearTimeout(authTimeout);
+            if (gracePeriodTimeout) clearTimeout(gracePeriodTimeout);
+          };
+
+          const resolveAuth = (success: boolean, error?: string) => {
+            cleanup();
+            setAuthState((prev) => ({
+              ...prev,
+              isAuthenticated: success,
+              isLoading: false,
+            }));
+            if (error) reject(new Error(error));
+            resolve({ email: null });
+          };
+
+          // Check authentication status every 500ms for faster response
+          authCheckInterval = setInterval(() => {
+            const authToken = localStorage.getItem(CONTAINER_IDENTIFIER);
+            if (isAuthenticatedRef.current || authToken) {
+              resolveAuth(true);
+            } else if (cloudKitPopup?.closed && !popupClosedTime) {
+              // Popup just closed - start grace period
+              popupClosedTime = Date.now();
+
+              // Schedule cancellation check after grace period
+              gracePeriodTimeout = setTimeout(() => {
+                // Double-check auth state after grace period
+                if (!isAuthenticatedRef.current && !authToken) {
+                  resolveAuth(false, "iCloud authentication was cancelled. Please try again.");
+                }
+              }, 2000); // 2 second grace period
+            }
+          }, 500);
+
+          // Timeout after 5 minutes
+          authTimeout = setTimeout(() => {
+            resolveAuth(false, "iCloud authentication timeout. Please try again.");
+          }, 300000);
+        });
+      } catch (error) {
+        const errorMessage = error?.message || error?.reason || "iCloud authentication failed. Please try again.";
+        throw new Error(errorMessage);
+      } finally {
+        setAuthState((prev) => ({ ...prev, isLoading: false }));
+      }
+    },
+    [authState.isAuthenticated],
+  );
 
   const revokeAuth = useCallback(async () => {
     try {
