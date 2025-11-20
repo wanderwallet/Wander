@@ -17,12 +17,7 @@ import { Upload01 } from "@untitled-ui/icons-react";
 import { CloudOperationType, CloudProvider } from "~utils/embedded/cloud/cloud.types";
 import type { RecoveryJSON } from "~utils/embedded/embedded.types";
 import { WalletUtils } from "~utils/wallets/wallets.utils";
-import {
-  AUTH_REDIRECT_FLAG,
-  getPendingOperation,
-  CLOUD_PROVIDER_STORAGE_KEY,
-  clearPendingOperation,
-} from "~utils/embedded/cloud/cloud.utils";
+import { getPendingOperation, clearCloudAuthState, AUTH_REDIRECT_FLAG } from "~utils/embedded/cloud/cloud.utils";
 
 export function AccountBackupCloudImportEmbeddedView() {
   const { authStatus, currentWallet, importTempWallet, recoverWallet, cloudBackup, setCloudBackup } = useEmbedded();
@@ -128,8 +123,7 @@ export function AccountBackupCloudImportEmbeddedView() {
 
     const pendingOp = getPendingOperation();
     if (!pendingOp) {
-      localStorage.removeItem(AUTH_REDIRECT_FLAG);
-      localStorage.removeItem(CLOUD_PROVIDER_STORAGE_KEY);
+      clearCloudAuthState();
       return;
     }
 
@@ -142,18 +136,14 @@ export function AccountBackupCloudImportEmbeddedView() {
         await handleImportFromCloud();
       }
     } finally {
-      clearPendingOperation();
-      localStorage.removeItem(AUTH_REDIRECT_FLAG);
-      localStorage.removeItem(CLOUD_PROVIDER_STORAGE_KEY);
+      clearCloudAuthState();
       setIsLoading(false);
     }
   }, [googleCloud.isAuthenticated, appleCloud.isAuthenticated, currentWallet, cloudBackup]);
 
   useEffect(() => {
     return () => {
-      clearPendingOperation();
-      localStorage.removeItem(AUTH_REDIRECT_FLAG);
-      localStorage.removeItem(CLOUD_PROVIDER_STORAGE_KEY);
+      clearCloudAuthState();
     };
   }, []);
 

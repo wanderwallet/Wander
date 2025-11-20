@@ -8,9 +8,10 @@ import { useAppleCloud } from "~utils/embedded/cloud/hooks/useAppleCloud";
 import { useGoogleCloud } from "~utils/embedded/cloud/hooks/useGoogleCloud";
 import {
   getPendingOperation,
-  clearPendingOperation,
   AUTH_REDIRECT_FLAG,
   CLOUD_PROVIDER_STORAGE_KEY,
+  clearCloudAuthState,
+  clearRedirectLocation,
 } from "~utils/embedded/cloud/cloud.utils";
 import { WalletService } from "~utils/wallets/wallets.service";
 import { navigate } from "wouter/use-hash-location";
@@ -113,9 +114,7 @@ export function AccountBackupCloudEmbeddedView() {
     } catch (error) {
       toast.error(error?.message || "Failed to store on cloud");
     } finally {
-      clearPendingOperation();
-      localStorage.removeItem(AUTH_REDIRECT_FLAG);
-      localStorage.removeItem(CLOUD_PROVIDER_STORAGE_KEY);
+      clearCloudAuthState();
       setIsLoading(false);
     }
   }
@@ -148,9 +147,7 @@ export function AccountBackupCloudEmbeddedView() {
     } catch (error) {
       toast.error(error?.message || "Failed to delete from cloud");
     } finally {
-      clearPendingOperation();
-      localStorage.removeItem(AUTH_REDIRECT_FLAG);
-      localStorage.removeItem(CLOUD_PROVIDER_STORAGE_KEY);
+      clearCloudAuthState();
       setIsLoading(false);
     }
   }
@@ -196,8 +193,7 @@ export function AccountBackupCloudEmbeddedView() {
 
     const pendingOp = getPendingOperation();
     if (!pendingOp) {
-      localStorage.removeItem(AUTH_REDIRECT_FLAG);
-      localStorage.removeItem(CLOUD_PROVIDER_STORAGE_KEY);
+      clearCloudAuthState();
       return;
     }
 
@@ -213,9 +209,7 @@ export function AccountBackupCloudEmbeddedView() {
         await handleDeleteFromCloud();
       }
     } finally {
-      clearPendingOperation();
-      localStorage.removeItem(AUTH_REDIRECT_FLAG);
-      localStorage.removeItem(CLOUD_PROVIDER_STORAGE_KEY);
+      clearCloudAuthState();
       setIsLoading(false);
     }
   }, [
@@ -230,9 +224,7 @@ export function AccountBackupCloudEmbeddedView() {
 
   useEffect(() => {
     return () => {
-      clearPendingOperation();
-      localStorage.removeItem(AUTH_REDIRECT_FLAG);
-      localStorage.removeItem(CLOUD_PROVIDER_STORAGE_KEY);
+      clearCloudAuthState();
     };
   }, []);
 

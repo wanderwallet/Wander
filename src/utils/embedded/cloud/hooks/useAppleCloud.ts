@@ -4,12 +4,7 @@ import { useScript } from "~utils/script/script.hooks";
 import { CloudProvider, type AppDataFile, type PendingOperation } from "../cloud.types";
 import type { RecoveryJSON } from "~utils/embedded/embedded.types";
 import { fileToId } from "../cloud.utils";
-import {
-  AUTH_REDIRECT_FLAG,
-  CLOUD_PROVIDER_STORAGE_KEY,
-  storePendingOperation,
-  storeRedirectLocation,
-} from "../cloud.utils";
+import { storeRedirectState } from "../cloud.utils";
 
 interface AppleAuthState {
   isAuthenticated: boolean;
@@ -221,16 +216,7 @@ export const useAppleCloud = (): UseAppleCloudReturn => {
 
           // Check if popup was blocked
           if (!popup || popup.closed || typeof popup.closed === "undefined") {
-            try {
-              localStorage.setItem(AUTH_REDIRECT_FLAG, "true");
-              localStorage.setItem(CLOUD_PROVIDER_STORAGE_KEY, CloudProvider.APPLE);
-              storeRedirectLocation(window.location.href || "#/");
-              if (pendingOperation) {
-                storePendingOperation(pendingOperation);
-              }
-            } catch (error) {
-              console.error("Error saving redirect state:", error);
-            }
+            storeRedirectState(CloudProvider.APPLE, pendingOperation);
             window.location.href = args[0] as string;
             return;
           }

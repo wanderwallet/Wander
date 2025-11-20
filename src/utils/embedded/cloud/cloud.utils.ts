@@ -70,3 +70,29 @@ export const getRedirectLocation = (): string | null => {
 export const clearRedirectLocation = (): void => {
   localStorage.removeItem(AUTH_REDIRECT_LOCATION_KEY);
 };
+
+/**
+ * Stores redirect state when popup is blocked during cloud authentication.
+ * This includes the redirect flag, provider selection, redirect location, and pending operation.
+ */
+export const storeRedirectState = (provider: string, pendingOperation?: PendingOperation): void => {
+  try {
+    localStorage.setItem(AUTH_REDIRECT_FLAG, "true");
+    localStorage.setItem(CLOUD_PROVIDER_STORAGE_KEY, provider);
+    storeRedirectLocation(window.location.hash);
+    if (pendingOperation) storePendingOperation(pendingOperation);
+  } catch (error) {
+    console.error("Error saving redirect state:", error);
+  }
+};
+
+/**
+ * Clears all cloud authentication state from localStorage.
+ * This includes pending operations, redirect flags, and provider selection.
+ */
+export const clearCloudAuthState = (): void => {
+  clearPendingOperation();
+  localStorage.removeItem(AUTH_REDIRECT_FLAG);
+  localStorage.removeItem(CLOUD_PROVIDER_STORAGE_KEY);
+  clearRedirectLocation();
+};

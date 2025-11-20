@@ -11,12 +11,7 @@ import {
   getAuthErrorMessage,
 } from "~utils/authentication/authentication.utils";
 import type { RecoveryJSON } from "~utils/embedded/embedded.types";
-import {
-  AUTH_REDIRECT_FLAG,
-  CLOUD_PROVIDER_STORAGE_KEY,
-  storePendingOperation,
-  storeRedirectLocation,
-} from "../cloud.utils";
+import { storeRedirectState } from "../cloud.utils";
 import { fileToId } from "../cloud.utils";
 
 interface GoogleCloudAuthState {
@@ -206,16 +201,7 @@ export const useGoogleCloud = (): UseGoogleCloudReturn => {
 
         // Fallback to redirect if popup is blocked
         if (!popup || popup.closed || typeof popup.closed === "undefined") {
-          try {
-            localStorage.setItem(AUTH_REDIRECT_FLAG, "true");
-            localStorage.setItem(CLOUD_PROVIDER_STORAGE_KEY, CloudProvider.GOOGLE);
-            storeRedirectLocation(window.location.href || "#/");
-            if (pendingOperation) {
-              storePendingOperation(pendingOperation);
-            }
-          } catch (error) {
-            console.error("Error saving redirect state:", error);
-          }
+          storeRedirectState(CloudProvider.GOOGLE, pendingOperation);
           window.location.href = authUrl;
           return;
         }
