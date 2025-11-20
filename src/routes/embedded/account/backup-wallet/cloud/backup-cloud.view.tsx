@@ -1,5 +1,5 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Button, Column, ICloudIcon, GoogleCloudIcon, Row, Switch, Text, Tooltip, InfoIcon } from "~components/embed";
 import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
@@ -38,6 +38,12 @@ export function AccountBackupCloudEmbeddedView() {
   const [isLoading, setIsLoading] = useState(false);
   const [isBackupLoading, setIsBackupLoading] = useState(false);
   const [isCloudEnabled, setIsCloudEnabled] = useState(false);
+  const [isOnboardingStore, setIsOnboardingStore] = useState(false);
+
+  const isOnboarding = useMemo(
+    () => !!lastRegisteredWallet || isOnboardingStore,
+    [lastRegisteredWallet, isOnboardingStore],
+  );
 
   const isViewLoading =
     authStatus === "unknown" || authStatus === "loading" || authStatus === "authLoading" || isBackupLoading;
@@ -49,7 +55,7 @@ export function AccountBackupCloudEmbeddedView() {
   const appleCloud = useAppleCloud();
 
   const handleComplete = async () => {
-    if (lastRegisteredWallet) {
+    if (isOnboarding) {
       await sleep(100);
       navigate(EmbeddedPaths.AccountCongratulations);
     }
@@ -75,13 +81,14 @@ export function AccountBackupCloudEmbeddedView() {
       let googleEmail: string | null = null;
 
       if (!fileRef.current) {
+        const pendingOperation = isOnboarding ? PendingOperation.ONBOARDING_STORE : PendingOperation.STORE;
         if (cloudProvider === CloudProvider.GOOGLE) {
-          const { email } = await googleCloud.authenticate(PendingOperation.STORE);
+          const { email } = await googleCloud.authenticate(pendingOperation);
           googleEmail = email;
           const { blob, fileName, mimeType } = await getRecoveryData();
           fileRef.current = await googleCloud.uploadFile(blob, fileName, currentWallet.address, mimeType);
         } else if (cloudProvider === CloudProvider.APPLE) {
-          await appleCloud.authenticate(PendingOperation.STORE);
+          await appleCloud.authenticate(pendingOperation);
           const { blob, fileName, mimeType } = await getRecoveryData();
           fileRef.current = await appleCloud.uploadFile(blob, fileName, currentWallet.address, mimeType);
         }
@@ -179,13 +186,17 @@ export function AccountBackupCloudEmbeddedView() {
       return;
     }
 
+    // Set the onboarding store state to true if the pending operation is ONBOARDING_STORE
+    setIsOnboardingStore(pendingOp === PendingOperation.ONBOARDING_STORE);
+
     if (pendingOp === PendingOperation.DELETE && !cloudBackup) return;
-    if (pendingOp === PendingOperation.STORE && !cloudProvider) return;
+    const isStoreOperation = pendingOp === PendingOperation.STORE || pendingOp === PendingOperation.ONBOARDING_STORE;
+    if (isStoreOperation && !cloudProvider) return;
 
     pendingOperationProcessedRef.current = true;
 
     try {
-      if (pendingOp === PendingOperation.STORE) {
+      if (isStoreOperation) {
         await handleStoreOnCloud();
       } else if (pendingOp === PendingOperation.DELETE) {
         await handleDeleteFromCloud();
@@ -225,7 +236,7 @@ export function AccountBackupCloudEmbeddedView() {
     <OnboardingCard
       headerText="Store your recovery key on the cloud"
       subtitle="Upload your recovery key to the cloud to easily sign in and connect your wallet on new devices."
-      hasBackButton={!lastRegisteredWallet}
+      hasBackButton={!isOnboarding}
       hasCloseButton={false}
       isLoading={isViewLoading}
       onBackButtonClick={() => navigate(EmbeddedPaths.AccountBackupWalletRecoveryFile)}>
@@ -284,7 +295,7 @@ export function AccountBackupCloudEmbeddedView() {
             </Button>
           )}
 
-          {lastRegisteredWallet && (
+          {isOnboarding && (
             <Button variant="secondary" isFullWidth isDisabled={isViewLoading} onClick={handleSkip}>
               Skip
             </Button>
