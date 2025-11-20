@@ -17,7 +17,7 @@ import { Upload01 } from "@untitled-ui/icons-react";
 import { CloudProvider, PendingOperation } from "~utils/embedded/cloud/cloud.types";
 import type { RecoveryJSON } from "~utils/embedded/embedded.types";
 import { WalletUtils } from "~utils/wallets/wallets.utils";
-import { getPendingOperation, clearCloudAuthState } from "~utils/embedded/cloud/cloud.utils";
+import { getPendingOperation, clearPendingOperationState } from "~utils/embedded/cloud/cloud.utils";
 import { isInsideIframe } from "~utils/embedded/iframe.utils";
 
 export function AccountBackupCloudImportEmbeddedView() {
@@ -114,7 +114,7 @@ export function AccountBackupCloudImportEmbeddedView() {
 
     const pendingOp = getPendingOperation();
     if (!pendingOp) {
-      clearCloudAuthState();
+      clearPendingOperationState();
       return;
     }
 
@@ -125,13 +125,13 @@ export function AccountBackupCloudImportEmbeddedView() {
     try {
       await handleImportFromCloud();
     } finally {
-      clearCloudAuthState();
+      clearPendingOperationState();
       setIsLoading(false);
     }
   }, [googleCloud.isAuthenticated, appleCloud.isAuthenticated, currentWallet, cloudBackup]);
 
   useEffect(() => {
-    return () => clearCloudAuthState();
+    return () => clearPendingOperationState();
   }, []);
 
   return (

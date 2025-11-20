@@ -8,7 +8,7 @@ import { useAppleCloud } from "~utils/embedded/cloud/hooks/useAppleCloud";
 import { useGoogleCloud } from "~utils/embedded/cloud/hooks/useGoogleCloud";
 import {
   getPendingOperation,
-  clearCloudAuthState,
+  clearPendingOperationState,
   getCloudProvider,
   clearCloudProvider,
 } from "~utils/embedded/cloud/cloud.utils";
@@ -106,7 +106,7 @@ export function AccountBackupCloudEmbeddedView() {
     } catch (error) {
       toast.error(error?.message || "Failed to store on cloud");
     } finally {
-      clearCloudAuthState();
+      clearPendingOperationState();
       setIsLoading(false);
     }
   }
@@ -131,7 +131,7 @@ export function AccountBackupCloudEmbeddedView() {
     } catch (error) {
       toast.error(error?.message || "Failed to delete from cloud");
     } finally {
-      clearCloudAuthState();
+      clearPendingOperationState();
       setIsLoading(false);
     }
   }
@@ -175,7 +175,7 @@ export function AccountBackupCloudEmbeddedView() {
 
     const pendingOp = getPendingOperation();
     if (!pendingOp) {
-      clearCloudAuthState();
+      clearPendingOperationState();
       return;
     }
 
@@ -191,7 +191,7 @@ export function AccountBackupCloudEmbeddedView() {
         await handleDeleteFromCloud();
       }
     } finally {
-      clearCloudAuthState();
+      clearPendingOperationState();
       setIsLoading(false);
     }
   }, [
@@ -205,7 +205,7 @@ export function AccountBackupCloudEmbeddedView() {
   ]);
 
   useEffect(() => {
-    return () => clearCloudAuthState();
+    return () => clearPendingOperationState();
   }, []);
 
   useAsyncEffect(async () => {

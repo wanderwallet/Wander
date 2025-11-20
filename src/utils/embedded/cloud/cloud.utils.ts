@@ -108,12 +108,12 @@ export const storeRedirectState = (provider: string, pendingOperation?: PendingO
 };
 
 /**
- * Clears all cloud authentication state from localStorage.
- * This includes pending operations, redirect flags, and provider selection.
+ * Clears all pending operation state from localStorage.
+ * This includes pending operations, cloud provider, and redirect location.
  */
-export const clearCloudAuthState = (): void => {
+export const clearPendingOperationState = (): void => {
   if (isInsideIframe()) return;
   clearPendingOperation();
-  localStorage.removeItem(CLOUD_PROVIDER_STORAGE_KEY);
+  clearCloudProvider();
   clearRedirectLocation();
 };
