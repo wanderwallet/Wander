@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from "uuid";
 import type { PendingOperation } from "./cloud.types";
+import { isInsideIframe } from "../iframe.utils";
 
 /**
  * Generate a unique ID for a file using SHA-256 hash and base64url encoding.
@@ -91,6 +92,7 @@ export const storeRedirectState = (provider: string, pendingOperation?: PendingO
  * This includes pending operations, redirect flags, and provider selection.
  */
 export const clearCloudAuthState = (): void => {
+  if (isInsideIframe()) return;
   clearPendingOperation();
   localStorage.removeItem(AUTH_REDIRECT_FLAG);
   localStorage.removeItem(CLOUD_PROVIDER_STORAGE_KEY);

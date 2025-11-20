@@ -77,6 +77,7 @@ import {
 } from "~utils/embedded/embedded.context";
 import { CloudProvider } from "./cloud/cloud.types";
 import { AUTH_REDIRECT_FLAG, clearRedirectLocation, getRedirectLocation } from "./cloud/cloud.utils";
+import { isInsideIframe } from "./iframe.utils";
 
 export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
   const mountedTimeRef = useRef(Date.now());
@@ -175,7 +176,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
   }, [authStatus, backupsNeeded, backupMessage]);
 
   useEffect(() => {
-    if (authStatus !== "unlocked") return;
+    if (isInsideIframe() || authStatus !== "unlocked") return;
 
     try {
       // Restore redirect location after OAuth callback

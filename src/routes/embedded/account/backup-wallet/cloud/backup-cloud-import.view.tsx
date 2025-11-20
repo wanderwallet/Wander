@@ -18,6 +18,7 @@ import { CloudOperationType, CloudProvider } from "~utils/embedded/cloud/cloud.t
 import type { RecoveryJSON } from "~utils/embedded/embedded.types";
 import { WalletUtils } from "~utils/wallets/wallets.utils";
 import { getPendingOperation, clearCloudAuthState, AUTH_REDIRECT_FLAG } from "~utils/embedded/cloud/cloud.utils";
+import { isInsideIframe } from "~utils/embedded/iframe.utils";
 
 export function AccountBackupCloudImportEmbeddedView() {
   const { authStatus, currentWallet, importTempWallet, recoverWallet, cloudBackup, setCloudBackup } = useEmbedded();
@@ -113,6 +114,7 @@ export function AccountBackupCloudImportEmbeddedView() {
   }, [currentWallet?.id, cloudBackup]);
 
   useAsyncEffect(async () => {
+    if (isInsideIframe()) return;
     if (pendingOperationProcessedRef.current) return;
 
     const wasRedirecting = localStorage.getItem(AUTH_REDIRECT_FLAG);
@@ -142,9 +144,7 @@ export function AccountBackupCloudImportEmbeddedView() {
   }, [googleCloud.isAuthenticated, appleCloud.isAuthenticated, currentWallet, cloudBackup]);
 
   useEffect(() => {
-    return () => {
-      clearCloudAuthState();
-    };
+    return () => clearCloudAuthState();
   }, []);
 
   return (

@@ -5,6 +5,8 @@ import { CloudProvider, type AppDataFile, type PendingOperation } from "../cloud
 import type { RecoveryJSON } from "~utils/embedded/embedded.types";
 import { fileToId } from "../cloud.utils";
 import { storeRedirectState } from "../cloud.utils";
+import { getAuthErrorMessage, OAuthErrorCode } from "~utils/authentication/authentication.utils";
+import { isInsideIframe } from "~utils/embedded/iframe.utils";
 
 interface AppleAuthState {
   isAuthenticated: boolean;
@@ -208,16 +210,21 @@ export const useAppleCloud = (): UseAppleCloudReturn => {
 
         // Intercept window.open to capture popup reference
         let cloudKitPopup: Window | null = null;
+        let errorMessage = "";
         const originalWindowOpen = window.open;
 
         window.open = function (...args) {
           const popup = originalWindowOpen.apply(this, args);
           cloudKitPopup = popup;
 
-          // Check if popup was blocked
           if (!popup || popup.closed || typeof popup.closed === "undefined") {
-            storeRedirectState(CloudProvider.APPLE, pendingOperation);
-            window.location.href = args[0] as string;
+            if (isInsideIframe()) {
+              errorMessage = getAuthErrorMessage(OAuthErrorCode.CANNOT_OPEN_POPUP);
+            } else {
+              storeRedirectState(CloudProvider.APPLE, pendingOperation);
+              window.location.href = args[0] as string;
+            }
+            window.open = originalWindowOpen;
             return;
           }
 
@@ -257,6 +264,10 @@ export const useAppleCloud = (): UseAppleCloudReturn => {
 
           // Check authentication status every 500ms for faster response
           authCheckInterval = setInterval(() => {
+            if (errorMessage) {
+              resolveAuth(false, errorMessage);
+              return;
+            }
             const authToken = localStorage.getItem(CONTAINER_IDENTIFIER);
             if (isAuthenticatedRef.current || authToken) {
               resolveAuth(true);

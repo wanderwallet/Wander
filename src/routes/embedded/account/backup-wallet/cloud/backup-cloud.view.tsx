@@ -20,6 +20,7 @@ import { sleep } from "~utils/promises/sleep";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import type { Wallet } from "~utils/embedded/embedded.types";
 import { toast } from "react-toastify";
+import { isInsideIframe } from "~utils/embedded/iframe.utils";
 
 export function AccountBackupCloudEmbeddedView() {
   const {
@@ -183,6 +184,7 @@ export function AccountBackupCloudEmbeddedView() {
   }, [cloudProvider, setCloudProvider]);
 
   useAsyncEffect(async () => {
+    if (isInsideIframe()) return;
     if (pendingOperationProcessedRef.current) return;
 
     const wasRedirecting = localStorage.getItem(AUTH_REDIRECT_FLAG);
@@ -223,9 +225,7 @@ export function AccountBackupCloudEmbeddedView() {
   ]);
 
   useEffect(() => {
-    return () => {
-      clearCloudAuthState();
-    };
+    return () => clearCloudAuthState();
   }, []);
 
   useAsyncEffect(async () => {

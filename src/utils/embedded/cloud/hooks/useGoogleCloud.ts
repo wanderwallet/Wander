@@ -13,6 +13,7 @@ import {
 import type { RecoveryJSON } from "~utils/embedded/embedded.types";
 import { storeRedirectState } from "../cloud.utils";
 import { fileToId } from "../cloud.utils";
+import { isInsideIframe } from "~utils/embedded/iframe.utils";
 
 interface GoogleCloudAuthState {
   isAuthenticated: boolean;
@@ -199,10 +200,13 @@ export const useGoogleCloud = (): UseGoogleCloudReturn => {
           ].join(","),
         );
 
-        // Fallback to redirect if popup is blocked
         if (!popup || popup.closed || typeof popup.closed === "undefined") {
-          storeRedirectState(CloudProvider.GOOGLE, pendingOperation);
-          window.location.href = authUrl;
+          if (isInsideIframe()) {
+            reject(new Error(getAuthErrorMessage(OAuthErrorCode.CANNOT_OPEN_POPUP)));
+          } else {
+            storeRedirectState(CloudProvider.GOOGLE, pendingOperation);
+            window.location.href = authUrl;
+          }
           return;
         }
 
