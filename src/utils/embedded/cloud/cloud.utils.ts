@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import type { PendingOperation } from "./cloud.types";
+import type { CloudProvider, PendingOperation } from "./cloud.types";
 import { isInsideIframe } from "../iframe.utils";
 
 /**
@@ -23,10 +23,30 @@ export async function fileToId(file: File | Blob): Promise<string> {
   }
 }
 
-export const AUTH_REDIRECT_FLAG = "google_drive_auth_redirecting";
 export const CLOUD_PROVIDER_STORAGE_KEY = "cloud_provider_selected";
 export const PENDING_OPERATION_KEY = "cloud_pending_operation";
 export const AUTH_REDIRECT_LOCATION_KEY = "cloud_auth_redirect_location";
+
+export const getCloudProvider = (): CloudProvider | null => {
+  try {
+    return localStorage.getItem(CLOUD_PROVIDER_STORAGE_KEY) as CloudProvider | null;
+  } catch (error) {
+    console.error("Error reading cloud provider:", error);
+    return null;
+  }
+};
+
+export const storeCloudProvider = (provider: CloudProvider): void => {
+  try {
+    localStorage.setItem(CLOUD_PROVIDER_STORAGE_KEY, provider);
+  } catch (error) {
+    console.error("Error storing cloud provider:", error);
+  }
+};
+
+export const clearCloudProvider = (): void => {
+  localStorage.removeItem(CLOUD_PROVIDER_STORAGE_KEY);
+};
 
 export const storePendingOperation = (operation: PendingOperation): void => {
   try {
@@ -78,10 +98,10 @@ export const clearRedirectLocation = (): void => {
  */
 export const storeRedirectState = (provider: string, pendingOperation?: PendingOperation): void => {
   try {
-    localStorage.setItem(AUTH_REDIRECT_FLAG, "true");
+    if (!provider || !pendingOperation) return;
     localStorage.setItem(CLOUD_PROVIDER_STORAGE_KEY, provider);
     storeRedirectLocation(window.location.hash);
-    if (pendingOperation) storePendingOperation(pendingOperation);
+    storePendingOperation(pendingOperation);
   } catch (error) {
     console.error("Error saving redirect state:", error);
   }
@@ -94,7 +114,6 @@ export const storeRedirectState = (provider: string, pendingOperation?: PendingO
 export const clearCloudAuthState = (): void => {
   if (isInsideIframe()) return;
   clearPendingOperation();
-  localStorage.removeItem(AUTH_REDIRECT_FLAG);
   localStorage.removeItem(CLOUD_PROVIDER_STORAGE_KEY);
   clearRedirectLocation();
 };

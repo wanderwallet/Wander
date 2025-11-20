@@ -12,15 +12,8 @@ export interface AppDataFile {
   walletAddress: string;
 }
 
-export enum CloudOperationType {
+export enum PendingOperation {
   STORE = "STORE",
   DELETE = "DELETE",
   IMPORT = "IMPORT",
-}
-
-export interface PendingOperation {
-  type: CloudOperationType;
-  walletAddress?: string;
-  fileId?: string;
-  provider: CloudProvider;
 }

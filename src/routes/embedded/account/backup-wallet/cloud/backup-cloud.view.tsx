@@ -3,15 +3,14 @@ import { useEffect, useRef, useState } from "react";
 import { Button, Column, ICloudIcon, GoogleCloudIcon, Row, Switch, Text, Tooltip, InfoIcon } from "~components/embed";
 import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
-import { CloudOperationType, CloudProvider, type AppDataFile } from "~utils/embedded/cloud/cloud.types";
+import { CloudProvider, PendingOperation, type AppDataFile } from "~utils/embedded/cloud/cloud.types";
 import { useAppleCloud } from "~utils/embedded/cloud/hooks/useAppleCloud";
 import { useGoogleCloud } from "~utils/embedded/cloud/hooks/useGoogleCloud";
 import {
   getPendingOperation,
-  AUTH_REDIRECT_FLAG,
-  CLOUD_PROVIDER_STORAGE_KEY,
   clearCloudAuthState,
-  clearRedirectLocation,
+  getCloudProvider,
+  clearCloudProvider,
 } from "~utils/embedded/cloud/cloud.utils";
 import { WalletService } from "~utils/wallets/wallets.service";
 import { navigate } from "wouter/use-hash-location";
@@ -77,20 +76,12 @@ export function AccountBackupCloudEmbeddedView() {
 
       if (!fileRef.current) {
         if (cloudProvider === CloudProvider.GOOGLE) {
-          const { email } = await googleCloud.authenticate({
-            type: CloudOperationType.STORE,
-            walletAddress: currentWallet.address,
-            provider: cloudProvider,
-          });
+          const { email } = await googleCloud.authenticate(PendingOperation.STORE);
           googleEmail = email;
           const { blob, fileName, mimeType } = await getRecoveryData();
           fileRef.current = await googleCloud.uploadFile(blob, fileName, currentWallet.address, mimeType);
         } else if (cloudProvider === CloudProvider.APPLE) {
-          await appleCloud.authenticate({
-            type: CloudOperationType.STORE,
-            walletAddress: currentWallet.address,
-            provider: cloudProvider,
-          });
+          await appleCloud.authenticate(PendingOperation.STORE);
           const { blob, fileName, mimeType } = await getRecoveryData();
           fileRef.current = await appleCloud.uploadFile(blob, fileName, currentWallet.address, mimeType);
         }
@@ -127,18 +118,10 @@ export function AccountBackupCloudEmbeddedView() {
 
       fileRef.current = null;
       if (cloudBackup.provider === CloudProvider.GOOGLE) {
-        await googleCloud.authenticate({
-          type: CloudOperationType.DELETE,
-          fileId: cloudBackup.fileId,
-          provider: CloudProvider.GOOGLE,
-        });
+        await googleCloud.authenticate(PendingOperation.DELETE);
         await googleCloud.deleteFile(cloudBackup.fileId);
       } else if (cloudBackup.provider === CloudProvider.APPLE) {
-        await appleCloud.authenticate({
-          type: CloudOperationType.DELETE,
-          fileId: cloudBackup.fileId,
-          provider: CloudProvider.APPLE,
-        });
+        await appleCloud.authenticate(PendingOperation.DELETE);
         await appleCloud.deleteFile(cloudBackup.fileId);
       }
 
@@ -172,9 +155,9 @@ export function AccountBackupCloudEmbeddedView() {
   }
 
   useEffect(() => {
-    const storedProvider = localStorage.getItem(CLOUD_PROVIDER_STORAGE_KEY);
+    const storedProvider = getCloudProvider();
     if (storedProvider && !cloudProvider) {
-      localStorage.removeItem(CLOUD_PROVIDER_STORAGE_KEY);
+      clearCloudProvider();
       setCloudProvider(storedProvider as CloudProvider);
       setIsCloudEnabled(true);
     } else if (!cloudProvider) {
@@ -187,9 +170,6 @@ export function AccountBackupCloudEmbeddedView() {
     if (isInsideIframe()) return;
     if (pendingOperationProcessedRef.current) return;
 
-    const wasRedirecting = localStorage.getItem(AUTH_REDIRECT_FLAG);
-    if (!wasRedirecting) return;
-
     if (!googleCloud.isAuthenticated && !appleCloud.isAuthenticated) return;
     if (!currentWallet) return;
 
@@ -199,15 +179,15 @@ export function AccountBackupCloudEmbeddedView() {
       return;
     }
 
-    if (pendingOp.type === CloudOperationType.DELETE && !cloudBackup) return;
-    if (pendingOp.type === CloudOperationType.STORE && !cloudProvider) return;
+    if (pendingOp === PendingOperation.DELETE && !cloudBackup) return;
+    if (pendingOp === PendingOperation.STORE && !cloudProvider) return;
 
     pendingOperationProcessedRef.current = true;
 
     try {
-      if (pendingOp.type === CloudOperationType.STORE) {
+      if (pendingOp === PendingOperation.STORE) {
         await handleStoreOnCloud();
-      } else if (pendingOp.type === CloudOperationType.DELETE) {
+      } else if (pendingOp === PendingOperation.DELETE) {
         await handleDeleteFromCloud();
       }
     } finally {

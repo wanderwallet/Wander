@@ -76,7 +76,7 @@ import {
   EmbeddedContext,
 } from "~utils/embedded/embedded.context";
 import { CloudProvider } from "./cloud/cloud.types";
-import { AUTH_REDIRECT_FLAG, clearRedirectLocation, getRedirectLocation } from "./cloud/cloud.utils";
+import { clearRedirectLocation, getRedirectLocation } from "./cloud/cloud.utils";
 import { isInsideIframe } from "./iframe.utils";
 
 export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
@@ -179,11 +179,10 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     if (isInsideIframe() || authStatus !== "unlocked") return;
 
     try {
-      // Restore redirect location after OAuth callback
-      const wasRedirecting = localStorage.getItem(AUTH_REDIRECT_FLAG);
+      // Restore redirect location after Google Drive or Apple Cloud authentication
       const redirectLocation = getRedirectLocation();
 
-      if (wasRedirecting && redirectLocation) {
+      if (redirectLocation) {
         const currentHash = window.location.hash || "#/";
         const normalizedRedirectLocation = redirectLocation.startsWith("#")
           ? redirectLocation

@@ -14,10 +14,10 @@ import { sleep } from "~utils/promises/sleep";
 import { Loading } from "@arconnect/components-rebrand";
 import { toast } from "react-toastify";
 import { Upload01 } from "@untitled-ui/icons-react";
-import { CloudOperationType, CloudProvider } from "~utils/embedded/cloud/cloud.types";
+import { CloudProvider, PendingOperation } from "~utils/embedded/cloud/cloud.types";
 import type { RecoveryJSON } from "~utils/embedded/embedded.types";
 import { WalletUtils } from "~utils/wallets/wallets.utils";
-import { getPendingOperation, clearCloudAuthState, AUTH_REDIRECT_FLAG } from "~utils/embedded/cloud/cloud.utils";
+import { getPendingOperation, clearCloudAuthState } from "~utils/embedded/cloud/cloud.utils";
 import { isInsideIframe } from "~utils/embedded/iframe.utils";
 
 export function AccountBackupCloudImportEmbeddedView() {
@@ -44,18 +44,10 @@ export function AccountBackupCloudImportEmbeddedView() {
       let recoveryFileData: RecoveryJSON | null = null;
 
       if (cloudBackup?.provider === "GOOGLE") {
-        await googleCloud.authenticate({
-          type: CloudOperationType.IMPORT,
-          fileId: cloudBackup?.fileId,
-          provider: CloudProvider.GOOGLE,
-        });
+        await googleCloud.authenticate(PendingOperation.IMPORT);
         recoveryFileData = await googleCloud.getFileContent(cloudBackup?.fileId);
       } else if (cloudBackup?.provider === "APPLE") {
-        await appleCloud.authenticate({
-          type: CloudOperationType.IMPORT,
-          fileId: cloudBackup?.fileId,
-          provider: CloudProvider.APPLE,
-        });
+        await appleCloud.authenticate(PendingOperation.IMPORT);
         recoveryFileData = await appleCloud.getFileContent(cloudBackup?.fileId);
       }
 
@@ -117,9 +109,6 @@ export function AccountBackupCloudImportEmbeddedView() {
     if (isInsideIframe()) return;
     if (pendingOperationProcessedRef.current) return;
 
-    const wasRedirecting = localStorage.getItem(AUTH_REDIRECT_FLAG);
-    if (!wasRedirecting) return;
-
     if (!googleCloud.isAuthenticated && !appleCloud.isAuthenticated) return;
     if (!currentWallet) return;
 
@@ -129,14 +118,12 @@ export function AccountBackupCloudImportEmbeddedView() {
       return;
     }
 
-    if (pendingOp.type !== CloudOperationType.IMPORT || !cloudBackup) return;
+    if (pendingOp !== PendingOperation.IMPORT || !cloudBackup) return;
 
     pendingOperationProcessedRef.current = true;
 
     try {
-      if (pendingOp.type === CloudOperationType.IMPORT) {
-        await handleImportFromCloud();
-      }
+      await handleImportFromCloud();
     } finally {
       clearCloudAuthState();
       setIsLoading(false);
