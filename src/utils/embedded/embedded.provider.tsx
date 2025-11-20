@@ -76,6 +76,7 @@ import {
   EmbeddedContext,
 } from "~utils/embedded/embedded.context";
 import { CloudProvider } from "./cloud/cloud.types";
+import { AUTH_REDIRECT_FLAG, clearRedirectLocation, getRedirectLocation } from "./cloud/cloud.utils";
 
 export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
   const mountedTimeRef = useRef(Date.now());
@@ -172,6 +173,36 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       },
     });
   }, [authStatus, backupsNeeded, backupMessage]);
+
+  useEffect(() => {
+    if (authStatus !== "unlocked") return;
+
+    try {
+      // Restore redirect location after OAuth callback
+      const wasRedirecting = localStorage.getItem(AUTH_REDIRECT_FLAG);
+      const redirectLocation = getRedirectLocation();
+
+      if (wasRedirecting && redirectLocation) {
+        const currentHash = window.location.hash || "#/";
+        const normalizedRedirectLocation = redirectLocation.startsWith("#")
+          ? redirectLocation
+          : new URL(redirectLocation).hash;
+
+        // If we're on root and have a stored location, navigate to it
+        if (currentHash === "#/" && currentHash !== normalizedRedirectLocation) {
+          const navigate = navigateRef.current;
+          if (navigate) {
+            const pathWithoutHash = normalizedRedirectLocation.replace(/^#/, "") || "/";
+            navigate(pathWithoutHash as any);
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error restoring redirect location:", error);
+    } finally {
+      clearRedirectLocation();
+    }
+  }, [authStatus]);
 
   // Unpartitioned state:
 

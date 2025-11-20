@@ -25,6 +25,7 @@ export async function fileToId(file: File | Blob): Promise<string> {
 export const AUTH_REDIRECT_FLAG = "google_drive_auth_redirecting";
 export const CLOUD_PROVIDER_STORAGE_KEY = "cloud_provider_selected";
 export const PENDING_OPERATION_KEY = "cloud_pending_operation";
+export const AUTH_REDIRECT_LOCATION_KEY = "cloud_auth_redirect_location";
 
 export const storePendingOperation = (operation: PendingOperation): void => {
   try {
@@ -47,4 +48,25 @@ export const getPendingOperation = (): PendingOperation | null => {
 
 export const clearPendingOperation = (): void => {
   localStorage.removeItem(PENDING_OPERATION_KEY);
+};
+
+export const storeRedirectLocation = (location: string): void => {
+  try {
+    localStorage.setItem(AUTH_REDIRECT_LOCATION_KEY, location);
+  } catch (error) {
+    console.error("Error storing redirect location:", error);
+  }
+};
+
+export const getRedirectLocation = (): string | null => {
+  try {
+    return localStorage.getItem(AUTH_REDIRECT_LOCATION_KEY);
+  } catch (error) {
+    console.error("Error reading redirect location:", error);
+    return null;
+  }
+};
+
+export const clearRedirectLocation = (): void => {
+  localStorage.removeItem(AUTH_REDIRECT_LOCATION_KEY);
 };

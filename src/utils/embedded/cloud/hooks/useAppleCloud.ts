@@ -4,7 +4,12 @@ import { useScript } from "~utils/script/script.hooks";
 import { CloudProvider, type AppDataFile, type PendingOperation } from "../cloud.types";
 import type { RecoveryJSON } from "~utils/embedded/embedded.types";
 import { fileToId } from "../cloud.utils";
-import { AUTH_REDIRECT_FLAG, CLOUD_PROVIDER_STORAGE_KEY, storePendingOperation } from "../cloud.utils";
+import {
+  AUTH_REDIRECT_FLAG,
+  CLOUD_PROVIDER_STORAGE_KEY,
+  storePendingOperation,
+  storeRedirectLocation,
+} from "../cloud.utils";
 
 interface AppleAuthState {
   isAuthenticated: boolean;
@@ -219,6 +224,7 @@ export const useAppleCloud = (): UseAppleCloudReturn => {
             try {
               localStorage.setItem(AUTH_REDIRECT_FLAG, "true");
               localStorage.setItem(CLOUD_PROVIDER_STORAGE_KEY, CloudProvider.APPLE);
+              storeRedirectLocation(window.location.href || "#/");
               if (pendingOperation) {
                 storePendingOperation(pendingOperation);
               }

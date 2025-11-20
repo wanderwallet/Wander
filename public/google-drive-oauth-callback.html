@@ -105,8 +105,7 @@
               setTimeout(() => window.close(), 2000);
             } else {
               setTimeout(() => {
-                window.location.href =
-                  window.location.origin + "?target_hash=/account/backup-wallet/cloud&error=invalid_state";
+                window.location.href = window.location.origin + "?error=invalid_state";
               }, 2000);
             }
             return;
@@ -119,8 +118,7 @@
               setTimeout(() => window.close(), 2000);
             } else {
               setTimeout(() => {
-                window.location.href =
-                  window.location.origin + "?target_hash=/account/backup-wallet/cloud&error=invalid_permissions";
+                window.location.href = window.location.origin + "?error=invalid_permissions";
               }, 2000);
             }
             return;
@@ -147,10 +145,7 @@
               statusEl.textContent = "Error: " + errorDescription;
               statusEl.className = "message error";
               setTimeout(() => {
-                window.location.href =
-                  window.location.origin +
-                  "?target_hash=/account/backup-wallet/cloud&error=" +
-                  encodeURIComponent(errorDescription);
+                window.location.href = window.location.origin + "?error=" + encodeURIComponent(errorDescription);
               }, 2000);
             }
             return;
@@ -175,8 +170,7 @@
               statusEl.textContent = "Error: No access token received";
               statusEl.className = "message error";
               setTimeout(() => {
-                window.location.href =
-                  window.location.origin + "?target_hash=/account/backup-wallet/cloud&error=no_access_token";
+                window.location.href = window.location.origin + "?error=no_access_token";
               }, 2000);
             }
             return;
@@ -200,7 +194,7 @@
 
             statusEl.textContent = "Authentication successful! Redirecting...";
             setTimeout(() => {
-              window.location.href = window.location.origin + "?target_hash=/account/backup-wallet/cloud";
+              window.location.href = window.location.origin;
             }, 500);
             return;
           }
@@ -238,10 +232,7 @@
             statusEl.textContent = "Error: " + errorMessage;
             statusEl.className = "message error";
             setTimeout(() => {
-              window.location.href =
-                window.location.origin +
-                "?target_hash=/account/backup-wallet/cloud&error=" +
-                encodeURIComponent(errorMessage);
+              window.location.href = window.location.origin + "?error=" + encodeURIComponent(errorMessage);
             }, 2000);
           }
         }
