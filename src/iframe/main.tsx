@@ -101,7 +101,7 @@ if (window.location.hash.startsWith("#access_token=") && window.opener) {
   }
 
   completeOAuthAuthentication();
-} else if (window.location.search.startsWith("?error=")) {
+} else if (window.location.search.startsWith("?error=") && window.opener) {
   let errorCode: string | undefined;
   let errorDescription: string | undefined;
 
