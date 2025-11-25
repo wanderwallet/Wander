@@ -4,10 +4,12 @@ import { Button, Copyable, Spacer } from "~components/embed";
 import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { sleep } from "~utils/promises/sleep";
+import { useActiveAddress } from "~wallets/hooks";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 
 export function CongratulationsEmbeddedView() {
   const { lastRegisteredWallet, clearLastRegisteredWallet } = useEmbedded();
+  const activeAddress = useActiveAddress();
 
   async function handleDone() {
     clearLastRegisteredWallet();
@@ -24,9 +26,9 @@ export function CongratulationsEmbeddedView() {
         style={{ padding: "0", marginTop: 20 }}
         isFullWidth
         label="Your account address"
-        value={lastRegisteredWallet?.address}
+        value={lastRegisteredWallet?.address || activeAddress}
         onClick={() => {
-          copy(lastRegisteredWallet?.address);
+          copy(lastRegisteredWallet?.address || activeAddress);
         }}
       />
       <Spacer y={0.75} />

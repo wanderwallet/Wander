@@ -76,6 +76,8 @@ import {
   EmbeddedContext,
 } from "~utils/embedded/embedded.context";
 import { CloudProvider } from "./cloud/cloud.types";
+import { clearRedirectLocation, getRedirectLocation } from "./cloud/cloud.utils";
+import { isInsideIframe } from "./iframe.utils";
 
 export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
   const mountedTimeRef = useRef(Date.now());
@@ -172,6 +174,36 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       },
     });
   }, [authStatus, backupsNeeded, backupMessage]);
+
+  useEffect(() => {
+    if (isInsideIframe()) return;
+    if (authStatus !== "unlocked") return;
+
+    try {
+      // Restore redirect location after Google Drive or Apple Cloud authentication
+      const redirectLocation = getRedirectLocation();
+
+      if (redirectLocation) {
+        const currentHash = window.location.hash || "#/";
+        const normalizedRedirectLocation = redirectLocation.startsWith("#")
+          ? redirectLocation
+          : new URL(redirectLocation).hash;
+
+        // If we're on root and have a stored location, navigate to it
+        if (currentHash === "#/" && currentHash !== normalizedRedirectLocation) {
+          const navigate = navigateRef.current;
+          if (navigate) {
+            const pathWithoutHash = normalizedRedirectLocation.replace(/^#/, "") || "/";
+            navigate(pathWithoutHash as any);
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error restoring redirect location:", error);
+    } finally {
+      clearRedirectLocation();
+    }
+  }, [authStatus]);
 
   // Unpartitioned state:
 

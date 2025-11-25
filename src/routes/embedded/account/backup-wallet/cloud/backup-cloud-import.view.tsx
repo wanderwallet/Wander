@@ -1,5 +1,5 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button, Column, ICloudIcon, GoogleCloudIcon, Row, Text, Spacer, Copyable } from "~components/embed";
 import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
 import { useAppleCloud } from "~utils/embedded/cloud/hooks/useAppleCloud";
@@ -14,16 +14,18 @@ import { sleep } from "~utils/promises/sleep";
 import { Loading } from "@arconnect/components-rebrand";
 import { toast } from "react-toastify";
 import { Upload01 } from "@untitled-ui/icons-react";
-import { CloudProvider } from "~utils/embedded/cloud/cloud.types";
+import { CloudProvider, PendingOperation } from "~utils/embedded/cloud/cloud.types";
 import type { RecoveryJSON } from "~utils/embedded/embedded.types";
 import { WalletUtils } from "~utils/wallets/wallets.utils";
+import { getPendingOperation, clearPendingOperationState } from "~utils/embedded/cloud/cloud.utils";
+import { isInsideIframe } from "~utils/embedded/iframe.utils";
 
 export function AccountBackupCloudImportEmbeddedView() {
   const { authStatus, currentWallet, importTempWallet, recoverWallet, cloudBackup, setCloudBackup } = useEmbedded();
 
   const [isLoading, setIsLoading] = useState(false);
   const [isBackupLoading, setIsBackupLoading] = useState(false);
-
+  const pendingOperationProcessedRef = useRef(false);
   const isViewLoading = authStatus === "unknown" || authStatus === "loading" || authStatus === "authLoading";
   const provider = cloudBackup?.provider;
   const providerName = provider === CloudProvider.APPLE ? "iCloud" : "Google";
@@ -42,10 +44,10 @@ export function AccountBackupCloudImportEmbeddedView() {
       let recoveryFileData: RecoveryJSON | null = null;
 
       if (cloudBackup?.provider === "GOOGLE") {
-        await googleCloud.authenticate();
+        await googleCloud.authenticate(PendingOperation.IMPORT);
         recoveryFileData = await googleCloud.getFileContent(cloudBackup?.fileId);
       } else if (cloudBackup?.provider === "APPLE") {
-        await appleCloud.authenticate();
+        await appleCloud.authenticate(PendingOperation.IMPORT);
         recoveryFileData = await appleCloud.getFileContent(cloudBackup?.fileId);
       }
 
@@ -102,6 +104,35 @@ export function AccountBackupCloudImportEmbeddedView() {
       setIsBackupLoading(false);
     }
   }, [currentWallet?.id, cloudBackup]);
+
+  useAsyncEffect(async () => {
+    if (isInsideIframe()) return;
+    if (pendingOperationProcessedRef.current) return;
+
+    if (!googleCloud.isAuthenticated && !appleCloud.isAuthenticated) return;
+    if (!currentWallet) return;
+
+    const pendingOp = getPendingOperation();
+    if (!pendingOp) {
+      clearPendingOperationState();
+      return;
+    }
+
+    if (pendingOp !== PendingOperation.IMPORT || !cloudBackup) return;
+
+    pendingOperationProcessedRef.current = true;
+
+    try {
+      await handleImportFromCloud();
+    } finally {
+      clearPendingOperationState();
+      setIsLoading(false);
+    }
+  }, [googleCloud.isAuthenticated, appleCloud.isAuthenticated, currentWallet, cloudBackup]);
+
+  useEffect(() => {
+    return () => clearPendingOperationState();
+  }, []);
 
   return (
     <OnboardingCard
