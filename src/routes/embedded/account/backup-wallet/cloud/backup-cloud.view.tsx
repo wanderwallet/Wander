@@ -1,18 +1,25 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Button, Column, ICloudIcon, GoogleCloudIcon, Row, Switch, Text, Tooltip, InfoIcon } from "~components/embed";
 import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
-import { CloudProvider, type AppDataFile } from "~utils/embedded/cloud/cloud.types";
+import { CloudProvider, PendingOperation, type AppDataFile } from "~utils/embedded/cloud/cloud.types";
 import { useAppleCloud } from "~utils/embedded/cloud/hooks/useAppleCloud";
 import { useGoogleCloud } from "~utils/embedded/cloud/hooks/useGoogleCloud";
+import {
+  getPendingOperation,
+  clearPendingOperationState,
+  getCloudProvider,
+  clearCloudProvider,
+} from "~utils/embedded/cloud/cloud.utils";
 import { WalletService } from "~utils/wallets/wallets.service";
 import { navigate } from "wouter/use-hash-location";
 import { browserInfo } from "~utils/browser-info/browser-info.utils";
 import { sleep } from "~utils/promises/sleep";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
-import type { RecoveryJSON, Wallet } from "~utils/embedded/embedded.types";
+import type { Wallet } from "~utils/embedded/embedded.types";
 import { toast } from "react-toastify";
+import { isInsideIframe } from "~utils/embedded/iframe.utils";
 
 export function AccountBackupCloudEmbeddedView() {
   const {
@@ -27,9 +34,18 @@ export function AccountBackupCloudEmbeddedView() {
   } = useEmbedded();
 
   const fileRef = useRef<AppDataFile | null>(null);
+  const pendingOperationProcessedRef = useRef(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isBackupLoading, setIsBackupLoading] = useState(false);
   const [isCloudEnabled, setIsCloudEnabled] = useState(false);
+  const [isOnboardingStore, setIsOnboardingStore] = useState(false);
+
+  const isOnboarding = useMemo(
+    () => !!lastRegisteredWallet || isOnboardingStore,
+    [lastRegisteredWallet, isOnboardingStore],
+  );
+
+  const isOnboardingRef = useRef(isOnboarding);
 
   const isViewLoading =
     authStatus === "unknown" || authStatus === "loading" || authStatus === "authLoading" || isBackupLoading;
@@ -41,7 +57,7 @@ export function AccountBackupCloudEmbeddedView() {
   const appleCloud = useAppleCloud();
 
   const handleComplete = async () => {
-    if (lastRegisteredWallet) {
+    if (isOnboardingRef.current) {
       await sleep(100);
       navigate(EmbeddedPaths.AccountCongratulations);
     }
@@ -51,26 +67,31 @@ export function AccountBackupCloudEmbeddedView() {
     handleComplete();
   };
 
+  const getRecoveryData = async () => {
+    const recoveryData = await generateRecovery();
+    const blob = new Blob([JSON.stringify(recoveryData)], { type: "application/json" });
+    const fileName = "backup-recovery-file.json";
+    const mimeType = "application/json";
+    return { blob, fileName, mimeType };
+  };
+
   async function handleStoreOnCloud() {
-    let recoveryData: RecoveryJSON | null = null;
     try {
       if (!currentWallet) return;
       setIsLoading(true);
 
-      recoveryData = await generateRecovery();
-      const blob = new Blob([JSON.stringify(recoveryData)], { type: "application/json" });
-      const fileName = "backup-recovery-file.json";
-      const mimeType = "application/json";
-
       let googleEmail: string | null = null;
 
       if (!fileRef.current) {
+        const pendingOperation = isOnboardingRef.current ? PendingOperation.ONBOARDING_STORE : PendingOperation.STORE;
         if (cloudProvider === CloudProvider.GOOGLE) {
-          const { email } = await googleCloud.authenticate();
+          const { email } = await googleCloud.authenticate(pendingOperation);
           googleEmail = email;
+          const { blob, fileName, mimeType } = await getRecoveryData();
           fileRef.current = await googleCloud.uploadFile(blob, fileName, currentWallet.address, mimeType);
         } else if (cloudProvider === CloudProvider.APPLE) {
-          await appleCloud.authenticate();
+          await appleCloud.authenticate(pendingOperation);
+          const { blob, fileName, mimeType } = await getRecoveryData();
           fileRef.current = await appleCloud.uploadFile(blob, fileName, currentWallet.address, mimeType);
         }
       }
@@ -94,6 +115,7 @@ export function AccountBackupCloudEmbeddedView() {
     } catch (error) {
       toast.error(error?.message || "Failed to store on cloud");
     } finally {
+      clearPendingOperationState();
       setIsLoading(false);
     }
   }
@@ -105,10 +127,10 @@ export function AccountBackupCloudEmbeddedView() {
 
       fileRef.current = null;
       if (cloudBackup.provider === CloudProvider.GOOGLE) {
-        await googleCloud.authenticate();
+        await googleCloud.authenticate(PendingOperation.DELETE);
         await googleCloud.deleteFile(cloudBackup.fileId);
       } else if (cloudBackup.provider === CloudProvider.APPLE) {
-        await appleCloud.authenticate();
+        await appleCloud.authenticate(PendingOperation.DELETE);
         await appleCloud.deleteFile(cloudBackup.fileId);
       }
 
@@ -118,6 +140,7 @@ export function AccountBackupCloudEmbeddedView() {
     } catch (error) {
       toast.error(error?.message || "Failed to delete from cloud");
     } finally {
+      clearPendingOperationState();
       setIsLoading(false);
     }
   }
@@ -141,9 +164,61 @@ export function AccountBackupCloudEmbeddedView() {
   }
 
   useEffect(() => {
-    if (cloudProvider) return;
-    const provider = browserInfo.isAppleDevice ? CloudProvider.APPLE : CloudProvider.GOOGLE;
-    setCloudProvider(provider);
+    const storedProvider = getCloudProvider();
+    if (storedProvider && !cloudProvider) {
+      clearCloudProvider();
+      setCloudProvider(storedProvider as CloudProvider);
+      setIsCloudEnabled(true);
+    } else if (!cloudProvider) {
+      const provider = browserInfo.isAppleDevice ? CloudProvider.APPLE : CloudProvider.GOOGLE;
+      setCloudProvider(provider);
+    }
+  }, [cloudProvider, setCloudProvider]);
+
+  useAsyncEffect(async () => {
+    if (isInsideIframe()) return;
+    if (pendingOperationProcessedRef.current) return;
+
+    if (!googleCloud.isAuthenticated && !appleCloud.isAuthenticated) return;
+    if (!currentWallet) return;
+
+    const pendingOp = getPendingOperation();
+    if (!pendingOp) {
+      clearPendingOperationState();
+      return;
+    }
+
+    // Set the onboarding store state to true if the pending operation is ONBOARDING_STORE
+    setIsOnboardingStore(pendingOp === PendingOperation.ONBOARDING_STORE);
+
+    if (pendingOp === PendingOperation.DELETE && !cloudBackup) return;
+    const isStoreOperation = pendingOp === PendingOperation.STORE || pendingOp === PendingOperation.ONBOARDING_STORE;
+    if (isStoreOperation && !cloudProvider) return;
+
+    pendingOperationProcessedRef.current = true;
+
+    try {
+      if (isStoreOperation) {
+        await handleStoreOnCloud();
+      } else if (pendingOp === PendingOperation.DELETE) {
+        await handleDeleteFromCloud();
+      }
+    } finally {
+      clearPendingOperationState();
+      setIsLoading(false);
+    }
+  }, [
+    googleCloud.isAuthenticated,
+    appleCloud.isAuthenticated,
+    currentWallet,
+    cloudBackup,
+    cloudProvider,
+    handleStoreOnCloud,
+    handleDeleteFromCloud,
+  ]);
+
+  useEffect(() => {
+    return () => clearPendingOperationState();
   }, []);
 
   useAsyncEffect(async () => {
@@ -159,11 +234,15 @@ export function AccountBackupCloudEmbeddedView() {
     }
   }, [currentWallet?.id, cloudBackup]);
 
+  useEffect(() => {
+    isOnboardingRef.current = isOnboarding;
+  }, [isOnboarding]);
+
   return (
     <OnboardingCard
       headerText="Store your recovery key on the cloud"
       subtitle="Upload your recovery key to the cloud to easily sign in and connect your wallet on new devices."
-      hasBackButton={!lastRegisteredWallet}
+      hasBackButton={!isOnboarding}
       hasCloseButton={false}
       isLoading={isViewLoading}
       onBackButtonClick={() => navigate(EmbeddedPaths.AccountBackupWalletRecoveryFile)}>
@@ -222,7 +301,7 @@ export function AccountBackupCloudEmbeddedView() {
             </Button>
           )}
 
-          {lastRegisteredWallet && (
+          {isOnboarding && (
             <Button variant="secondary" isFullWidth isDisabled={isViewLoading} onClick={handleSkip}>
               Skip
             </Button>

@@ -21,6 +21,9 @@ import {
   setOtpAvailable,
 } from "~utils/otp/otp.utils";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import { isInsideIframe } from "~utils/embedded/iframe.utils";
+
+const insideIframe = isInsideIframe();
 
 export function AuthEmailOtpEmbeddedView() {
   const { navigate, location } = useLocation();
@@ -167,7 +170,10 @@ export function AuthEmailOtpEmbeddedView() {
       </Column>
 
       <Flex direction="column" gap={8} style={{ marginTop: 20 }} width="100%">
-        <Text alignment="left" variant={"bodySm"} style={{ color: "var(--text-color-secondary, #666666)" }}>
+        <Text
+          alignment={insideIframe ? "left" : "center"}
+          variant={"bodySm"}
+          style={{ color: "var(--text-color-secondary, #666666)" }}>
           Secure code
         </Text>
 
