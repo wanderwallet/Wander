@@ -176,7 +176,8 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
   }, [authStatus, backupsNeeded, backupMessage]);
 
   useEffect(() => {
-    if (isInsideIframe() || authStatus !== "unlocked") return;
+    if (isInsideIframe()) return;
+    if (authStatus !== "unlocked") return;
 
     try {
       // Restore redirect location after Google Drive or Apple Cloud authentication
