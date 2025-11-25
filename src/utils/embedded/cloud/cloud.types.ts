@@ -11,3 +11,10 @@ export interface AppDataFile {
   modifiedTime: string;
   walletAddress: string;
 }
+
+export enum PendingOperation {
+  STORE = "STORE",
+  ONBOARDING_STORE = "ONBOARDING_STORE",
+  DELETE = "DELETE",
+  IMPORT = "IMPORT",
+}

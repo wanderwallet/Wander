@@ -97,7 +97,7 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --defaultBackgroundColor: black;
+    --defaultBackgroundColor: #191919;
     --defaultTextColor: white;
   }
 }
@@ -143,7 +143,7 @@ html#wanderConnectRoot[data-theme="light"] {
 }
 
 html#wanderConnectRoot[data-theme="dark"] {
-  --defaultBackgroundColor: black;
+  --defaultBackgroundColor: #191919;
   --defaultTextColor: white;
 }
 

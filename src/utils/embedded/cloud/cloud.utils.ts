@@ -1,4 +1,6 @@
 import { v4 as uuidv4 } from "uuid";
+import type { CloudProvider, PendingOperation } from "./cloud.types";
+import { isInsideIframe } from "../iframe.utils";
 
 /**
  * Generate a unique ID for a file using SHA-256 hash and base64url encoding.
@@ -20,3 +22,98 @@ export async function fileToId(file: File | Blob): Promise<string> {
     return uuidv4();
   }
 }
+
+export const CLOUD_PROVIDER_STORAGE_KEY = "cloud_provider_selected";
+export const PENDING_OPERATION_KEY = "cloud_pending_operation";
+export const AUTH_REDIRECT_LOCATION_KEY = "cloud_auth_redirect_location";
+
+export const getCloudProvider = (): CloudProvider | null => {
+  try {
+    return localStorage.getItem(CLOUD_PROVIDER_STORAGE_KEY) as CloudProvider | null;
+  } catch (error) {
+    console.error("Error reading cloud provider:", error);
+    return null;
+  }
+};
+
+export const storeCloudProvider = (provider: CloudProvider): void => {
+  try {
+    localStorage.setItem(CLOUD_PROVIDER_STORAGE_KEY, provider);
+  } catch (error) {
+    console.error("Error storing cloud provider:", error);
+  }
+};
+
+export const clearCloudProvider = (): void => {
+  localStorage.removeItem(CLOUD_PROVIDER_STORAGE_KEY);
+};
+
+export const storePendingOperation = (operation: PendingOperation): void => {
+  try {
+    localStorage.setItem(PENDING_OPERATION_KEY, JSON.stringify(operation));
+  } catch (error) {
+    console.error("Error storing pending operation:", error);
+  }
+};
+
+export const getPendingOperation = (): PendingOperation | null => {
+  try {
+    const stored = localStorage.getItem(PENDING_OPERATION_KEY);
+    if (!stored) return null;
+    return JSON.parse(stored) as PendingOperation;
+  } catch (error) {
+    console.error("Error reading pending operation:", error);
+    return null;
+  }
+};
+
+export const clearPendingOperation = (): void => {
+  localStorage.removeItem(PENDING_OPERATION_KEY);
+};
+
+export const storeRedirectLocation = (location: string): void => {
+  try {
+    localStorage.setItem(AUTH_REDIRECT_LOCATION_KEY, location);
+  } catch (error) {
+    console.error("Error storing redirect location:", error);
+  }
+};
+
+export const getRedirectLocation = (): string | null => {
+  try {
+    return localStorage.getItem(AUTH_REDIRECT_LOCATION_KEY);
+  } catch (error) {
+    console.error("Error reading redirect location:", error);
+    return null;
+  }
+};
+
+export const clearRedirectLocation = (): void => {
+  localStorage.removeItem(AUTH_REDIRECT_LOCATION_KEY);
+};
+
+/**
+ * Stores redirect state when popup is blocked during cloud authentication.
+ * This includes the redirect flag, provider selection, redirect location, and pending operation.
+ */
+export const storeRedirectState = (provider: string, pendingOperation?: PendingOperation): void => {
+  try {
+    if (!provider || !pendingOperation) return;
+    localStorage.setItem(CLOUD_PROVIDER_STORAGE_KEY, provider);
+    storeRedirectLocation(window.location.hash);
+    storePendingOperation(pendingOperation);
+  } catch (error) {
+    console.error("Error saving redirect state:", error);
+  }
+};
+
+/**
+ * Clears all pending operation state from localStorage.
+ * This includes pending operations, cloud provider, and redirect location.
+ */
+export const clearPendingOperationState = (): void => {
+  if (isInsideIframe()) return;
+  clearPendingOperation();
+  clearCloudProvider();
+  clearRedirectLocation();
+};
