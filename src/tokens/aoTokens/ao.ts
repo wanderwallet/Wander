@@ -19,6 +19,7 @@ import { queryClient } from "~utils/tanstack";
 import { Id, Owner, AR_PROCESS_ID, AO_PROCESS_ID, UTD_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 import type { Token } from "~tokens/token";
 import type { FlpTokenInfo } from "~utils/fair_launch/fair_launch.types";
+import { ARIO_MAINNET_PROCESS_ID, ARIO_TESTNET_PROCESS_ID } from "@ar.io/sdk/web";
 
 export let tokens: TokenInfo[] = null;
 export let flpTokens: FlpTokenInfo[] = null;
@@ -37,10 +38,14 @@ export const ARDRIVE_CU_URL = "https://cu.ardrive.io";
 export const AO_DEV_CU_URL = "https://aodev.fun/ao/cu";
 export const DEFAULT_CU_URL = "https://cu.ao-testnet.xyz";
 
+const { dryrun: arDriveDryrun } = connect({ CU_URL: ARDRIVE_CU_URL });
 const { dryrun: aoDevDryrun } = connect({ CU_URL: AO_DEV_CU_URL });
+
+const ARDRIVE_PROCESSES = [ARIO_MAINNET_PROCESS_ID, ARIO_TESTNET_PROCESS_ID];
 
 export const getDryrunForProcess = (processId: string) => {
   if (processId === UTD_PROCESS_ID) return { dryrunFn: aoDevDryrun, isCustomDryrun: true };
+  if (ARDRIVE_PROCESSES.includes(processId)) return { dryrunFn: arDriveDryrun, isCustomDryrun: true };
 
   return { dryrunFn: dryrun, isCustomDryrun: false };
 };
