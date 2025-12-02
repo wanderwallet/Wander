@@ -29,7 +29,7 @@ import type { AoxBridgeTransactionStatus } from "./bridge.types";
 import type { JWKInterface } from "arweave/web/lib/wallet";
 import type { HardwareWallet } from "~wallets/hardware";
 import { assertTransferResult, createKeystoneFeeTransaction, createSwapMessage } from "../swap.utils";
-import { createTransactionFromAO, createTransactionFromAR } from "~utils/transactions";
+import { createAoPendingTransaction, createArPendingTransaction } from "~utils/transactions";
 
 const FAILED_STATUSES = new Set<AoxBridgeTransactionStatus>(["failed", "submintAosFailed", "notOnChain", "refunded"]);
 
@@ -147,7 +147,7 @@ export async function executeSwap({
         name: tag.get("name", { string: true, decode: true }),
         value: tag.get("value", { string: true, decode: true }),
       }));
-      await createTransactionFromAR(
+      await createArPendingTransaction(
         transaction.id,
         activeAddress,
         transaction.target,
@@ -183,7 +183,7 @@ export async function executeSwap({
       await assertTransferResult(transferId, tokenIn, ["Burn-Notice"], "Failed to unwrap WAR tokens");
 
       const tokenInfo = JSON.parse(getTagValue("X-Token-In", tags) || "{}") as TokenInfo;
-      await createTransactionFromAO(
+      await createAoPendingTransaction(
         transferId,
         decryptedWallet.address,
         tokenIn,

@@ -22,7 +22,7 @@ import { getLinkedMessages, OrderError } from "./dex.utils";
 import { queryClient } from "~utils/tanstack";
 import { assertTransferResult, createSwapMessage } from "../swap.utils";
 import browser from "webextension-polyfill";
-import { createTransactionFromAO } from "~utils/transactions";
+import { createAoPendingTransaction } from "~utils/transactions";
 
 const aoInstance = connect(defaultConfig);
 
@@ -261,7 +261,7 @@ export async function executeSwap({
     await assertTransferResult(transferId, tokenIn);
 
     const tokenInfo = JSON.parse(getTagValue("X-Token-In", tags) || "{}") as TokenInfo;
-    await createTransactionFromAO(
+    await createAoPendingTransaction(
       transferId,
       decryptedWallet.address,
       poolId,

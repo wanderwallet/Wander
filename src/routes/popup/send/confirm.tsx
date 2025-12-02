@@ -7,7 +7,7 @@ import { SendButton, type RecipientType, type TransactionData } from ".";
 import { formatAddress } from "~utils/format";
 import type Transaction from "arweave/web/lib/transaction";
 import { useStorage } from "~utils/storage";
-import { createTransactionFromAR, createTransactionFromAO } from "~utils/transactions";
+import { createArPendingTransaction, createAoPendingTransaction } from "~utils/transactions";
 import { ExtensionStorage, TempTransactionStorage, type RawStoredTransfer } from "~utils/storage";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { findGateway, retryWithGateways } from "~gateways/wayfinder";
@@ -308,7 +308,7 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
           fractionedToBalance(amount, { decimals: token.Denomination }, "AO"),
         );
         if (res) {
-          await createTransactionFromAO(
+          await createAoPendingTransaction(
             res,
             activeAddress,
             recipient.address,
@@ -378,7 +378,7 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
             name: tag.get("name", { string: true, decode: true }),
             value: tag.get("value", { string: true, decode: true }),
           }));
-          await createTransactionFromAR(
+          await createArPendingTransaction(
             convertedTransaction.id,
             activeAddress,
             convertedTransaction.target,
@@ -447,7 +447,7 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
             name: tag.get("name", { string: true, decode: true }),
             value: tag.get("value", { string: true, decode: true }),
           }));
-          await createTransactionFromAR(
+          await createArPendingTransaction(
             convertedTransaction.id,
             activeAddress,
             convertedTransaction.target,
@@ -550,7 +550,7 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
         );
 
         if (res) {
-          await createTransactionFromAO(
+          await createAoPendingTransaction(
             res,
             activeAddress,
             recipient.address,
@@ -664,7 +664,7 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
           name: tag.get("name", { string: true, decode: true }),
           value: tag.get("value", { string: true, decode: true }),
         }));
-        await createTransactionFromAR(
+        await createArPendingTransaction(
           transaction.id,
           activeAddress,
           transaction.target,

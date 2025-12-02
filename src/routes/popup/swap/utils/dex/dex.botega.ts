@@ -21,7 +21,7 @@ import { retryWithDelay } from "~utils/promises/retry";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { queryClient } from "~utils/tanstack";
 import { assertTransferResult, createSwapMessage } from "../swap.utils";
-import { createTransactionFromAO } from "~utils/transactions";
+import { createAoPendingTransaction } from "~utils/transactions";
 
 /**
  * Fetch the result of a swap message
@@ -140,7 +140,7 @@ export async function executeSwap({
     await assertTransferResult(transferId, tokenIn);
 
     const tokenInfo = JSON.parse(getTagValue("X-Token-In", tags) || "{}") as TokenInfo;
-    await createTransactionFromAO(
+    await createAoPendingTransaction(
       transferId,
       decryptedWallet.address,
       poolId,

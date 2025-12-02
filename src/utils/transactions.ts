@@ -119,7 +119,7 @@ export async function cleanupOldPendingTransactions(): Promise<void> {
 /**
  * Create an Transaction from AR transaction data
  */
-export async function createTransactionFromAR(
+export async function createArPendingTransaction(
   txId: string,
   ownerAddress: string,
   recipient: string,
@@ -158,7 +158,7 @@ export async function createTransactionFromAR(
 /**
  * Create an Transaction from AO transaction data
  */
-export async function createTransactionFromAO(
+export async function createAoPendingTransaction(
   txId: string,
   ownerAddress: string,
   recipient: string,

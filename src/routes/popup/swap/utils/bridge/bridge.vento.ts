@@ -28,7 +28,7 @@ import { defaultOptions } from "~tokens/hooks";
 import type { JWKInterface } from "arweave/web/lib/wallet";
 import type { HardwareWallet } from "~wallets/hardware";
 import { assertTransferResult, createKeystoneFeeTransaction, createSwapMessage } from "../swap.utils";
-import { createTransactionFromAO, createTransactionFromAR } from "~utils/transactions";
+import { createAoPendingTransaction, createArPendingTransaction } from "~utils/transactions";
 
 export const VENTO_BRIDGE_ADDRESS = "mFRKcHsO6Tlv2E2wZcrcbv3mmzxzD7vYPbyybI3KCVA";
 
@@ -154,7 +154,7 @@ export async function executeSwap({
         name: tag.get("name", { string: true, decode: true }),
         value: tag.get("value", { string: true, decode: true }),
       }));
-      await createTransactionFromAR(
+      await createArPendingTransaction(
         transaction.id,
         activeAddress,
         transaction.target,
@@ -202,7 +202,7 @@ export async function executeSwap({
     }
 
     const tokenInfo = JSON.parse(getTagValue("X-Token-In", tags) || "{}") as TokenInfo;
-    await createTransactionFromAO(
+    await createAoPendingTransaction(
       transferId,
       decryptedWallet.address,
       tokenIn,
