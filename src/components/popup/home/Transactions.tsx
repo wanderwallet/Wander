@@ -22,10 +22,9 @@ import {
   getTransactionDescription,
   groupTransactionsByMonth,
   processTransactions,
-  sortFn,
   type ExtendedTransaction,
 } from "~lib/transactions";
-import { getPendingTransactions, removePendingTransactions, cleanupOldPendingTransactions } from "~utils/transactions";
+import { getPendingTransactions, cleanupOldPendingTransactions, mergeWithPending } from "~utils/transactions";
 import BigNumber from "bignumber.js";
 import { retryWithDelay } from "~utils/promises/retry";
 import { useLocation } from "~wallets/router/router.utils";
@@ -81,10 +80,7 @@ export default function Transactions() {
             if (!cacheShown && transactionsCache && transactionsCache.address === activeAddress) {
               cacheShown = true;
               const pendingTransactions = await getPendingTransactions(activeAddress);
-              const cachedTxs = transactionsCache.transactions;
-              const cachedTxIds = new Set(cachedTxs.map((tx) => tx.node.id));
-              const newPendingTxs = pendingTransactions.filter((tx) => !cachedTxIds.has(tx.node.id));
-              const merged = [...newPendingTxs, ...cachedTxs].sort(sortFn);
+              const merged = await mergeWithPending(transactionsCache.transactions, pendingTransactions);
               setTransactions(merged);
               setLoading(false);
             }
@@ -188,14 +184,7 @@ export default function Transactions() {
 
           // Get pending transactions and merge with GraphQL results
           const pendingTransactions = await getPendingTransactions(activeAddress);
-          const graphqlTxIds = new Set(combinedTransactions.map((tx) => tx.node.id));
-          const newPendingTxs = pendingTransactions.filter((tx) => !graphqlTxIds.has(tx.node.id));
-          combinedTransactions = [...newPendingTxs, ...combinedTransactions].sort(sortFn);
-
-          // Remove pending transactions that are now available in GraphQL
-          if (graphqlTxIds.size > 0) {
-            await removePendingTransactions(Array.from(graphqlTxIds));
-          }
+          combinedTransactions = await mergeWithPending(combinedTransactions, pendingTransactions, true);
 
           setTransactions(combinedTransactions);
 
@@ -212,10 +201,7 @@ export default function Transactions() {
         // On error, try to use cache as fallback if not already shown
         if (!cacheShown && transactionsCache && transactionsCache.address === activeAddress) {
           const pendingTransactions = await getPendingTransactions(activeAddress);
-          const cachedTxs = transactionsCache.transactions;
-          const cachedTxIds = new Set(cachedTxs.map((tx) => tx.node.id));
-          const newPendingTxs = pendingTransactions.filter((tx) => !cachedTxIds.has(tx.node.id));
-          const merged = [...newPendingTxs, ...cachedTxs].sort(sortFn);
+          const merged = await mergeWithPending(transactionsCache.transactions, pendingTransactions);
           setTransactions(merged);
         }
       } finally {

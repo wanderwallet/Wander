@@ -2,7 +2,7 @@
  * Utility functions for AO/AR transactions
  */
 
-import type { ExtendedTransaction } from "~lib/transactions";
+import { sortFn, type ExtendedTransaction } from "~lib/transactions";
 import { getTagValue, type TokenInfo } from "~tokens/aoTokens/ao";
 import type { GQLNodeInterface } from "ar-gql/dist/faces";
 import { createStorageArray } from "~utils/storage/storage.array";
@@ -219,4 +219,20 @@ export async function createAoPendingTransaction(
   } catch (error) {
     log(LOG_GROUP.TRANSACTIONS, "Error creating AO pending transaction:", error);
   }
+}
+
+export async function mergeWithPending(
+  baseTransactions: ExtendedTransaction[],
+  pendingTransactions: ExtendedTransaction[],
+  cleanUp: boolean = false,
+): Promise<ExtendedTransaction[]> {
+  const graphqlTxIds = new Set(baseTransactions.map((tx) => tx.node.id));
+  const newPendingTxs = pendingTransactions.filter((tx) => !graphqlTxIds.has(tx.node.id));
+
+  // Remove pending transactions that are now available in GraphQL
+  if (cleanUp && graphqlTxIds.size > 0) {
+    await removePendingTransactions(Array.from(graphqlTxIds));
+  }
+
+  return [...newPendingTxs, ...baseTransactions].sort(sortFn);
 }

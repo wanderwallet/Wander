@@ -37,7 +37,7 @@ import BigNumber from "bignumber.js";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { convertAnnouncementsToTransactions } from "~utils/announcements";
 import { AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
-import { getPendingTokenTransactions, getPendingTransactions, removePendingTransactions } from "~utils/transactions";
+import { getPendingTokenTransactions, getPendingTransactions, mergeWithPending } from "~utils/transactions";
 
 /**
  * Wallets with details hook
@@ -364,14 +364,7 @@ export const useTransactions = (activeAddress: string, limit?: number) => {
 
       // Get pending transactions and merge with GraphQL results
       const pendingTransactions = await getPendingTransactions(activeAddress);
-      const graphqlTxIds = new Set(combinedTransactions.map((tx) => tx.node.id));
-      const newPendingTxs = pendingTransactions.filter((tx) => !graphqlTxIds.has(tx.node.id));
-      combinedTransactions = [...newPendingTxs, ...combinedTransactions].sort(sortFn);
-
-      // Remove pending transactions that are now available in GraphQL
-      if (graphqlTxIds.size > 0) {
-        await removePendingTransactions(Array.from(graphqlTxIds));
-      }
+      combinedTransactions = await mergeWithPending(combinedTransactions, pendingTransactions, true);
 
       const actualCount = combinedTransactions.length;
 
@@ -517,9 +510,7 @@ export const useTokenTransactions = (activeAddress: string, tokenId: string) => 
 
       // Get pending transactions and merge with GraphQL results
       const pendingTransactions = await getPendingTokenTransactions(activeAddress, tokenId);
-      const graphqlTxIds = new Set(combinedTransactions.map((tx) => tx.node.id));
-      const newPendingTxs = pendingTransactions.filter((tx) => !graphqlTxIds.has(tx.node.id));
-      combinedTransactions = [...newPendingTxs, ...combinedTransactions].sort(sortFn);
+      combinedTransactions = await mergeWithPending(combinedTransactions, pendingTransactions);
 
       const actualCount = combinedTransactions.length;
 
