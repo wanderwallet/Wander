@@ -246,7 +246,7 @@ export default function Transactions() {
           </NoTransactionsContainer>
         )}
       </TransactionsWrapper>
-      {transactions.length > 0 && (
+      {!loading && transactions.length > 0 && (
         <ViewAll onClick={() => navigate("/transactions")}>
           {browser.i18n.getMessage("view_all")} ({transactions.length})
         </ViewAll>
