@@ -21,14 +21,14 @@ import { getVentoBridgeInfo, getVentoBridgeTransaction } from "./bridge.utils";
 import { retryWithGateways } from "~gateways/wayfinder";
 import browser from "webextension-polyfill";
 import { AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
-import { createDataItemKeystoneSigner, createDataItemSigner } from "~tokens/aoTokens/ao";
-import type { DecodedTag } from "~api/modules/sign/tags";
+import { createDataItemKeystoneSigner, createDataItemSigner, getTagValue, type TokenInfo } from "~tokens/aoTokens/ao";
 import BigNumber from "bignumber.js";
 import { getLinkedMessages, OrderError } from "../dex/dex.utils";
 import { defaultOptions } from "~tokens/hooks";
 import type { JWKInterface } from "arweave/web/lib/wallet";
 import type { HardwareWallet } from "~wallets/hardware";
 import { assertTransferResult, createKeystoneFeeTransaction, createSwapMessage } from "../swap.utils";
+import { createTransactionFromAO, createTransactionFromAR } from "~utils/transactions";
 
 export const VENTO_BRIDGE_ADDRESS = "mFRKcHsO6Tlv2E2wZcrcbv3mmzxzD7vYPbyybI3KCVA";
 
@@ -148,6 +148,23 @@ export async function executeSwap({
 
       if (result.status !== 200) throw new Error("Failed to post transaction");
 
+      // Save pending transaction to extension storage
+      // @ts-expect-error
+      const parsedTags = (transaction.get("tags") as any[]).map((tag) => ({
+        name: tag.get("name", { string: true, decode: true }),
+        value: tag.get("value", { string: true, decode: true }),
+      }));
+      await createTransactionFromAR(
+        transaction.id,
+        activeAddress,
+        transaction.target,
+        arweave.ar.winstonToAr(transaction.quantity),
+        arweave.ar.winstonToAr(transaction.reward),
+        transaction.data_size,
+        "sent",
+        parsedTags,
+      );
+
       transferId = transaction.id;
     } else {
       const signer = keystoneSigner ? createDataItemKeystoneSigner(keystoneSigner) : createDataItemSigner(keyfile);
@@ -183,6 +200,20 @@ export async function executeSwap({
         (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 30000),
       ).catch(() => undefined);
     }
+
+    const tokenInfo = JSON.parse(getTagValue("X-Token-In", tags) || "{}") as TokenInfo;
+    await createTransactionFromAO(
+      transferId,
+      decryptedWallet.address,
+      tokenIn,
+      amountIn,
+      tokenIn,
+      tokenInfo,
+      "aoSent",
+      "0",
+      undefined,
+      tags,
+    );
 
     // Invalidate transfered token balance
     queryClient.invalidateQueries({ queryKey: ["tokenBalance", tokenIn, activeAddress] });

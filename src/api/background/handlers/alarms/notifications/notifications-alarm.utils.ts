@@ -15,6 +15,12 @@ export type RawTransaction = {
     quantity: {
       ar: string;
     };
+    fee: {
+      ar: string;
+    };
+    data: {
+      size: string;
+    };
     block: {
       timestamp: number;
       height: number;

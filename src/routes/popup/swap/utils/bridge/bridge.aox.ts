@@ -23,12 +23,13 @@ import { defaultOptions } from "~tokens/hooks";
 import { retryWithGateways } from "~gateways/wayfinder";
 import browser from "webextension-polyfill";
 import { AR_PROCESS_ID, WAR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
-import { createDataItemKeystoneSigner, createDataItemSigner } from "~tokens/aoTokens/ao";
+import { createDataItemKeystoneSigner, createDataItemSigner, getTagValue, type TokenInfo } from "~tokens/aoTokens/ao";
 import BigNumber from "bignumber.js";
 import type { AoxBridgeTransactionStatus } from "./bridge.types";
 import type { JWKInterface } from "arweave/web/lib/wallet";
 import type { HardwareWallet } from "~wallets/hardware";
 import { assertTransferResult, createKeystoneFeeTransaction, createSwapMessage } from "../swap.utils";
+import { createTransactionFromAO, createTransactionFromAR } from "~utils/transactions";
 
 const FAILED_STATUSES = new Set<AoxBridgeTransactionStatus>(["failed", "submintAosFailed", "notOnChain", "refunded"]);
 
@@ -140,6 +141,23 @@ export async function executeSwap({
 
       if (result.status !== 200) throw new Error("Failed to post transaction");
 
+      // Save pending transaction to extension storage
+      // @ts-expect-error
+      const parsedTags = (transaction.get("tags") as any[]).map((tag) => ({
+        name: tag.get("name", { string: true, decode: true }),
+        value: tag.get("value", { string: true, decode: true }),
+      }));
+      await createTransactionFromAR(
+        transaction.id,
+        activeAddress,
+        transaction.target,
+        arweave.ar.winstonToAr(transaction.quantity),
+        arweave.ar.winstonToAr(transaction.reward),
+        transaction.data_size,
+        "sent",
+        parsedTags,
+      );
+
       transferId = transaction.id;
     } else {
       const signer = keystoneSigner ? createDataItemKeystoneSigner(keystoneSigner) : createDataItemSigner(keyfile);
@@ -163,6 +181,20 @@ export async function executeSwap({
       transferId = await sendMessage();
 
       await assertTransferResult(transferId, tokenIn, ["Burn-Notice"], "Failed to unwrap WAR tokens");
+
+      const tokenInfo = JSON.parse(getTagValue("X-Token-In", tags) || "{}") as TokenInfo;
+      await createTransactionFromAO(
+        transferId,
+        decryptedWallet.address,
+        tokenIn,
+        amountIn,
+        tokenIn,
+        tokenInfo,
+        "aoSent",
+        "0",
+        undefined,
+        tags,
+      );
     }
 
     await retryWithDelay(async () => {

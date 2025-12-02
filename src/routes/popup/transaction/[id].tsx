@@ -34,6 +34,7 @@ import { useTokenPrice } from "~tokens/hooks";
 import { fetchTokenByProcessId, getTagValue, type TokenInfo } from "~tokens/aoTokens/ao";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { AO_AUTHORITY_ID, AR_TOKEN_INFO, AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
+import { getPendingTransaction, getPendingTransactions } from "~utils/transactions";
 
 // pull contacts and check if to address is in contacts
 
@@ -159,8 +160,8 @@ export function TransactionView({ params: { id, gateway: gw, message } }: Transa
     let fetchCount = 0;
 
     const fetchTx = async () => {
-      const cachedTx = JSON.parse(localStorage.getItem("latest_tx") || "{}");
-      if (cachedTx.id === id) {
+      const cachedTx = await getPendingTransaction(id);
+      if (cachedTx) {
         setTransaction(cachedTx);
 
         // AO transaction

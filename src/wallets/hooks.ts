@@ -37,6 +37,7 @@ import BigNumber from "bignumber.js";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { convertAnnouncementsToTransactions } from "~utils/announcements";
 import { AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
+import { getPendingTokenTransactions, getPendingTransactions, removePendingTransactions } from "~utils/transactions";
 
 /**
  * Wallets with details hook
@@ -347,32 +348,30 @@ export const useTransactions = (activeAddress: string, limit?: number) => {
         combinedTransactions = [...combinedTransactions, ...announcementTransactions];
       }
 
-      combinedTransactions.sort(sortFn);
-
+      const now = new Date();
       combinedTransactions = combinedTransactions.map((transaction) => {
-        if (transaction.node.block && transaction.node.block.timestamp) {
-          const date = new Date(transaction.node.block.timestamp * 1000);
-          const day = date.getDate();
-          const month = date.getMonth() + 1;
-          const year = date.getFullYear();
-          return {
-            ...transaction,
-            day,
-            month,
-            year,
-            date: date.toISOString(),
-          };
-        } else {
-          const now = new Date();
-          return {
-            ...transaction,
-            day: now.getDate(),
-            month: now.getMonth() + 1,
-            year: now.getFullYear(),
-            date: null,
-          };
-        }
+        const timestamp = transaction.node.block?.timestamp;
+        const date = timestamp ? new Date(timestamp * 1000) : now;
+
+        return {
+          ...transaction,
+          day: date.getDate(),
+          month: date.getMonth() + 1,
+          year: date.getFullYear(),
+          date: timestamp ? date.toISOString() : null,
+        };
       });
+
+      // Get pending transactions and merge with GraphQL results
+      const pendingTransactions = await getPendingTransactions(activeAddress);
+      const graphqlTxIds = new Set(combinedTransactions.map((tx) => tx.node.id));
+      const newPendingTxs = pendingTransactions.filter((tx) => !graphqlTxIds.has(tx.node.id));
+      combinedTransactions = [...newPendingTxs, ...combinedTransactions].sort(sortFn);
+
+      // Remove pending transactions that are now available in GraphQL
+      if (graphqlTxIds.size > 0) {
+        await removePendingTransactions(Array.from(graphqlTxIds));
+      }
 
       const actualCount = combinedTransactions.length;
 
@@ -500,7 +499,7 @@ export const useTokenTransactions = (activeAddress: string, tokenId: string) => 
       const received = await processTransactions(rawReceived, isAr ? "received" : "aoReceived", !isAr);
       const liquidOpsReceived = await processTransactions(rawLiquidOpsReceived, "liquidOpsAoReceived", !isAr);
 
-      let combinedTransactions: ExtendedTransaction[] = [...received, ...sent, ...liquidOpsReceived].sort(sortFn);
+      let combinedTransactions: ExtendedTransaction[] = [...received, ...sent, ...liquidOpsReceived];
 
       const now = new Date();
       combinedTransactions = combinedTransactions.map((transaction) => {
@@ -515,6 +514,12 @@ export const useTokenTransactions = (activeAddress: string, tokenId: string) => 
           date: timestamp ? date.toISOString() : null,
         };
       });
+
+      // Get pending transactions and merge with GraphQL results
+      const pendingTransactions = await getPendingTokenTransactions(activeAddress, tokenId);
+      const graphqlTxIds = new Set(combinedTransactions.map((tx) => tx.node.id));
+      const newPendingTxs = pendingTransactions.filter((tx) => !graphqlTxIds.has(tx.node.id));
+      combinedTransactions = [...newPendingTxs, ...combinedTransactions].sort(sortFn);
 
       const actualCount = combinedTransactions.length;
 
