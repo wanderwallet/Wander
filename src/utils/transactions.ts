@@ -6,6 +6,7 @@ import type { ExtendedTransaction } from "~lib/transactions";
 import type { TokenInfo } from "~tokens/aoTokens/ao";
 import type { GQLNodeInterface } from "ar-gql/dist/faces";
 import { createStorageArray } from "~utils/storage/storage.array";
+import { AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 
 export interface PendingTransaction {
   id: string;
@@ -67,7 +68,9 @@ export async function getPendingTransactions(address: string): Promise<ExtendedT
 export async function getPendingTokenTransactions(address: string, tokenId: string): Promise<ExtendedTransaction[]> {
   try {
     const pending = await pendingTransactionsArray.filter(
-      (pt) => pt.address === address && pt.transaction.node.recipient === tokenId,
+      (pt) =>
+        pt.address === address &&
+        (tokenId === AR_PROCESS_ID ? +pt.transaction.node.quantity.ar > 0 : pt.transaction.node.recipient === tokenId),
     );
     return pending.map((pt) => pt.transaction);
   } catch (error) {

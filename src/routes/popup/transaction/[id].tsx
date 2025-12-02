@@ -149,7 +149,6 @@ export function TransactionView({ params: { id, gateway: gw, message } }: Transa
     navigate((backPath as WanderRoutePath) || "/");
   }
 
-  const [ticker, setTicker] = useState<string | null>(null);
   const [showTags, setShowTags] = useState<boolean>(false);
   const [tokenInfo, setTokenInfo] = useState<TokenInfo | null>(null);
 
@@ -168,13 +167,6 @@ export function TransactionView({ params: { id, gateway: gw, message } }: Transa
         if (cachedTx.tags.some((tag) => tag.name === "Data-Protocol" && tag.value === "ao")) {
           setAo({ isAo: true, tokenId: cachedTx.recipient });
           const tokenIdTag = cachedTx.tags.find((tag) => tag.name === "Token-Address" || tag.name === "Token");
-          const tickerTag = cachedTx.tags.find((tag) => tag.name === "Ticker");
-
-          if (tickerTag) {
-            setTicker(tickerTag.value);
-          } else {
-            setTicker(formatAddress(tokenIdTag.value, 4));
-          }
 
           try {
             const tokenInfo = await fetchTokenByProcessId(tokenIdTag.value);
@@ -183,6 +175,8 @@ export function TransactionView({ params: { id, gateway: gw, message } }: Transa
           } catch {
             setTokenInfo(null);
           }
+        } else {
+          setTokenInfo(AR_TOKEN_INFO);
         }
 
         return;
@@ -250,7 +244,6 @@ export function TransactionView({ params: { id, gateway: gw, message } }: Transa
                   decimals: Number(tokenInfo.Denomination),
                 });
 
-                setTicker(tokenInfo?.type === "collectible" ? tokenInfo.Name! : tokenInfo.Ticker!);
                 setTokenInfo(tokenInfo);
 
                 data.transaction.quantity = {
@@ -261,7 +254,6 @@ export function TransactionView({ params: { id, gateway: gw, message } }: Transa
               } else {
                 // TODO: Should this case ever happen?
 
-                setTicker(formatAddress(data.transaction.recipient, 4));
                 setTokenInfo(AR_TOKEN_INFO);
 
                 const amount = balanceToFractioned(aoQuantity, {
