@@ -3,13 +3,14 @@
  */
 
 import type { ExtendedTransaction } from "~lib/transactions";
-import type { TokenInfo } from "~tokens/aoTokens/ao";
+import { getTagValue, type TokenInfo } from "~tokens/aoTokens/ao";
 import type { GQLNodeInterface } from "ar-gql/dist/faces";
 import { createStorageArray } from "~utils/storage/storage.array";
 import { AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 import type Transaction from "arweave/web/lib/transaction";
 import type { Tag } from "arweave/web/lib/transaction";
 import { arweave } from "./agents/utils";
+import { log, LOG_GROUP } from "./log/log.utils";
 
 export interface PendingTransaction {
   id: string;
@@ -63,7 +64,7 @@ export async function getPendingTransactions(address: string): Promise<ExtendedT
     const pending = await pendingTransactionsArray.filter((pt) => pt.address === address);
     return pending.map((pt) => pt.transaction);
   } catch (error) {
-    console.error("Error getting pending transactions:", error);
+    log(LOG_GROUP.TRANSACTIONS, "Error getting pending transactions:", error);
     return [];
   }
 }
@@ -77,7 +78,7 @@ export async function getPendingTokenTransactions(address: string, tokenId: stri
     );
     return pending.map((pt) => pt.transaction);
   } catch (error) {
-    console.error("Error getting pending token transactions:", error);
+    log(LOG_GROUP.TRANSACTIONS, "Error getting pending token transactions:", error);
     return [];
   }
 }
@@ -90,7 +91,7 @@ export async function getPendingTransaction(id: string): Promise<GQLNodeInterfac
     const pending = await pendingTransactionsArray.find((pt) => pt.id === id);
     return pending?.transaction?.node as unknown as GQLNodeInterface;
   } catch (error) {
-    console.error("Error getting pending transaction by id:", error);
+    log(LOG_GROUP.TRANSACTIONS, "Error getting pending transaction by id:", error);
     return undefined;
   }
 }
@@ -103,7 +104,7 @@ export async function removePendingTransactions(transactionIds: string[]): Promi
     const idsSet = new Set(transactionIds);
     await pendingTransactionsArray.removeWhere((pt) => idsSet.has(pt.id));
   } catch (error) {
-    console.error("Error removing pending transactions:", error);
+    log(LOG_GROUP.TRANSACTIONS, "Error removing pending transactions:", error);
   }
 }
 
@@ -115,7 +116,7 @@ export async function cleanupOldPendingTransactions(): Promise<void> {
     const oneDayAgo = Date.now() - 24 * 60 * 60 * 1000;
     await pendingTransactionsArray.removeWhere((pt) => pt.createdAt <= oneDayAgo);
   } catch (error) {
-    console.error("Error cleaning up old pending transactions:", error);
+    log(LOG_GROUP.TRANSACTIONS, "Error cleaning up old pending transactions:", error);
   }
 }
 
@@ -141,10 +142,6 @@ export async function createArPendingTransaction(
         quantity: { ar: arweave.ar.winstonToAr(transaction.quantity) },
         fee: { ar: arweave.ar.winstonToAr(transaction.reward) },
         data: { size: transaction.data_size },
-        block: {
-          timestamp: Math.floor(now.getTime() / 1000),
-          height: 0,
-        },
         tags,
       },
       cursor: "",
@@ -157,7 +154,7 @@ export async function createArPendingTransaction(
 
     await savePendingTransaction(ownerAddress, tx);
   } catch (error) {
-    console.error("Error creating AR pending transaction:", error);
+    log(LOG_GROUP.TRANSACTIONS, "Error creating AR pending transaction:", error);
   }
 }
 
@@ -170,23 +167,27 @@ export async function createAoPendingTransaction(
   recipient: string,
   amount: string,
   tokenId: string,
-  tokenInfo: TokenInfo,
+  tokenInfo?: TokenInfo,
   message?: string,
   tags: Array<{ name: string; value: string }> = [],
   transactionType: "aoSent" | "aoReceived" = "aoSent",
 ): Promise<void> {
   try {
+    tokenInfo = tokenInfo || (JSON.parse(getTagValue("X-Token-In", tags) || "{}") as TokenInfo);
     const now = new Date();
-    const aoTags = [
-      { name: "Data-Protocol", value: "ao" },
-      { name: "Action", value: "Transfer" },
-      { name: "Token", value: tokenId },
-      { name: "Token-Address", value: tokenId },
-      { name: "Recipient", value: recipient },
-      { name: "Quantity", value: amount },
-      { name: "Ticker", value: tokenInfo.Ticker },
-      ...tags,
-    ];
+
+    const tagMap = new Map<string, string>([
+      ["Data-Protocol", "ao"],
+      ["Action", "Transfer"],
+      ["Token", tokenId],
+      ["Token-Address", tokenId],
+      ["Recipient", recipient],
+      ["Quantity", amount],
+      ...(tokenInfo.Ticker ? [["Ticker", tokenInfo.Ticker] as [string, string]] : []),
+      ...tags.map((tag) => [tag.name, tag.value] as [string, string]),
+    ]);
+
+    const aoTags = Array.from(tagMap, ([name, value]) => ({ name, value }));
 
     const tx: ExtendedTransaction = {
       node: {
@@ -195,10 +196,6 @@ export async function createAoPendingTransaction(
         owner: { address: ownerAddress },
         quantity: { ar: "0" },
         fee: { ar: "0" },
-        block: {
-          timestamp: Math.floor(now.getTime() / 1000),
-          height: 0,
-        },
         data: {
           size: message ? new TextEncoder().encode(message).length.toString() : "0",
         },
@@ -220,6 +217,6 @@ export async function createAoPendingTransaction(
 
     await savePendingTransaction(ownerAddress, tx);
   } catch (error) {
-    console.error("Error creating AO pending transaction:", error);
+    log(LOG_GROUP.TRANSACTIONS, "Error creating AO pending transaction:", error);
   }
 }

@@ -187,14 +187,13 @@ export async function executeSwap({
       ).catch(() => undefined);
     }
 
-    const tokenInfo = JSON.parse(getTagValue("X-Token-In", tags) || "{}") as TokenInfo;
     await createAoPendingTransaction(
       transferId,
       decryptedWallet.address,
       tokenIn,
       amountIn,
       tokenIn,
-      tokenInfo,
+      undefined,
       undefined,
       tags,
     );

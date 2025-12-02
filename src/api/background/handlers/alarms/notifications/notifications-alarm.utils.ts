@@ -21,7 +21,7 @@ export type RawTransaction = {
     data: {
       size: string;
     };
-    block: {
+    block?: {
       timestamp: number;
       height: number;
     };

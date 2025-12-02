@@ -260,14 +260,13 @@ export async function executeSwap({
 
     await assertTransferResult(transferId, tokenIn);
 
-    const tokenInfo = JSON.parse(getTagValue("X-Token-In", tags) || "{}") as TokenInfo;
     await createAoPendingTransaction(
       transferId,
       decryptedWallet.address,
       poolId,
       amountIn,
       tokenIn,
-      tokenInfo,
+      undefined,
       undefined,
       tags,
     );

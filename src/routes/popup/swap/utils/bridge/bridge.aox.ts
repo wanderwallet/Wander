@@ -168,14 +168,13 @@ export async function executeSwap({
 
       await assertTransferResult(transferId, tokenIn, ["Burn-Notice"], "Failed to unwrap WAR tokens");
 
-      const tokenInfo = JSON.parse(getTagValue("X-Token-In", tags) || "{}") as TokenInfo;
       await createAoPendingTransaction(
         transferId,
         decryptedWallet.address,
         tokenIn,
         amountIn,
         tokenIn,
-        tokenInfo,
+        undefined,
         undefined,
         tags,
       );
