@@ -142,21 +142,7 @@ export async function executeSwap({
       if (result.status !== 200) throw new Error("Failed to post transaction");
 
       // Save pending transaction to extension storage
-      // @ts-expect-error
-      const parsedTags = (transaction.get("tags") as any[]).map((tag) => ({
-        name: tag.get("name", { string: true, decode: true }),
-        value: tag.get("value", { string: true, decode: true }),
-      }));
-      await createArPendingTransaction(
-        transaction.id,
-        activeAddress,
-        transaction.target,
-        arweave.ar.winstonToAr(transaction.quantity),
-        arweave.ar.winstonToAr(transaction.reward),
-        transaction.data_size,
-        "sent",
-        parsedTags,
-      );
+      await createArPendingTransaction(transaction, activeAddress);
 
       transferId = transaction.id;
     } else {
@@ -190,8 +176,6 @@ export async function executeSwap({
         amountIn,
         tokenIn,
         tokenInfo,
-        "aoSent",
-        "0",
         undefined,
         tags,
       );

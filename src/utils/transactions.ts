@@ -7,6 +7,9 @@ import type { TokenInfo } from "~tokens/aoTokens/ao";
 import type { GQLNodeInterface } from "ar-gql/dist/faces";
 import { createStorageArray } from "~utils/storage/storage.array";
 import { AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
+import type Transaction from "arweave/web/lib/transaction";
+import type { Tag } from "arweave/web/lib/transaction";
+import { arweave } from "./agents/utils";
 
 export interface PendingTransaction {
   id: string;
@@ -120,39 +123,42 @@ export async function cleanupOldPendingTransactions(): Promise<void> {
  * Create an Transaction from AR transaction data
  */
 export async function createArPendingTransaction(
-  txId: string,
+  transaction: Transaction,
   ownerAddress: string,
-  recipient: string,
-  amount: string,
-  networkFee: string,
-  dataSize: string,
-  transactionType: "sent" | "received",
-  tags: Array<{ name: string; value: string }> = [],
+  transactionType: "sent" | "received" = "sent",
 ): Promise<void> {
-  const now = new Date();
-  const tx: ExtendedTransaction = {
-    node: {
-      id: txId,
-      recipient,
-      owner: { address: ownerAddress },
-      quantity: { ar: amount },
-      fee: { ar: networkFee },
-      data: { size: dataSize },
-      block: {
-        timestamp: Math.floor(now.getTime() / 1000),
-        height: 0,
+  try {
+    const now = new Date();
+    const tags = (transaction.get("tags") as unknown as Tag[]).map((tag) => ({
+      name: tag.get("name", { string: true, decode: true }),
+      value: tag.get("value", { string: true, decode: true }),
+    }));
+    const tx: ExtendedTransaction = {
+      node: {
+        id: transaction.id,
+        recipient: transaction.target,
+        owner: { address: ownerAddress },
+        quantity: { ar: arweave.ar.winstonToAr(transaction.quantity) },
+        fee: { ar: arweave.ar.winstonToAr(transaction.reward) },
+        data: { size: transaction.data_size },
+        block: {
+          timestamp: Math.floor(now.getTime() / 1000),
+          height: 0,
+        },
+        tags,
       },
-      tags,
-    },
-    cursor: "",
-    transactionType,
-    day: now.getDate(),
-    month: now.getMonth() + 1,
-    year: now.getFullYear(),
-    date: null, // Will be set when fetched from GraphQL
-  };
+      cursor: "",
+      transactionType,
+      day: now.getDate(),
+      month: now.getMonth() + 1,
+      year: now.getFullYear(),
+      date: null, // Will be set when fetched from GraphQL
+    };
 
-  await savePendingTransaction(ownerAddress, tx);
+    await savePendingTransaction(ownerAddress, tx);
+  } catch (error) {
+    console.error("Error creating AR pending transaction:", error);
+  }
 }
 
 /**
@@ -165,52 +171,55 @@ export async function createAoPendingTransaction(
   amount: string,
   tokenId: string,
   tokenInfo: TokenInfo,
-  transactionType: "aoSent" | "aoReceived",
-  networkFee: string,
   message?: string,
   tags: Array<{ name: string; value: string }> = [],
+  transactionType: "aoSent" | "aoReceived" = "aoSent",
 ): Promise<void> {
-  const now = new Date();
-  const aoTags = [
-    { name: "Data-Protocol", value: "ao" },
-    { name: "Action", value: "Transfer" },
-    { name: "Token", value: tokenId },
-    { name: "Token-Address", value: tokenId },
-    { name: "Recipient", value: recipient },
-    { name: "Quantity", value: amount },
-    { name: "Ticker", value: tokenInfo.Ticker },
-    ...tags,
-  ];
+  try {
+    const now = new Date();
+    const aoTags = [
+      { name: "Data-Protocol", value: "ao" },
+      { name: "Action", value: "Transfer" },
+      { name: "Token", value: tokenId },
+      { name: "Token-Address", value: tokenId },
+      { name: "Recipient", value: recipient },
+      { name: "Quantity", value: amount },
+      { name: "Ticker", value: tokenInfo.Ticker },
+      ...tags,
+    ];
 
-  const tx: ExtendedTransaction = {
-    node: {
-      id: txId,
-      recipient: tokenId, // For AO, recipient is the process ID
-      owner: { address: ownerAddress },
-      quantity: { ar: "0" }, // AO transactions don't have AR quantity
-      fee: { ar: networkFee },
-      block: {
-        timestamp: Math.floor(now.getTime() / 1000),
-        height: 0,
+    const tx: ExtendedTransaction = {
+      node: {
+        id: txId,
+        recipient: tokenId, // For AO, recipient is the process ID
+        owner: { address: ownerAddress },
+        quantity: { ar: "0" },
+        fee: { ar: "0" },
+        block: {
+          timestamp: Math.floor(now.getTime() / 1000),
+          height: 0,
+        },
+        data: {
+          size: message ? new TextEncoder().encode(message).length.toString() : "0",
+        },
+        tags: aoTags,
       },
-      data: {
-        size: message ? new TextEncoder().encode(message).length.toString() : "0",
+      cursor: "",
+      transactionType,
+      day: now.getDate(),
+      month: now.getMonth() + 1,
+      year: now.getFullYear(),
+      date: null, // Will be set when fetched from GraphQL
+      aoInfo: {
+        tickerName: tokenInfo.Ticker,
+        quantity: amount,
+        denomination: tokenInfo.Denomination,
+        logo: tokenInfo.Logo,
       },
-      tags: aoTags,
-    },
-    cursor: "",
-    transactionType,
-    day: now.getDate(),
-    month: now.getMonth() + 1,
-    year: now.getFullYear(),
-    date: null, // Will be set when fetched from GraphQL
-    aoInfo: {
-      tickerName: tokenInfo.Ticker,
-      quantity: amount,
-      denomination: tokenInfo.Denomination,
-      logo: tokenInfo.Logo,
-    },
-  };
+    };
 
-  await savePendingTransaction(ownerAddress, tx);
+    await savePendingTransaction(ownerAddress, tx);
+  } catch (error) {
+    console.error("Error creating AO pending transaction:", error);
+  }
 }

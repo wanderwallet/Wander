@@ -308,17 +308,7 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
           fractionedToBalance(amount, { decimals: token.Denomination }, "AO"),
         );
         if (res) {
-          await createAoPendingTransaction(
-            res,
-            activeAddress,
-            recipient.address,
-            amount,
-            tokenID,
-            token,
-            "aoSent",
-            networkFee,
-            message,
-          );
+          await createAoPendingTransaction(res, activeAddress, recipient.address, amount, tokenID, token, message);
 
           setToast({
             type: "success",
@@ -373,21 +363,7 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
           }
 
           // Save pending transaction to extension storage
-          // @ts-expect-error
-          const tags = (convertedTransaction.get("tags") as any[]).map((tag) => ({
-            name: tag.get("name", { string: true, decode: true }),
-            value: tag.get("value", { string: true, decode: true }),
-          }));
-          await createArPendingTransaction(
-            convertedTransaction.id,
-            activeAddress,
-            convertedTransaction.target,
-            arweave.ar.winstonToAr(convertedTransaction.quantity),
-            networkFee,
-            convertedTransaction.data_size,
-            "sent",
-            tags,
-          );
+          await createArPendingTransaction(convertedTransaction, activeAddress);
 
           setIsLoading(false);
           setToast({
@@ -442,21 +418,7 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
           }
 
           // Save pending transaction to extension storage
-          // @ts-expect-error
-          const tags = (convertedTransaction.get("tags") as any[]).map((tag) => ({
-            name: tag.get("name", { string: true, decode: true }),
-            value: tag.get("value", { string: true, decode: true }),
-          }));
-          await createArPendingTransaction(
-            convertedTransaction.id,
-            activeAddress,
-            convertedTransaction.target,
-            arweave.ar.winstonToAr(convertedTransaction.quantity),
-            networkFee,
-            convertedTransaction.data_size,
-            "sent",
-            tags,
-          );
+          await createArPendingTransaction(convertedTransaction, activeAddress);
 
           setIsLoading(false);
           setToast({
@@ -550,17 +512,7 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
         );
 
         if (res) {
-          await createAoPendingTransaction(
-            res,
-            activeAddress,
-            recipient.address,
-            amount,
-            tokenID,
-            token,
-            "aoSent",
-            networkFee,
-            message,
-          );
+          await createAoPendingTransaction(res, activeAddress, recipient.address, amount, tokenID, token, message);
 
           queryClient.invalidateQueries({
             queryKey: ["tokenBalance", tokenID, activeAddress],
@@ -659,21 +611,7 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
         await submitTx(transaction, arweave, type);
 
         // Save pending transaction to extension storage
-        // @ts-expect-error
-        const tags = (transaction.get("tags") as any[]).map((tag) => ({
-          name: tag.get("name", { string: true, decode: true }),
-          value: tag.get("value", { string: true, decode: true }),
-        }));
-        await createArPendingTransaction(
-          transaction.id,
-          activeAddress,
-          transaction.target,
-          arweave.ar.winstonToAr(transaction.quantity),
-          networkFee,
-          transaction.data_size,
-          "sent",
-          tags,
-        );
+        await createArPendingTransaction(transaction, activeAddress);
 
         setToast({
           type: "success",

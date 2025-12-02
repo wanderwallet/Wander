@@ -147,8 +147,6 @@ export async function executeSwap({
       amountIn,
       tokenIn,
       tokenInfo,
-      "aoSent",
-      "0",
       undefined,
       tags,
     );
