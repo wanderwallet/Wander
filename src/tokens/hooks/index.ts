@@ -24,6 +24,7 @@ import {
   USDA_PROCESS_ID,
   EXP_PROCESS_ID,
 } from "~tokens/aoTokens/ao.constants";
+import { timeoutPromise } from "~utils/promises/timeout";
 
 export const defaultOptions = {
   refetchInterval: 300_000,
@@ -88,8 +89,8 @@ export function useTokenBalance(token: TokenInfo | null, address: string, refres
     queryFn: async () => {
       try {
         const balance = await retryWithDelay(
-          () => fetchTokenBalance(token, address, refresh),
-          4,
+          () => timeoutPromise(fetchTokenBalance(token, address, refresh), 10000),
+          3,
           1000,
           (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 30000),
         );
