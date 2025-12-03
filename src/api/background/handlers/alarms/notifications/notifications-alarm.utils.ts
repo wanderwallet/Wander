@@ -15,10 +15,10 @@ export type RawTransaction = {
     quantity: {
       ar: string;
     };
-    fee: {
+    fee?: {
       ar: string;
     };
-    data: {
+    data?: {
       size: string;
     };
     block?: {

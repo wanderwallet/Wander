@@ -34,9 +34,7 @@ import { useTokenPrice } from "~tokens/hooks";
 import { fetchTokenByProcessId, getTagValue, type TokenInfo } from "~tokens/aoTokens/ao";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { AO_AUTHORITY_ID, AR_TOKEN_INFO, AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
-import { getPendingTransaction, getPendingTransactions } from "~utils/transactions";
-
-// pull contacts and check if to address is in contacts
+import { getPendingTransaction } from "~utils/transactions";
 
 // need to manually set/replace tokenAddress here for ao interactions
 interface ao {
@@ -498,12 +496,12 @@ export function TransactionView({ params: { id, gateway: gw, message } }: Transa
                 </TransactionProperty>
                 <TransactionProperty>
                   <PropertyName>{browser.i18n.getMessage("transaction_fee")}</PropertyName>
-                  <PropertyValue>{transaction.fee.ar} AR</PropertyValue>
+                  <PropertyValue>{transaction.fee?.ar || "0"} AR</PropertyValue>
                 </TransactionProperty>
                 {!message && (
                   <TransactionProperty>
                     <PropertyName>{browser.i18n.getMessage("transaction_size")}</PropertyName>
-                    <PropertyValue>{prettyBytes(Number(transaction.data.size))}</PropertyValue>
+                    <PropertyValue>{prettyBytes(Number(transaction.data?.size || 0))}</PropertyValue>
                   </TransactionProperty>
                 )}
                 {transaction.block && (

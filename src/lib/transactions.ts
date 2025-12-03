@@ -188,7 +188,7 @@ export const getFormattedAmount = (transaction: ExtendedTransaction) => {
       }
       return "";
     case "printArchive":
-      return `${parseFloat((transaction.node as any).fee?.ar || "0").toFixed(3)} AR`;
+      return `${parseFloat(transaction.node.fee?.ar || "0").toFixed(3)} AR`;
     case "announcement":
       return ""; // Announcements don't have amounts
     default:
@@ -205,8 +205,8 @@ export const getFormattedFiatAmount = (transaction: ExtendedTransaction, arPrice
     ) {
       const fiatBalance = BigNumber(transaction.node.quantity.ar).multipliedBy(arPrice);
       return formatFiatBalance(fiatBalance, currency);
-    } else if ((transaction.node as any).fee && transaction.transactionType === "printArchive") {
-      const fiatBalance = BigNumber((transaction.node as any).fee.ar).multipliedBy(arPrice);
+    } else if (transaction.node.fee && transaction.transactionType === "printArchive") {
+      const fiatBalance = BigNumber(transaction.node.fee?.ar || "0").multipliedBy(arPrice);
       return formatFiatBalance(fiatBalance, currency);
     }
   } catch {}
