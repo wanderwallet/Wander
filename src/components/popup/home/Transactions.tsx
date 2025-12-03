@@ -24,7 +24,12 @@ import {
   processTransactions,
   type ExtendedTransaction,
 } from "~lib/transactions";
-import { getPendingTransactions, cleanupOldPendingTransactions, mergeWithPending } from "~utils/transactions";
+import {
+  getPendingTransactions,
+  cleanupOldPendingTransactions,
+  mergeWithPending,
+  removeTransferErrorTransactions,
+} from "~utils/transactions";
 import BigNumber from "bignumber.js";
 import { retryWithDelay } from "~utils/promises/retry";
 import { useLocation } from "~wallets/router/router.utils";
@@ -131,9 +136,11 @@ export default function Transactions() {
           }
 
           // Process successful GraphQL results
+          let pendingTransactions = await getPendingTransactions(activeAddress);
           const aoTransactions = [
             ...(rawAoSent.status === "fulfilled" ? rawAoSent.value?.data?.transactions?.edges || [] : []),
             ...(rawAoReceived.status === "fulfilled" ? rawAoReceived.value?.data?.transactions?.edges || [] : []),
+            ...(pendingTransactions as any[]),
           ];
           await checkTransferStatus(aoTransactions);
 
@@ -183,7 +190,7 @@ export default function Transactions() {
           });
 
           // Get pending transactions and merge with GraphQL results
-          const pendingTransactions = await getPendingTransactions(activeAddress);
+          pendingTransactions = await removeTransferErrorTransactions(pendingTransactions);
           combinedTransactions = await mergeWithPending(combinedTransactions, pendingTransactions, true);
 
           setTransactions(combinedTransactions);

@@ -2,7 +2,7 @@
  * Utility functions for AO/AR transactions
  */
 
-import { sortFn, type ExtendedTransaction } from "~lib/transactions";
+import { hasTransferError, sortFn, type ExtendedTransaction } from "~lib/transactions";
 import { getTagValue, type TokenInfo } from "~tokens/aoTokens/ao";
 import type { GQLNodeInterface } from "ar-gql/dist/faces";
 import { createStorageArray } from "~utils/storage/storage.array";
@@ -11,7 +11,6 @@ import type Transaction from "arweave/web/lib/transaction";
 import type { Tag } from "arweave/web/lib/transaction";
 import { arweave } from "./agents/utils";
 import { log, LOG_GROUP } from "./log/log.utils";
-import { balanceToFractioned } from "~tokens/currency";
 
 export interface PendingTransaction {
   id: string;
@@ -62,8 +61,18 @@ export async function savePendingTransaction(address: string, transaction: Exten
  */
 export async function getPendingTransactions(address: string): Promise<ExtendedTransaction[]> {
   try {
-    const pending = await pendingTransactionsArray.filter((pt) => pt.address === address);
-    return pending.map((pt) => pt.transaction);
+    const validPending: PendingTransaction[] = [];
+    const transactions = await pendingTransactionsArray.getAll();
+    for (const pt of transactions) {
+      if (pt.address === address) {
+        validPending.push(pt);
+      } else if (pt.transaction.node.recipient === address || pt.transaction.aoInfo?.recipient === address) {
+        pt.transaction.transactionType = pt.transaction.aoInfo ? "aoReceived" : "received";
+        validPending.push(pt);
+      }
+    }
+
+    return validPending.map((pt) => pt.transaction);
   } catch (error) {
     log(LOG_GROUP.TRANSACTIONS, "Error getting pending transactions:", error);
     return [];
@@ -72,12 +81,22 @@ export async function getPendingTransactions(address: string): Promise<ExtendedT
 
 export async function getPendingTokenTransactions(address: string, tokenId: string): Promise<ExtendedTransaction[]> {
   try {
-    const pending = await pendingTransactionsArray.filter(
-      (pt) =>
-        pt.address === address &&
-        (tokenId === AR_PROCESS_ID ? +pt.transaction.node.quantity.ar > 0 : pt.transaction.node.recipient === tokenId),
-    );
-    return pending.map((pt) => pt.transaction);
+    const validPending: PendingTransaction[] = [];
+    const transactions = await pendingTransactionsArray.getAll();
+    for (const pt of transactions) {
+      const isTokenTransaction =
+        tokenId === AR_PROCESS_ID ? +pt.transaction.node.quantity.ar > 0 : pt.transaction.node.recipient === tokenId;
+      if (isTokenTransaction) {
+        if (pt.address === address) {
+          validPending.push(pt);
+        } else if (pt.transaction.node.recipient === address || pt.transaction.aoInfo?.recipient === address) {
+          pt.transaction.transactionType = pt.transaction.aoInfo ? "aoReceived" : "received";
+          validPending.push(pt);
+        }
+      }
+    }
+
+    return validPending.map((pt) => pt.transaction);
   } catch (error) {
     log(LOG_GROUP.TRANSACTIONS, "Error getting pending token transactions:", error);
     return [];
@@ -191,16 +210,12 @@ export async function createAoPendingTransaction(
 
     const aoTags = Array.from(tagMap, ([name, value]) => ({ name, value }));
 
-    const amount = balanceToFractioned(quantity, {
-      decimals: Number(tokenInfo.Denomination),
-    }).toFixed();
-
     const tx: ExtendedTransaction = {
       node: {
         id: txId,
-        recipient,
+        recipient: tokenId,
         owner: { address: ownerAddress },
-        quantity: { ar: amount },
+        quantity: { ar: "0" },
         fee: { ar: "0" },
         data: {
           size: message ? new TextEncoder().encode(message).length.toString() : "0",
@@ -216,6 +231,7 @@ export async function createAoPendingTransaction(
       aoInfo: {
         tickerName: tokenInfo.Ticker,
         quantity,
+        recipient,
         denomination: tokenInfo.Denomination,
         logo: tokenInfo.Logo,
       },
@@ -241,4 +257,25 @@ export async function mergeWithPending(
   }
 
   return [...newPendingTxs, ...baseTransactions].sort(sortFn);
+}
+
+export async function removeTransferErrorTransactions(
+  transactions: ExtendedTransaction[],
+): Promise<ExtendedTransaction[]> {
+  const transferErrorIds = new Set<string>();
+  const validTxs: ExtendedTransaction[] = [];
+
+  for (const tx of transactions) {
+    if (hasTransferError(tx.node.id)) {
+      transferErrorIds.add(tx.node.id);
+    } else {
+      validTxs.push(tx);
+    }
+  }
+
+  if (transferErrorIds.size > 0) {
+    await removePendingTransactions(Array.from(transferErrorIds));
+  }
+
+  return validTxs;
 }

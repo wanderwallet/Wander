@@ -157,33 +157,17 @@ export function TransactionView({ params: { id, gateway: gw, message } }: Transa
     let fetchCount = 0;
 
     const fetchTx = async () => {
+      let data: { transaction: GQLNodeInterface } | undefined;
       const cachedTx = await getPendingTransaction(id);
       if (cachedTx) {
-        setTransaction(cachedTx);
-
-        // AO transaction
-        if (cachedTx.tags.some((tag) => tag.name === "Data-Protocol" && tag.value === "ao")) {
-          setAo({ isAo: true, tokenId: cachedTx.recipient });
-          const tokenIdTag = cachedTx.tags.find((tag) => tag.name === "Token-Address" || tag.name === "Token");
-
-          try {
-            const tokenInfo = await fetchTokenByProcessId(tokenIdTag.value);
-
-            setTokenInfo(tokenInfo);
-          } catch {
-            setTokenInfo(null);
-          }
-        } else {
-          setTokenInfo(AR_TOKEN_INFO);
-        }
-
-        return;
+        data = { transaction: cachedTx };
       }
 
-      const gateway = graphqlGateways[fetchCount % graphqlGateways.length];
+      if (!data) {
+        const gateway = graphqlGateways[fetchCount % graphqlGateways.length];
 
-      const { data } = await gql(
-        `
+        ({ data } = await gql(
+          `
           query($id: ID!) {
             transaction(id: $id) {
               owner {
@@ -211,11 +195,12 @@ export function TransactionView({ params: { id, gateway: gw, message } }: Transa
             }
           }
         `,
-        { id },
-        gateway,
-      );
+          { id },
+          gateway,
+        ));
+      }
 
-      if (!data.transaction) {
+      if (!data?.transaction) {
         fetchCount++;
         timeoutID = window.setTimeout(fetchTx, 5000);
       } else {

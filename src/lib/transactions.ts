@@ -28,6 +28,7 @@ export type ExtendedTransaction = RawTransaction & {
     denomination?: number;
     quantity: string;
     logo?: string;
+    recipient?: string;
   };
   announcementData?: Announcement;
 };
@@ -276,4 +277,8 @@ export const groupTransactionsByMonth = (transactions: ExtendedTransaction[]): G
       return b.month - a.month;
     })
     .map(({ title, data }) => ({ title, data }));
+};
+
+export const hasTransferError = (txId: string): boolean => {
+  return transactionErrorMap.get(txId) ?? false;
 };

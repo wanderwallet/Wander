@@ -37,7 +37,12 @@ import BigNumber from "bignumber.js";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { convertAnnouncementsToTransactions } from "~utils/announcements";
 import { AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
-import { getPendingTokenTransactions, getPendingTransactions, mergeWithPending } from "~utils/transactions";
+import {
+  getPendingTokenTransactions,
+  getPendingTransactions,
+  mergeWithPending,
+  removeTransferErrorTransactions,
+} from "~utils/transactions";
 
 /**
  * Wallets with details hook
@@ -305,9 +310,11 @@ export const useTransactions = (activeAddress: string, limit?: number) => {
           }),
         );
 
+      let pendingTransactions = await getPendingTransactions(activeAddress);
       const aoTransactions = [
         ...(rawAoSent.status === "fulfilled" ? rawAoSent.value?.data?.transactions?.edges || [] : []),
         ...(rawAoReceived.status === "fulfilled" ? rawAoReceived.value?.data?.transactions?.edges || [] : []),
+        ...(pendingTransactions as any[]),
       ];
       await checkTransferStatus(aoTransactions);
 
@@ -363,7 +370,7 @@ export const useTransactions = (activeAddress: string, limit?: number) => {
       });
 
       // Get pending transactions and merge with GraphQL results
-      const pendingTransactions = await getPendingTransactions(activeAddress);
+      pendingTransactions = await removeTransferErrorTransactions(pendingTransactions);
       combinedTransactions = await mergeWithPending(combinedTransactions, pendingTransactions, true);
 
       const actualCount = combinedTransactions.length;
@@ -479,12 +486,14 @@ export const useTokenTransactions = (activeAddress: string, tokenId: string) => 
 
       const [rawSent, rawReceived, rawLiquidOpsReceived] = await Promise.allSettled(fetchPromises);
 
+      let pendingTransactions = await getPendingTokenTransactions(activeAddress, tokenId);
       const allTransactions = [
         ...(rawSent.status === "fulfilled" ? rawSent.value?.data?.transactions?.edges || [] : []),
         ...(rawReceived.status === "fulfilled" ? rawReceived.value?.data?.transactions?.edges || [] : []),
         ...(rawLiquidOpsReceived.status === "fulfilled"
           ? rawLiquidOpsReceived.value?.data?.transactions?.edges || []
           : []),
+        ...(pendingTransactions as any[]),
       ];
       await checkTransferStatus(allTransactions);
 
@@ -509,7 +518,7 @@ export const useTokenTransactions = (activeAddress: string, tokenId: string) => 
       });
 
       // Get pending transactions and merge with GraphQL results
-      const pendingTransactions = await getPendingTokenTransactions(activeAddress, tokenId);
+      pendingTransactions = await removeTransferErrorTransactions(pendingTransactions);
       combinedTransactions = await mergeWithPending(combinedTransactions, pendingTransactions);
 
       const actualCount = combinedTransactions.length;

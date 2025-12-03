@@ -263,7 +263,7 @@ export async function executeSwap({
     await createAoPendingTransaction(
       transferId,
       decryptedWallet.address,
-      poolId,
+      noteSettle,
       amountIn,
       tokenIn,
       undefined,
