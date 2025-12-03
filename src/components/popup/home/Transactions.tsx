@@ -100,7 +100,7 @@ export default function Transactions() {
                 retryWithDelay(async (attempt) => {
                   const data = await gql(
                     query,
-                    { address: activeAddress },
+                    { address: activeAddress, sort: "INGESTED_AT_DESC" },
                     index !== 5
                       ? txHistoryGateways[attempt % txHistoryGateways.length]
                       : printTxWorkingGateways[attempt % printTxWorkingGateways.length],

@@ -45,14 +45,15 @@ export const AR_SENT_QUERY = `query ($address: String!) {
 // JUST AR AND AO TRANSFER NOTIFSA
 
 export const AO_RECEIVER_QUERY = `
-query($address: String!) {
+query($address: String!, $sort: SortOrder = HEIGHT_DESC) {
   transactions(
     first: 10,
     tags: [
       {name: "Data-Protocol", values: ["ao"]},
       {name: "Action", values: ["Transfer"]},
       {name: "Recipient", values: [$address]}
-    ]
+    ],
+    sort: $sort,
   ) {
     edges {
       cursor
@@ -72,14 +73,15 @@ query($address: String!) {
 `;
 
 export const TRANSFER_ERROR_QUERY = `
-query($messageIds: [String!]!) {
+query($messageIds: [String!]!, $sort: SortOrder = HEIGHT_DESC) {
   transactions(
     first: 100,
     tags: [
       {name: "Data-Protocol", values: ["ao"]},
       {name: "Action", values: ["Transfer-Error"]},
       {name: "Pushed-For", values: $messageIds},
-    ]
+    ],
+    sort: $sort,
   ) {
     edges {
       node {
@@ -95,10 +97,11 @@ query($messageIds: [String!]!) {
 `;
 
 export const AO_SENT_QUERY = `
-query($address: String!) {
+query($address: String!, $sort: SortOrder = HEIGHT_DESC) {
   transactions(
     first: 10,
     owners: [$address],
+    sort: $sort,
     tags: [
       {name: "Data-Protocol", values: ["ao"]},
       {name: "Action", values: ["Transfer"]}
@@ -159,14 +162,15 @@ export const ALL_AR_SENT_QUERY = `query ($address: String!) {
 }`;
 
 export const AO_LIQUIDOPS_RECEIVER_QUERY = `
-query($address: String!) {
+query($address: String!, $sort: SortOrder = HEIGHT_DESC) {
   transactions(
     first: 10,
     recipients: [$address],
     tags: [
       {name: "Data-Protocol", values: ["ao"]},
       {name: "Action", values: ["Mint-Confirmation"]},
-    ]
+    ],
+    sort: $sort,
   ) {
     edges {
       cursor
@@ -234,7 +238,7 @@ query ($address: String!, $after: String) {
 `;
 
 export const AO_RECEIVER_QUERY_WITH_CURSOR = `
-query($address: String!, $after: String) {
+query($address: String!, $after: String, $sort: SortOrder = HEIGHT_DESC) {
   transactions(
     first: 10,
     tags: [
@@ -242,7 +246,8 @@ query($address: String!, $after: String) {
       {name: "Action", values: ["Transfer"]},
       {name: "Recipient", values: [$address]}
     ],
-    after: $after
+    after: $after,
+    sort: $sort,
   ) {
     pageInfo {
       hasNextPage
@@ -265,7 +270,7 @@ query($address: String!, $after: String) {
 `;
 
 export const AO_SENT_QUERY_WITH_CURSOR = `
-query($address: String!, $after: String) {
+query($address: String!, $after: String, $sort: SortOrder = HEIGHT_DESC) {
   transactions(
     first: 10,
     owners: [$address],
@@ -273,7 +278,8 @@ query($address: String!, $after: String) {
       {name: "Data-Protocol", values: ["ao"]},
       {name: "Action", values: ["Transfer"]}
     ],
-    after: $after
+    after: $after,
+    sort: $sort,
   ) {
     pageInfo {
       hasNextPage
@@ -296,7 +302,7 @@ query($address: String!, $after: String) {
 `;
 
 export const AO_RECEIVER_QUERY_FOR_TOKEN_WITH_CURSOR = `
-query($address: String!, $tokenId: String!, $after: String) {
+query($address: String!, $tokenId: String!, $after: String, $sort: SortOrder = HEIGHT_DESC) {
   transactions(
     first: 10,
     recipients: [$tokenId],
@@ -305,7 +311,8 @@ query($address: String!, $tokenId: String!, $after: String) {
       {name: "Action", values: ["Transfer"]},
       {name: "Recipient", values: [$address]}
     ],
-    after: $after
+    after: $after,
+    sort: $sort,
   ) {
     pageInfo {
       hasNextPage
@@ -328,7 +335,7 @@ query($address: String!, $tokenId: String!, $after: String) {
 `;
 
 export const AO_SENT_QUERY_FOR_TOKEN_WITH_CURSOR = `
-query($address: String!, $tokenId: String!, $after: String) {
+query($address: String!, $tokenId: String!, $after: String, $sort: SortOrder = HEIGHT_DESC) {
   transactions(
     first: 10,
     owners: [$address],
@@ -337,7 +344,8 @@ query($address: String!, $tokenId: String!, $after: String) {
       {name: "Data-Protocol", values: ["ao"]},
       {name: "Action", values: ["Transfer"]}
     ],
-    after: $after
+    after: $after,
+    sort: $sort,
   ) {
     pageInfo {
       hasNextPage
@@ -360,7 +368,7 @@ query($address: String!, $tokenId: String!, $after: String) {
 `;
 
 export const AO_LIQUIDOPS_RECEIVER_QUERY_WITH_CURSOR = `
-query($address: String!, $after: String) {
+query($address: String!, $after: String, $sort: SortOrder = HEIGHT_DESC) {
   transactions(
     first: 10,
     recipients: [$address],
@@ -368,7 +376,8 @@ query($address: String!, $after: String) {
       {name: "Data-Protocol", values: ["ao"]},
       {name: "Action", values: ["Mint-Confirmation"]},
     ],
-    after: $after
+    after: $after,
+    sort: $sort,
   ) {
     pageInfo {
       hasNextPage
@@ -391,7 +400,7 @@ query($address: String!, $after: String) {
 `;
 
 export const AO_LIQUIDOPS_RECEIVER_QUERY_FOR_TOKEN_WITH_CURSOR = `
-query($address: String!, $tokenId: String!, $after: String) {
+query($address: String!, $tokenId: String!, $after: String, $sort: SortOrder = HEIGHT_DESC) {
   transactions(
     first: 10,
     recipients: [$address],
@@ -400,7 +409,8 @@ query($address: String!, $tokenId: String!, $after: String) {
       {name: "Action", values: ["Mint-Confirmation"]},
       {name: "From-Process", values: [$tokenId]},
     ],
-    after: $after
+    after: $after,
+    sort: $sort,
   ) {
     pageInfo {
       hasNextPage

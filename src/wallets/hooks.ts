@@ -291,7 +291,7 @@ export const useTransactions = (activeAddress: string, limit?: number) => {
               ? retryWithDelay(async (attempt) => {
                   const data = await gql(
                     query,
-                    { address: activeAddress, after: cursors[idx] },
+                    { address: activeAddress, after: cursors[idx], sort: "INGESTED_AT_DESC" },
                     idx !== 5
                       ? txHistoryGateways[attempt % txHistoryGateways.length]
                       : printTxWorkingGateways[attempt % printTxWorkingGateways.length],
@@ -434,7 +434,7 @@ const createFetchPromise = (query: string, cursor: string, skip: boolean, variab
     : retryWithDelay(async (attempt) => {
         const data = await gql(
           query,
-          { ...variables, after: cursor },
+          { ...variables, after: cursor, sort: "INGESTED_AT_DESC" },
           txHistoryGateways[attempt % txHistoryGateways.length],
         );
         if (data?.data === null && (data as any)?.errors?.length > 0) {

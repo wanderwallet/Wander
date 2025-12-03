@@ -301,14 +301,10 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
     // 2/21/24: Checking first if it's an ao transfer and will handle in this block
     if (isAo) {
       try {
-        const res = await sendAoTransfer(
-          ao,
-          tokenID,
-          recipient.address,
-          fractionedToBalance(amount, { decimals: token.Denomination }, "AO"),
-        );
+        const quantity = fractionedToBalance(amount, { decimals: token.Denomination }, "AO");
+        const res = await sendAoTransfer(ao, tokenID, recipient.address, quantity);
         if (res) {
-          await createAoPendingTransaction(res, activeAddress, recipient.address, amount, tokenID, token, message);
+          await createAoPendingTransaction(res, activeAddress, recipient.address, quantity, tokenID, token, message);
 
           setToast({
             type: "success",
@@ -503,16 +499,11 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
       try {
         setPreparedTx(prepared);
 
-        const res = await sendAoTransferKeystone(
-          ao,
-          tokenID,
-          recipient.address,
-          fractionedToBalance(amount, { decimals: token.Denomination }, "AO"),
-          keystoneSigner,
-        );
+        const quantity = fractionedToBalance(amount, { decimals: token.Denomination }, "AO");
+        const res = await sendAoTransferKeystone(ao, tokenID, recipient.address, quantity, keystoneSigner);
 
         if (res) {
-          await createAoPendingTransaction(res, activeAddress, recipient.address, amount, tokenID, token, message);
+          await createAoPendingTransaction(res, activeAddress, recipient.address, quantity, tokenID, token, message);
 
           queryClient.invalidateQueries({
             queryKey: ["tokenBalance", tokenID, activeAddress],

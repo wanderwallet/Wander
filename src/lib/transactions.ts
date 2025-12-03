@@ -76,7 +76,7 @@ export async function checkTransferStatus(transactions: GQLEdgeInterface[]): Pro
       const batchPromise = retryWithDelay(async (attempt) => {
         const data = await gql(
           TRANSFER_ERROR_QUERY,
-          { messageIds: batch },
+          { messageIds: batch, sort: "INGESTED_AT_DESC" },
           txHistoryGateways[attempt % txHistoryGateways.length],
         );
 

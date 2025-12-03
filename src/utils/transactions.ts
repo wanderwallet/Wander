@@ -11,6 +11,7 @@ import type Transaction from "arweave/web/lib/transaction";
 import type { Tag } from "arweave/web/lib/transaction";
 import { arweave } from "./agents/utils";
 import { log, LOG_GROUP } from "./log/log.utils";
+import { balanceToFractioned } from "~tokens/currency";
 
 export interface PendingTransaction {
   id: string;
@@ -101,8 +102,9 @@ export async function getPendingTransaction(id: string): Promise<GQLNodeInterfac
  */
 export async function removePendingTransactions(transactionIds: string[]): Promise<void> {
   try {
+    const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
     const idsSet = new Set(transactionIds);
-    await pendingTransactionsArray.removeWhere((pt) => idsSet.has(pt.id));
+    await pendingTransactionsArray.removeWhere((pt) => idsSet.has(pt.id) && pt.createdAt <= fiveMinutesAgo);
   } catch (error) {
     log(LOG_GROUP.TRANSACTIONS, "Error removing pending transactions:", error);
   }
@@ -165,7 +167,7 @@ export async function createAoPendingTransaction(
   txId: string,
   ownerAddress: string,
   recipient: string,
-  amount: string,
+  quantity: string,
   tokenId: string,
   tokenInfo?: TokenInfo,
   message?: string,
@@ -182,19 +184,23 @@ export async function createAoPendingTransaction(
       ["Token", tokenId],
       ["Token-Address", tokenId],
       ["Recipient", recipient],
-      ["Quantity", amount],
+      ["Quantity", quantity],
       ...(tokenInfo.Ticker ? [["Ticker", tokenInfo.Ticker] as [string, string]] : []),
       ...tags.map((tag) => [tag.name, tag.value] as [string, string]),
     ]);
 
     const aoTags = Array.from(tagMap, ([name, value]) => ({ name, value }));
 
+    const amount = balanceToFractioned(quantity, {
+      decimals: Number(tokenInfo.Denomination),
+    }).toFixed();
+
     const tx: ExtendedTransaction = {
       node: {
         id: txId,
-        recipient: tokenId, // For AO, recipient is the process ID
+        recipient,
         owner: { address: ownerAddress },
-        quantity: { ar: "0" },
+        quantity: { ar: amount },
         fee: { ar: "0" },
         data: {
           size: message ? new TextEncoder().encode(message).length.toString() : "0",
@@ -209,7 +215,7 @@ export async function createAoPendingTransaction(
       date: null, // Will be set when fetched from GraphQL
       aoInfo: {
         tickerName: tokenInfo.Ticker,
-        quantity: amount,
+        quantity,
         denomination: tokenInfo.Denomination,
         logo: tokenInfo.Logo,
       },
@@ -227,7 +233,7 @@ export async function mergeWithPending(
   cleanUp: boolean = false,
 ): Promise<ExtendedTransaction[]> {
   const graphqlTxIds = new Set(baseTransactions.map((tx) => tx.node.id));
-  const newPendingTxs = pendingTransactions.filter((tx) => !graphqlTxIds.has(tx.node.id));
+  const newPendingTxs = pendingTransactions.filter((tx) => !graphqlTxIds.has(tx.node.id)).reverse();
 
   // Remove pending transactions that are now available in GraphQL
   if (cleanUp && graphqlTxIds.size > 0) {
