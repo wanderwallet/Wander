@@ -155,15 +155,17 @@ export async function executeSwap({
     } else {
       const signer = keystoneSigner ? createDataItemKeystoneSigner(keystoneSigner) : createDataItemSigner(keyfile);
 
+      const finalTags = [
+        { name: "Action", value: "Burn" },
+        { name: "Forward-Wallet", value: activeAddress },
+        { name: "Quantity", value: amountIn },
+        ...tags,
+      ];
+
       const { keystoneTx: keystoneTx_, sendMessage } = await createSwapMessage({
         process: tokenIn,
         signer,
-        tags: [
-          { name: "Action", value: "Burn" },
-          { name: "Forward-Wallet", value: activeAddress },
-          { name: "Quantity", value: amountIn },
-          ...tags,
-        ],
+        tags: finalTags,
         wanderFee,
         poolType: "vento",
         keystoneSigner,
@@ -185,18 +187,18 @@ export async function executeSwap({
         1000,
         (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 30000),
       ).catch(() => undefined);
-    }
 
-    await createAoPendingTransaction(
-      transferId,
-      decryptedWallet.address,
-      tokenIn,
-      amountIn,
-      tokenIn,
-      undefined,
-      undefined,
-      tags,
-    );
+      await createAoPendingTransaction(
+        transferId,
+        decryptedWallet.address,
+        tokenIn,
+        amountIn,
+        tokenIn,
+        undefined,
+        undefined,
+        finalTags,
+      );
+    }
 
     // Invalidate transfered token balance
     queryClient.invalidateQueries({ queryKey: ["tokenBalance", tokenIn, activeAddress] });

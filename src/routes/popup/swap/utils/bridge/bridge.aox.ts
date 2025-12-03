@@ -148,16 +148,18 @@ export async function executeSwap({
     } else {
       const signer = keystoneSigner ? createDataItemKeystoneSigner(keystoneSigner) : createDataItemSigner(keyfile);
 
+      const finalTags = [
+        { name: "Action", value: "Burn" },
+        { name: "Recipient", value: activeAddress },
+        { name: "Quantity", value: amountIn },
+        { name: "Timestamp", value: Date.now().toString() },
+        ...tags,
+      ];
+
       const { keystoneTx: keystoneTx_, sendMessage } = await createSwapMessage({
         process: tokenIn,
         signer,
-        tags: [
-          { name: "Action", value: "Burn" },
-          { name: "Recipient", value: activeAddress },
-          { name: "Quantity", value: amountIn },
-          { name: "Timestamp", value: Date.now().toString() },
-          ...tags,
-        ],
+        tags: finalTags,
         wanderFee,
         poolType: "aox",
         keystoneSigner,
@@ -176,7 +178,7 @@ export async function executeSwap({
         tokenIn,
         undefined,
         undefined,
-        tags,
+        finalTags,
       );
     }
 
