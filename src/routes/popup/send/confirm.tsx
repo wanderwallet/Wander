@@ -39,7 +39,7 @@ import BigNumber from "bignumber.js";
 import { SignType } from "@keystonehq/bc-ur-registry-arweave";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import { AdaptiveBalanceDisplay } from "~components/AdaptiveBalanceDisplay";
-import { useQueryClient } from "@tanstack/react-query";
+import { QueryClient, useQueryClient } from "@tanstack/react-query";
 import {
   TransactionDirection,
   FiatAmount,
@@ -63,6 +63,27 @@ export interface ConfirmViewParams {
   recipient?: string;
   message?: string;
   subscription?: boolean;
+}
+
+function invalidateQueries(
+  queryClient: QueryClient,
+  tokenID: string,
+  fromAddress: string,
+  toAddress: string,
+  futureInvalidate: boolean = true,
+) {
+  const invalidate = () => {
+    queryClient.invalidateQueries({ queryKey: ["tokenBalance", tokenID, fromAddress] });
+    queryClient.invalidateQueries({ queryKey: ["tokenBalance", tokenID, toAddress] });
+    queryClient.invalidateQueries({ queryKey: ["tokenTransactions", fromAddress, tokenID] });
+    queryClient.invalidateQueries({ queryKey: ["tokenTransactions", toAddress, tokenID] });
+  };
+
+  invalidate();
+
+  if (!futureInvalidate) return;
+
+  setTimeout(invalidate, 5000);
 }
 
 export type ConfirmViewProps = CommonRouteProps<ConfirmViewParams>;
@@ -285,18 +306,7 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
       }
     }
 
-    queryClient.invalidateQueries({
-      queryKey: ["tokenBalance", tokenID, fromAddress],
-    });
-    queryClient.invalidateQueries({
-      queryKey: ["tokenBalance", tokenID, toAddress],
-    });
-    queryClient.invalidateQueries({
-      queryKey: ["tokenTransactions", fromAddress, tokenID],
-    });
-    queryClient.invalidateQueries({
-      queryKey: ["tokenTransactions", toAddress, tokenID],
-    });
+    invalidateQueries(queryClient, tokenID, activeAddress, recipient.address, false);
 
     // 2/21/24: Checking first if it's an ao transfer and will handle in this block
     if (isAo) {
@@ -305,6 +315,7 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
         const res = await sendAoTransfer(ao, tokenID, recipient.address, quantity);
         if (res) {
           await createAoPendingTransaction(res, activeAddress, recipient.address, quantity, tokenID, token, message);
+          invalidateQueries(queryClient, tokenID, activeAddress, recipient.address);
 
           setToast({
             type: "success",
@@ -360,6 +371,7 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
 
           // Save pending transaction to extension storage
           await createArPendingTransaction(convertedTransaction, activeAddress);
+          invalidateQueries(queryClient, tokenID, activeAddress, recipient.address);
 
           setIsLoading(false);
           setToast({
@@ -415,6 +427,7 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
 
           // Save pending transaction to extension storage
           await createArPendingTransaction(convertedTransaction, activeAddress);
+          invalidateQueries(queryClient, tokenID, activeAddress, recipient.address);
 
           setIsLoading(false);
           setToast({
@@ -505,18 +518,7 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
         if (res) {
           await createAoPendingTransaction(res, activeAddress, recipient.address, quantity, tokenID, token, message);
 
-          queryClient.invalidateQueries({
-            queryKey: ["tokenBalance", tokenID, activeAddress],
-          });
-          queryClient.invalidateQueries({
-            queryKey: ["tokenBalance", tokenID, recipient.address],
-          });
-          queryClient.invalidateQueries({
-            queryKey: ["tokenTransactions", activeAddress, tokenID],
-          });
-          queryClient.invalidateQueries({
-            queryKey: ["tokenTransactions", recipient.address, tokenID],
-          });
+          invalidateQueries(queryClient, tokenID, activeAddress, recipient.address);
 
           setToast({
             type: "success",
@@ -603,6 +605,8 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
 
         // Save pending transaction to extension storage
         await createArPendingTransaction(transaction, activeAddress);
+
+        invalidateQueries(queryClient, tokenID, activeAddress, recipient.address);
 
         setToast({
           type: "success",
