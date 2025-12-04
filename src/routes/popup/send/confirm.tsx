@@ -75,8 +75,8 @@ function invalidateQueries(
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ["tokenBalance", tokenID, fromAddress] });
     queryClient.invalidateQueries({ queryKey: ["tokenBalance", tokenID, toAddress] });
-    queryClient.invalidateQueries({ queryKey: ["tokenTransactions", fromAddress, tokenID] });
-    queryClient.invalidateQueries({ queryKey: ["tokenTransactions", toAddress, tokenID] });
+    queryClient.invalidateQueries({ queryKey: ["tokenTransactions", tokenID, fromAddress] });
+    queryClient.invalidateQueries({ queryKey: ["tokenTransactions", tokenID, toAddress] });
   };
 
   invalidate();

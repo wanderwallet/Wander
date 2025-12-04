@@ -452,7 +452,7 @@ const createFetchPromise = (query: string, cursor: string, skip: boolean, variab
 
 export const useTokenTransactions = (activeAddress: string, tokenId: string) => {
   const { data, fetchNextPage, hasNextPage, isLoading, isFetching, isFetchingNextPage } = useInfiniteQuery({
-    queryKey: ["tokenTransactions", activeAddress, tokenId],
+    queryKey: ["tokenTransactions", tokenId, activeAddress],
     queryFn: async ({ pageParam }) => {
       if (!activeAddress) {
         throw new Error("No active address provided");
