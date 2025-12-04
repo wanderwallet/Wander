@@ -29,6 +29,7 @@ export type RawTransaction = {
       name: string;
       value: string;
     }>;
+    ingested_at?: number;
   };
 };
 

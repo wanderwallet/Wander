@@ -177,6 +177,7 @@ export async function createArPendingTransaction(
       month: now.getMonth() + 1,
       year: now.getFullYear(),
       date: null, // Will be set when fetched from GraphQL
+      createdAt: now.getTime(),
     };
 
     await savePendingTransaction(ownerAddress, tx);
@@ -234,6 +235,7 @@ export async function createAoPendingTransaction(
       month: now.getMonth() + 1,
       year: now.getFullYear(),
       date: null, // Will be set when fetched from GraphQL
+      createdAt: now.getTime(),
       aoInfo: {
         tickerName: tokenInfo.Ticker,
         quantity,
@@ -255,7 +257,7 @@ export async function mergeWithPending(
   cleanUp: boolean = false,
 ): Promise<ExtendedTransaction[]> {
   const graphqlTxIds = new Set(baseTransactions.map((tx) => tx.node.id));
-  const newPendingTxs = pendingTransactions.filter((tx) => !graphqlTxIds.has(tx.node.id)).reverse();
+  const newPendingTxs = pendingTransactions.filter((tx) => !graphqlTxIds.has(tx.node.id));
 
   // Remove pending transactions that are now available in GraphQL
   if (cleanUp && graphqlTxIds.size > 0) {

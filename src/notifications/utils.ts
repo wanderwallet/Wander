@@ -62,6 +62,7 @@ query($address: String!, $sort: SortOrder = HEIGHT_DESC) {
         id
         owner { address }
         block { timestamp, height }
+        ingested_at
         tags {
           name
           value
@@ -114,6 +115,7 @@ query($address: String!, $sort: SortOrder = HEIGHT_DESC) {
         recipient
         owner { address }
         block { timestamp, height }
+        ingested_at
         tags {
           name
           value
@@ -179,6 +181,7 @@ query($address: String!, $sort: SortOrder = HEIGHT_DESC) {
         id
         owner { address }
         block { timestamp, height }
+        ingested_at
         tags {
           name
           value
@@ -259,6 +262,7 @@ query($address: String!, $after: String, $sort: SortOrder = HEIGHT_DESC) {
         id
         owner { address }
         block { timestamp, height }
+        ingested_at
         tags {
           name
           value
@@ -291,6 +295,7 @@ query($address: String!, $after: String, $sort: SortOrder = HEIGHT_DESC) {
         recipient
         owner { address }
         block { timestamp, height }
+        ingested_at
         tags {
           name
           value
@@ -324,6 +329,7 @@ query($address: String!, $tokenId: String!, $after: String, $sort: SortOrder = H
         id
         owner { address }
         block { timestamp, height }
+        ingested_at
         tags {
           name
           value
@@ -357,6 +363,7 @@ query($address: String!, $tokenId: String!, $after: String, $sort: SortOrder = H
         recipient
         owner { address }
         block { timestamp, height }
+        ingested_at
         tags {
           name
           value
@@ -389,6 +396,7 @@ query($address: String!, $after: String, $sort: SortOrder = HEIGHT_DESC) {
         id
         owner { address }
         block { timestamp, height }
+        ingested_at
         tags {
           name
           value
@@ -422,6 +430,7 @@ query($address: String!, $tokenId: String!, $after: String, $sort: SortOrder = H
         id
         owner { address }
         block { timestamp, height }
+        ingested_at
         tags {
           name
           value
