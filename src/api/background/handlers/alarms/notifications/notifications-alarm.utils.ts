@@ -15,7 +15,13 @@ export type RawTransaction = {
     quantity: {
       ar: string;
     };
-    block: {
+    fee?: {
+      ar: string;
+    };
+    data?: {
+      size: string;
+    };
+    block?: {
       timestamp: number;
       height: number;
     };
@@ -23,6 +29,7 @@ export type RawTransaction = {
       name: string;
       value: string;
     }>;
+    ingested_at?: number;
   };
 };
 

@@ -1,5 +1,13 @@
 import { sortGatewaysByOperatorStake } from "~lib/wayfinder";
-import { clGateway, defaultGateway, defaultGateways, goldskyGateway, suggestedGateways, type Gateway } from "./gateway";
+import {
+  clGateway,
+  defaultGateway,
+  defaultGateways,
+  goldskyAoGateway,
+  goldskyGateway,
+  suggestedGateways,
+  type Gateway,
+} from "./gateway";
 import { useEffect, useState } from "react";
 import { getGatewayCache } from "./cache";
 import { getSetting } from "~settings";
@@ -119,6 +127,7 @@ export function useGraphqlGateways(count?: number) {
         const gateways = await findGraphqlGateways(count);
         const hasDefaultGateway = gateways.some((g) => g.host === defaultGateway.host);
         const hasGoldskyGateway = gateways.some((g) => g.host === goldskyGateway.host);
+        const hasGoldskyAoGateway = gateways.some((g) => g.host === goldskyAoGateway.host);
 
         const finalGateways = [...gateways];
 
@@ -129,6 +138,11 @@ export function useGraphqlGateways(count?: number) {
         if (!hasGoldskyGateway) {
           const insertionIndex = Math.min(2, finalGateways.length);
           finalGateways.splice(insertionIndex, 0, goldskyGateway);
+        }
+
+        if (!hasGoldskyAoGateway) {
+          const insertionIndex = Math.min(3, finalGateways.length);
+          finalGateways.splice(insertionIndex, 0, goldskyAoGateway);
         }
 
         setGraphqlGateways(finalGateways.slice(0, count || finalGateways.length));

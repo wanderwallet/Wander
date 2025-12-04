@@ -23,12 +23,13 @@ import { defaultOptions } from "~tokens/hooks";
 import { retryWithGateways } from "~gateways/wayfinder";
 import browser from "webextension-polyfill";
 import { AR_PROCESS_ID, WAR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
-import { createDataItemKeystoneSigner, createDataItemSigner } from "~tokens/aoTokens/ao";
+import { createDataItemKeystoneSigner, createDataItemSigner, getTagValue, type TokenInfo } from "~tokens/aoTokens/ao";
 import BigNumber from "bignumber.js";
 import type { AoxBridgeTransactionStatus } from "./bridge.types";
 import type { JWKInterface } from "arweave/web/lib/wallet";
 import type { HardwareWallet } from "~wallets/hardware";
 import { assertTransferResult, createKeystoneFeeTransaction, createSwapMessage } from "../swap.utils";
+import { createAoPendingTransaction, createArPendingTransaction } from "~utils/transactions";
 
 const FAILED_STATUSES = new Set<AoxBridgeTransactionStatus>(["failed", "submintAosFailed", "notOnChain", "refunded"]);
 
@@ -140,20 +141,25 @@ export async function executeSwap({
 
       if (result.status !== 200) throw new Error("Failed to post transaction");
 
+      // Save pending transaction to extension storage
+      await createArPendingTransaction(transaction, activeAddress);
+
       transferId = transaction.id;
     } else {
       const signer = keystoneSigner ? createDataItemKeystoneSigner(keystoneSigner) : createDataItemSigner(keyfile);
 
+      const finalTags = [
+        { name: "Action", value: "Burn" },
+        { name: "Recipient", value: activeAddress },
+        { name: "Quantity", value: amountIn },
+        { name: "Timestamp", value: Date.now().toString() },
+        ...tags,
+      ];
+
       const { keystoneTx: keystoneTx_, sendMessage } = await createSwapMessage({
         process: tokenIn,
         signer,
-        tags: [
-          { name: "Action", value: "Burn" },
-          { name: "Recipient", value: activeAddress },
-          { name: "Quantity", value: amountIn },
-          { name: "Timestamp", value: Date.now().toString() },
-          ...tags,
-        ],
+        tags: finalTags,
         wanderFee,
         poolType: "aox",
         keystoneSigner,
@@ -163,6 +169,17 @@ export async function executeSwap({
       transferId = await sendMessage();
 
       await assertTransferResult(transferId, tokenIn, ["Burn-Notice"], "Failed to unwrap WAR tokens");
+
+      await createAoPendingTransaction(
+        transferId,
+        decryptedWallet.address,
+        tokenIn,
+        amountIn,
+        tokenIn,
+        undefined,
+        undefined,
+        finalTags,
+      );
     }
 
     await retryWithDelay(async () => {

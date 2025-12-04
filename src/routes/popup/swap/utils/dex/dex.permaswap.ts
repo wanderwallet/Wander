@@ -1,5 +1,5 @@
 import { connect } from "@permaweb/aoconnect";
-import { createDataItemKeystoneSigner, createDataItemSigner, getTagValue } from "~tokens/aoTokens/ao";
+import { createDataItemKeystoneSigner, createDataItemSigner, getTagValue, type TokenInfo } from "~tokens/aoTokens/ao";
 import { defaultConfig } from "~tokens/aoTokens/config";
 import { getActiveAddress, getActiveKeyfile, type DecryptedWallet } from "~wallets";
 import BigNumber from "bignumber.js";
@@ -22,6 +22,7 @@ import { getLinkedMessages, OrderError } from "./dex.utils";
 import { queryClient } from "~utils/tanstack";
 import { assertTransferResult, createSwapMessage } from "../swap.utils";
 import browser from "webextension-polyfill";
+import { createAoPendingTransaction } from "~utils/transactions";
 
 const aoInstance = connect(defaultConfig);
 
@@ -258,6 +259,17 @@ export async function executeSwap({
     const transferId = await sendMessage();
 
     await assertTransferResult(transferId, tokenIn);
+
+    await createAoPendingTransaction(
+      transferId,
+      decryptedWallet.address,
+      noteSettle,
+      amountIn,
+      tokenIn,
+      undefined,
+      undefined,
+      tags,
+    );
 
     // Invalidate transfered token balance
     const activeAddress = await getActiveAddress();

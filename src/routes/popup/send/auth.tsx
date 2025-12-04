@@ -88,24 +88,6 @@ export function SendAuthView({ params: { tokenID } }: SendAuthViewProps) {
       } catch {}
     }
 
-    // cache tx
-    localStorage.setItem(
-      "latest_tx",
-      JSON.stringify({
-        quantity: { ar: arweave.ar.winstonToAr(transaction.quantity) },
-        owner: {
-          address: await arweave.wallets.ownerToAddress(transaction.owner),
-        },
-        recipient: transaction.target,
-        fee: { ar: transaction.reward },
-        data: { size: transaction.data_size },
-        // @ts-expect-error
-        tags: (transaction.get("tags") as Tag[]).map((tag) => ({
-          name: tag.get("name", { string: true, decode: true }),
-          value: tag.get("value", { string: true, decode: true }),
-        })),
-      }),
-    );
     const timeoutPromise = new Promise((_, reject) => {
       setTimeout(() => {
         reject(new Error("Timeout: Posting to Arweave took more than 10 seconds"));

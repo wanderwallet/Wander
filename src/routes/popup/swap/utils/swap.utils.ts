@@ -34,7 +34,7 @@ import { retryWithDelay } from "~utils/promises/retry";
 import { gql } from "~gateways/api";
 import { goldskyGateway } from "~gateways/gateway";
 import { SWAP_CONFIRMATION_QUERY, SWAP_TX_AO_QUERY, SWAP_TX_QUERY } from "./dex/dex.constants";
-import { createStorageArray } from "./storage/storage.array";
+import { createStorageArray } from "~utils/storage/storage.array";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { aox } from "./bridge/bridge.aox";
 import { botega } from "./dex/dex.botega";
