@@ -37,6 +37,12 @@ import BigNumber from "bignumber.js";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { convertAnnouncementsToTransactions } from "~utils/announcements";
 import { AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
+import {
+  getPendingTokenTransactions,
+  getPendingTransactions,
+  mergeWithPending,
+  removeTransferErrorTransactions,
+} from "~utils/transactions";
 
 /**
  * Wallets with details hook
@@ -290,7 +296,7 @@ export const useTransactions = (activeAddress: string, limit?: number) => {
               ? retryWithDelay(async (attempt) => {
                   const data = await gql(
                     query,
-                    { address: activeAddress, after: cursors[idx] },
+                    { address: activeAddress, after: cursors[idx], sort: "INGESTED_AT_DESC" },
                     idx !== 5
                       ? txHistoryGateways[attempt % txHistoryGateways.length]
                       : printTxWorkingGateways[attempt % printTxWorkingGateways.length],
@@ -304,9 +310,11 @@ export const useTransactions = (activeAddress: string, limit?: number) => {
           }),
         );
 
+      let pendingTransactions = await getPendingTransactions(activeAddress);
       const aoTransactions = [
         ...(rawAoSent.status === "fulfilled" ? rawAoSent.value?.data?.transactions?.edges || [] : []),
         ...(rawAoReceived.status === "fulfilled" ? rawAoReceived.value?.data?.transactions?.edges || [] : []),
+        ...(pendingTransactions as any[]),
       ];
       await checkTransferStatus(aoTransactions);
 
@@ -347,32 +355,23 @@ export const useTransactions = (activeAddress: string, limit?: number) => {
         combinedTransactions = [...combinedTransactions, ...announcementTransactions];
       }
 
-      combinedTransactions.sort(sortFn);
-
+      const now = new Date();
       combinedTransactions = combinedTransactions.map((transaction) => {
-        if (transaction.node.block && transaction.node.block.timestamp) {
-          const date = new Date(transaction.node.block.timestamp * 1000);
-          const day = date.getDate();
-          const month = date.getMonth() + 1;
-          const year = date.getFullYear();
-          return {
-            ...transaction,
-            day,
-            month,
-            year,
-            date: date.toISOString(),
-          };
-        } else {
-          const now = new Date();
-          return {
-            ...transaction,
-            day: now.getDate(),
-            month: now.getMonth() + 1,
-            year: now.getFullYear(),
-            date: null,
-          };
-        }
+        const timestamp = transaction.node.block?.timestamp;
+        const date = timestamp ? new Date(timestamp * 1000) : now;
+
+        return {
+          ...transaction,
+          day: date.getDate(),
+          month: date.getMonth() + 1,
+          year: date.getFullYear(),
+          date: timestamp ? date.toISOString() : null,
+        };
       });
+
+      // Get pending transactions and merge with GraphQL results
+      pendingTransactions = await removeTransferErrorTransactions(pendingTransactions);
+      combinedTransactions = await mergeWithPending(combinedTransactions, pendingTransactions, true);
 
       const actualCount = combinedTransactions.length;
 
@@ -442,7 +441,7 @@ const createFetchPromise = (query: string, cursor: string, skip: boolean, variab
     : retryWithDelay(async (attempt) => {
         const data = await gql(
           query,
-          { ...variables, after: cursor },
+          { ...variables, after: cursor, sort: "INGESTED_AT_DESC" },
           txHistoryGateways[attempt % txHistoryGateways.length],
         );
         if (data?.data === null && (data as any)?.errors?.length > 0) {
@@ -453,7 +452,7 @@ const createFetchPromise = (query: string, cursor: string, skip: boolean, variab
 
 export const useTokenTransactions = (activeAddress: string, tokenId: string) => {
   const { data, fetchNextPage, hasNextPage, isLoading, isFetching, isFetchingNextPage } = useInfiniteQuery({
-    queryKey: ["tokenTransactions", activeAddress, tokenId],
+    queryKey: ["tokenTransactions", tokenId, activeAddress],
     queryFn: async ({ pageParam }) => {
       if (!activeAddress) {
         throw new Error("No active address provided");
@@ -487,12 +486,14 @@ export const useTokenTransactions = (activeAddress: string, tokenId: string) => 
 
       const [rawSent, rawReceived, rawLiquidOpsReceived] = await Promise.allSettled(fetchPromises);
 
+      let pendingTransactions = await getPendingTokenTransactions(activeAddress, tokenId);
       const allTransactions = [
         ...(rawSent.status === "fulfilled" ? rawSent.value?.data?.transactions?.edges || [] : []),
         ...(rawReceived.status === "fulfilled" ? rawReceived.value?.data?.transactions?.edges || [] : []),
         ...(rawLiquidOpsReceived.status === "fulfilled"
           ? rawLiquidOpsReceived.value?.data?.transactions?.edges || []
           : []),
+        ...(pendingTransactions as any[]),
       ];
       await checkTransferStatus(allTransactions);
 
@@ -500,7 +501,7 @@ export const useTokenTransactions = (activeAddress: string, tokenId: string) => 
       const received = await processTransactions(rawReceived, isAr ? "received" : "aoReceived", !isAr);
       const liquidOpsReceived = await processTransactions(rawLiquidOpsReceived, "liquidOpsAoReceived", !isAr);
 
-      let combinedTransactions: ExtendedTransaction[] = [...received, ...sent, ...liquidOpsReceived].sort(sortFn);
+      let combinedTransactions: ExtendedTransaction[] = [...received, ...sent, ...liquidOpsReceived];
 
       const now = new Date();
       combinedTransactions = combinedTransactions.map((transaction) => {
@@ -515,6 +516,10 @@ export const useTokenTransactions = (activeAddress: string, tokenId: string) => 
           date: timestamp ? date.toISOString() : null,
         };
       });
+
+      // Get pending transactions and merge with GraphQL results
+      pendingTransactions = await removeTransferErrorTransactions(pendingTransactions);
+      combinedTransactions = await mergeWithPending(combinedTransactions, pendingTransactions);
 
       const actualCount = combinedTransactions.length;
 

@@ -21,14 +21,14 @@ import { getVentoBridgeInfo, getVentoBridgeTransaction } from "./bridge.utils";
 import { retryWithGateways } from "~gateways/wayfinder";
 import browser from "webextension-polyfill";
 import { AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
-import { createDataItemKeystoneSigner, createDataItemSigner } from "~tokens/aoTokens/ao";
-import type { DecodedTag } from "~api/modules/sign/tags";
+import { createDataItemKeystoneSigner, createDataItemSigner, getTagValue, type TokenInfo } from "~tokens/aoTokens/ao";
 import BigNumber from "bignumber.js";
 import { getLinkedMessages, OrderError } from "../dex/dex.utils";
 import { defaultOptions } from "~tokens/hooks";
 import type { JWKInterface } from "arweave/web/lib/wallet";
 import type { HardwareWallet } from "~wallets/hardware";
 import { assertTransferResult, createKeystoneFeeTransaction, createSwapMessage } from "../swap.utils";
+import { createAoPendingTransaction, createArPendingTransaction } from "~utils/transactions";
 
 export const VENTO_BRIDGE_ADDRESS = "mFRKcHsO6Tlv2E2wZcrcbv3mmzxzD7vYPbyybI3KCVA";
 
@@ -148,19 +148,24 @@ export async function executeSwap({
 
       if (result.status !== 200) throw new Error("Failed to post transaction");
 
+      // Save pending transaction to extension storage
+      await createArPendingTransaction(transaction, activeAddress);
+
       transferId = transaction.id;
     } else {
       const signer = keystoneSigner ? createDataItemKeystoneSigner(keystoneSigner) : createDataItemSigner(keyfile);
 
+      const finalTags = [
+        { name: "Action", value: "Burn" },
+        { name: "Forward-Wallet", value: activeAddress },
+        { name: "Quantity", value: amountIn },
+        ...tags,
+      ];
+
       const { keystoneTx: keystoneTx_, sendMessage } = await createSwapMessage({
         process: tokenIn,
         signer,
-        tags: [
-          { name: "Action", value: "Burn" },
-          { name: "Forward-Wallet", value: activeAddress },
-          { name: "Quantity", value: amountIn },
-          ...tags,
-        ],
+        tags: finalTags,
         wanderFee,
         poolType: "vento",
         keystoneSigner,
@@ -182,6 +187,17 @@ export async function executeSwap({
         1000,
         (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 30000),
       ).catch(() => undefined);
+
+      await createAoPendingTransaction(
+        transferId,
+        decryptedWallet.address,
+        tokenIn,
+        amountIn,
+        tokenIn,
+        undefined,
+        undefined,
+        finalTags,
+      );
     }
 
     // Invalidate transfered token balance

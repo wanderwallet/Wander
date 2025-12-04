@@ -28,6 +28,7 @@ export type ExtendedTransaction = RawTransaction & {
     denomination?: number;
     quantity: string;
     logo?: string;
+    recipient?: string;
   };
   announcementData?: Announcement;
 };
@@ -42,8 +43,8 @@ export interface GroupedTransactionsByMonth {
 }
 
 export function sortFn(a: ExtendedTransaction, b: ExtendedTransaction) {
-  const timestampA = a.node?.block?.timestamp || Number.MAX_SAFE_INTEGER;
-  const timestampB = b.node?.block?.timestamp || Number.MAX_SAFE_INTEGER;
+  const timestampA = a.node?.block?.timestamp || a.node?.ingested_at || Number.MAX_SAFE_INTEGER;
+  const timestampB = b.node?.block?.timestamp || a.node?.ingested_at || Number.MAX_SAFE_INTEGER;
   return timestampB - timestampA;
 }
 
@@ -76,7 +77,7 @@ export async function checkTransferStatus(transactions: GQLEdgeInterface[]): Pro
       const batchPromise = retryWithDelay(async (attempt) => {
         const data = await gql(
           TRANSFER_ERROR_QUERY,
-          { messageIds: batch },
+          { messageIds: batch, sort: "INGESTED_AT_DESC" },
           txHistoryGateways[attempt % txHistoryGateways.length],
         );
 
@@ -188,7 +189,7 @@ export const getFormattedAmount = (transaction: ExtendedTransaction) => {
       }
       return "";
     case "printArchive":
-      return `${parseFloat((transaction.node as any).fee?.ar || "0").toFixed(3)} AR`;
+      return `${parseFloat(transaction.node.fee?.ar || "0").toFixed(3)} AR`;
     case "announcement":
       return ""; // Announcements don't have amounts
     default:
@@ -205,8 +206,8 @@ export const getFormattedFiatAmount = (transaction: ExtendedTransaction, arPrice
     ) {
       const fiatBalance = BigNumber(transaction.node.quantity.ar).multipliedBy(arPrice);
       return formatFiatBalance(fiatBalance, currency);
-    } else if ((transaction.node as any).fee && transaction.transactionType === "printArchive") {
-      const fiatBalance = BigNumber((transaction.node as any).fee.ar).multipliedBy(arPrice);
+    } else if (transaction.node.fee && transaction.transactionType === "printArchive") {
+      const fiatBalance = BigNumber(transaction.node.fee?.ar || "0").multipliedBy(arPrice);
       return formatFiatBalance(fiatBalance, currency);
     }
   } catch {}
@@ -276,4 +277,8 @@ export const groupTransactionsByMonth = (transactions: ExtendedTransaction[]): G
       return b.month - a.month;
     })
     .map(({ title, data }) => ({ title, data }));
+};
+
+export const hasTransferError = (txId: string): boolean => {
+  return transactionErrorMap.get(txId) ?? false;
 };

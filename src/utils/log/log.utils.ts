@@ -36,7 +36,7 @@ const LOG_GROUPS_ENABLED: Record<LOG_GROUP, boolean> = {
   [LOG_GROUP.TIERS]: false,
   [LOG_GROUP.TRANSAK]: false,
   [LOG_GROUP.FAIR_LAUNCH]: false,
-  [LOG_GROUP.TRANSACTIONS]: false,
+  [LOG_GROUP.TRANSACTIONS]: process.env.NODE_ENV === "development",
   [LOG_GROUP.EARN]: false,
   [LOG_GROUP.SWAP]: process.env.NODE_ENV === "development",
   [LOG_GROUP.ARNS]: process.env.NODE_ENV === "development",
