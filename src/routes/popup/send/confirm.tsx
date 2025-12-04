@@ -7,7 +7,7 @@ import { SendButton, type RecipientType, type TransactionData } from ".";
 import { formatAddress } from "~utils/format";
 import type Transaction from "arweave/web/lib/transaction";
 import { useStorage } from "~utils/storage";
-import { saveAoTransactionToLocalStorage } from "~utils/transactions";
+import { createArPendingTransaction, createAoPendingTransaction } from "~utils/transactions";
 import { ExtensionStorage, TempTransactionStorage, type RawStoredTransfer } from "~utils/storage";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { findGateway, retryWithGateways } from "~gateways/wayfinder";
@@ -39,7 +39,7 @@ import BigNumber from "bignumber.js";
 import { SignType } from "@keystonehq/bc-ur-registry-arweave";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import { AdaptiveBalanceDisplay } from "~components/AdaptiveBalanceDisplay";
-import { useQueryClient } from "@tanstack/react-query";
+import { QueryClient, useQueryClient } from "@tanstack/react-query";
 import {
   TransactionDirection,
   FiatAmount,
@@ -63,6 +63,27 @@ export interface ConfirmViewParams {
   recipient?: string;
   message?: string;
   subscription?: boolean;
+}
+
+function invalidateQueries(
+  queryClient: QueryClient,
+  tokenID: string,
+  fromAddress: string,
+  toAddress: string,
+  futureInvalidate: boolean = true,
+) {
+  const invalidate = () => {
+    queryClient.invalidateQueries({ queryKey: ["tokenBalance", tokenID, fromAddress] });
+    queryClient.invalidateQueries({ queryKey: ["tokenBalance", tokenID, toAddress] });
+    queryClient.invalidateQueries({ queryKey: ["tokenTransactions", tokenID, fromAddress] });
+    queryClient.invalidateQueries({ queryKey: ["tokenTransactions", tokenID, toAddress] });
+  };
+
+  invalidate();
+
+  if (!futureInvalidate) return;
+
+  setTimeout(invalidate, 5000);
 }
 
 export type ConfirmViewProps = CommonRouteProps<ConfirmViewParams>;
@@ -243,26 +264,6 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
       } catch {}
     }
 
-    // cache tx
-    localStorage.setItem(
-      "latest_tx",
-      JSON.stringify({
-        id: transaction.id,
-        quantity: { ar: arweave.ar.winstonToAr(transaction.quantity) },
-        owner: {
-          address: await arweave.wallets.ownerToAddress(transaction.owner),
-        },
-        recipient: transaction.target,
-        fee: { ar: transaction.reward },
-        data: { size: transaction.data_size },
-        // @ts-expect-error
-        tags: (transaction.get("tags") as Tag[]).map((tag) => ({
-          name: tag.get("name", { string: true, decode: true }),
-          value: tag.get("value", { string: true, decode: true }),
-        })),
-      }),
-    );
-
     const timeoutPromise = new Promise((_, reject) => {
       setTimeout(() => {
         reject(new Error("Timeout: Posting to Arweave took more than 10 seconds"));
@@ -305,33 +306,16 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
       }
     }
 
-    queryClient.invalidateQueries({
-      queryKey: ["tokenBalance", tokenID, fromAddress],
-    });
-    queryClient.invalidateQueries({
-      queryKey: ["tokenBalance", tokenID, toAddress],
-    });
+    invalidateQueries(queryClient, tokenID, activeAddress, recipient.address, false);
 
     // 2/21/24: Checking first if it's an ao transfer and will handle in this block
     if (isAo) {
       try {
-        const res = await sendAoTransfer(
-          ao,
-          tokenID,
-          recipient.address,
-          fractionedToBalance(amount, { decimals: token.Denomination }, "AO"),
-        );
+        const quantity = fractionedToBalance(amount, { decimals: token.Denomination }, "AO");
+        const res = await sendAoTransfer(ao, tokenID, recipient.address, quantity);
         if (res) {
-          saveAoTransactionToLocalStorage(
-            res,
-            tokenID,
-            recipient.address,
-            activeAddress,
-            amount,
-            token.Ticker,
-            networkFee,
-            message,
-          );
+          await createAoPendingTransaction(res, activeAddress, recipient.address, quantity, tokenID, token, message);
+          invalidateQueries(queryClient, tokenID, activeAddress, recipient.address);
 
           setToast({
             type: "success",
@@ -384,6 +368,11 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
             await submitTx(convertedTransaction, fallbackArweave, type);
             await trackEvent(EventType.FALLBACK, {});
           }
+
+          // Save pending transaction to extension storage
+          await createArPendingTransaction(convertedTransaction, activeAddress);
+          invalidateQueries(queryClient, tokenID, activeAddress, recipient.address);
+
           setIsLoading(false);
           setToast({
             type: "success",
@@ -435,6 +424,11 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
             await submitTx(convertedTransaction, fallbackArweave, type);
             await trackEvent(EventType.FALLBACK, {});
           }
+
+          // Save pending transaction to extension storage
+          await createArPendingTransaction(convertedTransaction, activeAddress);
+          invalidateQueries(queryClient, tokenID, activeAddress, recipient.address);
+
           setIsLoading(false);
           setToast({
             type: "success",
@@ -518,32 +512,13 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
       try {
         setPreparedTx(prepared);
 
-        const res = await sendAoTransferKeystone(
-          ao,
-          tokenID,
-          recipient.address,
-          fractionedToBalance(amount, { decimals: token.Denomination }, "AO"),
-          keystoneSigner,
-        );
+        const quantity = fractionedToBalance(amount, { decimals: token.Denomination }, "AO");
+        const res = await sendAoTransferKeystone(ao, tokenID, recipient.address, quantity, keystoneSigner);
 
         if (res) {
-          saveAoTransactionToLocalStorage(
-            res,
-            tokenID,
-            recipient.address,
-            activeAddress,
-            amount,
-            token.Ticker,
-            networkFee,
-            message,
-          );
+          await createAoPendingTransaction(res, activeAddress, recipient.address, quantity, tokenID, token, message);
 
-          queryClient.invalidateQueries({
-            queryKey: ["tokenBalance", tokenID, activeAddress],
-          });
-          queryClient.invalidateQueries({
-            queryKey: ["tokenBalance", tokenID, recipient.address],
-          });
+          invalidateQueries(queryClient, tokenID, activeAddress, recipient.address);
 
           setToast({
             type: "success",
@@ -627,6 +602,11 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
 
         // post tx
         await submitTx(transaction, arweave, type);
+
+        // Save pending transaction to extension storage
+        await createArPendingTransaction(transaction, activeAddress);
+
+        invalidateQueries(queryClient, tokenID, activeAddress, recipient.address);
 
         setToast({
           type: "success",

@@ -55,6 +55,12 @@ export const goldskyGateway: Gateway = {
   protocol: "https",
 };
 
+export const goldskyAoGateway: Gateway = {
+  host: "ao-search-gateway.goldsky.com",
+  port: 443,
+  protocol: "https",
+};
+
 export const clGateway = {
   host: "arweave.ar",
   port: 443,

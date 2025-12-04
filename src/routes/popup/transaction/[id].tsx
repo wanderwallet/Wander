@@ -34,8 +34,7 @@ import { useTokenPrice } from "~tokens/hooks";
 import { fetchTokenByProcessId, getTagValue, type TokenInfo } from "~tokens/aoTokens/ao";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { AO_AUTHORITY_ID, AR_TOKEN_INFO, AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
-
-// pull contacts and check if to address is in contacts
+import { getPendingTransaction } from "~utils/transactions";
 
 // need to manually set/replace tokenAddress here for ao interactions
 interface ao {
@@ -148,7 +147,6 @@ export function TransactionView({ params: { id, gateway: gw, message } }: Transa
     navigate((backPath as WanderRoutePath) || "/");
   }
 
-  const [ticker, setTicker] = useState<string | null>(null);
   const [showTags, setShowTags] = useState<boolean>(false);
   const [tokenInfo, setTokenInfo] = useState<TokenInfo | null>(null);
 
@@ -159,38 +157,17 @@ export function TransactionView({ params: { id, gateway: gw, message } }: Transa
     let fetchCount = 0;
 
     const fetchTx = async () => {
-      const cachedTx = JSON.parse(localStorage.getItem("latest_tx") || "{}");
-      if (cachedTx.id === id) {
-        setTransaction(cachedTx);
-
-        // AO transaction
-        if (cachedTx.tags.some((tag) => tag.name === "Data-Protocol" && tag.value === "ao")) {
-          setAo({ isAo: true, tokenId: cachedTx.recipient });
-          const tokenIdTag = cachedTx.tags.find((tag) => tag.name === "Token-Address" || tag.name === "Token");
-          const tickerTag = cachedTx.tags.find((tag) => tag.name === "Ticker");
-
-          if (tickerTag) {
-            setTicker(tickerTag.value);
-          } else {
-            setTicker(formatAddress(tokenIdTag.value, 4));
-          }
-
-          try {
-            const tokenInfo = await fetchTokenByProcessId(tokenIdTag.value);
-
-            setTokenInfo(tokenInfo);
-          } catch {
-            setTokenInfo(null);
-          }
-        }
-
-        return;
+      let data: { transaction: GQLNodeInterface } | undefined;
+      const cachedTx = await getPendingTransaction(id);
+      if (cachedTx) {
+        data = { transaction: cachedTx };
       }
 
-      const gateway = graphqlGateways[fetchCount % graphqlGateways.length];
+      if (!data) {
+        const gateway = graphqlGateways[fetchCount % graphqlGateways.length];
 
-      const { data } = await gql(
-        `
+        ({ data } = await gql(
+          `
           query($id: ID!) {
             transaction(id: $id) {
               owner {
@@ -218,11 +195,12 @@ export function TransactionView({ params: { id, gateway: gw, message } }: Transa
             }
           }
         `,
-        { id },
-        gateway,
-      );
+          { id },
+          gateway,
+        ));
+      }
 
-      if (!data.transaction) {
+      if (!data?.transaction) {
         fetchCount++;
         timeoutID = window.setTimeout(fetchTx, 5000);
       } else {
@@ -249,7 +227,6 @@ export function TransactionView({ params: { id, gateway: gw, message } }: Transa
                   decimals: Number(tokenInfo.Denomination),
                 });
 
-                setTicker(tokenInfo?.type === "collectible" ? tokenInfo.Name! : tokenInfo.Ticker!);
                 setTokenInfo(tokenInfo);
 
                 data.transaction.quantity = {
@@ -260,7 +237,6 @@ export function TransactionView({ params: { id, gateway: gw, message } }: Transa
               } else {
                 // TODO: Should this case ever happen?
 
-                setTicker(formatAddress(data.transaction.recipient, 4));
                 setTokenInfo(AR_TOKEN_INFO);
 
                 const amount = balanceToFractioned(aoQuantity, {
@@ -505,12 +481,12 @@ export function TransactionView({ params: { id, gateway: gw, message } }: Transa
                 </TransactionProperty>
                 <TransactionProperty>
                   <PropertyName>{browser.i18n.getMessage("transaction_fee")}</PropertyName>
-                  <PropertyValue>{transaction.fee.ar} AR</PropertyValue>
+                  <PropertyValue>{transaction.fee?.ar || "0"} AR</PropertyValue>
                 </TransactionProperty>
                 {!message && (
                   <TransactionProperty>
                     <PropertyName>{browser.i18n.getMessage("transaction_size")}</PropertyName>
-                    <PropertyValue>{prettyBytes(Number(transaction.data.size))}</PropertyValue>
+                    <PropertyValue>{prettyBytes(Number(transaction.data?.size || 0))}</PropertyValue>
                   </TransactionProperty>
                 )}
                 {transaction.block && (

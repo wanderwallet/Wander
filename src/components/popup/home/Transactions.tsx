@@ -22,9 +22,14 @@ import {
   getTransactionDescription,
   groupTransactionsByMonth,
   processTransactions,
-  sortFn,
   type ExtendedTransaction,
 } from "~lib/transactions";
+import {
+  getPendingTransactions,
+  cleanupOldPendingTransactions,
+  mergeWithPending,
+  removeTransferErrorTransactions,
+} from "~utils/transactions";
 import BigNumber from "bignumber.js";
 import { retryWithDelay } from "~utils/promises/retry";
 import { useLocation } from "~wallets/router/router.utils";
@@ -59,20 +64,10 @@ export default function Transactions() {
   useEffect(() => {
     const fetchTransactions = async () => {
       setLoading(true);
+      let cacheShown = false;
       try {
         if (activeAddress) {
-          const now = Date.now();
-          const CACHE_FRESHNESS_TIME = 5 * 60 * 1000; // 5 minutes freshness
-
-          if (
-            transactionsCache &&
-            transactionsCache.address === activeAddress &&
-            now - transactionsCache.timestamp < CACHE_FRESHNESS_TIME
-          ) {
-            setTransactions(transactionsCache.transactions);
-            setLoading(false);
-            return;
-          }
+          await cleanupOldPendingTransactions();
 
           const queries = [
             AR_RECEIVER_QUERY,
@@ -83,13 +78,34 @@ export default function Transactions() {
             PRINT_ARWEAVE_QUERY,
           ];
 
+          // Show cache immediately if GraphQL is slow (after 2 seconds)
+          let graphqlCompleted = false;
+
+          const showCacheIfAvailable = async () => {
+            if (!cacheShown && transactionsCache && transactionsCache.address === activeAddress) {
+              cacheShown = true;
+              const pendingTransactions = await getPendingTransactions(activeAddress);
+              const merged = await mergeWithPending(transactionsCache.transactions, pendingTransactions);
+              setTransactions(merged);
+              setLoading(false);
+            }
+          };
+
+          // Start timeout to show cache if GraphQL is slow
+          const cacheTimeout = setTimeout(async () => {
+            if (!graphqlCompleted) {
+              await showCacheIfAvailable();
+              clearTimeout(cacheTimeout);
+            }
+          }, 2000);
+
           const [rawReceived, rawSent, rawAoSent, rawAoReceived, rawLiquidOpsAoReceived, rawPrintArchive] =
             await Promise.allSettled(
               queries.map((query, index) =>
                 retryWithDelay(async (attempt) => {
                   const data = await gql(
                     query,
-                    { address: activeAddress },
+                    { address: activeAddress, sort: "INGESTED_AT_DESC" },
                     index !== 5
                       ? txHistoryGateways[attempt % txHistoryGateways.length]
                       : printTxWorkingGateways[attempt % printTxWorkingGateways.length],
@@ -102,9 +118,29 @@ export default function Transactions() {
               ),
             );
 
+          graphqlCompleted = true;
+          clearTimeout(cacheTimeout);
+
+          // Check if all queries failed - if so, use cache as fallback
+          const allFailed =
+            rawReceived.status === "rejected" &&
+            rawSent.status === "rejected" &&
+            rawAoSent.status === "rejected" &&
+            rawAoReceived.status === "rejected" &&
+            rawLiquidOpsAoReceived.status === "rejected" &&
+            rawPrintArchive.status === "rejected";
+
+          if (allFailed && !cacheShown) {
+            await showCacheIfAvailable();
+            return;
+          }
+
+          // Process successful GraphQL results
+          let pendingTransactions = await getPendingTransactions(activeAddress);
           const aoTransactions = [
             ...(rawAoSent.status === "fulfilled" ? rawAoSent.value?.data?.transactions?.edges || [] : []),
             ...(rawAoReceived.status === "fulfilled" ? rawAoReceived.value?.data?.transactions?.edges || [] : []),
+            ...(pendingTransactions as any[]),
           ];
           await checkTransferStatus(aoTransactions);
 
@@ -139,38 +175,29 @@ export default function Transactions() {
           const announcementTransactions = convertAnnouncementsToTransactions();
           combinedTransactions = [...combinedTransactions, ...announcementTransactions];
 
-          combinedTransactions.sort(sortFn);
-
+          const now = new Date();
           combinedTransactions = combinedTransactions.map((transaction) => {
-            if (transaction.node.block && transaction.node.block.timestamp) {
-              const date = new Date(transaction.node.block.timestamp * 1000);
-              const day = date.getDate();
-              const month = date.getMonth() + 1;
-              const year = date.getFullYear();
-              return {
-                ...transaction,
-                day,
-                month,
-                year,
-                date: date.toISOString(),
-              };
-            } else {
-              const now = new Date();
-              return {
-                ...transaction,
-                day: now.getDate(),
-                month: now.getMonth() + 1,
-                year: now.getFullYear(),
-                date: null,
-              };
-            }
+            const timestamp = transaction.node.block?.timestamp;
+            const date = timestamp ? new Date(timestamp * 1000) : now;
+
+            return {
+              ...transaction,
+              day: date.getDate(),
+              month: date.getMonth() + 1,
+              year: date.getFullYear(),
+              date: timestamp ? date.toISOString() : null,
+            };
           });
+
+          // Get pending transactions and merge with GraphQL results
+          pendingTransactions = await removeTransferErrorTransactions(pendingTransactions);
+          combinedTransactions = await mergeWithPending(combinedTransactions, pendingTransactions, true);
 
           setTransactions(combinedTransactions);
 
           const cacheData: TransactionsCache = {
             transactions: combinedTransactions,
-            timestamp: now,
+            timestamp: Date.now(),
             address: activeAddress,
           };
 
@@ -178,6 +205,12 @@ export default function Transactions() {
         }
       } catch (error) {
         console.error("Error fetching transactions", error);
+        // On error, try to use cache as fallback if not already shown
+        if (!cacheShown && transactionsCache && transactionsCache.address === activeAddress) {
+          const pendingTransactions = await getPendingTransactions(activeAddress);
+          const merged = await mergeWithPending(transactionsCache.transactions, pendingTransactions);
+          setTransactions(merged);
+        }
       } finally {
         setLoading(false);
       }
@@ -220,7 +253,7 @@ export default function Transactions() {
           </NoTransactionsContainer>
         )}
       </TransactionsWrapper>
-      {transactions.length > 0 && (
+      {!loading && transactions.length > 0 && (
         <ViewAll onClick={() => navigate("/transactions")}>
           {browser.i18n.getMessage("view_all")} ({transactions.length})
         </ViewAll>
