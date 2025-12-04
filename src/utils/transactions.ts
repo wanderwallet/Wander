@@ -169,6 +169,7 @@ export async function createArPendingTransaction(
         quantity: { ar: arweave.ar.winstonToAr(transaction.quantity) },
         fee: { ar: arweave.ar.winstonToAr(transaction.reward) },
         data: { size: transaction.data_size },
+        ingested_at: now.getTime(),
         tags,
       },
       cursor: "",
@@ -177,7 +178,6 @@ export async function createArPendingTransaction(
       month: now.getMonth() + 1,
       year: now.getFullYear(),
       date: null, // Will be set when fetched from GraphQL
-      createdAt: now.getTime(),
     };
 
     await savePendingTransaction(ownerAddress, tx);
@@ -228,6 +228,7 @@ export async function createAoPendingTransaction(
           size: message ? new TextEncoder().encode(message).length.toString() : "0",
         },
         tags: aoTags,
+        ingested_at: now.getTime(),
       },
       cursor: "",
       transactionType,
@@ -235,7 +236,6 @@ export async function createAoPendingTransaction(
       month: now.getMonth() + 1,
       year: now.getFullYear(),
       date: null, // Will be set when fetched from GraphQL
-      createdAt: now.getTime(),
       aoInfo: {
         tickerName: tokenInfo.Ticker,
         quantity,

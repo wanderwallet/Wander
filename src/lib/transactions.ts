@@ -30,7 +30,6 @@ export type ExtendedTransaction = RawTransaction & {
     logo?: string;
     recipient?: string;
   };
-  createdAt?: number; // Used for sorting transactions if block timestamp is not available
   announcementData?: Announcement;
 };
 
@@ -44,8 +43,8 @@ export interface GroupedTransactionsByMonth {
 }
 
 export function sortFn(a: ExtendedTransaction, b: ExtendedTransaction) {
-  const timestampA = a.node?.block?.timestamp || a.node?.ingested_at || a?.createdAt || Number.MAX_SAFE_INTEGER;
-  const timestampB = b.node?.block?.timestamp || a.node?.ingested_at || b?.createdAt || Number.MAX_SAFE_INTEGER;
+  const timestampA = a.node?.block?.timestamp || a.node?.ingested_at || Number.MAX_SAFE_INTEGER;
+  const timestampB = b.node?.block?.timestamp || a.node?.ingested_at || Number.MAX_SAFE_INTEGER;
   return timestampB - timestampA;
 }
 
