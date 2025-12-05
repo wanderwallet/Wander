@@ -11,6 +11,7 @@ import { WarningIcon } from "~components/icons/WarningIcon";
 import Title from "~components/popup/Title";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import { VIEWBLOCK_URL } from "~constants/urls";
 
 export interface SubscriptionManagementViewParams {
   id?: string;
@@ -85,7 +86,7 @@ export function SubscriptionManagementView({ params: { id } }: SubscriptionManag
                       key={index}
                       onClick={() =>
                         browser.tabs.create({
-                          url: `https://viewblock.io/arweave/tx/${payment.txId}`,
+                          url: `${VIEWBLOCK_URL}/tx/${payment.txId}`,
                         })
                       }
                     />

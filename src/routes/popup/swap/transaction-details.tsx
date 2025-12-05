@@ -17,7 +17,7 @@ import { useLocation } from "~wallets/router/router.utils";
 import { useSwapTransaction } from "./utils/swap.hooks";
 import BigNumber from "bignumber.js";
 import Skeleton from "~components/Skeleton";
-import { AO_LINK_URL } from "~constants/urls";
+import { AO_LINK_URL, VIEWBLOCK_URL } from "~constants/urls";
 
 export interface SwapTransactionDetailsParams {
   id: string;
@@ -52,7 +52,7 @@ export function SwapTransactionDetailsView({ params: { id } }: SwapTransactionDe
   }, [transaction]);
 
   function handleOpen() {
-    const url = transaction.isAo ? `${AO_LINK_URL}/#/message/${id}` : `https://viewblock.io/arweave/tx/${id}`;
+    const url = transaction.isAo ? `${AO_LINK_URL}/#/message/${id}` : `${VIEWBLOCK_URL}/tx/${id}`;
 
     browser.tabs.create({ url });
   }

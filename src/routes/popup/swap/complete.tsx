@@ -22,7 +22,7 @@ import { PageType, trackPage } from "~utils/analytics";
 import { TempTransactionStorage } from "~utils/storage";
 import { AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 import { PoolTypeEnum } from "./utils/swap.constants";
-import { AO_LINK_URL } from "~constants/urls";
+import { AO_LINK_URL, VIEWBLOCK_URL } from "~constants/urls";
 
 export function SwapCompleteView() {
   const theme = useTheme();
@@ -63,7 +63,7 @@ export function SwapCompleteView() {
   const valueInFormatted = useMemo(() => formatBalance(valueIn || "0"), [valueIn]);
 
   function handleOpen() {
-    const url = swap.isAo ? `${AO_LINK_URL}/#/message/${transferId}` : `https://viewblock.io/arweave/tx/${transferId}`;
+    const url = swap.isAo ? `${AO_LINK_URL}/#/message/${transferId}` : `${VIEWBLOCK_URL}/tx/${transferId}`;
 
     browser.tabs.create({ url });
   }

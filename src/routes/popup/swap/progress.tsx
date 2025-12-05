@@ -20,7 +20,7 @@ import { trackPage, PageType } from "~utils/analytics";
 import { swapsArray, waitForSwapResultFn } from "./utils/swap.utils";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { useQueryClient } from "@tanstack/react-query";
-import { AO_LINK_URL } from "~constants/urls";
+import { AO_LINK_URL, VIEWBLOCK_URL } from "~constants/urls";
 
 export function SwapProgressView() {
   const theme = useTheme();
@@ -56,7 +56,7 @@ export function SwapProgressView() {
   const valueInFormatted = useMemo(() => formatBalance(valueIn || "0"), [valueIn]);
 
   function handleOpen() {
-    const url = swap.isAo ? `${AO_LINK_URL}/#/message/${transferId}` : `https://viewblock.io/arweave/tx/${transferId}`;
+    const url = swap.isAo ? `${AO_LINK_URL}/#/message/${transferId}` : `${VIEWBLOCK_URL}/tx/${transferId}`;
 
     browser.tabs.create({ url });
   }
