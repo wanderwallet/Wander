@@ -16,7 +16,7 @@ import { useLocation } from "~wallets/router/router.utils";
 import { type Gateway } from "~gateways/gateway";
 import AnimatedQRScanner from "~components/hardware/AnimatedQRScanner";
 import AnimatedQRPlayer from "~components/hardware/AnimatedQRPlayer";
-import { getActiveKeyfile, getActiveWallet, type StoredWallet } from "~wallets";
+import { getActiveAddress, getActiveKeyfile, getActiveWallet, getWallets, type StoredWallet } from "~wallets";
 import { isLocalWallet } from "~utils/assertions";
 import { decryptWallet, freeDecryptedWallet } from "~wallets/encryption";
 import { EventType, PageType, trackEvent, trackPage } from "~utils/analytics";
@@ -65,25 +65,67 @@ export interface ConfirmViewParams {
   subscription?: boolean;
 }
 
-function invalidateQueries(
-  queryClient: QueryClient,
-  tokenID: string,
-  fromAddress: string,
-  toAddress: string,
-  futureInvalidate: boolean = true,
-) {
-  const invalidate = () => {
-    queryClient.invalidateQueries({ queryKey: ["tokenBalance", tokenID, fromAddress] });
-    queryClient.invalidateQueries({ queryKey: ["tokenBalance", tokenID, toAddress] });
-    queryClient.invalidateQueries({ queryKey: ["tokenTransactions", tokenID, fromAddress] });
-    queryClient.invalidateQueries({ queryKey: ["tokenTransactions", tokenID, toAddress] });
-  };
+async function invalidateQueries(queryClient: QueryClient, tokenID: string, fromAddress: string, toAddress: string) {
+  try {
+    const keys = [
+      ["tokenBalance", tokenID, fromAddress],
+      ["tokenBalance", tokenID, toAddress],
+      ["tokenTransactions", tokenID, fromAddress],
+      ["tokenTransactions", tokenID, toAddress],
+    ];
 
-  invalidate();
+    const activeAddress = await getActiveAddress();
+    const walletAddresses = new Set((await getWallets()).map((w) => w.address));
 
-  if (!futureInvalidate) return;
+    // Filter tokenBalance queries
+    const balanceKeys = keys.filter((k) => k[0] === "tokenBalance" && walletAddresses.has(k[2]));
 
-  setTimeout(invalidate, 5000);
+    // Snapshot previous balance data
+    const previousDatas = balanceKeys.map((key) => {
+      return queryClient.getQueryCache().find({ queryKey: key })?.state.data;
+    });
+
+    // Invalidate queries
+    keys.forEach((key) => queryClient.invalidateQueries({ queryKey: key, exact: true }));
+
+    // Delayed refetch attempts
+    const delays = [5000, 7000, 10000];
+
+    const timeouts = delays.map((delay) =>
+      setTimeout(() => {
+        balanceKeys.forEach((key, index) => {
+          const query = queryClient.getQueryCache().find({ queryKey: key, exact: true });
+          if (!query) return;
+
+          // Get enabled observers only
+          const observers = (query.observers || []).filter((o: any) => o.options.enabled !== false);
+
+          // No active consumers → just invalidate once
+          if (observers.length === 0 || activeAddress !== key[2]) {
+            if (!query.state.isInvalidated) {
+              query.invalidate();
+            }
+            return;
+          }
+
+          // Check if data has updated
+          const previous = previousDatas[index];
+          const current = query.state.data;
+
+          // Data changed → no extra refetch
+          if (current !== previous) {
+            timeouts.forEach((timeout) => clearTimeout(timeout));
+            return;
+          }
+
+          // Refetch using observer
+          observers.forEach((observer: any) => observer.refetch().catch(() => {}));
+        });
+      }, delay),
+    );
+  } catch (error) {
+    console.error("Error invalidating queries:", error);
+  }
 }
 
 export type ConfirmViewProps = CommonRouteProps<ConfirmViewParams>;
@@ -306,8 +348,6 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
       }
     }
 
-    invalidateQueries(queryClient, tokenID, activeAddress, recipient.address, false);
-
     // 2/21/24: Checking first if it's an ao transfer and will handle in this block
     if (isAo) {
       try {
@@ -315,7 +355,7 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
         const res = await sendAoTransfer(ao, tokenID, recipient.address, quantity);
         if (res) {
           await createAoPendingTransaction(res, activeAddress, recipient.address, quantity, tokenID, token, message);
-          invalidateQueries(queryClient, tokenID, activeAddress, recipient.address);
+          await invalidateQueries(queryClient, tokenID, activeAddress, recipient.address);
 
           setToast({
             type: "success",
@@ -371,7 +411,7 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
 
           // Save pending transaction to extension storage
           await createArPendingTransaction(convertedTransaction, activeAddress);
-          invalidateQueries(queryClient, tokenID, activeAddress, recipient.address);
+          await invalidateQueries(queryClient, tokenID, activeAddress, recipient.address);
 
           setIsLoading(false);
           setToast({
@@ -427,7 +467,7 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
 
           // Save pending transaction to extension storage
           await createArPendingTransaction(convertedTransaction, activeAddress);
-          invalidateQueries(queryClient, tokenID, activeAddress, recipient.address);
+          await invalidateQueries(queryClient, tokenID, activeAddress, recipient.address);
 
           setIsLoading(false);
           setToast({
@@ -518,7 +558,7 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
         if (res) {
           await createAoPendingTransaction(res, activeAddress, recipient.address, quantity, tokenID, token, message);
 
-          invalidateQueries(queryClient, tokenID, activeAddress, recipient.address);
+          await invalidateQueries(queryClient, tokenID, activeAddress, recipient.address);
 
           setToast({
             type: "success",
@@ -606,7 +646,7 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
         // Save pending transaction to extension storage
         await createArPendingTransaction(transaction, activeAddress);
 
-        invalidateQueries(queryClient, tokenID, activeAddress, recipient.address);
+        await invalidateQueries(queryClient, tokenID, activeAddress, recipient.address);
 
         setToast({
           type: "success",
