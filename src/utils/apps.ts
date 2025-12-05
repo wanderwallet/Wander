@@ -87,6 +87,7 @@ import MetaLinksIcon from "url:/assets/ecosystem/metalinks.png";
 import ArLinkIcon from "url:/assets/ecosystem/arlink.svg";
 import TrackiIcon from "url:/assets/ecosystem/tracki.png";
 import VelocityIcon from "url:/assets/ecosystem/velocity.svg";
+import { AO_LINK_URL } from "~constants/urls";
 
 export interface App {
   name: string;
@@ -467,7 +468,7 @@ export const apps: App[] = [
   {
     name: "AO Link",
     category: "Explorers",
-    url: "https://www.ao.link/",
+    url: AO_LINK_URL,
     icon: AolinkIcon,
   },
   {

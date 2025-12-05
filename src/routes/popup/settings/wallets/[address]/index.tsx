@@ -22,6 +22,7 @@ import HeadV2 from "~components/popup/HeadV2";
 import { BackupSeedphraseWarning } from "~components/popup/settings/BackupSeedphraseWarning";
 import { TierGatedTag } from "~components/popup/tier/TierGatedTag";
 import SliderMenu from "~components/SliderMenu";
+import { AO_LINK_URL } from "~constants/urls";
 import { useIsArNSPurchaseGated } from "~lib/arns";
 import { useNameServiceProfile } from "~lib/nameservice";
 import { decodeDomainToASCII } from "~routes/popup/arns/utils";
@@ -259,7 +260,7 @@ export function WalletView({ params: { address } }: WalletViewProps) {
                 hideSquircle
                 onClick={() =>
                   browser.tabs.create({
-                    url: `https://www.ao.link/#/entity/${wallet.address}`,
+                    url: `${AO_LINK_URL}/#/entity/${wallet.address}`,
                   })
                 }
               />
@@ -272,7 +273,7 @@ export function WalletView({ params: { address } }: WalletViewProps) {
                 onClick={() => navigate(`/quick-settings/wallets/${wallet.address}/qr`)}
               />
               <ListItem
-                style={{ position: "relative" }}
+                style={{ position: "relative", overflow: "visible" }}
                 title={browser.i18n.getMessage("export_keyfile")}
                 titleStyle={{ fontSize: 18, fontWeight: 500 }}
                 icon={<Icon color="primary" as={Download01} />}
@@ -285,7 +286,7 @@ export function WalletView({ params: { address } }: WalletViewProps) {
                       marginTop: "5px",
                     }}>
                     <Tooltip
-                      position="bottom"
+                      position="top"
                       content={
                         <Text
                           style={{ maxWidth: 220, textAlign: "center" }}

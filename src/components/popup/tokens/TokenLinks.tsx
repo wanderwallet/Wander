@@ -11,6 +11,7 @@ import styled from "styled-components";
 import { TwitterIcon } from "~components/icons/TwitterIcon";
 import { GithubIcon } from "~components/icons/GithubIcon";
 import discordLogo from "url:/assets/setup/discord-logo.svg";
+import { AO_LINK_URL } from "~constants/urls";
 
 interface TokenLinksProps {
   id: string;
@@ -25,7 +26,7 @@ export const TokenLinks: React.FC<TokenLinksProps> = ({ id }) => {
 
     return {
       name: isAR ? "Viewblock" : "AO Link",
-      url: isAR ? "https://viewblock.io/arweave" : `https://www.ao.link/#/token/${id}`,
+      url: isAR ? "https://viewblock.io/arweave" : `${AO_LINK_URL}/#/token/${id}`,
     };
   }, [id]);
 

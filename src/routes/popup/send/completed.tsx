@@ -7,6 +7,7 @@ import type { WanderRoutePath, CommonRouteProps } from "~wallets/router/router.t
 import { LinkExternal02 } from "@untitled-ui/icons-react";
 import Lottie from "react-lottie";
 import checkmarkAnimationData from "assets/lotties/checkmark.json";
+import { AO_LINK_URL } from "~constants/urls";
 
 export interface TransactionCompletedParams {
   id: string;
@@ -22,7 +23,7 @@ export function TransactionCompletedView({ params: { id } }: TransactionComplete
   }>();
 
   function handleOpen() {
-    const url = isAo ? `https://www.ao.link/#/message/${id}` : `https://viewblock.io/arweave/tx/${id}`;
+    const url = isAo ? `${AO_LINK_URL}/#/message/${id}` : `https://viewblock.io/arweave/tx/${id}`;
 
     browser.tabs.create({ url });
   }

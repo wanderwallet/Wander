@@ -21,6 +21,7 @@ import { WarningIcon } from "~components/icons/WarningIcon";
 import { DegradedMessage, NetworkErrorMessage } from "~components/popup/tokens/ErrorMessages";
 import { AO_PROCESS_ID, AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 import browser from "webextension-polyfill";
+import { AO_LINK_URL } from "~constants/urls";
 
 export default function Token({ onClick, disableClickEffect, disableCursor, ...props }: Props) {
   const ref = useRef(null);
@@ -72,7 +73,7 @@ export default function Token({ onClick, disableClickEffect, disableCursor, ...p
       e.stopPropagation();
 
       if (props.id !== AR_PROCESS_ID) {
-        browser.tabs.create({ url: `https://ao.link/#/token/${props.id}` });
+        browser.tabs.create({ url: `${AO_LINK_URL}/#/token/${props.id}` });
       }
     },
     [props.id],

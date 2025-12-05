@@ -9,6 +9,7 @@ import browser from "webextension-polyfill";
 import { useCallback, useMemo } from "react";
 import { TokenLogo } from "~components/popup/TokenLogo";
 import type { TokenInfo } from "~tokens/aoTokens/ao";
+import { AO_LINK_URL } from "~constants/urls";
 
 interface TransactionItemProps {
   transaction: ExtendedTransaction;
@@ -30,7 +31,7 @@ const TransactionItem = ({ transaction }: TransactionItemProps) => {
 
   const handleTransactionClick = useCallback(() => {
     const id = transaction.node.id;
-    const url = transaction?.aoInfo ? `https://www.ao.link/#/message/${id}` : `https://viewblock.io/arweave/tx/${id}`;
+    const url = transaction?.aoInfo ? `${AO_LINK_URL}/#/message/${id}` : `https://viewblock.io/arweave/tx/${id}`;
 
     window.open(url, "_blank");
   }, [transaction]);
