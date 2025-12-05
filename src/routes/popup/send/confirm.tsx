@@ -119,7 +119,7 @@ async function invalidateQueries(queryClient: QueryClient, tokenID: string, from
           }
 
           // Refetch using observer
-          observers.forEach((observer: any) => observer.refetch().catch(() => {}));
+          observers.forEach((observer) => observer.refetch().catch(() => {}));
         });
       }, delay),
     );
