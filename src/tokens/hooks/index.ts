@@ -90,7 +90,7 @@ export function useTokenBalance(token: TokenInfo | null, address: string, refres
     queryFn: async () => {
       try {
         const balance = await retryWithDelay(
-          () => timeoutPromise(fetchTokenBalance(token, address, refresh), 10000),
+          () => timeoutPromise(fetchTokenBalance(token, address, refresh), 15000),
           3,
           1000,
           (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 30000),
