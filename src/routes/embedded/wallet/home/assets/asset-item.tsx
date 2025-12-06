@@ -175,7 +175,7 @@ export function AssetItem({ id, defaultLogo, tokenName, ticker, amount, fiatPric
 
   // const href = id === "AO"
   //   ? `https://viewblock.io/arweave/address/${ activeWalletAddress }` as const
-  //   : `https://www.ao.link/#/token/${id}` as const;
+  //   : `https://aolink.arweave.net/#/token/${id}` as const;
 
   const style: React.CSSProperties = {} as any;
 

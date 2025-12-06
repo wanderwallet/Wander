@@ -21,6 +21,7 @@ import { WarningIcon } from "~components/icons/WarningIcon";
 import { DegradedMessage, NetworkErrorMessage } from "~components/popup/tokens/ErrorMessages";
 import { AO_PROCESS_ID, AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 import browser from "webextension-polyfill";
+import { AO_LINK_URL } from "~constants/urls";
 
 export default function Token({ onClick, disableClickEffect, disableCursor, ...props }: Props) {
   const ref = useRef(null);
@@ -46,7 +47,7 @@ export default function Token({ onClick, disableClickEffect, disableCursor, ...p
     };
   }, [props]);
 
-  const { data: fractBalance = "0", isError, error, isLoading } = useTokenBalance(tokenInfo, activeAddress);
+  const { data: fractBalance = "0", isError, error, isLoading, isFetching } = useTokenBalance(tokenInfo, activeAddress);
 
   const balance = useMemo(() => {
     if (isError) return "0";
@@ -72,7 +73,7 @@ export default function Token({ onClick, disableClickEffect, disableCursor, ...p
       e.stopPropagation();
 
       if (props.id !== AR_PROCESS_ID) {
-        browser.tabs.create({ url: `https://ao.link/#/token/${props.id}` });
+        browser.tabs.create({ url: `${AO_LINK_URL}/#/token/${props.id}` });
       }
     },
     [props.id],
@@ -160,15 +161,15 @@ export default function Token({ onClick, disableClickEffect, disableCursor, ...p
               <>
                 {showTooltip ? (
                   <BalanceTooltip content={totalBalance} position={props.balanceTooltipPosition || "topEnd"}>
-                    <NativeBalance>{balance}</NativeBalance>
+                    <NativeBalance $isFetching={isFetching && !isLoading}>{balance}</NativeBalance>
                   </BalanceTooltip>
                 ) : (
-                  <NativeBalance>{balance}</NativeBalance>
+                  <NativeBalance $isFetching={isFetching && !isLoading}>{balance}</NativeBalance>
                 )}
               </>
             )}
 
-            <FiatBalance>{fiatBalance}</FiatBalance>
+            <FiatBalance $isFetching={isFetching && !isLoading}>{fiatBalance}</FiatBalance>
           </BalanceSection>
         )}
       </InnerWrapper>
@@ -281,14 +282,20 @@ const NativeBalance = styled(Text).attrs({
   noMargin: true,
   weight: "semibold",
   size: "md",
-})``;
+})<{ $isFetching?: boolean }>`
+  opacity: ${({ $isFetching }) => ($isFetching ? 0.6 : 1)};
+  transition: opacity 0.2s ease;
+`;
 
 const FiatBalance = styled(Text).attrs({
   noMargin: true,
   weight: "medium",
   size: "sm",
   variant: "secondary",
-})``;
+})<{ $isFetching?: boolean }>`
+  opacity: ${({ $isFetching }) => ($isFetching ? 0.6 : 1)};
+  transition: opacity 0.2s ease;
+`;
 
 const BalanceSection = styled.div`
   display: flex;

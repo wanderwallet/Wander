@@ -25,6 +25,7 @@ import {
   EXP_PROCESS_ID,
 } from "~tokens/aoTokens/ao.constants";
 import { timeoutPromise } from "~utils/promises/timeout";
+import { BalanceFetchError, isNetworkError, NetworkError } from "~utils/error/error.utils";
 
 export const defaultOptions = {
   refetchInterval: 300_000,
@@ -89,14 +90,17 @@ export function useTokenBalance(token: TokenInfo | null, address: string, refres
     queryFn: async () => {
       try {
         const balance = await retryWithDelay(
-          () => timeoutPromise(fetchTokenBalance(token, address, refresh), 10000),
+          () => timeoutPromise(fetchTokenBalance(token, address, refresh), 15000),
           3,
           1000,
           (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 30000),
         );
         return balance || "0";
       } catch (error) {
-        throw error;
+        if (isNetworkError(error)) {
+          throw new NetworkError(`Network error while fetching balance for ${token?.processId}`);
+        }
+        throw new BalanceFetchError(`Failed to fetch balance for ${token?.processId}`);
       }
     },
     ...defaultOptions,
