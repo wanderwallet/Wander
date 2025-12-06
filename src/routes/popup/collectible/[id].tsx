@@ -17,6 +17,7 @@ import { PersistentStorage, useStorage } from "~utils/storage";
 import { getTagValue, type TokenInfoWithBalance } from "~tokens/aoTokens/ao";
 import { gql } from "~gateways/api";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import { AO_LINK_URL, VIEWBLOCK_URL } from "~constants/urls";
 
 export interface CollectibleViewParams {
   id: string;
@@ -105,12 +106,12 @@ export function CollectibleView({ params: { id } }: CollectibleViewProps) {
               Bazar
             </Link>
             <Spacer y={0.22} />
-            <Link href={`https://www.ao.link/#/entity/${id}`}>
+            <Link href={`${AO_LINK_URL}/#/entity/${id}`}>
               <AoLinkIcon />
               AO Link
             </Link>
             <Spacer y={0.22} />
-            <Link href={`https://viewblock.io/arweave/tx/${id}`}>
+            <Link href={`${VIEWBLOCK_URL}/tx/${id}`}>
               <ViewBlockIcon />
               Viewblock
             </Link>

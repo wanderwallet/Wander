@@ -16,6 +16,7 @@ export function BackupSeedphraseWarning() {
           borderRadius: 8,
           background: theme.displayTheme === "dark" ? "#363225" : "#F5F5F5",
           padding: "8px 12px",
+          flexShrink: 0,
         }}
         leftIcon={<AlertTriangle height={24} width={24} color="#EEBD41" />}
         titleStyle={{ fontWeight: 500, fontSize: 16 }}
