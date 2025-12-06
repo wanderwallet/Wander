@@ -47,6 +47,7 @@ export class BalanceFetchError extends Error {
 }
 
 export const isNetworkError = (error: any) =>
+  error?.name === "NetworkError" ||
   error?.message === "Failed to fetch" ||
   error?.message?.includes("ERR_SSL_PROTOCOL_ERROR") ||
   error?.message?.includes("ERR_CONNECTION_CLOSED");
