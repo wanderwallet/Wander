@@ -108,7 +108,16 @@ export function formatBalance(balance: BigNumber | string) {
   const tooltipBalance = balance.toFormat(20, BigNumber.ROUND_FLOOR).replace(/\.?0*$/, "");
   let suffix = "";
 
-  if (balance.lte(1e4)) {
+  if (balance.isZero()) {
+    displayBalance = "0";
+    showTooltip = false;
+  } else if (balance.lt(1)) {
+    displayBalance = BigNumber(balance.toPrecision(6, BigNumber.ROUND_FLOOR))
+      .toFixed(12, BigNumber.ROUND_FLOOR)
+      .replace(/\.?0*$/, "");
+
+    showTooltip = !balance.eq(displayBalance);
+  } else if (balance.lte(1e4)) {
     displayBalance = BigNumber(balance.toPrecision(6, BigNumber.ROUND_FLOOR))
       .toFixed(20, BigNumber.ROUND_FLOOR)
       .replace(/\.?0*$/, "");

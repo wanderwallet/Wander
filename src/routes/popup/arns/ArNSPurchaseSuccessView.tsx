@@ -12,6 +12,7 @@ import browser from "webextension-polyfill";
 import { useEffect } from "react";
 import { trackPage, PageType } from "~utils/analytics";
 import { ArNSSuccessIcon } from "./ArNSSuccessIcon";
+import { AO_LINK_URL } from "~constants/urls";
 
 export interface ArNSPurchaseSuccessParams {
   name: string;
@@ -73,7 +74,7 @@ export const ArNSPurchaseSuccessView = ({
         </Text>
       </Flex>
       <a
-        href={`https://www.ao.link/#/message/${transactionId}`}
+        href={`${AO_LINK_URL}/#/message/${transactionId}`}
         target="_blank"
         title="View transaction on ao.link"
         rel="noopener noreferrer"
