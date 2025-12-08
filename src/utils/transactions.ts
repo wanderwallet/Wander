@@ -318,6 +318,8 @@ export function getTokenPendingTransactionsStats(
   denomination: number,
 ): { count: number; balance: string } {
   const transactions = pendingTransactionsMap.get(tokenId) || [];
+  if (transactions.length === 0 || !denomination) return { count: 0, balance: "0" };
+
   const count = transactions.length;
   const isAr = tokenId === AR_PROCESS_ID;
   const quantity = transactions.reduce(

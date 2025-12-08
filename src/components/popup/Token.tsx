@@ -30,10 +30,6 @@ export default function Token({ onClick, disableClickEffect, disableCursor, ...p
   const [totalBalance, setTotalBalance] = useState("");
   const [showTooltip, setShowTooltip] = useState(false);
   const [aoConfettiShown, setAoConfettiShown] = useState(true);
-  const { count: pendingCount, balance: pendingBalance } = useMemo(
-    () => getTokenPendingTransactionsStats(props.id, props.denomination),
-    [props.id, props.denomination],
-  );
 
   const [activeAddress] = useStorage({
     key: "active_address",
@@ -167,14 +163,22 @@ export default function Token({ onClick, disableClickEffect, disableCursor, ...p
               <>
                 {showTooltip ? (
                   <PendingBalance>
-                    <PendingTransactionsTooltip count={pendingCount} total={pendingBalance} ticker={props.ticker} />
+                    <PendingTransactionsTooltip
+                      tokenId={props.id}
+                      denomination={props.denomination}
+                      ticker={props.ticker}
+                    />
                     <Tooltip content={totalBalance} position={props.balanceTooltipPosition || "topEnd"}>
                       <NativeBalance $isFetching={isFetching && !isLoading}>{balance}</NativeBalance>
                     </Tooltip>
                   </PendingBalance>
                 ) : (
                   <PendingBalance>
-                    <PendingTransactionsTooltip count={pendingCount} total={pendingBalance} ticker={props.ticker} />
+                    <PendingTransactionsTooltip
+                      tokenId={props.id}
+                      denomination={props.denomination}
+                      ticker={props.ticker}
+                    />
                     <NativeBalance $isFetching={isFetching && !isLoading}>{balance}</NativeBalance>
                   </PendingBalance>
                 )}

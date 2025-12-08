@@ -16,6 +16,7 @@ import { useMemo } from "react";
 import { PriceChart } from "./PriceChart";
 import { ActiveAgentsSlider } from "./ActiveAgentsSlider";
 import { TokenActionButtons } from "./TokenActionButtons";
+import { PendingTransactionsTooltip } from "../PendingTransactionsTooltip";
 
 interface TokenInfoProps {
   id: string;
@@ -66,7 +67,11 @@ export const TokenInfo = ({ id }: TokenInfoProps) => {
   return (
     <Flex direction="column" gap={24}>
       <TokenInfoItem>
-        <TokenInfoLabel>{browser.i18n.getMessage("your_balance")}</TokenInfoLabel>
+        <Flex direction="row" gap={8} align="center">
+          <TokenInfoLabel>{browser.i18n.getMessage("your_balance")}</TokenInfoLabel>
+          <PendingTransactionsTooltip tokenId={id} denomination={token?.Denomination} ticker={token?.Ticker} />
+        </Flex>
+
         <TokenBalance>
           <TokenBalanceText>
             {tokenDisplay.loading ? (

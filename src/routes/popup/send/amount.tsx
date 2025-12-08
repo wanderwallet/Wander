@@ -34,6 +34,7 @@ import { WarningIcon } from "~components/icons/WarningIcon";
 import { useTheme } from "~utils/theme/theme.hook";
 import { AR_PROCESS_ID, EXP_PROCESS_ID, defaultTokens } from "~tokens/aoTokens/ao.constants";
 import { isNonTransferableToken } from "~tokens/aoTokens/ao.utils";
+import { PendingTransactionsNotice } from "~components/popup/PendingTransactionsNotice";
 
 export enum AmountValidationState {
   Invalid = "Invalid",
@@ -448,20 +449,22 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
                 {browser.i18n.getMessage(note.length > 0 ? "edit_note" : "add_a_note")}
               </Text>
             </AddNote>
-            <Text
-              style={{
-                height: 38,
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-              }}
-              variant="secondary"
-              size="sm"
-              weight="medium"
-              noMargin>
-              {note}
-            </Text>
+            {note && (
+              <Text
+                style={{
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+                variant="secondary"
+                size="sm"
+                weight="medium"
+                noMargin>
+                {note}
+              </Text>
+            )}
           </Flex>
+          <PendingTransactionsNotice tokenId={token.id} denomination={token.Denomination} ticker={token.Ticker} />
         </SendForm>
         <Spacer y={1} />
         <BottomActions>

@@ -1,20 +1,37 @@
 import { Tooltip } from "@arconnect/components-rebrand";
+import { useMemo } from "react";
 import styled from "styled-components";
 import clockwiseIcon from "url:/assets/icons/clockwise.svg";
+import { getTokenPendingTransactionsStats } from "~utils/transactions";
 
-export function PendingTransactionsTooltip({ count, total, ticker }: { count: number; total: string; ticker: string }) {
-  if (count > 0) {
-    return (
-      <Tooltip content={<PendingContent count={count} total={total} ticker={ticker} />} position="top">
-        <PendingIcon src={clockwiseIcon} alt="Pending" />
-      </Tooltip>
-    );
-  }
-
-  return null;
+interface PendingTransactionsTooltipProps {
+  tokenId: string;
+  denomination: number;
+  ticker: string;
 }
 
-function PendingContent({ count, total, ticker }: { count: number; total: string; ticker: string }) {
+interface PendingContentProps {
+  count: number;
+  balance: string;
+  ticker: string;
+}
+
+export function PendingTransactionsTooltip({ tokenId, denomination, ticker }: PendingTransactionsTooltipProps) {
+  const { count, balance } = useMemo(
+    () => getTokenPendingTransactionsStats(tokenId, denomination),
+    [tokenId, denomination],
+  );
+
+  if (count === 0 || !denomination) return null;
+
+  return (
+    <Tooltip content={<PendingContent count={count} balance={balance} ticker={ticker} />} position="top">
+      <PendingIcon src={clockwiseIcon} alt="Pending" />
+    </Tooltip>
+  );
+}
+
+function PendingContent({ count, balance, ticker }: PendingContentProps) {
   return (
     <div
       style={{
@@ -24,7 +41,7 @@ function PendingContent({ count, total, ticker }: { count: number; total: string
         whiteSpace: "normal",
         wordWrap: "break-word",
       }}>
-      {count} of pending txs. Total amount pending: {total} {ticker}
+      {count} pending txs. Total amount pending: {balance} {ticker}
     </div>
   );
 }
@@ -33,4 +50,5 @@ const PendingIcon = styled.img`
   width: 16px;
   height: 16px;
   filter: brightness(0) saturate(100%) ${({ theme }) => `invert(${theme.displayTheme === "dark" ? "1" : "0"})`};
+  cursor: pointer;
 `;
