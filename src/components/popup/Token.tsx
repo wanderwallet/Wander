@@ -22,12 +22,18 @@ import { DegradedMessage, NetworkErrorMessage } from "~components/popup/tokens/E
 import { AO_PROCESS_ID, AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 import browser from "webextension-polyfill";
 import { AO_LINK_URL } from "~constants/urls";
+import { getTokenPendingTransactionsStats } from "~utils/transactions";
+import { PendingTransactionsTooltip } from "./PendingTransactionsTooltip";
 
 export default function Token({ onClick, disableClickEffect, disableCursor, ...props }: Props) {
   const ref = useRef(null);
   const [totalBalance, setTotalBalance] = useState("");
   const [showTooltip, setShowTooltip] = useState(false);
   const [aoConfettiShown, setAoConfettiShown] = useState(true);
+  const { count: pendingCount, balance: pendingBalance } = useMemo(
+    () => getTokenPendingTransactionsStats(props.id, props.denomination),
+    [props.id, props.denomination],
+  );
 
   const [activeAddress] = useStorage({
     key: "active_address",
@@ -42,7 +48,7 @@ export default function Token({ onClick, disableClickEffect, disableCursor, ...p
       processId: props.id,
       Ticker: props.ticker,
       Name: props.name,
-      Denomination: props.divisibility,
+      Denomination: props.denomination,
       Logo: props.defaultLogo,
     };
   }, [props]);
@@ -160,11 +166,17 @@ export default function Token({ onClick, disableClickEffect, disableCursor, ...p
             ) : (
               <>
                 {showTooltip ? (
-                  <BalanceTooltip content={totalBalance} position={props.balanceTooltipPosition || "topEnd"}>
-                    <NativeBalance $isFetching={isFetching && !isLoading}>{balance}</NativeBalance>
-                  </BalanceTooltip>
+                  <PendingBalance>
+                    <PendingTransactionsTooltip count={pendingCount} total={pendingBalance} ticker={props.ticker} />
+                    <Tooltip content={totalBalance} position={props.balanceTooltipPosition || "topEnd"}>
+                      <NativeBalance $isFetching={isFetching && !isLoading}>{balance}</NativeBalance>
+                    </Tooltip>
+                  </PendingBalance>
                 ) : (
-                  <NativeBalance $isFetching={isFetching && !isLoading}>{balance}</NativeBalance>
+                  <PendingBalance>
+                    <PendingTransactionsTooltip count={pendingCount} total={pendingBalance} ticker={props.ticker} />
+                    <NativeBalance $isFetching={isFetching && !isLoading}>{balance}</NativeBalance>
+                  </PendingBalance>
                 )}
               </>
             )}
@@ -240,10 +252,6 @@ export const InnerWrapper = styled.div<{ width: string }>`
   width: ${(props) => props.width};
 `;
 
-const BalanceTooltip = styled(Tooltip)`
-  margin-right: ${(props) => (props.position === "left" ? "0" : "1rem")};
-`;
-
 const MessageTooltip = styled(Tooltip)`
   max-width: 270px;
 `;
@@ -308,6 +316,13 @@ const BalanceSection = styled.div`
   span {
     text-align: right;
   }
+`;
+
+const PendingBalance = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
 `;
 
 const Canvas = styled.canvas`

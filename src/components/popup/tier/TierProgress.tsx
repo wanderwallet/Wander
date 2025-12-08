@@ -35,7 +35,7 @@ export function TierProgress({ activeTier, highlightTierLabel }: TierProgressPro
 
 const HelpTooltip = () => {
   return (
-    <StyledTooltip
+    <Tooltip
       content={
         <Text style={{ maxWidth: 220, textAlign: "center" }} size="sm" weight="medium" noMargin>
           {browser.i18n.getMessage("position_update_tooltip")}
@@ -43,7 +43,7 @@ const HelpTooltip = () => {
       }
       position="left">
       <HelpCircleIcon />
-    </StyledTooltip>
+    </Tooltip>
   );
 };
 
@@ -52,8 +52,4 @@ const HelpCircleIcon = styled(HelpCircle)`
   width: 16px;
   cursor: pointer;
   color: ${({ theme }) => theme.secondaryText};
-`;
-
-const StyledTooltip = styled(Tooltip)`
-  margin-right: 6px;
 `;

@@ -11,6 +11,10 @@ import type Transaction from "arweave/web/lib/transaction";
 import type { Tag } from "arweave/web/lib/transaction";
 import { arweave } from "./agents/utils";
 import { log, LOG_GROUP } from "./log/log.utils";
+import { balanceToFractioned } from "~tokens/currency";
+import BigNumber from "bignumber.js";
+
+const pendingTransactionsMap = new Map<string, ExtendedTransaction[]>();
 
 export interface PendingTransaction {
   id: string;
@@ -286,4 +290,40 @@ export async function removeTransferErrorTransactions(
   }
 
   return validTxs;
+}
+
+// For tokens purposes only
+export async function setPendingTransactionsMap(): Promise<void> {
+  pendingTransactionsMap.clear();
+  const transactions = await pendingTransactionsArray.getAll();
+  for (const tx of transactions) {
+    if (tx.transaction.aoInfo) {
+      const tokenId = tx.transaction.node.recipient;
+      if (!pendingTransactionsMap.has(tokenId)) {
+        pendingTransactionsMap.set(tokenId, []);
+      }
+      pendingTransactionsMap.get(tokenId).push(tx.transaction);
+    } else {
+      if (!pendingTransactionsMap.has(AR_PROCESS_ID)) {
+        pendingTransactionsMap.set(AR_PROCESS_ID, []);
+      }
+      pendingTransactionsMap.get(AR_PROCESS_ID).push(tx.transaction);
+    }
+  }
+  log(LOG_GROUP.TRANSACTIONS, "Pending transactions map set:", pendingTransactionsMap);
+}
+
+export function getTokenPendingTransactionsStats(
+  tokenId: string,
+  denomination: number,
+): { count: number; balance: string } {
+  const transactions = pendingTransactionsMap.get(tokenId) || [];
+  const count = transactions.length;
+  const isAr = tokenId === AR_PROCESS_ID;
+  const quantity = transactions.reduce(
+    (acc, tx) => acc.plus(isAr ? tx.node.quantity.ar : tx.aoInfo?.quantity || "0"),
+    new BigNumber(0),
+  );
+  const balance = isAr ? quantity.toFixed() : balanceToFractioned(quantity.toString(), denomination).toFixed();
+  return { count, balance };
 }

@@ -233,7 +233,7 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
       const { result: tx, gateway } = await retryWithGateways(async (arweave) => {
         const transaction = await arweave.createTransaction({
           target,
-          quantity: fractionedToBalance(amount, { decimals: token.Denomination }, "AR"),
+          quantity: fractionedToBalance(amount, token.Denomination),
           data: message ? decodeURIComponent(message) : undefined,
         });
 
@@ -351,7 +351,7 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
     // 2/21/24: Checking first if it's an ao transfer and will handle in this block
     if (isAo) {
       try {
-        const quantity = fractionedToBalance(amount, { decimals: token.Denomination }, "AO");
+        const quantity = fractionedToBalance(amount, token.Denomination);
         const res = await sendAoTransfer(ao, tokenID, recipient.address, quantity);
         if (res) {
           await createAoPendingTransaction(res, activeAddress, recipient.address, quantity, tokenID, token, message);
@@ -552,7 +552,7 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
       try {
         setPreparedTx(prepared);
 
-        const quantity = fractionedToBalance(amount, { decimals: token.Denomination }, "AO");
+        const quantity = fractionedToBalance(amount, token.Denomination);
         const res = await sendAoTransferKeystone(ao, tokenID, recipient.address, quantity, keystoneSigner);
 
         if (res) {

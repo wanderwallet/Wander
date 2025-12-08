@@ -24,7 +24,7 @@ export function CollectiblesView() {
           <Collectible
             id={collectible.id}
             name={collectible.Name || collectible.Ticker}
-            divisibility={collectible.Denomination}
+            denomination={collectible.Denomination}
             onClick={() => navigate(`/collectible/${collectible.id}`)}
             key={i}
           />

@@ -19,10 +19,10 @@ interface AssetItemProps {
   ticker: string;
   amount: string;
   fiatPrice: number;
-  divisibility: number;
+  denomination: number;
 }
 
-export function AssetItem({ id, defaultLogo, tokenName, ticker, amount, fiatPrice, divisibility }: AssetItemProps) {
+export function AssetItem({ id, defaultLogo, tokenName, ticker, amount, fiatPrice, denomination }: AssetItemProps) {
   const [totalBalance, setTotalBalance] = useState("");
   const [currency] = useSetting("currency");
   const [activeAddress] = useStorage({
@@ -36,10 +36,10 @@ export function AssetItem({ id, defaultLogo, tokenName, ticker, amount, fiatPric
       processId: id,
       Ticker: ticker,
       Name: tokenName,
-      Denomination: divisibility,
+      Denomination: denomination,
       Logo: defaultLogo,
     };
-  }, [id, ticker, tokenName, divisibility, defaultLogo]);
+  }, [id, ticker, tokenName, denomination, defaultLogo]);
 
   const { data: fractBalance = "0", isError, error, isLoading } = useTokenBalance(tokenInfo, activeAddress);
 

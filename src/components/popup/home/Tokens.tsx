@@ -6,7 +6,8 @@ import { useBalanceSortedTokens } from "~tokens/hooks";
 import { useLocation } from "~wallets/router/router.utils";
 import { Settings04 } from "@untitled-ui/icons-react";
 import { ManageAssets } from "./ManageAssets";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { setPendingTransactionsMap } from "~utils/transactions";
 
 export default function Tokens() {
   const { navigate } = useLocation();
@@ -21,6 +22,10 @@ export default function Tokens() {
     navigate(`/tokens/${tokenId}`);
   }
 
+  useEffect(() => {
+    setPendingTransactionsMap();
+  }, []);
+
   return (
     <Cointainer>
       {tokens.length === 0 && <NoTokens>{browser.i18n.getMessage("no_assets")}</NoTokens>}
@@ -28,7 +33,7 @@ export default function Tokens() {
         {tokens.map((token) => (
           <Token
             key={token.id}
-            divisibility={token.Denomination}
+            denomination={token.Denomination}
             type={"asset"}
             defaultLogo={token?.Logo}
             id={token.id}

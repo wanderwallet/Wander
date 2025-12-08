@@ -110,7 +110,7 @@ function Token({ onClick, disableClickEffect, disableCursor, disabled, ...props 
       processId: props.id,
       Ticker: props.ticker,
       Name: props.name,
-      Denomination: props.divisibility,
+      Denomination: props.denomination,
       Logo: props.defaultLogo,
     };
   }, [props]);

@@ -109,7 +109,7 @@ const TokenSelectorScreen = ({ onClose, updateToken, tokenSelectorType, filterTo
                   id={token.processId}
                   showId={true}
                   ticker={token.Ticker}
-                  divisibility={token.Denomination}
+                  denomination={token.Denomination}
                   onClick={() => {
                     updateToken(token);
                     onClose();

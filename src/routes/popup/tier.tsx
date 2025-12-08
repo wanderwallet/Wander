@@ -40,9 +40,7 @@ export function TierView() {
 
   const formattedBalance = useMemo(() => {
     if (!activeTier) return { displayBalance: "0", tooltipBalance: "0", showTooltip: false, hasSuffix: false };
-    const fractionedBalance = balanceToFractioned(String(activeTier?.balance ?? 0), {
-      decimals: wanderTokenInfo.Denomination,
-    });
+    const fractionedBalance = balanceToFractioned(String(activeTier?.balance ?? 0), wanderTokenInfo.Denomination);
     return formatBalance(fractionedBalance);
   }, [activeTier?.balance]);
 

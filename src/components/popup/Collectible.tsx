@@ -25,7 +25,7 @@ export default function Collectible({ id, onClick, ...props }: Props) {
       processId: id,
       Ticker: props.name,
       Name: props.name,
-      Denomination: props.divisibility,
+      Denomination: props.denomination,
       Logo: id,
       type: "collectible" as TokenInfo["type"],
     };
@@ -113,6 +113,6 @@ const Qty = styled(Name)`
 interface Props {
   id: string;
   name: string;
-  divisibility?: number;
+  denomination?: number;
   onClick?: MouseEventHandler<HTMLDivElement>;
 }

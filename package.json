@@ -60,7 +60,7 @@
   "dependencies": {
     "@ar.io/sdk": "^3.18.0",
     "@arconnect/components": "^1.0.0",
-    "@arconnect/components-rebrand": "https://github.com/wanderwallet/components-rebrand.git#master",
+    "@arconnect/components-rebrand": "https://github.com/wanderwallet/components-rebrand.git#fix/tooltip",
     "@arconnect/keystone-sdk": "^0.0.5",
     "@dha-team/arbundles": "^1.0.2",
     "@iconicicons/react": "^1.5.0",

@@ -28,7 +28,7 @@ export const arPlaceholder: TokenInterface = {
   ticker: "AR",
   type: "asset",
   balance: "0",
-  decimals: 12,
+  denomination: 12,
 };
 
 export type RecipientType = {

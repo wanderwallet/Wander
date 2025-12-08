@@ -300,14 +300,7 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
     // check qty
     if (invalidQty || qty === "" || Number(qty) === 0) return;
 
-    const finalQty = fractionedToBalance(
-      qty,
-      {
-        id: token.id,
-        decimals: token.Denomination,
-      },
-      token.id === AR_PROCESS_ID ? "AR" : "AO",
-    );
+    const finalQty = fractionedToBalance(qty, token.Denomination);
 
     await TempTransactionStorage.set("send", {
       networkFee,
@@ -534,7 +527,7 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
                   defaultLogo={token?.Logo}
                   id={token.id}
                   ticker={token.Ticker}
-                  divisibility={token.Denomination}
+                  denomination={token.Denomination}
                   fiatPrice={prices[token.id]}
                   onClick={() => updateSelectedToken(token.id)}
                 />
@@ -545,7 +538,7 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
                 <Collectible
                   id={token.id}
                   name={token.Name || token.Ticker}
-                  divisibility={token.Denomination}
+                  denomination={token.Denomination}
                   onClick={() => updateSelectedToken(token.id)}
                   key={i}
                 />
