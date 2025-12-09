@@ -7,7 +7,7 @@ import { useLocation } from "~wallets/router/router.utils";
 import { Settings04 } from "@untitled-ui/icons-react";
 import { ManageAssets } from "./ManageAssets";
 import { useEffect, useState } from "react";
-import { setPendingTransactionsMap } from "~utils/transactions";
+import { setPendingTransactionsMap } from "~utils/transactions/pending/pending.utils";
 
 export default function Tokens() {
   const { navigate } = useLocation();

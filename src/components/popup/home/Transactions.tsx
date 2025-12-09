@@ -29,7 +29,7 @@ import {
   cleanupOldPendingTransactions,
   mergeWithPending,
   removeTransferErrorTransactions,
-} from "~utils/transactions";
+} from "~utils/transactions/pending/pending.utils";
 import BigNumber from "bignumber.js";
 import { retryWithDelay } from "~utils/promises/retry";
 import { useLocation } from "~wallets/router/router.utils";
@@ -191,7 +191,7 @@ export default function Transactions() {
 
           // Get pending transactions and merge with GraphQL results
           pendingTransactions = await removeTransferErrorTransactions(pendingTransactions);
-          combinedTransactions = await mergeWithPending(combinedTransactions, pendingTransactions, true);
+          combinedTransactions = await mergeWithPending(combinedTransactions, pendingTransactions);
 
           setTransactions(combinedTransactions);
 

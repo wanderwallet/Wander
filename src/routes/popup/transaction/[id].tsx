@@ -34,7 +34,7 @@ import { useTokenPrice } from "~tokens/hooks";
 import { fetchTokenByProcessId, getTagValue, type TokenInfo } from "~tokens/aoTokens/ao";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { AO_AUTHORITY_ID, AR_TOKEN_INFO, AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
-import { getPendingTransaction } from "~utils/transactions";
+import { getPendingTransaction } from "~utils/transactions/pending/pending.utils";
 import { AO_LINK_URL, VIEWBLOCK_URL } from "~constants/urls";
 
 // need to manually set/replace tokenAddress here for ao interactions

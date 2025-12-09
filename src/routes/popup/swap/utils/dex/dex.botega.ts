@@ -21,7 +21,7 @@ import { retryWithDelay } from "~utils/promises/retry";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { queryClient } from "~utils/tanstack";
 import { assertTransferResult, createSwapMessage } from "../swap.utils";
-import { createAoPendingTransaction } from "~utils/transactions";
+import { createAoPendingTransaction } from "~utils/transactions/pending/pending.utils";
 
 /**
  * Fetch the result of a swap message

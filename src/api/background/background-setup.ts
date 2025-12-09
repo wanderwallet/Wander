@@ -37,6 +37,7 @@ import { handleAuthStateChange } from "./handlers/storage/auth-state-change/auth
 import { initInactivityTracking } from "~utils/inactivity/inactivity.utils";
 import { handleRefreshWalletLifetimeSavingsAlarm } from "./handlers/alarms/tiers/refresh-wallet-lifetime-savings-alarm.handler";
 import { handleSwapMonitorAlarm } from "~routes/popup/swap/utils/alarms/swap-monitor/swap-monitor-alarm.handler";
+import { handlePendingTransactionsAlarm } from "./handlers/alarms/pending-transactions/pending-transactions-alarm.handler";
 
 export function setupBackgroundService() {
   log(
@@ -105,6 +106,7 @@ export function setupBackgroundService() {
   browser.alarms.onAlarm.addListener(handleAoTokenCacheAlarm);
   browser.alarms.onAlarm.addListener(handleAoTokensImportAlarm);
   browser.alarms.onAlarm.addListener(handleFairLaunchTokensImportAlarm);
+  browser.alarms.onAlarm.addListener(handlePendingTransactionsAlarm);
 
   // handle keep alive alarm
   browser.alarms.onAlarm.addListener((alarm) => {

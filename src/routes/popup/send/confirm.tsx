@@ -7,7 +7,11 @@ import { SendButton, type RecipientType, type TransactionData } from ".";
 import { formatAddress } from "~utils/format";
 import type Transaction from "arweave/web/lib/transaction";
 import { useStorage } from "~utils/storage";
-import { createArPendingTransaction, createAoPendingTransaction } from "~utils/transactions";
+import {
+  createArPendingTransaction,
+  createAoPendingTransaction,
+  checkAndCleanPendingTransactions,
+} from "~utils/transactions/pending/pending.utils";
 import { ExtensionStorage, TempTransactionStorage, type RawStoredTransfer } from "~utils/storage";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { findGateway, retryWithGateways } from "~gateways/wayfinder";
@@ -120,6 +124,7 @@ async function invalidateQueries(queryClient: QueryClient, tokenID: string, from
 
           // Refetch using observer
           observers.forEach((observer) => observer.refetch().catch(() => {}));
+          if (tokenID !== AR_PROCESS_ID) checkAndCleanPendingTransactions();
         });
       }, delay),
     );

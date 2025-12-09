@@ -22,7 +22,6 @@ import { DegradedMessage, NetworkErrorMessage } from "~components/popup/tokens/E
 import { AO_PROCESS_ID, AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 import browser from "webextension-polyfill";
 import { AO_LINK_URL } from "~constants/urls";
-import { getTokenPendingTransactionsStats } from "~utils/transactions";
 import { PendingTransactionsTooltip } from "./PendingTransactionsTooltip";
 
 export default function Token({ onClick, disableClickEffect, disableCursor, ...props }: Props) {

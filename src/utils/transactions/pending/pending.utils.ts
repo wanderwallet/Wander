@@ -1,7 +1,3 @@
-/**
- * Utility functions for AO/AR transactions
- */
-
 import { hasTransferError, sortFn, type ExtendedTransaction } from "~lib/transactions";
 import { getTagValue, type TokenInfo } from "~tokens/aoTokens/ao";
 import type { GQLNodeInterface } from "ar-gql/dist/faces";
@@ -9,18 +5,39 @@ import { createStorageArray } from "~utils/storage/storage.array";
 import { AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 import type Transaction from "arweave/web/lib/transaction";
 import type { Tag } from "arweave/web/lib/transaction";
-import { arweave } from "./agents/utils";
-import { log, LOG_GROUP } from "./log/log.utils";
 import { balanceToFractioned } from "~tokens/currency";
 import BigNumber from "bignumber.js";
+import { gql } from "~gateways/api";
+import { retryWithDelay } from "~utils/promises/retry";
+import { txHistoryGateways } from "~gateways/gateway";
+import { arweave } from "~utils/agents/utils";
+import { log, LOG_GROUP } from "~utils/log/log.utils";
+import type { PendingTransaction } from "./pending.types";
+import { PENDING_TRANSACTIONS_QUERY, PENDING_AO_TRANSACTIONS_QUERY } from "./pending.constants";
+import {
+  clearPendingTransactionsAlarm,
+  scheduleAoTransactionCleanupAlarms,
+  schedulePendingTransactionsCleanupAlarm,
+} from "./pending.alarms";
 
 const pendingTransactionsMap = new Map<string, ExtendedTransaction[]>();
 
-export interface PendingTransaction {
-  id: string;
-  address: string;
-  transaction: ExtendedTransaction;
-  createdAt: number;
+// Subscription system for map changes
+const mapChangeListeners = new Set<() => void>();
+
+/**
+ * Subscribe to pending transactions map changes
+ * @returns Unsubscribe function
+ */
+export function onPendingTransactionsMapChange(listener: () => void): () => void {
+  mapChangeListeners.add(listener);
+  return () => {
+    mapChangeListeners.delete(listener);
+  };
+}
+
+function notifyMapChangeListeners() {
+  mapChangeListeners.forEach((listener) => listener());
 }
 
 /**
@@ -133,6 +150,10 @@ export async function removePendingTransactions(transactionIds: string[]): Promi
   try {
     const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
     const idsSet = new Set(transactionIds);
+    await pendingTransactionsArray.updateWhere(
+      (pt) => idsSet.has(pt.id) && !pt.foundInGraphQL,
+      (pt) => ({ ...pt, foundInGraphQL: true }),
+    );
     await pendingTransactionsArray.removeWhere((pt) => idsSet.has(pt.id) && pt.createdAt <= fiveMinutesAgo);
   } catch (error) {
     log(LOG_GROUP.TRANSACTIONS, "Error removing pending transactions:", error);
@@ -148,6 +169,85 @@ export async function cleanupOldPendingTransactions(): Promise<void> {
     await pendingTransactionsArray.removeWhere((pt) => pt.createdAt <= oneDayAgo);
   } catch (error) {
     log(LOG_GROUP.TRANSACTIONS, "Error cleaning up old pending transactions:", error);
+  }
+}
+
+/**
+ * Check and remove pending transactions that are now confirmed in GraphQL.
+ */
+export async function checkAndCleanPendingTransactions(): Promise<void> {
+  try {
+    // Filter out already found transactions
+    const pending = await pendingTransactionsArray.filter((tx) => !tx.foundInGraphQL);
+    if (!pending.length) {
+      await clearPendingTransactionsAlarm();
+      return;
+    }
+
+    const arTx = pending.filter((tx) => !tx.transaction.aoInfo);
+    const aoTx = pending.filter((tx) => tx.transaction.aoInfo);
+
+    const BATCH_SIZE = 100;
+    const confirmed = new Set<string>();
+
+    const checkBatches = async (ids: string[], query: string) => {
+      for (let i = 0; i < ids.length; i += BATCH_SIZE) {
+        const batch = ids.slice(i, i + BATCH_SIZE);
+
+        try {
+          const result = await retryWithDelay(async (attempt) => {
+            const gateway = txHistoryGateways[attempt % txHistoryGateways.length];
+            const res = await gql(query, { ids: batch }, gateway);
+
+            if (res?.data === null && (res as any)?.errors?.length) {
+              throw new Error((res as any).errors?.[0]?.message || "GraphQL Error");
+            }
+            return res;
+          }, 2);
+
+          const edges = result?.data?.transactions?.edges || [];
+          for (const edge of edges) {
+            const id = edge?.node?.id;
+            if (id) confirmed.add(id);
+          }
+        } catch (err) {
+          log(LOG_GROUP.TRANSACTIONS, "Error checking pending batch:", err);
+          // Continue to next batch even on failure
+        }
+      }
+    };
+
+    // Check AR + AO in parallel
+    await Promise.allSettled([
+      arTx.length
+        ? checkBatches(
+            arTx.map((t) => t.id),
+            PENDING_TRANSACTIONS_QUERY,
+          )
+        : null,
+      aoTx.length
+        ? checkBatches(
+            aoTx.map((t) => t.id),
+            PENDING_AO_TRANSACTIONS_QUERY,
+          )
+        : null,
+    ]);
+
+    // Remove confirmed
+    if (confirmed.size) {
+      await removePendingTransactions([...confirmed]);
+      log(LOG_GROUP.TRANSACTIONS, `Removed ${confirmed.size} confirmed pending transactions`);
+    }
+
+    await setPendingTransactionsMap();
+
+    // If no pending remain, clear cleanup alarms
+    const left = await pendingTransactionsArray.getAll();
+    if (left.length === 0) {
+      await clearPendingTransactionsAlarm();
+    }
+  } catch (err) {
+    log(LOG_GROUP.TRANSACTIONS, "Error checking and cleaning pending transactions:", err);
   }
 }
 
@@ -185,6 +285,7 @@ export async function createArPendingTransaction(
     };
 
     await savePendingTransaction(ownerAddress, tx);
+    await schedulePendingTransactionsCleanupAlarm();
   } catch (error) {
     log(LOG_GROUP.TRANSACTIONS, "Error creating AR pending transaction:", error);
   }
@@ -250,6 +351,7 @@ export async function createAoPendingTransaction(
     };
 
     await savePendingTransaction(ownerAddress, tx);
+    await scheduleAoTransactionCleanupAlarms();
   } catch (error) {
     log(LOG_GROUP.TRANSACTIONS, "Error creating AO pending transaction:", error);
   }
@@ -258,13 +360,12 @@ export async function createAoPendingTransaction(
 export async function mergeWithPending(
   baseTransactions: ExtendedTransaction[],
   pendingTransactions: ExtendedTransaction[],
-  cleanUp: boolean = false,
 ): Promise<ExtendedTransaction[]> {
   const graphqlTxIds = new Set(baseTransactions.map((tx) => tx.node.id));
   const newPendingTxs = pendingTransactions.filter((tx) => !graphqlTxIds.has(tx.node.id));
 
   // Remove pending transactions that are now available in GraphQL
-  if (cleanUp && graphqlTxIds.size > 0) {
+  if (graphqlTxIds.size > 0) {
     await removePendingTransactions(Array.from(graphqlTxIds));
   }
 
@@ -295,7 +396,7 @@ export async function removeTransferErrorTransactions(
 // For tokens purposes only
 export async function setPendingTransactionsMap(): Promise<void> {
   pendingTransactionsMap.clear();
-  const transactions = await pendingTransactionsArray.getAll();
+  const transactions = await pendingTransactionsArray.filter((tx) => !tx.foundInGraphQL);
   for (const tx of transactions) {
     if (tx.transaction.aoInfo) {
       const tokenId = tx.transaction.node.recipient;
@@ -311,6 +412,8 @@ export async function setPendingTransactionsMap(): Promise<void> {
     }
   }
   log(LOG_GROUP.TRANSACTIONS, "Pending transactions map set:", pendingTransactionsMap);
+  // Notify listeners that the map has changed
+  notifyMapChangeListeners();
 }
 
 export function getTokenPendingTransactionsStats(

@@ -35,6 +35,7 @@ import { useTheme } from "~utils/theme/theme.hook";
 import { AR_PROCESS_ID, EXP_PROCESS_ID, defaultTokens } from "~tokens/aoTokens/ao.constants";
 import { isNonTransferableToken } from "~tokens/aoTokens/ao.utils";
 import { PendingTransactionsNotice } from "~components/popup/PendingTransactionsNotice";
+import { checkAndCleanPendingTransactions } from "~utils/transactions/pending/pending.utils";
 
 export enum AmountValidationState {
   Invalid = "Invalid",
@@ -348,6 +349,10 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
   // Segment
   useEffect(() => {
     trackPage(PageType.SEND_AMOUNT);
+  }, []);
+
+  useEffect(() => {
+    checkAndCleanPendingTransactions();
   }, []);
 
   return (

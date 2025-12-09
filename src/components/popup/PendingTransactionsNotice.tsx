@@ -1,8 +1,7 @@
-import { useMemo } from "react";
 import styled from "styled-components";
 import { Text } from "@arconnect/components-rebrand";
-import { getTokenPendingTransactionsStats } from "~utils/transactions";
 import clockwiseIcon from "url:/assets/icons/clockwise.svg";
+import { useTokenPendingTransactionsStats } from "~utils/transactions/pending/pending.hooks";
 
 interface PendingTransactionsNoticeProps {
   tokenId: string;
@@ -11,10 +10,7 @@ interface PendingTransactionsNoticeProps {
 }
 
 export function PendingTransactionsNotice({ tokenId, denomination, ticker }: PendingTransactionsNoticeProps) {
-  const { count, balance } = useMemo(
-    () => getTokenPendingTransactionsStats(tokenId, denomination),
-    [tokenId, denomination],
-  );
+  const { count, balance } = useTokenPendingTransactionsStats(tokenId, denomination);
 
   if (count === 0 || !denomination) return null;
 
