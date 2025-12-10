@@ -25,3 +25,5 @@ export async function handlePendingTransactionsAlarm(alarm?: Alarms.Alarm) {
     log(LOG_GROUP.TRANSACTIONS, "Error in pending transactions alarm:", error);
   }
 }
+
+export { schedulePendingTransactionsCleanupAlarm } from "~utils/transactions/pending/pending.alarms";

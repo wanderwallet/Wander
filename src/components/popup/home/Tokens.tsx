@@ -6,8 +6,8 @@ import { useBalanceSortedTokens } from "~tokens/hooks";
 import { useLocation } from "~wallets/router/router.utils";
 import { Settings04 } from "@untitled-ui/icons-react";
 import { ManageAssets } from "./ManageAssets";
-import { useEffect, useState } from "react";
-import { setPendingTransactionsMap } from "~utils/transactions/pending/pending.utils";
+import { useState } from "react";
+import { useUpdatePendingTransactionsStats } from "~utils/transactions/pending/pending.hooks";
 
 export default function Tokens() {
   const { navigate } = useLocation();
@@ -22,9 +22,7 @@ export default function Tokens() {
     navigate(`/tokens/${tokenId}`);
   }
 
-  useEffect(() => {
-    setPendingTransactionsMap();
-  }, []);
+  useUpdatePendingTransactionsStats();
 
   return (
     <Cointainer>

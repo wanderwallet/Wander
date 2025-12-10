@@ -1,49 +1,28 @@
-import { useMemo, useEffect, useState } from "react";
-import {
-  getTokenPendingTransactionsStats,
-  setPendingTransactionsMap,
-  onPendingTransactionsMapChange,
-} from "./pending.utils";
-
-let globalMapVersion = 0;
-const listeners = new Set<() => void>();
-
-const emit = () => {
-  globalMapVersion++;
-  for (const cb of listeners) cb();
-};
-
-let watcherInitialized = false;
-
-function ensureWatcher() {
-  if (watcherInitialized) return;
-  watcherInitialized = true;
-
-  // Initialize map once
-  setPendingTransactionsMap().then(() => emit());
-
-  // Subscribe to map changes directly
-  onPendingTransactionsMapChange(() => emit());
-}
-
-ensureWatcher();
-
-function useGlobalMapVersion(): number {
-  const [version, setVersion] = useState(globalMapVersion);
-
-  useEffect(() => {
-    const cb = () => setVersion(globalMapVersion);
-    listeners.add(cb);
-    return () => {
-      listeners.delete(cb);
-    };
-  }, []);
-
-  return version;
-}
+import { useEffect, useMemo, useState } from "react";
+import { pendingTransactionsStats, setPendingTransactionsStats } from "./pending.utils";
+import { useActiveAddress } from "~wallets/hooks";
+import { TempTransactionStorage, useStorage } from "~utils/storage";
+import { PENDING_TRANSACTIONS_STATS_TICK_KEY } from "./pending.constants";
 
 export function useTokenPendingTransactionsStats(tokenId: string, denomination: number) {
-  const version = useGlobalMapVersion();
+  const [tick, setTick] = useState(0);
 
-  return useMemo(() => getTokenPendingTransactionsStats(tokenId, denomination), [tokenId, denomination, version]);
+  useEffect(() => {
+    const unsub = pendingTransactionsStats.subscribe(() => setTick((t) => t + 1));
+    return () => unsub();
+  }, [pendingTransactionsStats]);
+
+  return useMemo(() => pendingTransactionsStats.get(tokenId) || { count: 0, balance: "0" }, [tokenId, tick]);
+}
+
+export function useUpdatePendingTransactionsStats() {
+  const activeAddress = useActiveAddress();
+  const [pendingTransactionsStatsTick] = useStorage<number>({
+    key: PENDING_TRANSACTIONS_STATS_TICK_KEY,
+    instance: TempTransactionStorage,
+  });
+
+  useEffect(() => {
+    setPendingTransactionsStats();
+  }, [activeAddress, pendingTransactionsStatsTick]);
 }

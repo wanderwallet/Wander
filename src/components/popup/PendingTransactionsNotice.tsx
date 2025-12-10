@@ -18,7 +18,7 @@ export function PendingTransactionsNotice({ tokenId, denomination, ticker }: Pen
     <NoticeWrapper>
       <PendingIcon src={clockwiseIcon} alt="Pending" />
       <Text variant="secondary" size="sm" weight="medium" noMargin>
-        {count} pending txs. Total amount pending: {balance} {ticker}
+        {count} pending tx{count > 1 ? "s" : ""}. Total amount pending: {balance} {ticker}
       </Text>
     </NoticeWrapper>
   );

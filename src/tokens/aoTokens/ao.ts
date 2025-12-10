@@ -82,7 +82,7 @@ export function getTokenInfoFromData(res: any, id: string): TokenInfo {
             processId: id,
             Ticker,
             Name,
-            Denomination: Number(Denomination || 0),
+            Denomination: Number(Denomination) || 0,
             Logo,
             type,
           } as TokenInfo;
@@ -101,7 +101,7 @@ export function getTokenInfoFromData(res: any, id: string): TokenInfo {
       processId: id,
       Name,
       Ticker,
-      Denomination: Number(Denomination || 0),
+      Denomination: Number(Denomination) || 0,
       Logo,
       type: Transferable || Ticker === "ATOMIC" ? "collectible" : "asset",
     };

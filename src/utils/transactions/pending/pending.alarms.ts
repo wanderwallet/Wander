@@ -7,8 +7,9 @@ import {
   PENDING_ALARM_CLEANUP_INTERVALS,
   PENDING_ALARM_CONFLICT_THRESHOLD_MS,
   PENDING_ALARM_INTERVAL_MS,
-  THIRTY_MS,
+  TWENTY_MS,
 } from "~utils/transactions/pending/pending.constants";
+import { pendingTransactionsArray } from "./pending.utils";
 
 /**
  * Schedule the pending transactions cleanup alarm
@@ -17,6 +18,9 @@ import {
 export async function schedulePendingTransactionsCleanupAlarm() {
   const existingAlarm = await browser.alarms.get(PENDING_TRANSACTIONS_ALARM_NAME);
   if (existingAlarm) return;
+
+  const pendingTransactions = await pendingTransactionsArray.filter((tx) => !tx.foundInGraphQL);
+  if (pendingTransactions.length === 0) return;
 
   // Clear existing alarm if any
   await browser.alarms.clear(PENDING_TRANSACTIONS_ALARM_NAME);
@@ -50,7 +54,7 @@ export async function scheduleAoTransactionCleanupAlarms(): Promise<void> {
     const now = Date.now();
 
     const mainAlarm = await browser.alarms.get(PENDING_TRANSACTIONS_ALARM_NAME);
-    const nextBoundary = Math.ceil(now / THIRTY_MS) * THIRTY_MS;
+    const nextBoundary = Math.ceil(now / TWENTY_MS) * TWENTY_MS;
 
     // Detect if aligned time conflicts with the main alarm run
     const conflictsWithMain = (targetTime: number): boolean => {

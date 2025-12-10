@@ -37,7 +37,7 @@ function PendingContent({ count, balance, ticker }: PendingContentProps) {
         whiteSpace: "normal",
         wordWrap: "break-word",
       }}>
-      {count} pending txs. Total amount pending: {balance} {ticker}
+      {count} pending tx{count > 1 ? "s" : ""}. Total amount pending: {balance} {ticker}
     </div>
   );
 }

@@ -13,32 +13,87 @@ import { txHistoryGateways } from "~gateways/gateway";
 import { arweave } from "~utils/agents/utils";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import type { PendingTransaction } from "./pending.types";
-import { PENDING_TRANSACTIONS_QUERY, PENDING_AO_TRANSACTIONS_QUERY } from "./pending.constants";
+import {
+  PENDING_TRANSACTIONS_QUERY,
+  PENDING_AO_TRANSACTIONS_QUERY,
+  PENDING_TRANSACTIONS_STATS_TICK_KEY,
+} from "./pending.constants";
 import {
   clearPendingTransactionsAlarm,
   scheduleAoTransactionCleanupAlarms,
   schedulePendingTransactionsCleanupAlarm,
 } from "./pending.alarms";
+import { getActiveAddress } from "~wallets";
+import { TempTransactionStorage } from "~utils/storage";
 
-const pendingTransactionsMap = new Map<string, ExtendedTransaction[]>();
+export class ObservableMap<K, V> {
+  private map = new Map<K, V>();
+  private listeners = new Set<() => void>();
 
-// Subscription system for map changes
-const mapChangeListeners = new Set<() => void>();
+  subscribe(fn: () => void) {
+    this.listeners.add(fn);
+    return () => {
+      this.listeners.delete(fn);
+    };
+  }
 
-/**
- * Subscribe to pending transactions map changes
- * @returns Unsubscribe function
- */
-export function onPendingTransactionsMapChange(listener: () => void): () => void {
-  mapChangeListeners.add(listener);
-  return () => {
-    mapChangeListeners.delete(listener);
-  };
+  private notify() {
+    for (const fn of this.listeners) {
+      try {
+        fn();
+      } catch {}
+    }
+  }
+
+  set(key: K, value: V) {
+    this.map.set(key, value);
+    this.notify();
+    return this;
+  }
+
+  setAll(entries: [K, V][]) {
+    this.map.clear();
+    for (const [key, value] of entries) {
+      this.map.set(key, value);
+    }
+    this.notify();
+    return this;
+  }
+
+  delete(key: K) {
+    const result = this.map.delete(key);
+    if (result) this.notify();
+    return result;
+  }
+
+  clear() {
+    if (this.map.size === 0) return;
+    this.map.clear();
+    this.notify();
+  }
+
+  // read methods
+  get(key: K) {
+    return this.map.get(key);
+  }
+  has(key: K) {
+    return this.map.has(key);
+  }
+  entries() {
+    return this.map.entries();
+  }
+  values() {
+    return this.map.values();
+  }
+  keys() {
+    return this.map.keys();
+  }
+  size() {
+    return this.map.size;
+  }
 }
 
-function notifyMapChangeListeners() {
-  mapChangeListeners.forEach((listener) => listener());
-}
+export const pendingTransactionsStats = new ObservableMap<string, { count: number; balance: string }>();
 
 /**
  * Storage array for pending transactions
@@ -155,6 +210,8 @@ export async function removePendingTransactions(transactionIds: string[]): Promi
       (pt) => ({ ...pt, foundInGraphQL: true }),
     );
     await pendingTransactionsArray.removeWhere((pt) => idsSet.has(pt.id) && pt.createdAt <= fiveMinutesAgo);
+    await setPendingTransactionsStats();
+    await TempTransactionStorage.set(PENDING_TRANSACTIONS_STATS_TICK_KEY, Date.now());
   } catch (error) {
     log(LOG_GROUP.TRANSACTIONS, "Error removing pending transactions:", error);
   }
@@ -166,7 +223,8 @@ export async function removePendingTransactions(transactionIds: string[]): Promi
 export async function cleanupOldPendingTransactions(): Promise<void> {
   try {
     const oneDayAgo = Date.now() - 24 * 60 * 60 * 1000;
-    await pendingTransactionsArray.removeWhere((pt) => pt.createdAt <= oneDayAgo);
+    const removed = await pendingTransactionsArray.removeWhere((pt) => pt.createdAt <= oneDayAgo);
+    if (removed > 0) await setPendingTransactionsStats();
   } catch (error) {
     log(LOG_GROUP.TRANSACTIONS, "Error cleaning up old pending transactions:", error);
   }
@@ -208,7 +266,14 @@ export async function checkAndCleanPendingTransactions(): Promise<void> {
           const edges = result?.data?.transactions?.edges || [];
           for (const edge of edges) {
             const id = edge?.node?.id;
-            if (id) confirmed.add(id);
+            if (id) {
+              // Only confirm AR transactions that have a timestamp
+              if (+edge?.node?.quantity?.ar > 0) {
+                if (edge?.node?.block?.timestamp) confirmed.add(id);
+              } else {
+                confirmed.add(id);
+              }
+            }
           }
         } catch (err) {
           log(LOG_GROUP.TRANSACTIONS, "Error checking pending batch:", err);
@@ -238,8 +303,6 @@ export async function checkAndCleanPendingTransactions(): Promise<void> {
       await removePendingTransactions([...confirmed]);
       log(LOG_GROUP.TRANSACTIONS, `Removed ${confirmed.size} confirmed pending transactions`);
     }
-
-    await setPendingTransactionsMap();
 
     // If no pending remain, clear cleanup alarms
     const left = await pendingTransactionsArray.getAll();
@@ -393,42 +456,57 @@ export async function removeTransferErrorTransactions(
   return validTxs;
 }
 
-// For tokens purposes only
-export async function setPendingTransactionsMap(): Promise<void> {
-  pendingTransactionsMap.clear();
-  const transactions = await pendingTransactionsArray.filter((tx) => !tx.foundInGraphQL);
+// Calculate and store pending transaction stats
+export async function setPendingTransactionsStats(): Promise<void> {
+  const address = await getActiveAddress();
+  const transactions = await pendingTransactionsArray.filter((tx) => tx.address === address && !tx.foundInGraphQL);
+
+  // Group by token and calculate stats with balance
+  const tokenStats = new Map<string, { count: number; quantity: BigNumber; denomination: number }>();
+
   for (const tx of transactions) {
+    let tokenId: string;
+    let quantity: string;
+    let denomination: number;
+
     if (tx.transaction.aoInfo) {
-      const tokenId = tx.transaction.node.recipient;
-      if (!pendingTransactionsMap.has(tokenId)) {
-        pendingTransactionsMap.set(tokenId, []);
-      }
-      pendingTransactionsMap.get(tokenId).push(tx.transaction);
+      tokenId = tx.transaction.node.recipient;
+      quantity = tx.transaction.aoInfo?.quantity || "0";
+      denomination = tx.transaction.aoInfo?.denomination || 0;
     } else {
-      if (!pendingTransactionsMap.has(AR_PROCESS_ID)) {
-        pendingTransactionsMap.set(AR_PROCESS_ID, []);
-      }
-      pendingTransactionsMap.get(AR_PROCESS_ID).push(tx.transaction);
+      tokenId = AR_PROCESS_ID;
+      quantity = tx.transaction.node.quantity.ar;
+      denomination = 12;
     }
+
+    // Initialize if needed
+    if (!tokenStats.has(tokenId)) {
+      tokenStats.set(tokenId, { count: 0, quantity: new BigNumber(0), denomination });
+    }
+
+    const stats = tokenStats.get(tokenId);
+    stats.count++;
+    stats.quantity = stats.quantity.plus(quantity);
+    stats.denomination = denomination;
   }
-  log(LOG_GROUP.TRANSACTIONS, "Pending transactions map set:", pendingTransactionsMap);
-  // Notify listeners that the map has changed
-  notifyMapChangeListeners();
-}
 
-export function getTokenPendingTransactionsStats(
-  tokenId: string,
-  denomination: number,
-): { count: number; balance: string } {
-  const transactions = pendingTransactionsMap.get(tokenId) || [];
-  if (transactions.length === 0 || !denomination) return { count: 0, balance: "0" };
+  const entries: [string, { count: number; balance: string }][] = [];
+  for (const [tokenId, stats] of tokenStats.entries()) {
+    const isAr = tokenId === AR_PROCESS_ID;
+    const balance = isAr
+      ? stats.quantity.toFixed()
+      : balanceToFractioned(stats.quantity.toFixed(), stats.denomination).toFixed();
 
-  const count = transactions.length;
-  const isAr = tokenId === AR_PROCESS_ID;
-  const quantity = transactions.reduce(
-    (acc, tx) => acc.plus(isAr ? tx.node.quantity.ar : tx.aoInfo?.quantity || "0"),
-    new BigNumber(0),
-  );
-  const balance = isAr ? quantity.toFixed() : balanceToFractioned(quantity.toString(), denomination).toFixed();
-  return { count, balance };
+    entries.push([
+      tokenId,
+      {
+        count: stats.count,
+        balance,
+      },
+    ]);
+  }
+
+  pendingTransactionsStats.setAll(entries);
+
+  log(LOG_GROUP.TRANSACTIONS, "Pending transactions stats updated:", Array.from(pendingTransactionsStats.entries()));
 }
