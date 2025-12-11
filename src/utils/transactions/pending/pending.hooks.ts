@@ -4,7 +4,7 @@ import { useActiveAddress } from "~wallets/hooks";
 import { TempTransactionStorage, useStorage } from "~utils/storage";
 import { PENDING_TRANSACTIONS_STATS_TICK_KEY } from "./pending.constants";
 
-export function useTokenPendingTransactionsStats(tokenId: string, denomination: number) {
+export function useTokenPendingTransactionsStats(tokenId: string) {
   const [tick, setTick] = useState(0);
 
   useEffect(() => {

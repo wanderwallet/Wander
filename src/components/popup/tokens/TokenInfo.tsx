@@ -69,7 +69,7 @@ export const TokenInfo = ({ id }: TokenInfoProps) => {
       <TokenInfoItem>
         <Flex direction="row" gap={8} align="center">
           <TokenInfoLabel>{browser.i18n.getMessage("your_balance")}</TokenInfoLabel>
-          <PendingTransactionsTooltip tokenId={id} denomination={token?.Denomination} ticker={token?.Ticker} />
+          <PendingTransactionsTooltip tokenId={id} ticker={token?.Ticker} />
         </Flex>
 
         <TokenBalance>

@@ -6,14 +6,13 @@ import browser from "webextension-polyfill";
 
 interface PendingTransactionsNoticeProps {
   tokenId: string;
-  denomination: number;
   ticker: string;
 }
 
-export function PendingTransactionsNotice({ tokenId, denomination, ticker }: PendingTransactionsNoticeProps) {
-  const { count, balance } = useTokenPendingTransactionsStats(tokenId, denomination);
+export function PendingTransactionsNotice({ tokenId, ticker }: PendingTransactionsNoticeProps) {
+  const { count, balance } = useTokenPendingTransactionsStats(tokenId);
 
-  if (count === 0 || !denomination) return null;
+  if (count === 0) return null;
 
   return (
     <NoticeWrapper>

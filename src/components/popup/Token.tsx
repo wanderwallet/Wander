@@ -162,22 +162,14 @@ export default function Token({ onClick, disableClickEffect, disableCursor, ...p
               <>
                 {showTooltip ? (
                   <PendingBalance>
-                    <PendingTransactionsTooltip
-                      tokenId={props.id}
-                      denomination={props.denomination}
-                      ticker={props.ticker}
-                    />
+                    <PendingTransactionsTooltip tokenId={props.id} ticker={props.ticker} />
                     <Tooltip content={totalBalance} position={props.balanceTooltipPosition || "topEnd"}>
                       <NativeBalance $isFetching={isFetching && !isLoading}>{balance}</NativeBalance>
                     </Tooltip>
                   </PendingBalance>
                 ) : (
                   <PendingBalance>
-                    <PendingTransactionsTooltip
-                      tokenId={props.id}
-                      denomination={props.denomination}
-                      ticker={props.ticker}
-                    />
+                    <PendingTransactionsTooltip tokenId={props.id} ticker={props.ticker} />
                     <NativeBalance $isFetching={isFetching && !isLoading}>{balance}</NativeBalance>
                   </PendingBalance>
                 )}

@@ -6,7 +6,6 @@ import browser from "webextension-polyfill";
 
 interface PendingTransactionsTooltipProps {
   tokenId: string;
-  denomination: number;
   ticker: string;
 }
 
@@ -16,10 +15,10 @@ interface PendingContentProps {
   ticker: string;
 }
 
-export function PendingTransactionsTooltip({ tokenId, denomination, ticker }: PendingTransactionsTooltipProps) {
-  const { count, balance } = useTokenPendingTransactionsStats(tokenId, denomination);
+export function PendingTransactionsTooltip({ tokenId, ticker }: PendingTransactionsTooltipProps) {
+  const { count, balance } = useTokenPendingTransactionsStats(tokenId);
 
-  if (count === 0 || !denomination) return null;
+  if (count === 0) return null;
 
   return (
     <Tooltip content={<PendingContent count={count} balance={balance} ticker={ticker} />} position="top">

@@ -469,7 +469,7 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
               </Text>
             )}
           </Flex>
-          <PendingTransactionsNotice tokenId={token.id} denomination={token.Denomination} ticker={token.Ticker} />
+          <PendingTransactionsNotice tokenId={token.id} ticker={token.Ticker} />
         </SendForm>
         <Spacer y={1} />
         <BottomActions>
