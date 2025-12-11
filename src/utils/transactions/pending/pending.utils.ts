@@ -218,12 +218,12 @@ export async function removePendingTransactions(transactionIds: string[]): Promi
 }
 
 /**
- * Clean up old pending transactions (older than 24 hours)
+ * Clean up old pending transactions (older than 6 hours)
  */
 export async function cleanupOldPendingTransactions(): Promise<void> {
   try {
-    const oneDayAgo = Date.now() - 24 * 60 * 60 * 1000;
-    const removed = await pendingTransactionsArray.removeWhere((pt) => pt.createdAt <= oneDayAgo);
+    const sixHoursAgo = Date.now() - 6 * 60 * 60 * 1000;
+    const removed = await pendingTransactionsArray.removeWhere((pt) => pt.createdAt <= sixHoursAgo);
     if (removed > 0) await setPendingTransactionsStats();
   } catch (error) {
     log(LOG_GROUP.TRANSACTIONS, "Error cleaning up old pending transactions:", error);
@@ -305,7 +305,7 @@ export async function checkAndCleanPendingTransactions(): Promise<void> {
     }
 
     // If no pending remain, clear cleanup alarms
-    const left = await pendingTransactionsArray.getAll();
+    const left = await pendingTransactionsArray.filter((pt) => !pt.foundInGraphQL);
     if (left.length === 0) {
       await clearPendingTransactionsAlarm();
     }
