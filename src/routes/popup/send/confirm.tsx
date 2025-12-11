@@ -60,6 +60,7 @@ import { Flex } from "~components/common/Flex";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 import { useAoRateLimitedToast } from "~utils/toast/toast.hooks";
+import { TransferError } from "~utils/error/error.utils";
 
 export interface ConfirmViewParams {
   token: string;
@@ -193,7 +194,6 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
       try {
         const data: TransactionData = await TempTransactionStorage.get("send");
         if (data) {
-          const estimatedFiatTotal = BigNumber(data.estimatedFiat).plus(data.estimatedNetworkFee).toFixed(2);
           setIsAo(data.isAo);
           setRecipient(data.recipient);
           setToken(data.token);
@@ -376,11 +376,7 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
       } catch (err) {
         console.log("err in ao", err);
         setIsLoading(false);
-        setToast({
-          type: "error",
-          content: browser.i18n.getMessage("failed_tx"),
-          duration: 2000,
-        });
+        showTransferErrorToast(err);
         showAoRateLimitedToast(err);
         return;
       }
@@ -578,6 +574,7 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
       } catch (err) {
         console.log("err in ao", err);
         showAoRateLimitedToast(err);
+        showTransferErrorToast(err);
         setIsLoading(false);
         return;
       }
@@ -672,6 +669,20 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
       }
     },
   );
+
+  function showTransferErrorToast(error: Error) {
+    const toast = {
+      content: browser.i18n.getMessage("failed_tx"),
+      type: "error",
+      duration: 2000,
+    };
+
+    if (error instanceof TransferError) {
+      toast.content = error?.message || browser.i18n.getMessage("transfer_error");
+    }
+
+    setToast(toast as any);
+  }
 
   return (
     <Wrapper>
@@ -871,6 +882,7 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
         </BodyWrapper>
         <SendButton
           fullWidth
+          loading={isLoading}
           disabled={(transferRequirePassword && !passwordInput.state) || isLoading || hardwareStatus === "scan"}
           onClick={async () => {
             if (wallet.type === "local") await sendLocal();

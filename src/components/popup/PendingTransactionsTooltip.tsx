@@ -2,6 +2,7 @@ import { Tooltip } from "@arconnect/components-rebrand";
 import styled from "styled-components";
 import clockwiseIcon from "url:/assets/icons/clockwise.svg";
 import { useTokenPendingTransactionsStats } from "~utils/transactions/pending/pending.hooks";
+import browser from "webextension-polyfill";
 
 interface PendingTransactionsTooltipProps {
   tokenId: string;
@@ -37,7 +38,12 @@ function PendingContent({ count, balance, ticker }: PendingContentProps) {
         whiteSpace: "normal",
         wordWrap: "break-word",
       }}>
-      {count} pending tx{count > 1 ? "s" : ""}. Total amount pending: {balance} {ticker}
+      {browser.i18n.getMessage("pending_transactions_message", [
+        count.toString(),
+        count > 1 ? browser.i18n.getMessage("tx_plural") : browser.i18n.getMessage("tx_singular"),
+        balance,
+        ticker,
+      ])}
     </div>
   );
 }
