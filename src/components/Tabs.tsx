@@ -153,4 +153,5 @@ const StyledTab = styled.button<{ active?: boolean; tabId: number }>`
 const ContentWrapper = styled.div`
   margin-top: 24px;
   width: 100%;
+  z-index: 3;
 `;
