@@ -236,6 +236,7 @@ export async function cleanupOldPendingTransactions(): Promise<void> {
 export async function checkAndCleanPendingTransactions(): Promise<void> {
   try {
     // Filter out already found transactions
+    await cleanupOldPendingTransactions();
     const pending = await pendingTransactionsArray.filter((tx) => !tx.foundInGraphQL);
     if (!pending.length) {
       await clearPendingTransactionsAlarm();
