@@ -7,7 +7,6 @@ import { useLocation } from "~wallets/router/router.utils";
 import { Settings04 } from "@untitled-ui/icons-react";
 import { ManageAssets } from "./ManageAssets";
 import { useState } from "react";
-import { useUpdatePendingTransactionsStats } from "~utils/transactions/pending/pending.hooks";
 
 export default function Tokens() {
   const { navigate } = useLocation();
@@ -21,8 +20,6 @@ export default function Tokens() {
   function handleTokenClick(tokenId: string) {
     navigate(`/tokens/${tokenId}`);
   }
-
-  useUpdatePendingTransactionsStats();
 
   return (
     <Cointainer>

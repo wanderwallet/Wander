@@ -1,8 +1,10 @@
 import styled from "styled-components";
 import { Text } from "@arconnect/components-rebrand";
 import clockwiseIcon from "url:/assets/icons/clockwise.svg";
-import { useTokenPendingTransactionsStats } from "~utils/transactions/pending/pending.hooks";
-import browser from "webextension-polyfill";
+import {
+  useTokenPendingTransactionsStats,
+  usePendingTransactionsMessage,
+} from "~utils/transactions/pending/pending.hooks";
 
 interface PendingTransactionsNoticeProps {
   tokenId: string;
@@ -10,20 +12,16 @@ interface PendingTransactionsNoticeProps {
 }
 
 export function PendingTransactionsNotice({ tokenId, ticker }: PendingTransactionsNoticeProps) {
-  const { count, balance } = useTokenPendingTransactionsStats(tokenId);
+  const { count, sentBalance, receivedBalance } = useTokenPendingTransactionsStats(tokenId);
+  const message = usePendingTransactionsMessage(count, sentBalance, receivedBalance, ticker);
 
-  if (count === 0) return null;
+  if (count === 0 || !message) return null;
 
   return (
     <NoticeWrapper>
       <PendingIcon src={clockwiseIcon} alt="Pending" />
       <Text variant="secondary" size="sm" weight="medium" noMargin>
-        {browser.i18n.getMessage("pending_transactions_message", [
-          count.toString(),
-          count > 1 ? browser.i18n.getMessage("tx_plural") : browser.i18n.getMessage("tx_singular"),
-          balance,
-          ticker,
-        ])}
+        {message}
       </Text>
     </NoticeWrapper>
   );

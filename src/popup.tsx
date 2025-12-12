@@ -18,11 +18,14 @@ import StarIcons from "~components/welcome/StarIcons";
 import { useActivityTracking } from "~utils/inactivity/inactivity.hooks";
 import { queryClient } from "~utils/tanstack";
 import { ThemeProvider } from "~utils/theme/theme.provider";
+import { useUpdatePendingTransactionsStats } from "~utils/transactions/pending/pending.hooks";
 
 export function WanderBrowserExtensionApp() {
   const [showAnimation, setShowAnimation] = useState<boolean>(false);
 
   useActivityTracking();
+
+  useUpdatePendingTransactionsStats();
 
   useEffect(() => {
     handleSyncLabelsAlarm();

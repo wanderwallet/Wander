@@ -4615,7 +4615,7 @@
       "description": "Not enough $AO tokens text"
     },
     "pending_transactions_message": {
-      "message": "$COUNT$ 待处理 $TXS$。待处理总额：$BALANCE$ $TICKER$",
+      "message": "$COUNT$ 待处理 $TXS$。待处理总额：$SENT_BALANCE$ $TICKER$ 发送，$RECEIVED_BALANCE$ $TICKER$ 接收",
       "description": "Pending transactions message text",
       "placeholders": {
         "count": {
@@ -4626,13 +4626,61 @@
           "content": "$2",
           "example": "txs"
         },
-        "balance": {
+        "sent_balance": {
+          "content": "$3",
+          "example": "1000"
+        },
+        "received_balance": {
+          "content": "$4",
+          "example": "1000"
+        },
+        "ticker": {
+          "content": "$5",
+          "example": "WNDR"
+        }
+      }
+    },
+    "pending_transactions_message_sent": {
+      "message": "$COUNT$ 待处理 $TXS$。待处理总额：$SENT_BALANCE$ $TICKER$ 发送",
+      "description": "Sent pending transactions message text",
+      "placeholders": {
+        "count": {
+          "content": "$1",
+          "example": "1"
+        },
+        "txs": {
+          "content": "$2",
+          "example": "txs"
+        },
+        "sent_balance": {
           "content": "$3",
           "example": "1000"
         },
         "ticker": {
           "content": "$4",
-          "example": "ARIO"
+          "example": "WNDR"
+        }
+      }
+    },
+    "pending_transactions_message_received": {
+      "message": "$COUNT$ 待处理 $TXS$。待处理总额：$RECEIVED_BALANCE$ $TICKER$ 接收",
+      "description": "Received pending transactions message text",
+      "placeholders": {
+        "count": {
+          "content": "$1",
+          "example": "1"
+        },
+        "txs": {
+          "content": "$2",
+          "example": "txs"
+        },
+        "received_balance": {
+          "content": "$3",
+          "example": "1000"
+        },
+        "ticker": {
+          "content": "$4",
+          "example": "WNDR"
         }
       }
     },

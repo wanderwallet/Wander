@@ -7,3 +7,9 @@ export interface PendingTransaction {
   createdAt: number;
   foundInGraphQL?: boolean;
 }
+
+export interface PendingTransactionStats {
+  count: number;
+  sentBalance: string;
+  receivedBalance: string;
+}

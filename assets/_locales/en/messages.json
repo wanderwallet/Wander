@@ -4656,7 +4656,7 @@
     "description": "Not enough $AO tokens text"
   },
   "pending_transactions_message": {
-    "message": "$COUNT$ pending $TXS$. Total amount pending: $BALANCE$ $TICKER$",
+    "message": "$COUNT$ pending $TXS$. Total amount pending: $SENT_BALANCE$ $TICKER$ sent, $RECEIVED_BALANCE$ $TICKER$ received",
     "description": "Pending transactions message text",
     "placeholders": {
       "count": {
@@ -4667,13 +4667,61 @@
         "content": "$2",
         "example": "txs"
       },
-      "balance": {
+      "sent_balance": {
+        "content": "$3",
+        "example": "1000"
+      },
+      "received_balance": {
+        "content": "$4",
+        "example": "1000"
+      },
+      "ticker": {
+        "content": "$5",
+        "example": "WNDR"
+      }
+    }
+  },
+  "pending_transactions_message_sent": {
+    "message": "$COUNT$ pending $TXS$. Total amount pending: $SENT_BALANCE$ $TICKER$ sent",
+    "description": "Sent pending transactions message text",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "1"
+      },
+      "txs": {
+        "content": "$2",
+        "example": "txs"
+      },
+      "sent_balance": {
         "content": "$3",
         "example": "1000"
       },
       "ticker": {
         "content": "$4",
-        "example": "ARIO"
+        "example": "WNDR"
+      }
+    }
+  },
+  "pending_transactions_message_received": {
+    "message": "$COUNT$ pending $TXS$. Total amount pending: $RECEIVED_BALANCE$ $TICKER$ received",
+    "description": "Received pending transactions message text",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "1"
+      },
+      "txs": {
+        "content": "$2",
+        "example": "txs"
+      },
+      "received_balance": {
+        "content": "$3",
+        "example": "1000"
+      },
+      "ticker": {
+        "content": "$4",
+        "example": "WNDR"
       }
     }
   },

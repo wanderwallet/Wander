@@ -12,7 +12,7 @@ import { retryWithDelay } from "~utils/promises/retry";
 import { txHistoryGateways } from "~gateways/gateway";
 import { arweave } from "~utils/agents/utils";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
-import type { PendingTransaction } from "./pending.types";
+import type { PendingTransaction, PendingTransactionStats } from "./pending.types";
 import {
   PENDING_TRANSACTIONS_QUERY,
   PENDING_AO_TRANSACTIONS_QUERY,
@@ -93,7 +93,7 @@ export class ObservableMap<K, V> {
   }
 }
 
-export const pendingTransactionsStats = new ObservableMap<string, { count: number; balance: string }>();
+export const pendingTransactionsStats = new ObservableMap<string, PendingTransactionStats>();
 
 /**
  * Storage array for pending transactions
@@ -127,6 +127,8 @@ export async function savePendingTransaction(address: string, transaction: Exten
     } else {
       await pendingTransactionsArray.push(pendingTx);
     }
+
+    await setPendingTransactionsStats();
   } catch (error) {
     console.error("Error saving pending transaction:", error);
   }
@@ -460,10 +462,20 @@ export async function removeTransferErrorTransactions(
 // Calculate and store pending transaction stats
 export async function setPendingTransactionsStats(): Promise<void> {
   const address = await getActiveAddress();
-  const transactions = await pendingTransactionsArray.filter((tx) => tx.address === address && !tx.foundInGraphQL);
+
+  const transactions = await pendingTransactionsArray.filter(
+    (pt) =>
+      (pt.address === address ||
+        pt.transaction.node.recipient === address ||
+        pt.transaction.aoInfo?.recipient === address) &&
+      !pt.foundInGraphQL,
+  );
 
   // Group by token and calculate stats with balance
-  const tokenStats = new Map<string, { count: number; quantity: BigNumber; denomination: number }>();
+  const tokenStats = new Map<
+    string,
+    { count: number; sentQuantity: BigNumber; receivedQuantity: BigNumber; denomination: number }
+  >();
 
   for (const tx of transactions) {
     let tokenId: string;
@@ -482,27 +494,41 @@ export async function setPendingTransactionsStats(): Promise<void> {
 
     // Initialize if needed
     if (!tokenStats.has(tokenId)) {
-      tokenStats.set(tokenId, { count: 0, quantity: new BigNumber(0), denomination });
+      tokenStats.set(tokenId, {
+        count: 0,
+        sentQuantity: new BigNumber(0),
+        receivedQuantity: new BigNumber(0),
+        denomination,
+      });
     }
 
     const stats = tokenStats.get(tokenId);
     stats.count++;
-    stats.quantity = stats.quantity.plus(quantity);
+    if (tx.address === address) {
+      stats.sentQuantity = stats.sentQuantity.plus(quantity);
+    } else {
+      stats.receivedQuantity = stats.receivedQuantity.plus(quantity);
+    }
     stats.denomination = denomination;
   }
 
-  const entries: [string, { count: number; balance: string }][] = [];
+  const entries: [string, PendingTransactionStats][] = [];
   for (const [tokenId, stats] of tokenStats.entries()) {
     const isAr = tokenId === AR_PROCESS_ID;
-    const balance = isAr
-      ? stats.quantity.toFixed()
-      : balanceToFractioned(stats.quantity.toFixed(), stats.denomination).toFixed();
+    const sentBalance = isAr
+      ? stats.sentQuantity.toFixed()
+      : balanceToFractioned(stats.sentQuantity.toFixed(), stats.denomination).toFixed();
+
+    const receivedBalance = isAr
+      ? stats.receivedQuantity.toFixed()
+      : balanceToFractioned(stats.receivedQuantity.toFixed(), stats.denomination).toFixed();
 
     entries.push([
       tokenId,
       {
         count: stats.count,
-        balance,
+        sentBalance,
+        receivedBalance,
       },
     ]);
   }
