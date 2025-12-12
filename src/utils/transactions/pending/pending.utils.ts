@@ -461,79 +461,83 @@ export async function removeTransferErrorTransactions(
 
 // Calculate and store pending transaction stats
 export async function setPendingTransactionsStats(): Promise<void> {
-  const address = await getActiveAddress();
+  try {
+    const address = await getActiveAddress();
 
-  const transactions = await pendingTransactionsArray.filter(
-    (pt) =>
-      (pt.address === address ||
-        pt.transaction.node.recipient === address ||
-        pt.transaction.aoInfo?.recipient === address) &&
-      !pt.foundInGraphQL,
-  );
+    const transactions = await pendingTransactionsArray.filter(
+      (pt) =>
+        (pt.address === address ||
+          pt.transaction.node.recipient === address ||
+          pt.transaction.aoInfo?.recipient === address) &&
+        !pt.foundInGraphQL,
+    );
 
-  // Group by token and calculate stats with balance
-  const tokenStats = new Map<
-    string,
-    { count: number; sentQuantity: BigNumber; receivedQuantity: BigNumber; denomination: number }
-  >();
+    // Group by token and calculate stats with balance
+    const tokenStats = new Map<
+      string,
+      { count: number; sentQuantity: BigNumber; receivedQuantity: BigNumber; denomination: number }
+    >();
 
-  for (const tx of transactions) {
-    let tokenId: string;
-    let quantity: string;
-    let denomination: number;
+    for (const tx of transactions) {
+      let tokenId: string;
+      let quantity: string;
+      let denomination: number;
 
-    if (tx.transaction.aoInfo) {
-      tokenId = tx.transaction.node.recipient;
-      quantity = tx.transaction.aoInfo?.quantity || "0";
-      denomination = tx.transaction.aoInfo?.denomination || 0;
-    } else {
-      tokenId = AR_PROCESS_ID;
-      quantity = tx.transaction.node.quantity.ar;
-      denomination = 12;
+      if (tx.transaction.aoInfo) {
+        tokenId = tx.transaction.node.recipient;
+        quantity = tx.transaction.aoInfo?.quantity || "0";
+        denomination = tx.transaction.aoInfo?.denomination || 0;
+      } else {
+        tokenId = AR_PROCESS_ID;
+        quantity = tx.transaction.node.quantity.ar;
+        denomination = 12;
+      }
+
+      // Initialize if needed
+      if (!tokenStats.has(tokenId)) {
+        tokenStats.set(tokenId, {
+          count: 0,
+          sentQuantity: new BigNumber(0),
+          receivedQuantity: new BigNumber(0),
+          denomination,
+        });
+      }
+
+      const stats = tokenStats.get(tokenId);
+      stats.count++;
+      if (tx.address === address) {
+        stats.sentQuantity = stats.sentQuantity.plus(quantity);
+      } else {
+        stats.receivedQuantity = stats.receivedQuantity.plus(quantity);
+      }
+      stats.denomination = denomination;
     }
 
-    // Initialize if needed
-    if (!tokenStats.has(tokenId)) {
-      tokenStats.set(tokenId, {
-        count: 0,
-        sentQuantity: new BigNumber(0),
-        receivedQuantity: new BigNumber(0),
-        denomination,
-      });
+    const entries: [string, PendingTransactionStats][] = [];
+    for (const [tokenId, stats] of tokenStats.entries()) {
+      const isAr = tokenId === AR_PROCESS_ID;
+      const sentBalance = isAr
+        ? stats.sentQuantity.toFixed()
+        : balanceToFractioned(stats.sentQuantity.toFixed(), stats.denomination).toFixed();
+
+      const receivedBalance = isAr
+        ? stats.receivedQuantity.toFixed()
+        : balanceToFractioned(stats.receivedQuantity.toFixed(), stats.denomination).toFixed();
+
+      entries.push([
+        tokenId,
+        {
+          count: stats.count,
+          sentBalance,
+          receivedBalance,
+        },
+      ]);
     }
 
-    const stats = tokenStats.get(tokenId);
-    stats.count++;
-    if (tx.address === address) {
-      stats.sentQuantity = stats.sentQuantity.plus(quantity);
-    } else {
-      stats.receivedQuantity = stats.receivedQuantity.plus(quantity);
-    }
-    stats.denomination = denomination;
+    pendingTransactionsStats.setAll(entries);
+
+    log(LOG_GROUP.TRANSACTIONS, "Pending transactions stats updated:", Array.from(pendingTransactionsStats.entries()));
+  } catch (error) {
+    log(LOG_GROUP.TRANSACTIONS, "Error setting pending transactions stats:", error);
   }
-
-  const entries: [string, PendingTransactionStats][] = [];
-  for (const [tokenId, stats] of tokenStats.entries()) {
-    const isAr = tokenId === AR_PROCESS_ID;
-    const sentBalance = isAr
-      ? stats.sentQuantity.toFixed()
-      : balanceToFractioned(stats.sentQuantity.toFixed(), stats.denomination).toFixed();
-
-    const receivedBalance = isAr
-      ? stats.receivedQuantity.toFixed()
-      : balanceToFractioned(stats.receivedQuantity.toFixed(), stats.denomination).toFixed();
-
-    entries.push([
-      tokenId,
-      {
-        count: stats.count,
-        sentBalance,
-        receivedBalance,
-      },
-    ]);
-  }
-
-  pendingTransactionsStats.setAll(entries);
-
-  log(LOG_GROUP.TRANSACTIONS, "Pending transactions stats updated:", Array.from(pendingTransactionsStats.entries()));
 }
