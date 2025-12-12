@@ -15,7 +15,7 @@ export function PendingTransactionsNotice({ tokenId, ticker }: PendingTransactio
   const { count, sentBalance, receivedBalance } = useTokenPendingTransactionsStats(tokenId);
   const message = usePendingTransactionsMessage(count, sentBalance, receivedBalance, ticker);
 
-  if (count === 0 || !message) return null;
+  if (count === 0 || !tokenId || !ticker || !message) return null;
 
   return (
     <NoticeWrapper>
