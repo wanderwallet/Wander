@@ -1,4 +1,4 @@
-import { Text, Tooltip } from "@arconnect/components-rebrand";
+import { Text, Tooltip } from "@wanderapp/components";
 import { Flex } from "~components/common/Flex";
 import type { ActiveTier, Tier } from "~utils/tier/types";
 import { ProgressBar } from "./ProgressBar";

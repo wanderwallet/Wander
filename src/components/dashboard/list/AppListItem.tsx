@@ -1,4 +1,4 @@
-import { ListItem } from "@arconnect/components-rebrand";
+import { ListItem } from "@wanderapp/components";
 import { GridIcon } from "@iconicicons/react";
 import type { HTMLProps } from "react";
 import { Image } from "~components/common/Image/Image";

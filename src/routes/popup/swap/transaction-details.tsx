@@ -1,9 +1,9 @@
 import styled, { useTheme } from "styled-components";
-import { Button, Section } from "@arconnect/components-rebrand";
+import { Button, Section } from "@wanderapp/components";
 import HeadV2 from "~components/popup/HeadV2";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import { Flex } from "~components/common/Flex";
-import { Text } from "@arconnect/components-rebrand";
+import { Text } from "@wanderapp/components";
 import browser from "webextension-polyfill";
 import { TokenValueWithTooltip } from "./components/TokenValueWithTooltip";
 import { HorizontalLine } from "~components/HorizontalLine";

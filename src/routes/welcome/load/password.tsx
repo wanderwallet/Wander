@@ -8,7 +8,7 @@ import { PageType, trackPage } from "~utils/analytics";
 import { useLocation } from "~wallets/router/router.utils";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import styled from "styled-components";
-import { Button, Input, Spacer } from "@arconnect/components-rebrand";
+import { Button, Input, Spacer } from "@wanderapp/components";
 
 export type PasswordWelcomeViewProps = CommonRouteProps<SetupWelcomeViewParams>;
 

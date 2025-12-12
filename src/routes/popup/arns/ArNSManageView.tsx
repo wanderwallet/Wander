@@ -1,4 +1,4 @@
-import { Card, Text } from "@arconnect/components-rebrand";
+import { Card, Text } from "@wanderapp/components";
 import { PlusIcon } from "@iconicicons/react";
 import { LinkExternal02, Star01, RefreshCw01 } from "@untitled-ui/icons-react";
 import styled, { keyframes, css } from "styled-components";

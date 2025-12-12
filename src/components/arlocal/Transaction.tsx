@@ -8,7 +8,7 @@ import { IconButton } from "~components/IconButton";
 import { readFileBinary } from "~utils/file";
 import { useRef, useState } from "react";
 import { unlock } from "~wallets/auth";
-import { Button, Input, Spacer, useInput, Text, FileInput, useToasts } from "@arconnect/components-rebrand";
+import { Button, Input, Spacer, useInput, Text, FileInput, useToasts } from "@wanderapp/components";
 import type Arweave from "arweave";
 import browser from "webextension-polyfill";
 import styled from "styled-components";

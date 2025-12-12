@@ -6,7 +6,7 @@ import { useAoToken } from "~tokens/hooks";
 import { useTokenPriceChange } from "~tokens/hooks/useTokenPriceChange";
 import { useFormattedTokenBalance } from "~tokens/hooks/useFormattedTokenBalance";
 import useSetting from "~settings/hook";
-import { Text } from "@arconnect/components-rebrand";
+import { Text } from "@wanderapp/components";
 import browser from "webextension-polyfill";
 import Skeleton from "~components/Skeleton";
 import TriangleIcon from "~components/icons/TriangleIcon";

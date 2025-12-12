@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { Section, Text } from "@arconnect/components-rebrand";
+import { Section, Text } from "@wanderapp/components";
 import browser from "webextension-polyfill";
 import HeadV2 from "~components/popup/HeadV2";
 import HedgehogHeadIcon from "url:/assets/agents/images/hedgehog-head.svg";

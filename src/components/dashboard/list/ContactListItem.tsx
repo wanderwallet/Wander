@@ -1,4 +1,4 @@
-import { ListItem } from "@arconnect/components-rebrand";
+import { ListItem } from "@wanderapp/components";
 import type { HTMLProps } from "react";
 import { NoAvatarIcon } from "~components/Avatar";
 

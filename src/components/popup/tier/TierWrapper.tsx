@@ -1,4 +1,4 @@
-import { Section } from "@arconnect/components-rebrand";
+import { Section } from "@wanderapp/components";
 import styled from "styled-components";
 import type { Tier } from "~utils/tier/types";
 

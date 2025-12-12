@@ -1,6 +1,6 @@
 import { Flex } from "~components/common/Flex";
 import SliderMenu from "~components/SliderMenu";
-import { Text, Button } from "@arconnect/components-rebrand";
+import { Text, Button } from "@wanderapp/components";
 import earnPopupImage from "~assets/images/earn/earn-popup.svg";
 import { StarIcon } from "../tier/StarIcon";
 import browser from "webextension-polyfill";

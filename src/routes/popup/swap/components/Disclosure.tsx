@@ -1,4 +1,4 @@
-import { Text } from "@arconnect/components-rebrand";
+import { Text } from "@wanderapp/components";
 import { HorizontalLine } from "~components/HorizontalLine";
 import { Flex } from "~components/common/Flex";
 import { ChevronDown, ChevronUp } from "@untitled-ui/icons-react";

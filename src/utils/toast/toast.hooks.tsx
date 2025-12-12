@@ -1,5 +1,5 @@
-import { useToasts, type DisplayTheme } from "@arconnect/components-rebrand";
-import { Text } from "@arconnect/components-rebrand";
+import { useToasts, type DisplayTheme } from "@wanderapp/components";
+import { Text } from "@wanderapp/components";
 import { Link } from "~components/common/Link";
 import browser from "webextension-polyfill";
 import { useTheme } from "styled-components";

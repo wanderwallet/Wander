@@ -1,4 +1,4 @@
-import { ListItem } from "@arconnect/components-rebrand";
+import { ListItem } from "@wanderapp/components";
 import browser from "webextension-polyfill";
 import { Flex } from "~components/common/Flex";
 import { TokenLogo } from "~components/popup/TokenLogo";

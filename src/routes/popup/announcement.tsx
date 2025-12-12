@@ -6,7 +6,7 @@ import { getAnnouncement } from "~utils/announcements";
 import { useMemo } from "react";
 import { Flex } from "~components/common/Flex";
 import dayjs from "dayjs";
-import { Text } from "@arconnect/components-rebrand";
+import { Text } from "@wanderapp/components";
 import { Announcement01 } from "@untitled-ui/icons-react";
 import { ParseTextWithLinks } from "~components/common/ParseTextWithLinks";
 

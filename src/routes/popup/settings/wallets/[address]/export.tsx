@@ -1,4 +1,4 @@
-import { Button, Input, Section, Text, useInput, useToasts } from "@arconnect/components-rebrand";
+import { Button, Input, Section, Text, useInput, useToasts } from "@wanderapp/components";
 import { type StoredWallet } from "~wallets";
 import { useMemo, useState } from "react";
 import { useStorage } from "~utils/storage";

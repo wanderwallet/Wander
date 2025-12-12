@@ -1,5 +1,5 @@
-import { Button } from "@arconnect/components-rebrand";
-import { Text } from "@arconnect/components-rebrand";
+import { Button } from "@wanderapp/components";
+import { Text } from "@wanderapp/components";
 import { Flex } from "~components/common/Flex";
 import { truncateMiddle } from "~utils/format";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";

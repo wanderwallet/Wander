@@ -3,7 +3,7 @@ import { useLocation, useSearchParams } from "~wallets/router/router.utils";
 import Tabs from "~components/Tabs";
 import { Flex } from "~components/common/Flex";
 import styled, { useTheme } from "styled-components";
-import { Text, Loading, useToasts, Tooltip } from "@arconnect/components-rebrand";
+import { Text, Loading, useToasts, Tooltip } from "@wanderapp/components";
 import { useTokenBalance } from "~tokens/hooks";
 import { useActiveAddress } from "~wallets/hooks";
 import { formatBalance } from "~utils/format";

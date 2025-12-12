@@ -1,7 +1,7 @@
 import HeadV2 from "~components/popup/HeadV2";
 import browser from "webextension-polyfill";
 import { Flex } from "~components/common/Flex";
-import { Button, Section, Text } from "@arconnect/components-rebrand";
+import { Button, Section, Text } from "@wanderapp/components";
 import styled from "styled-components";
 import { SvgImageWithBackground } from "../components/SvgImage";
 import { Spacer } from "~components/embed";
@@ -22,7 +22,7 @@ import { useEarnings } from "./utils/hooks/useEarnings";
 import { useGateway } from "./utils/hooks/useGateway";
 import { useTokenStatus } from "./utils/hooks/useTokenStatus";
 import { useLOAssetBalance } from "./utils/hooks/useLOAssetBalance";
-import { Loading } from "@arconnect/components-rebrand";
+import { Loading } from "@wanderapp/components";
 import { useTokenBalance, useTokenPrice } from "~tokens/hooks";
 import BigNumber from "bignumber.js";
 import { formatNumber } from "./utils/format";

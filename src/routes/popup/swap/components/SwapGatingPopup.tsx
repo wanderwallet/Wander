@@ -1,4 +1,4 @@
-import { Spacer, Text } from "@arconnect/components-rebrand";
+import { Spacer, Text } from "@wanderapp/components";
 import SliderMenu from "~components/SliderMenu";
 import styled from "styled-components";
 import { Flex } from "~components/common/Flex";

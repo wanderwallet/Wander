@@ -2,7 +2,7 @@ import { type AllowanceBigNumber, defaultAllowance } from "~applications/allowan
 import Application, { type AppInfo } from "~applications/application";
 import { checkPassword } from "~wallets/auth";
 import { useEffect, useState } from "react";
-import { Input, Section, Spacer, useInput, useToasts } from "@arconnect/components-rebrand";
+import { Input, Section, Spacer, useInput, useToasts } from "@wanderapp/components";
 import Wrapper from "~components/auth/Wrapper";
 import browser from "webextension-polyfill";
 import App from "~components/auth/App";

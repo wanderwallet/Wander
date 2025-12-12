@@ -1,7 +1,7 @@
 import { AnimatePresence, type Variants, motion } from "framer-motion";
 import { createContext, useCallback, useEffect, useState } from "react";
 import { Spacer, useToasts } from "@arconnect/components";
-import { Card, Text } from "@arconnect/components-rebrand";
+import { Card, Text } from "@wanderapp/components";
 import type { JWKInterface } from "arweave/web/lib/wallet";
 import { jwkFromMnemonic } from "~wallets/generator";
 import browser from "webextension-polyfill";

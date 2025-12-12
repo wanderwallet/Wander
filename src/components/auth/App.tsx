@@ -1,4 +1,4 @@
-import { type DisplayTheme, Section, Spacer, Text, ListItem } from "@arconnect/components-rebrand";
+import { type DisplayTheme, Section, Spacer, Text, ListItem } from "@wanderapp/components";
 import { type Gateway } from "~gateways/gateway";
 import type { Allowance } from "~applications/allowance";
 import { GridIcon } from "@iconicicons/react";

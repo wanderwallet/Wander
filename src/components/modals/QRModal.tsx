@@ -1,4 +1,4 @@
-import { Modal } from "@arconnect/components-rebrand";
+import { Modal } from "@wanderapp/components";
 import { useRef } from "react";
 import { ContentWrapper, Content } from "./Components";
 import { QRCodeSVG } from "qrcode.react";

@@ -1,4 +1,4 @@
-import { Text, Tooltip, type TextProps, type TooltipProps } from "@arconnect/components-rebrand";
+import { Text, Tooltip, type TextProps, type TooltipProps } from "@wanderapp/components";
 import styled from "styled-components";
 import type { formatBalance } from "~utils/format";
 

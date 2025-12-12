@@ -1,6 +1,6 @@
 import { AlertCircle, XClose } from "@untitled-ui/icons-react";
 import { Flex } from "~components/common/Flex";
-import { Button, Text } from "@arconnect/components-rebrand";
+import { Button, Text } from "@wanderapp/components";
 import styled, { useTheme } from "styled-components";
 import { useAOMintingStatus } from "~utils/agents/hooks";
 import { ExtensionStorage, useStorage } from "~utils/storage";

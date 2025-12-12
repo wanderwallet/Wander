@@ -1,14 +1,4 @@
-import {
-  Button,
-  Input,
-  Modal,
-  Spacer,
-  Text,
-  Tooltip,
-  useInput,
-  useModal,
-  useToasts,
-} from "@arconnect/components-rebrand";
+import { Button, Input, Modal, Spacer, Text, Tooltip, useInput, useModal, useToasts } from "@wanderapp/components";
 import { CopyIcon, DownloadIcon, TrashIcon } from "@iconicicons/react";
 import copy from "copy-to-clipboard";
 import { useEffect, useMemo } from "react";

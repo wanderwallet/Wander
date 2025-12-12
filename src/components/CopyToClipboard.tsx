@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import styled from "styled-components";
-import { Text, useToasts } from "@arconnect/components-rebrand";
+import { Text, useToasts } from "@wanderapp/components";
 import browser from "webextension-polyfill";
 import copy from "copy-to-clipboard";
 import { Check, Copy02 } from "@untitled-ui/icons-react";

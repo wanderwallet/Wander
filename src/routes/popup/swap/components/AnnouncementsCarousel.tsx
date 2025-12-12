@@ -1,5 +1,5 @@
 import { Flex } from "~components/common/Flex";
-import { Text } from "@arconnect/components-rebrand";
+import { Text } from "@wanderapp/components";
 import browser from "webextension-polyfill";
 import { useMemo, useState } from "react";
 import { Carousel } from "~components/Carousel";

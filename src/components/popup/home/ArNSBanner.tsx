@@ -7,7 +7,7 @@ import { useNameServiceProfile } from "~lib/nameservice";
 import { ExtensionStorage } from "~utils/storage";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import browser from "webextension-polyfill";
-import { type DisplayTheme, Text } from "@arconnect/components-rebrand";
+import { type DisplayTheme, Text } from "@wanderapp/components";
 import { ExitButton } from "~components/ExitButton";
 import { EventType, trackEvent } from "~utils/analytics";
 

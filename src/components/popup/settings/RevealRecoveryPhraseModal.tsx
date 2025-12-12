@@ -3,7 +3,7 @@ import { useLocation } from "~wallets/router/router.utils";
 import SliderMenu from "~components/SliderMenu";
 import { AlertTriangle } from "@untitled-ui/icons-react";
 import { Flex } from "~components/common/Flex";
-import { Button, Text } from "@arconnect/components-rebrand";
+import { Button, Text } from "@wanderapp/components";
 import browser from "webextension-polyfill";
 import { ExtensionStorage, useStorage } from "~utils/storage";
 

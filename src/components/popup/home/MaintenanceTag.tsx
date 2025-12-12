@@ -2,7 +2,7 @@
 // import { WanderIcon } from "./WanderIcon";
 import styled, { useTheme } from "styled-components";
 import { InfoIcon } from "~components/embed";
-import { Tooltip } from "@arconnect/components-rebrand";
+import { Tooltip } from "@wanderapp/components";
 import browser from "webextension-polyfill";
 
 interface MaintenanceTagProps {

@@ -1,4 +1,4 @@
-import { Button, Input, Select, Spacer, Text, useInput, useToasts } from "@arconnect/components-rebrand";
+import { Button, Input, Select, Spacer, Text, useInput, useToasts } from "@wanderapp/components";
 import browser from "webextension-polyfill";
 import { useEffect, useState } from "react";
 import { fetchTokenByProcessId, type TokenInfo } from "~tokens/aoTokens/ao";

@@ -1,7 +1,7 @@
 import styled from "styled-components";
-import { Button, Loading, Section } from "@arconnect/components-rebrand";
+import { Button, Loading, Section } from "@wanderapp/components";
 import HeadV2 from "~components/popup/HeadV2";
-import { ListItem, Text } from "@arconnect/components-rebrand";
+import { ListItem, Text } from "@wanderapp/components";
 import { Flex } from "~components/common/Flex";
 import { useLocation } from "~wallets/router/router.utils";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";

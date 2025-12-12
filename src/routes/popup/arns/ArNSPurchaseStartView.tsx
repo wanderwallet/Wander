@@ -1,11 +1,11 @@
 import { useLocation } from "~wallets/router/router.utils";
 import { useEffect } from "react";
 import styled from "styled-components";
-import { Button } from "@arconnect/components-rebrand";
+import { Button } from "@wanderapp/components";
 import HeadV2 from "~components/popup/HeadV2";
 import { useActiveAddress } from "~wallets/hooks";
 import { formatAddress } from "~utils/format";
-import { Text } from "@arconnect/components-rebrand";
+import { Text } from "@wanderapp/components";
 import { Flex } from "~components/common/Flex";
 import { Wander2Icon, ArioIcon } from "~components/embed";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";

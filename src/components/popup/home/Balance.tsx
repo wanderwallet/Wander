@@ -1,4 +1,4 @@
-import { Loading } from "@arconnect/components-rebrand";
+import { Loading } from "@wanderapp/components";
 import { useEffect, useMemo, useState } from "react";
 import { useStorage } from "~utils/storage";
 import { PersistentStorage } from "~utils/storage";
@@ -6,7 +6,7 @@ import { useBalance } from "~wallets/hooks";
 import { getToken24hChange, useArPrice } from "~lib/coingecko";
 import useSetting from "~settings/hook";
 import styled, { useTheme } from "styled-components";
-import { Text } from "@arconnect/components-rebrand";
+import { Text } from "@wanderapp/components";
 import BigNumber from "bignumber.js";
 import { useTotalFiatBalance } from "~tokens/hooks";
 import NumberFlow from "@number-flow/react";

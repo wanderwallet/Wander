@@ -1,6 +1,6 @@
 import { balanceToFractioned, formatFiatBalance } from "~tokens/currency";
 import { AnimatePresence, type Variants, motion } from "framer-motion";
-import { Button, Section, Spacer, Text } from "@arconnect/components-rebrand";
+import { Button, Section, Spacer, Text } from "@wanderapp/components";
 import type { GQLNodeInterface, GQLTagInterface } from "ar-gql/dist/faces";
 import { useCallback, useEffect, useMemo, useRef, useState, type MutableRefObject } from "react";
 import { STAKED_GQL_FULL_HISTORY, useGateway, useGraphqlGateways } from "~gateways/wayfinder";

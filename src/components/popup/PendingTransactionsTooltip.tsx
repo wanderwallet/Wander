@@ -1,4 +1,4 @@
-import { Tooltip, Text } from "@arconnect/components-rebrand";
+import { Tooltip } from "@wanderapp/components";
 import styled from "styled-components";
 import clockwiseIcon from "url:/assets/icons/clockwise.svg";
 import {
@@ -19,19 +19,8 @@ export function PendingTransactionsTooltip({ tokenId, ticker }: PendingTransacti
 
   return (
     <Tooltip
-      content={
-        <Text
-          size="sm"
-          style={{
-            textAlign: "center",
-            maxWidth: "200px",
-            whiteSpace: "normal",
-            wordWrap: "break-word",
-          }}
-          noMargin>
-          {message}
-        </Text>
-      }
+      style={{ textAlign: "center", maxWidth: "200px", whiteSpace: "normal", wordWrap: "break-word" }}
+      content={message}
       position="top">
       <PendingIcon src={clockwiseIcon} alt="Pending" />
     </Tooltip>

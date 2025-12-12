@@ -5,7 +5,7 @@ import type { JWKInterface } from "arweave/web/lib/wallet";
 import { checkPassword } from "~wallets/auth";
 import { useEffect, useState } from "react";
 import { addWallet, getWalletKeyLength } from "~wallets";
-import { Text, useInput, Spacer, useToasts, Button, Input, useModal, Tooltip } from "@arconnect/components-rebrand";
+import { Text, useInput, Spacer, useToasts, Button, Input, useModal, Tooltip } from "@wanderapp/components";
 import BackupWalletPage from "~components/welcome/generate/BackupWalletPage";
 import KeystoneButton from "~components/hardware/KeystoneButton";
 import SeedInput from "~components/SeedInput";

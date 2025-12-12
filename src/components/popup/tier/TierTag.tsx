@@ -1,5 +1,5 @@
 import styled, { useTheme, type DefaultTheme } from "styled-components";
-import { Loading, Text } from "@arconnect/components-rebrand";
+import { Loading, Text } from "@wanderapp/components";
 import { useActiveTier } from "~utils/tier/hooks";
 import { useLocation } from "~wallets/router/router.utils";
 import { WanderIcon } from "./WanderIcon";

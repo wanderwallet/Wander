@@ -1,4 +1,4 @@
-import { Section, Button, Text, Loading, useToasts } from "@arconnect/components-rebrand";
+import { Section, Button, Text, Loading, useToasts } from "@wanderapp/components";
 import browser from "webextension-polyfill";
 import styled, { useTheme } from "styled-components";
 import HeadV2 from "~components/popup/HeadV2";

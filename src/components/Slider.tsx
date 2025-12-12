@@ -1,6 +1,6 @@
 import React, { useCallback, forwardRef } from "react";
 import styled from "styled-components";
-import { Text } from "@arconnect/components-rebrand";
+import { Text } from "@wanderapp/components";
 import throttle from "lodash/throttle";
 
 interface SliderProps {

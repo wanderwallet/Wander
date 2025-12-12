@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { PageType, trackPage } from "~utils/analytics";
 import { Container, Content } from "~components/welcome/Wrapper";
-import { Checkbox, Input, Text, useInput, useToasts } from "@arconnect/components-rebrand";
+import { Checkbox, Input, Text, useInput, useToasts } from "@wanderapp/components";
 import { useStorage, ExtensionStorage } from "~utils/storage";
 import type { StoredWallet } from "~wallets";
 import browser from "webextension-polyfill";

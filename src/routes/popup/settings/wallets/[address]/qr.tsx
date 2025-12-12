@@ -1,4 +1,4 @@
-import { useToasts, Section, useInput, Button, Input, Text } from "@arconnect/components-rebrand";
+import { useToasts, Section, useInput, Button, Input, Text } from "@wanderapp/components";
 import { useEffect, useState } from "react";
 import HeadV2 from "~components/popup/HeadV2";
 import { WarningIcon } from "~components/icons/WarningIcon";

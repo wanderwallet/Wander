@@ -1,5 +1,5 @@
 import { AnimatePresence, type Variants, motion } from "framer-motion";
-import { Button, Section, Text } from "@arconnect/components-rebrand";
+import { Button, Section, Text } from "@wanderapp/components";
 import { useLocation, useSearchParams } from "~wallets/router/router.utils";
 import browser from "webextension-polyfill";
 import styled from "styled-components";

@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { Text } from "@arconnect/components-rebrand";
+import { Text } from "@wanderapp/components";
 import { Pin02 } from "@untitled-ui/icons-react";
 import { Flex } from "~components/common/Flex";
 import Arrow from "url:/assets/setup/arrow.svg";

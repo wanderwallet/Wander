@@ -3,7 +3,7 @@ import { useCallback, useMemo, useState } from "react";
 import styled, { useTheme } from "styled-components";
 import BigNumber from "bignumber.js";
 import browser from "webextension-polyfill";
-import { Text } from "@arconnect/components-rebrand";
+import { Text } from "@wanderapp/components";
 import SliderMenu from "~components/SliderMenu";
 import { type CoinGeckoSymbol } from "~lib/coingecko";
 import useSetting from "~settings/hook";
