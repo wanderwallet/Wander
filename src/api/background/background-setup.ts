@@ -9,7 +9,6 @@ import { handleActiveAddressChange } from "~api/background/handlers/storage/acti
 import { handleWalletsChange } from "~api/background/handlers/storage/wallet-change/wallet-change.handler";
 import { handleAppsChange } from "~api/background/handlers/storage/apps-change/app-change.handler";
 import { handleAppConfigChange } from "~api/background/handlers/storage/app-config-change/app-config-change.handler";
-import { handleTrackBalanceAlarm } from "~api/background/handlers/alarms/track-balance/track-balance-alarm.handler";
 import { handleGetPrinters } from "~api/background/handlers/browser/printer/get-printers/get-printers.handler";
 import { handleGetCapabilities } from "~api/background/handlers/browser/printer/get-capabilities/get-capabilities.handler";
 import { handlePrint } from "~api/background/handlers/browser/printer/print/print.handler";
@@ -98,7 +97,6 @@ export function setupBackgroundService() {
   // ALARMS:
   browser.alarms.onAlarm.addListener(handleNotificationsAlarm);
   browser.alarms.onAlarm.addListener(handleSubscriptionsAlarm);
-  browser.alarms.onAlarm.addListener(handleTrackBalanceAlarm);
   browser.alarms.onAlarm.addListener(handleGatewayUpdateAlarm);
   browser.alarms.onAlarm.addListener(handleSyncLabelsAlarm);
   browser.alarms.onAlarm.addListener(handleKeyRemovalAlarm);
