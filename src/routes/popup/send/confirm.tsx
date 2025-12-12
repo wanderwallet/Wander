@@ -110,6 +110,11 @@ async function invalidateQueries(queryClient: QueryClient, tokenID: string, from
             if (!query.state.isInvalidated) {
               query.invalidate();
             }
+
+            if (tokenID === AR_PROCESS_ID && index === balanceKeys.length - 1) {
+              timeouts.forEach((timeout) => clearTimeout(timeout));
+            }
+
             return;
           }
 
@@ -125,6 +130,11 @@ async function invalidateQueries(queryClient: QueryClient, tokenID: string, from
 
           // Refetch using observer
           observers.forEach((observer) => observer.refetch().catch(() => {}));
+
+          if (tokenID === AR_PROCESS_ID && index === balanceKeys.length - 1) {
+            timeouts.forEach((timeout) => clearTimeout(timeout));
+          }
+
           if (tokenID !== AR_PROCESS_ID) checkAndCleanPendingTransactions();
         });
       }, delay),
