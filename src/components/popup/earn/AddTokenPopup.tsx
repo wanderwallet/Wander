@@ -1,10 +1,9 @@
 import browser from "webextension-polyfill";
 import SliderMenu from "~components/SliderMenu";
-import { Input, Section, useInput } from "@wanderapp/components";
+import { Input, Section, useInput, Text, useToasts } from "@wanderapp/components";
 import styled from "styled-components";
 import { useCallback, useMemo, type MouseEventHandler } from "react";
 import { type Token } from "~tokens/token";
-import { Text, useToasts } from "@wanderapp/components";
 import { ToggleSwitch } from "~components/ToggleSwitch";
 import type { FlpTokenInfo } from "~utils/fair_launch/fair_launch.types";
 import { useActiveAddress } from "~wallets/hooks";

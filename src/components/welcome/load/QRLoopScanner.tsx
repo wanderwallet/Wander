@@ -1,11 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import QrReader from "react-qr-reader";
 import styled from "styled-components";
-import { Text, useToasts } from "@wanderapp/components";
+import { Text, useToasts, Loading, Spacer } from "@wanderapp/components";
 import browser from "webextension-polyfill";
 import { parseFramesReducer, areFramesComplete, framesToData, progressOfFrames } from "qrloop";
 import { CameraOffIcon } from "@iconicicons/react";
-import { Loading, Spacer } from "@wanderapp/components";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 interface QRScannerProps {

@@ -76,7 +76,7 @@
     "@tanstack/react-query-persist-client": "^5.84.2",
     "@untitled-ui/icons-react": "^0.1.1",
     "@vitejs/plugin-react": "^4.3.4",
-    "@wanderapp/components": "https://github.com/wanderwallet/components.git#fix/tooltip-styles",
+    "@wanderapp/components": "^1.0.1",
     "@wanderapp/webext-bridge": "^5.0.7",
     "ao-tokens": "^0.0.6",
     "ar-gql": "3.1.1",

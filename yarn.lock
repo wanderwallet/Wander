@@ -4984,9 +4984,10 @@
   resolved "https://registry.yarnpkg.com/@vue/shared/-/shared-3.5.18.tgz#529f24a88d3ed678d50fd5c07455841fbe8ac95e"
   integrity sha512-cZy8Dq+uuIXbxCZpuLd2GJdeSO/lIzIspC2WtkqIpje5QyFbvLaI5wZtdUjLHjGZrlVX6GilejatWwVYYRc8tA==
 
-"@wanderapp/components@https://github.com/wanderwallet/components.git#fix/tooltip-styles":
+"@wanderapp/components@^1.0.1":
   version "1.0.1"
-  resolved "https://github.com/wanderwallet/components.git#8bfa71106eed07ca5a0c767c7f6a00e7e2283159"
+  resolved "https://registry.npmjs.org/@wanderapp/components/-/components-1.0.1.tgz#eca30809b43ddde71754c8403ba39df20c176062"
+  integrity sha512-z0fF2/hpDy4xTA6GHCTZiDYc+Ds+wX38YQMVfxfFw2Rvl0XnmhorfwNJISPj/qJOzApBObqnJ+vUKzqu2UmYNw==
   dependencies:
     "@iconicicons/react" "^1.5.1"
     "@untitled-ui/icons-react" "^0.1.4"

@@ -1,5 +1,4 @@
-import { useToasts, type DisplayTheme } from "@wanderapp/components";
-import { Text } from "@wanderapp/components";
+import { useToasts, type DisplayTheme, Text } from "@wanderapp/components";
 import { Link } from "~components/common/Link";
 import browser from "webextension-polyfill";
 import { useTheme } from "styled-components";
