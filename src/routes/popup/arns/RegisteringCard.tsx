@@ -1,4 +1,4 @@
-import { Text } from "@arconnect/components-rebrand";
+import { Text } from "@wanderapp/components";
 import { Flex } from "~components/common/Flex";
 import { Line } from "../purchase";
 import { CardContainer } from "./CardContainer";

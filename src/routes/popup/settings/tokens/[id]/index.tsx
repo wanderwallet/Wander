@@ -1,5 +1,5 @@
 import { ButtonV2, Spacer, Text, TooltipV2 } from "@arconnect/components";
-import { Select as SelectV2, useToasts } from "@arconnect/components-rebrand";
+import { Select as SelectV2, useToasts } from "@wanderapp/components";
 import type { TokenType } from "~tokens/token";
 import { PersistentStorage, useStorage } from "~utils/storage";
 import { ExtensionStorage } from "~utils/storage";

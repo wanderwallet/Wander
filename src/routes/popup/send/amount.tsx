@@ -1,7 +1,7 @@
 import { PageType, trackPage } from "~utils/analytics";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import styled from "styled-components";
-import { Button, Input, Section, Spacer, Text, useInput, useToasts } from "@arconnect/components-rebrand";
+import { Button, Input, Section, Spacer, Text, useInput, useToasts } from "@wanderapp/components";
 import browser from "webextension-polyfill";
 import Token, { LogoAndDetails, TokenName } from "~components/popup/Token";
 import useSetting from "~settings/hook";

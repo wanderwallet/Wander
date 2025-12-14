@@ -1,5 +1,5 @@
 import HeadV2 from "~components/popup/HeadV2";
-import { Button, Section, Text, Spacer, Input, useInput, useToasts } from "@arconnect/components-rebrand";
+import { Button, Section, Text, Spacer, Input, useInput, useToasts } from "@wanderapp/components";
 import browser from "webextension-polyfill";
 import styled from "styled-components";
 import { Flex } from "~components/common/Flex";

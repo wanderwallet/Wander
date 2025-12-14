@@ -1,4 +1,4 @@
-import { ListItem } from "@arconnect/components-rebrand";
+import { ListItem } from "@wanderapp/components";
 import { ContentWrapper } from "~components/modals/Components";
 import SliderMenu from "~components/SliderMenu";
 import { Check } from "@untitled-ui/icons-react";

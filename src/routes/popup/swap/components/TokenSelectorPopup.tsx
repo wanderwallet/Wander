@@ -1,4 +1,4 @@
-import { useInput, Loading, Input, Text, Spacer } from "@arconnect/components-rebrand";
+import { useInput, Loading, Input, Text, Spacer } from "@wanderapp/components";
 import { useRef, useCallback } from "react";
 import { Flex } from "~components/common/Flex";
 import SliderMenu from "~components/SliderMenu";

@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { PageType, trackPage } from "~utils/analytics";
 import WanderIcon from "url:assets/icon.svg";
 import { Container, Content } from "~components/welcome/Wrapper";
-import { Text } from "@arconnect/components-rebrand";
+import { Text } from "@wanderapp/components";
 
 export function GettingStartedWelcomeView() {
   // Segment

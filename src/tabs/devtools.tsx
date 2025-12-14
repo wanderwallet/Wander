@@ -1,4 +1,4 @@
-import { Card, Spacer, Text } from "@arconnect/components-rebrand";
+import { Card, Spacer, Text } from "@wanderapp/components";
 import { useMemo, useState } from "react";
 import { PersistentStorage, useStorage } from "~utils/storage";
 import { getTab } from "~applications/tab";

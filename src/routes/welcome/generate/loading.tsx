@@ -6,7 +6,7 @@ import { useLocation } from "~wallets/router/router.utils";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import styled from "styled-components";
 import { Flex } from "~components/common/Flex";
-import { Text } from "@arconnect/components-rebrand";
+import { Text } from "@wanderapp/components";
 import { addWallet } from "~wallets";
 import { useHardwareApi } from "~wallets/hooks";
 import { loadTokens } from "~tokens/token";

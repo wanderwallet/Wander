@@ -1,4 +1,4 @@
-import { Section, Text } from "@arconnect/components-rebrand";
+import { Section, Text } from "@wanderapp/components";
 import { CopyIcon } from "@iconicicons/react";
 import { QRCodeSVG } from "qrcode.react";
 import browser from "webextension-polyfill";

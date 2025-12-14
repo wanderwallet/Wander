@@ -1,4 +1,4 @@
-import { ListItem } from "@arconnect/components-rebrand";
+import { ListItem } from "@wanderapp/components";
 import type { Icon } from "~settings/setting";
 import type { HTMLProps } from "react";
 import { LinkExternal02 } from "@untitled-ui/icons-react";

@@ -1,4 +1,4 @@
-import { Input, Loading, Section, Spacer, Text, useInput, useToasts } from "@arconnect/components-rebrand";
+import { Input, Loading, Section, Spacer, Text, useInput, useToasts } from "@wanderapp/components";
 import {
   FiatAmount,
   AmountTitle,

@@ -6,7 +6,7 @@ import { EventType, isUserInGDPRCountry, PageType, trackEvent, trackPage } from 
 import { useLocation } from "~wallets/router/router.utils";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import styled from "styled-components";
-import { Button, Text, Spacer } from "@arconnect/components-rebrand";
+import { Button, Text, Spacer } from "@wanderapp/components";
 import { ToggleSwitch } from "~components/ToggleSwitch";
 import { useStorage } from "@plasmohq/storage/hook";
 import { ExtensionStorage } from "~utils/storage";

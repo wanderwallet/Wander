@@ -2,7 +2,7 @@ import browser from "webextension-polyfill";
 import { Flex } from "~components/common/Flex";
 import { useState, useRef, useCallback } from "react";
 import SliderMenu from "~components/SliderMenu";
-import { Button, Text, useToasts } from "@arconnect/components-rebrand";
+import { Button, Text, useToasts } from "@wanderapp/components";
 import { AlertTriangle } from "@untitled-ui/icons-react";
 import styled from "styled-components";
 import { MinusIcon, PlusIcon } from "@iconicicons/react";

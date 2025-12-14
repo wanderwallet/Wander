@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import styled from "styled-components";
 import { isURL } from "~utils/urls/isURL";
-import { Button, type ButtonProps } from "@arconnect/components-rebrand";
+import { Button, type ButtonProps } from "@wanderapp/components";
 import type { WanderRoutePath, NavigateFn } from "~wallets/router/router.types";
 import browser from "webextension-polyfill";
 import { useLocation } from "~wallets/router/router.utils";

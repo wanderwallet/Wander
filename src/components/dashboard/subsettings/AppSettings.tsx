@@ -16,7 +16,7 @@ import {
   useInput,
   useModal,
   useToasts,
-} from "@arconnect/components-rebrand";
+} from "@wanderapp/components";
 import { concatGatewayURL, urlToGateway } from "~gateways/utils";
 import Application from "~applications/application";
 import browser from "webextension-polyfill";

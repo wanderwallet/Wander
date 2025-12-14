@@ -4,7 +4,7 @@ import { hoverEffect } from "~utils/theme";
 import { type Token } from "~tokens/token";
 import { useStorage } from "~utils/storage";
 import { ExtensionStorage } from "~utils/storage";
-import { Button, Text, Tooltip, type TextProps, type TooltipProps } from "@arconnect/components-rebrand";
+import { Button, Text, Tooltip, type TextProps, type TooltipProps } from "@wanderapp/components";
 import useSetting from "~settings/hook";
 import styled from "styled-components";
 import { formatAddress, formatBalance } from "~utils/format";

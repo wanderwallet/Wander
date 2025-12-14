@@ -1,4 +1,4 @@
-import { type DisplayTheme, Section, Text, Tooltip } from "@arconnect/components-rebrand";
+import { type DisplayTheme, Section, Text, Tooltip } from "@wanderapp/components";
 import browser from "webextension-polyfill";
 import { Action, CloseLayer } from "./WalletHeader";
 import { AnimatePresence } from "framer-motion";

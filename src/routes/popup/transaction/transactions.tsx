@@ -1,7 +1,7 @@
 import HeadV2 from "~components/popup/HeadV2";
 import browser from "webextension-polyfill";
 import styled from "styled-components";
-import { Button, Loading, Text } from "@arconnect/components-rebrand";
+import { Button, Loading, Text } from "@wanderapp/components";
 import { getFullMonthNameWithYear } from "~lib/transactions";
 import {
   TransactionItemComponent,

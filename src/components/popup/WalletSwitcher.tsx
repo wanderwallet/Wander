@@ -1,4 +1,4 @@
-import { Button, ListItem, Spacer, Text, useToasts } from "@arconnect/components-rebrand";
+import { Button, ListItem, Spacer, Text, useToasts } from "@wanderapp/components";
 import { PlusCircle, QrCode02, XClose } from "@untitled-ui/icons-react";
 import BigNumber from "bignumber.js";
 import { type Variants } from "framer-motion";

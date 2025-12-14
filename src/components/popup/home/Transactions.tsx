@@ -1,7 +1,7 @@
 import browser from "webextension-polyfill";
 import { useEffect, useMemo, useState } from "react";
 import { ExtensionStorage } from "~utils/storage";
-import { Loading, Text } from "@arconnect/components-rebrand";
+import { Loading, Text } from "@wanderapp/components";
 import { useStorage } from "~utils/storage";
 import { gql } from "~gateways/api";
 import styled from "styled-components";

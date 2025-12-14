@@ -1,7 +1,7 @@
 import browser from "webextension-polyfill";
 import { useLocation } from "~wallets/router/router.utils";
 import SliderMenu from "~components/SliderMenu";
-import { Button, Input, Section, useInput } from "@arconnect/components-rebrand";
+import { Button, Input, Section, useInput } from "@wanderapp/components";
 import Token from "~components/popup/Token";
 import styled from "styled-components";
 import { type TokenInfo } from "~tokens/aoTokens/ao";

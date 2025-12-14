@@ -1,5 +1,5 @@
 import { Flex } from "~components/common/Flex";
-import { Text } from "@arconnect/components-rebrand";
+import { Text } from "@wanderapp/components";
 import browser from "webextension-polyfill";
 import { AO_PROCESS_ID, AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 import { useAOYieldLatestAgent } from "~utils/agents/hooks";

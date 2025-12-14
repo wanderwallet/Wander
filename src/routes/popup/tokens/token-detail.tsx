@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { Section, Text } from "@arconnect/components-rebrand";
+import { Section, Text } from "@wanderapp/components";
 import HeadV2 from "~components/popup/HeadV2";
 import { useParams } from "wouter";
 import { useAoToken } from "~tokens/hooks";

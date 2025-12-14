@@ -1,4 +1,4 @@
-import { Text } from "@arconnect/components-rebrand";
+import { Text } from "@wanderapp/components";
 import styled from "styled-components";
 import { formatTokenBalance } from "~tokens/currency";
 import { TokenLogo } from "~components/popup/TokenLogo";

@@ -1,4 +1,4 @@
-import { Button, Input, Section, Spacer, Text, useInput, useToasts } from "@arconnect/components-rebrand";
+import { Button, Input, Section, Spacer, Text, useInput, useToasts } from "@wanderapp/components";
 import { ArrowRightIcon } from "@iconicicons/react";
 import styled from "styled-components";
 import browser from "webextension-polyfill";

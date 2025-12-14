@@ -1,5 +1,5 @@
 import { permissionData, type PermissionType } from "~applications/permissions";
-import { Button, Spacer, useToasts, Text } from "@arconnect/components-rebrand";
+import { Button, Spacer, useToasts, Text } from "@wanderapp/components";
 import type { AppInfo } from "~applications/application";
 import { PermissionDescription } from "~components/auth/PermissionCheckbox";
 import { useState } from "react";

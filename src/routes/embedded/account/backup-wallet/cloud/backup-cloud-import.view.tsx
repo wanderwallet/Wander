@@ -11,7 +11,7 @@ import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 import { navigate } from "wouter/use-hash-location";
 import { signOut } from "~utils/embedded/embedded.utils";
 import { sleep } from "~utils/promises/sleep";
-import { Loading } from "@arconnect/components-rebrand";
+import { Loading } from "@wanderapp/components";
 import { toast } from "react-toastify";
 import { Upload01 } from "@untitled-ui/icons-react";
 import { CloudProvider, PendingOperation } from "~utils/embedded/cloud/cloud.types";

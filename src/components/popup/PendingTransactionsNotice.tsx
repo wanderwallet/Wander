@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { Text } from "@arconnect/components-rebrand";
+import { Text } from "@wanderapp/components";
 import clockwiseIcon from "url:/assets/icons/clockwise.svg";
 import {
   useTokenPendingTransactionsStats,

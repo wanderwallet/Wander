@@ -1,4 +1,4 @@
-import { Loading } from "@arconnect/components-rebrand";
+import { Loading } from "@wanderapp/components";
 import styled from "styled-components";
 
 export const IconButton = styled.button.attrs<ButtonProps>((props) => ({

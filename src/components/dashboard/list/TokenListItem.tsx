@@ -1,7 +1,7 @@
 import { type Token } from "~tokens/token";
 import { Reorder, useDragControls } from "framer-motion";
 import { useMemo } from "react";
-import { ListItem } from "@arconnect/components-rebrand";
+import { ListItem } from "@wanderapp/components";
 import { formatAddress } from "~utils/format";
 import styled from "styled-components";
 import { useLocation } from "~wallets/router/router.utils";

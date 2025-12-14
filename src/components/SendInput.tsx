@@ -1,4 +1,4 @@
-import { type InputStatus, Text } from "@arconnect/components-rebrand";
+import { type InputStatus, Text } from "@wanderapp/components";
 import { ChevronDown, AlertCircle, SearchSm } from "@untitled-ui/icons-react";
 import { type HTMLProps, useState, useMemo, type CSSProperties, type ReactNode } from "react";
 import styled from "styled-components";

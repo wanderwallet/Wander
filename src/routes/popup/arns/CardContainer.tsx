@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { Card } from "@arconnect/components-rebrand";
+import { Card } from "@wanderapp/components";
 
 export const CardContainer = styled(Card)`
   display: flex;

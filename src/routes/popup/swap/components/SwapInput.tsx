@@ -1,4 +1,4 @@
-import { Input, Loading, Text } from "@arconnect/components-rebrand";
+import { Input, Loading, Text } from "@wanderapp/components";
 import { useTheme } from "styled-components";
 import { Flex } from "~components/common/Flex";
 import browser from "webextension-polyfill";

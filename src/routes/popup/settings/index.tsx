@@ -5,7 +5,7 @@ import { useLocation } from "~wallets/router/router.utils";
 import { quickSettingsMenuItems } from "~routes/dashboard/dashboard.constants";
 import { SettingListItem } from "~components/popup/list/SettingListItem";
 import type { PopupRoutePath } from "~wallets/router/popup/popup.routes";
-import { Button, ListItem, ListItemIcon, Section, Spacer, Text, Tooltip } from "@arconnect/components-rebrand";
+import { Button, ListItem, ListItemIcon, Section, Spacer, Text, Tooltip } from "@wanderapp/components";
 import { useActiveWallet } from "~wallets/hooks";
 import { formatAddress } from "~utils/format";
 import { Users01 } from "@untitled-ui/icons-react";
