@@ -8,7 +8,6 @@ import { useLocation } from "~wallets/router/router.utils";
 import type { WanderRoutePath } from "~wallets/router/router.types";
 import getSymbolFromCurrency from "currency-symbol-map";
 import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
-import { isInsideIframe } from "~utils/embedded/iframe.utils";
 import { useActiveTier } from "~utils/tier/hooks";
 import { TierTypes } from "~utils/tier/constants";
 import { scheduleTransakPurchaseAlarm } from "./transak.alarms";
