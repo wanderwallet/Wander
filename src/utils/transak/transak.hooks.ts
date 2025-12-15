@@ -289,7 +289,13 @@ export const useTransak = (apiKey: string, initialConversion = false) => {
         const url = await createPurchaseUrl(activeAddress);
         if (url) {
           if (IS_EMBEDDED_APP) {
-            window.open(url, "_blank", "noopener");
+            const link = document.createElement("a");
+            link.href = url;
+            link.target = "_blank";
+            link.rel = "noopener";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
           } else {
             await scheduleTransakPurchaseAlarm();
             browser.tabs.create({ url });
