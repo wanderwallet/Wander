@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import styled, { useTheme } from "styled-components";
 import { LineChart as RechartsLineChart, Line, ResponsiveContainer, YAxis } from "recharts";
-import { Text, Loading } from "@arconnect/components-rebrand";
+import { Text, Loading } from "@wanderapp/components";
 import browser from "webextension-polyfill";
 
 export interface ChartDataPoint {

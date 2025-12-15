@@ -1,4 +1,4 @@
-import { Text, Button } from "@arconnect/components-rebrand";
+import { Text, Button } from "@wanderapp/components";
 import browser from "webextension-polyfill";
 import { Flex } from "~components/common/Flex";
 import { AnimatedStarContainer, defaultStars } from "~components/common/AnimatedStarContainer";

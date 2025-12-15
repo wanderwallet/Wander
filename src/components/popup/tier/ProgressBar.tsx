@@ -1,4 +1,4 @@
-import { Text } from "@arconnect/components-rebrand";
+import { Text } from "@wanderapp/components";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useMemo } from "react";
 import styled from "styled-components";

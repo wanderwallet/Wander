@@ -1,4 +1,4 @@
-import type { DisplayTheme } from "@arconnect/components-rebrand";
+import type { DisplayTheme } from "@wanderapp/components";
 import { useEffect } from "react";
 import { useTheme as useStyledComponentsTheme } from "styled-components";
 import { ARCONNECT_THEME_BACKGROUND_COLOR, ARCONNECT_THEME_TEXT_COLOR } from "~utils/storage.utils";

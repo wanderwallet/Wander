@@ -11,7 +11,7 @@ import { useActiveWallet } from "~wallets/hooks";
 import Tabs from "~components/popup/home/Tabs";
 import { scheduleImportAoTokens } from "~tokens/aoTokens/sync";
 import WalletActions from "~components/popup/home/WalletActions";
-import { Text, useToasts } from "@arconnect/components-rebrand";
+import { Text, useToasts } from "@wanderapp/components";
 import { Flex } from "~components/common/Flex";
 import { useLocation } from "~wallets/router/router.utils";
 import browser from "webextension-polyfill";

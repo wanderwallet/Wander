@@ -1,7 +1,7 @@
 import { AnimatedQRPlayer as Player } from "@arconnect/keystone-sdk";
 import styled, { useTheme } from "styled-components";
 import { type ComponentProps, useMemo } from "react";
-import { Loading } from "@arconnect/components-rebrand";
+import { Loading } from "@wanderapp/components";
 
 export default function AnimatedQRPlayer(props: ComponentProps<typeof Player>) {
   // global theme

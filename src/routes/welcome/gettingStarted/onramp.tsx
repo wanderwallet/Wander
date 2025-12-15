@@ -2,7 +2,7 @@ import styled, { useTheme } from "styled-components";
 import { useEffect } from "react";
 import { PageType, trackPage } from "~utils/analytics";
 import { Container, Content } from "~components/welcome/Wrapper";
-import { Text } from "@arconnect/components-rebrand";
+import { Text } from "@wanderapp/components";
 import browser from "webextension-polyfill";
 import BuyImage from "url:/assets/setup/buy_tour.png";
 import BuyImageLight from "url:/assets/setup/buy_tour_light.png";

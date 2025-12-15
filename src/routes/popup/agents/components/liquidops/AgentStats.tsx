@@ -1,4 +1,4 @@
-import { Text } from "@arconnect/components-rebrand";
+import { Text } from "@wanderapp/components";
 import browser from "webextension-polyfill";
 import { Flex } from "~components/common/Flex";
 import { SvgImageWithBackground } from "../SvgImage";

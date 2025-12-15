@@ -1,7 +1,7 @@
 import { PageType, trackPage } from "~utils/analytics";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import styled from "styled-components";
-import { Button, Input, Section, Spacer, Text, useInput, useToasts } from "@arconnect/components-rebrand";
+import { Button, Input, Section, Spacer, Text, useInput, useToasts } from "@wanderapp/components";
 import browser from "webextension-polyfill";
 import Token, { LogoAndDetails, TokenName } from "~components/popup/Token";
 import useSetting from "~settings/hook";
@@ -34,6 +34,8 @@ import { WarningIcon } from "~components/icons/WarningIcon";
 import { useTheme } from "~utils/theme/theme.hook";
 import { AR_PROCESS_ID, EXP_PROCESS_ID, defaultTokens } from "~tokens/aoTokens/ao.constants";
 import { isNonTransferableToken } from "~tokens/aoTokens/ao.utils";
+import { PendingTransactionsNotice } from "~components/popup/PendingTransactionsNotice";
+import { checkAndCleanPendingTransactions } from "~utils/transactions/pending/pending.utils";
 
 export enum AmountValidationState {
   Invalid = "Invalid",
@@ -300,14 +302,7 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
     // check qty
     if (invalidQty || qty === "" || Number(qty) === 0) return;
 
-    const finalQty = fractionedToBalance(
-      qty,
-      {
-        id: token.id,
-        decimals: token.Denomination,
-      },
-      token.id === AR_PROCESS_ID ? "AR" : "AO",
-    );
+    const finalQty = fractionedToBalance(qty, token.Denomination);
 
     await TempTransactionStorage.set("send", {
       networkFee,
@@ -354,6 +349,10 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
   // Segment
   useEffect(() => {
     trackPage(PageType.SEND_AMOUNT);
+  }, []);
+
+  useEffect(() => {
+    checkAndCleanPendingTransactions();
   }, []);
 
   return (
@@ -455,20 +454,22 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
                 {browser.i18n.getMessage(note.length > 0 ? "edit_note" : "add_a_note")}
               </Text>
             </AddNote>
-            <Text
-              style={{
-                height: 38,
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-              }}
-              variant="secondary"
-              size="sm"
-              weight="medium"
-              noMargin>
-              {note}
-            </Text>
+            {note && (
+              <Text
+                style={{
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+                variant="secondary"
+                size="sm"
+                weight="medium"
+                noMargin>
+                {note}
+              </Text>
+            )}
           </Flex>
+          <PendingTransactionsNotice tokenId={token.id} ticker={token.Ticker} />
         </SendForm>
         <Spacer y={1} />
         <BottomActions>
@@ -534,7 +535,7 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
                   defaultLogo={token?.Logo}
                   id={token.id}
                   ticker={token.Ticker}
-                  divisibility={token.Denomination}
+                  denomination={token.Denomination}
                   fiatPrice={prices[token.id]}
                   onClick={() => updateSelectedToken(token.id)}
                 />
@@ -545,7 +546,7 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
                 <Collectible
                   id={token.id}
                   name={token.Name || token.Ticker}
-                  divisibility={token.Denomination}
+                  denomination={token.Denomination}
                   onClick={() => updateSelectedToken(token.id)}
                   key={i}
                 />

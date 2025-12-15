@@ -1,7 +1,7 @@
 import { LinkExternal02 } from "@untitled-ui/icons-react";
 import styled, { useTheme } from "styled-components";
 import browser from "webextension-polyfill";
-import { ListItem, Text } from "@arconnect/components-rebrand";
+import { ListItem, Text } from "@wanderapp/components";
 import { Flex } from "~components/common/Flex";
 import { TierTag } from "~components/popup/tier/TierTag";
 import { HelpCircle, Mail01, VideoRecorder } from "@untitled-ui/icons-react";

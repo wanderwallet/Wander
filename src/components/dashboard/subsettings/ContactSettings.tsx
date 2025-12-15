@@ -9,7 +9,7 @@ import {
   Tooltip,
   useModal,
   useToasts,
-} from "@arconnect/components-rebrand";
+} from "@wanderapp/components";
 import { useState, useEffect, type MouseEventHandler } from "react";
 import { Share04, Upload01 } from "@untitled-ui/icons-react";
 import { uploadUserAvatar, getUserAvatar } from "~lib/avatar";

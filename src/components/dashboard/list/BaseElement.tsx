@@ -1,6 +1,6 @@
 import type { DragControls } from "framer-motion";
 import { SettingsIcon } from "@iconicicons/react";
-import { Text } from "@arconnect/components-rebrand";
+import { Text } from "@wanderapp/components";
 import type { HTMLProps, ReactNode } from "react";
 import Squircle from "~components/Squircle";
 import ReorderIcon from "../ReorderIcon";

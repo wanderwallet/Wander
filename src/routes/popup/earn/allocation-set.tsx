@@ -1,4 +1,4 @@
-import { Button, Text } from "@arconnect/components-rebrand";
+import { Button, Text } from "@wanderapp/components";
 import { useLocation } from "~wallets/router/router.utils";
 import styled from "styled-components";
 import Lottie from "react-lottie";

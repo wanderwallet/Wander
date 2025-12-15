@@ -2,7 +2,7 @@ import { TierButton } from "~components/popup/tier/TierButton";
 import browser from "webextension-polyfill";
 import type { Tier } from "~utils/tier/types";
 import { EventType, trackEvent } from "~utils/analytics";
-import { Button } from "@arconnect/components-rebrand";
+import { Button } from "@wanderapp/components";
 
 interface GetTokensButtonProps {
   tier?: Tier;

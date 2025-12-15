@@ -1,5 +1,5 @@
 import { concatGatewayURL } from "~gateways/utils";
-import { Section, Spacer, Text } from "@arconnect/components-rebrand";
+import { Section, Spacer, Text } from "@wanderapp/components";
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import { Link } from "~components/common/Link";

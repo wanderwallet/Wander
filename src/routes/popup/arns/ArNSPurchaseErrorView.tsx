@@ -1,4 +1,4 @@
-import { Button, Text } from "@arconnect/components-rebrand";
+import { Button, Text } from "@wanderapp/components";
 import { Flex } from "~components/common/Flex";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import type { CommonRouteProps } from "~wallets/router/router.types";

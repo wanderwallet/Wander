@@ -7,7 +7,7 @@ import { useHardwareApi } from "~wallets/hooks";
 import type { StoredWallet } from "~wallets";
 import { formatAddress, getAppURL, truncateMiddle } from "~utils/format";
 import { removeApp } from "~applications";
-import { Button, Card, type DisplayTheme, Text, useToasts, Tooltip } from "@arconnect/components-rebrand";
+import { Button, Card, type DisplayTheme, Text, useToasts, Tooltip } from "@wanderapp/components";
 import { CheckIcon, CopyIcon, GlobeIcon, LogOutIcon, SettingsIcon } from "@iconicicons/react";
 import WalletSwitcher, { popoverAnimation } from "./WalletSwitcher";
 import Application, { type AppInfo } from "~applications/application";

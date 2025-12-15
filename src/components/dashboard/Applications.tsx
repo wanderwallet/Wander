@@ -1,4 +1,4 @@
-import { Text, useInput } from "@arconnect/components-rebrand";
+import { Text, useInput } from "@wanderapp/components";
 import { useEffect, useMemo, useState } from "react";
 import { PersistentStorage, useStorage } from "~utils/storage";
 import { SettingsList } from "./list/BaseElement";

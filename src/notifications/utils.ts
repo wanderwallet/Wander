@@ -97,6 +97,28 @@ query($messageIds: [String!]!, $sort: SortOrder = HEIGHT_DESC) {
 }
 `;
 
+export const TRANSFER_RESULT_QUERY = `
+query($messageId: String!) {
+  transactions(
+    tags: [
+      {name: "Data-Protocol", values: ["ao"]},
+      {name: "Action", values: ["Credit-Notice", "Debit-Notice", "Transfer-Error"]},
+      {name: "Pushed-For", values: [$messageId]},
+    ],
+  ) {
+    edges {
+      node {
+        id
+        tags {
+          name
+          value
+        }
+      }
+    }
+  }
+}
+`;
+
 export const AO_SENT_QUERY = `
 query($address: String!, $sort: SortOrder = HEIGHT_DESC) {
   transactions(

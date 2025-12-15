@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { Section, Text, ListItem, Loading, Button } from "@arconnect/components-rebrand";
+import { Section, Text, ListItem, Loading, Button } from "@wanderapp/components";
 import browser from "webextension-polyfill";
 import HeadV2 from "~components/popup/HeadV2";
 import { Flex } from "~components/common/Flex";

@@ -1,4 +1,4 @@
-import type { DisplayTheme } from "@arconnect/components-rebrand";
+import type { DisplayTheme } from "@wanderapp/components";
 import type { Chunk } from "~api/modules/sign/chunks";
 import type { InjectedEvents } from "~utils/events";
 import "styled-components";

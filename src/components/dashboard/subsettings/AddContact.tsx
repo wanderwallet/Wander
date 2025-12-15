@@ -13,7 +13,7 @@ import {
   SubTitle,
   Title,
 } from "./ContactSettings";
-import { Button, Modal, Spacer, useModal, useToasts } from "@arconnect/components-rebrand";
+import { Button, Modal, Spacer, useModal, useToasts } from "@wanderapp/components";
 import { useStorage } from "~utils/storage";
 import { ExtensionStorage } from "~utils/storage";
 import { useEffect, useState } from "react";

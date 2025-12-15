@@ -1,7 +1,7 @@
 import { PageType, trackPage } from "~utils/analytics";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import styled from "styled-components";
-import { Button, Input, Section, useInput, Text, ListItem, useToasts } from "@arconnect/components-rebrand";
+import { Button, Input, Section, useInput, Text, ListItem, useToasts } from "@wanderapp/components";
 import browser from "webextension-polyfill";
 import { type Token as TokenInterface } from "~tokens/token";
 import HeadV2 from "~components/popup/HeadV2";
@@ -28,7 +28,7 @@ export const arPlaceholder: TokenInterface = {
   ticker: "AR",
   type: "asset",
   balance: "0",
-  decimals: 12,
+  denomination: 12,
 };
 
 export type RecipientType = {

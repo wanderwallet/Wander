@@ -2,7 +2,7 @@ import styled, { useTheme } from "styled-components";
 import { useEffect } from "react";
 import { PageType, trackPage } from "~utils/analytics";
 import { Container, Content } from "~components/welcome/Wrapper";
-import { Text } from "@arconnect/components-rebrand";
+import { Text } from "@wanderapp/components";
 import browser from "webextension-polyfill";
 import SendTourImage from "url:/assets/setup/send_tour.png";
 import SendTourImageLight from "url:/assets/setup/send_tour_light.png";

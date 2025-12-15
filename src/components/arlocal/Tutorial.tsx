@@ -1,4 +1,4 @@
-import { Input, type InputStatus, Spacer, Text } from "@arconnect/components-rebrand";
+import { Input, type InputStatus, Spacer, Text } from "@wanderapp/components";
 import { InputWithBtn, InputWrapper } from "./InputWrapper";
 import { IconButton } from "~components/IconButton";
 import { CopyIcon } from "@iconicicons/react";

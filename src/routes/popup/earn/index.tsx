@@ -5,7 +5,7 @@ import { EarnPopup } from "~components/popup/earn/EarnPopup";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { ExtensionStorage } from "~utils/storage";
 import { HelpCircle, LinkExternal01 } from "@untitled-ui/icons-react";
-import { Section, Text, Tooltip, Button } from "@arconnect/components-rebrand";
+import { Section, Text, Tooltip, Button } from "@wanderapp/components";
 import { Divider } from "~components/Divider";
 import { PieChart } from "~components/popup/chart/PieChart";
 import browser from "webextension-polyfill";

@@ -60,6 +60,12 @@ const TEST_TOKEN_FLP_IDS = new Set([
   "NQy9H6oAE-m55BheXbGu70nEWiiGMsL8lM9YsNJ8gD4",
   "gkcnuAZeFeqPvFvNABFKGRKGE_AsmA0T3I1_jOFF0MU",
   "Gmf5PyNLd1R4uENH2ITg03KxKMi25g1ZJl1F6AplQRc",
+  // LLAMA REBORN
+  "ybJns4GXaCfXifPoJAXTGjSaeU24DL18OpaKTQ89xe0",
+  "MH2WTdN3de3XKYyQ_Yufx-y-YkqV_57yPNKP4n1_3t8",
+  "GDiWVCFSaOngnyp17xM5VX-jqofYKBN6c1vNBnz02hw",
+  "nBqlzp2lSU_ciociG2OrTxjDfzA_nfhttv4qqyylMn4",
+  "_L_GMvgax750A8oORtNPetcmq5fog3K6WtvY4PFpipo",
 ]);
 
 /**

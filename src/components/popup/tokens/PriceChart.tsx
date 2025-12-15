@@ -2,7 +2,7 @@ import React, { useMemo, useCallback, useState } from "react";
 import styled, { useTheme } from "styled-components";
 import { useArPrice, type CoinGeckoSymbol } from "~lib/coingecko";
 import { formatFiatBalance } from "~tokens/currency";
-import { Text } from "@arconnect/components-rebrand";
+import { Text } from "@wanderapp/components";
 import { useTokenMarketData } from "~tokens/hooks/useTokenMarketData";
 import useSetting from "~settings/hook";
 import TriangleIcon from "~components/icons/TriangleIcon";

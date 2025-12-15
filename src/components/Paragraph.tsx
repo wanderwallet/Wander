@@ -1,4 +1,4 @@
-import { Text } from "@arconnect/components-rebrand";
+import { Text } from "@wanderapp/components";
 import styled from "styled-components";
 
 const Paragraph = styled(Text).attrs({

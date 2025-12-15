@@ -2,7 +2,7 @@ import { Text, Box, Button } from "~components/embed/ui";
 import { useActiveWallet, useTransactions } from "~wallets/hooks";
 import { useLocation } from "~wallets/router/router.utils";
 import browser from "webextension-polyfill";
-import { Loading } from "@arconnect/components-rebrand";
+import { Loading } from "@wanderapp/components";
 import TransactionGroup from "./components/TransactionGroup";
 import { AuthRequestCard } from "~components/embed/ui/molecules/card/auth-request-card/AuthRequestCard";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";

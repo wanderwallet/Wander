@@ -3,7 +3,7 @@ import { useCallback, useState } from "react";
 import { useScanner } from "@arconnect/keystone-sdk";
 import { useActiveWallet } from "~wallets/hooks";
 import type { UR } from "@ngraveio/bc-ur";
-import { Section, Spacer, Text, useToasts } from "@arconnect/components-rebrand";
+import { Section, Spacer, Text, useToasts } from "@wanderapp/components";
 import AnimatedQRScanner from "~components/hardware/AnimatedQRScanner";
 import AnimatedQRPlayer from "~components/hardware/AnimatedQRPlayer";
 import Wrapper from "~components/auth/Wrapper";

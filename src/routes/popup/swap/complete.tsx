@@ -1,4 +1,4 @@
-import { Section, Button, Text, Loading } from "@arconnect/components-rebrand";
+import { Section, Button, Text, Loading } from "@wanderapp/components";
 import browser from "webextension-polyfill";
 import styled, { useTheme } from "styled-components";
 import HeadV2 from "~components/popup/HeadV2";

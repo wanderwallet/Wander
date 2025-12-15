@@ -2,7 +2,7 @@ import { permissionData, signPolicyOptions, type PermissionType } from "~applica
 import { Box, Radio, Snackbar, Text, Row, ChevronRight } from "~components/embed/ui";
 import { useLocation } from "~wallets/router/router.utils";
 import browser from "webextension-polyfill";
-import { Spacer } from "@arconnect/components-rebrand";
+import { Spacer } from "@wanderapp/components";
 import type { SignPolicy } from "~applications/application";
 import { useCurrentAuthRequest } from "~utils/auth/auth.hooks";
 import { ExtensionStorage, useStorage } from "~utils/storage";

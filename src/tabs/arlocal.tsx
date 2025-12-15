@@ -5,7 +5,7 @@ import { urlToGateway } from "~gateways/utils";
 import { useStorage } from "~utils/storage";
 import { ExtensionStorage } from "~utils/storage";
 import { RefreshIcon } from "@iconicicons/react";
-import { Button, Input, Spacer, useInput, Text, useToasts } from "@arconnect/components-rebrand";
+import { Button, Input, Spacer, useInput, Text, useToasts } from "@wanderapp/components";
 import { CardBody, ConnectionStatus, ConnectionText, Title, Wrapper } from "./devtools";
 import { ArLocalTransaction } from "~components/arlocal/Transaction";
 import NoWallets from "~components/devtools/NoWallets";

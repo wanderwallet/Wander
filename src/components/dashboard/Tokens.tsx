@@ -7,7 +7,7 @@ import { Reorder } from "framer-motion";
 import TokenListItem from "./list/TokenListItem";
 import styled from "styled-components";
 import browser from "webextension-polyfill";
-import { Button, Spacer } from "@arconnect/components-rebrand";
+import { Button, Spacer } from "@wanderapp/components";
 import { type TokenInfoWithBalance } from "~tokens/aoTokens/ao";
 import { useLocation } from "~wallets/router/router.utils";
 

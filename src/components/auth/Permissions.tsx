@@ -1,4 +1,4 @@
-import { Section, Text } from "@arconnect/components-rebrand";
+import { Section, Text } from "@wanderapp/components";
 import browser from "webextension-polyfill";
 import styled from "styled-components";
 import { permissionData, type PermissionType } from "~applications/permissions";

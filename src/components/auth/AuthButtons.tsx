@@ -1,4 +1,4 @@
-import { Button, Spacer, type ButtonProps } from "@arconnect/components-rebrand";
+import { Button, Spacer, type ButtonProps } from "@wanderapp/components";
 import { useThrottledRequestAnimationFrame } from "@swyg/corre";
 import { useRef, type MouseEvent } from "react";
 import styled from "styled-components";

@@ -1,7 +1,7 @@
 import { useActiveAddress, useTokenTransactions } from "~wallets/hooks";
 import { TierTransactionItemComponent } from "../home/Transactions";
 import styled from "styled-components";
-import { Loading, Button, Text } from "@arconnect/components-rebrand";
+import { Loading, Button, Text } from "@wanderapp/components";
 import { Flex } from "~components/common/Flex";
 import browser from "webextension-polyfill";
 

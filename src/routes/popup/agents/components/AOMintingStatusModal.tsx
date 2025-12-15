@@ -1,7 +1,7 @@
 import browser from "webextension-polyfill";
 import { Flex } from "~components/common/Flex";
 import SliderMenu from "~components/SliderMenu";
-import { Button, Text } from "@arconnect/components-rebrand";
+import { Button, Text } from "@wanderapp/components";
 import alertWarning from "url:/assets/agents/images/alert-warning.svg";
 import alertSuccess from "url:/assets/agents/images/alert-success.svg";
 import { useState } from "react";

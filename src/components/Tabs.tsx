@@ -1,4 +1,4 @@
-import { Section } from "@arconnect/components-rebrand";
+import { Section } from "@wanderapp/components";
 import { type CSSProperties, type Dispatch, type SetStateAction } from "react";
 import styled from "styled-components";
 import browser from "webextension-polyfill";
@@ -153,4 +153,5 @@ const StyledTab = styled.button<{ active?: boolean; tabId: number }>`
 const ContentWrapper = styled.div`
   margin-top: 24px;
   width: 100%;
+  z-index: 3;
 `;

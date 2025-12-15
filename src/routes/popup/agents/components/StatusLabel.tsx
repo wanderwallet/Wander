@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import { Flex } from "~components/common/Flex";
-import { Text, type DisplayTheme } from "@arconnect/components-rebrand";
+import { Text, type DisplayTheme } from "@wanderapp/components";
 import { useTheme } from "~utils/theme/theme.hook";
 
 export const StatusLabel = ({ status, label }: Props) => {

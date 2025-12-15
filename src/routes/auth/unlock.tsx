@@ -1,5 +1,5 @@
 import { setPasswordFreshness, unlock } from "~wallets/auth";
-import { Input, Section, Spacer, Text, useInput, useToasts } from "@arconnect/components-rebrand";
+import { Input, Section, Spacer, Text, useInput, useToasts } from "@wanderapp/components";
 import Wrapper from "~components/auth/Wrapper";
 import browser from "webextension-polyfill";
 import { HeadAuth } from "~components/HeadAuth";

@@ -9,7 +9,7 @@ import { freeDecryptedWallet } from "~wallets/encryption";
 import { generateAnchor, type KeystoneSigner } from "~wallets/hardware/keystone";
 import browser from "webextension-polyfill";
 import type { DecodedTag } from "~api/modules/sign/tags";
-import { isNetworkError, NetworkError, BalanceFetchError } from "~utils/error/error.utils";
+import { isNetworkError, NetworkError, BalanceFetchError, TransferError } from "~utils/error/error.utils";
 import activeAddress from "~api/modules/active_address";
 import { findGateway } from "~gateways/wayfinder";
 import BigNumber from "bignumber.js";
@@ -20,6 +20,11 @@ import { Id, Owner, AR_PROCESS_ID, AO_PROCESS_ID, UTD_PROCESS_ID } from "~tokens
 import type { Token } from "~tokens/token";
 import type { FlpTokenInfo } from "~utils/fair_launch/fair_launch.types";
 import { ARIO_MAINNET_PROCESS_ID, ARIO_TESTNET_PROCESS_ID } from "@ar.io/sdk/web";
+import { defaultConfig } from "./config";
+import { gql } from "~gateways/api";
+import { TRANSFER_RESULT_QUERY } from "~notifications/utils";
+import { retryWithDelay } from "~utils/promises/retry";
+import { validateGqlResponse } from "~routes/popup/swap/utils/swap.utils";
 
 export let tokens: TokenInfo[] = null;
 export let flpTokens: FlpTokenInfo[] = null;
@@ -45,6 +50,8 @@ type DataItemResult = {
   id: string;
   raw: ArrayBuffer;
 };
+
+const ao = connect(defaultConfig);
 
 export const ARDRIVE_CU_URL = "https://cu.ardrive.io";
 export const AO_DEV_CU_URL = "https://aodev.fun/ao/cu";
@@ -82,7 +89,7 @@ export function getTokenInfoFromData(res: any, id: string): TokenInfo {
             processId: id,
             Ticker,
             Name,
-            Denomination: Number(Denomination || 0),
+            Denomination: Number(Denomination) || 0,
             Logo,
             type,
           } as TokenInfo;
@@ -101,7 +108,7 @@ export function getTokenInfoFromData(res: any, id: string): TokenInfo {
       processId: id,
       Name,
       Ticker,
-      Denomination: Number(Denomination || 0),
+      Denomination: Number(Denomination) || 0,
       Logo,
       type: Transferable || Ticker === "ATOMIC" ? "collectible" : "asset",
     };
@@ -410,6 +417,9 @@ export async function sendAoTransferForWallet(
       ],
     });
 
+    const errorMessage = await checkTransferError(process, transferID);
+    if (errorMessage) throw new TransferError(errorMessage);
+
     return transferID;
   } catch (err) {
     console.log("err", err);
@@ -445,6 +455,10 @@ export const sendAoTransferKeystone = async (
         { name: "Client-Version", value: browser.runtime.getManifest().version },
       ],
     });
+
+    const errorMessage = await checkTransferError(process, transferID);
+    if (errorMessage) throw new TransferError(errorMessage);
+
     return transferID;
   } catch (err) {
     console.log("err", err);
@@ -540,4 +554,76 @@ export async function getAOTokenPrice() {
   } catch {}
 
   return price;
+}
+
+async function checkMessageResultForError(process: string, transferId: string): Promise<string | null> {
+  let errorMessage = null;
+  try {
+    const { Messages, Output, Error: error } = await ao.result({ process, message: transferId });
+
+    if (Output?.data?.output) {
+      errorMessage = Output.data.output;
+    } else if (error) {
+      if (typeof error === "object" && Object.keys(error).length > 0) {
+        errorMessage = JSON.stringify(error);
+      } else {
+        errorMessage = String(error);
+      }
+    }
+    if (!errorMessage) {
+      (Messages || []).forEach((msg) => {
+        const tags = msg.Tags || [];
+        const transferErrorTag = tags.find((t: any) => t.name === "Action" && t.value === "Transfer-Error");
+        if (transferErrorTag) {
+          errorMessage = getTagValue("Error", tags) || browser.i18n.getMessage("transfer_error");
+        }
+      });
+    }
+  } catch {}
+
+  return errorMessage;
+}
+
+async function checkMessageGraphqlResultForError(transferId: string): Promise<string | null> {
+  const result = await retryWithDelay(
+    async () => {
+      const data = await gql(TRANSFER_RESULT_QUERY, { messageId: transferId });
+      validateGqlResponse(data);
+      if (data?.data?.transactions?.edges?.length === 0) {
+        throw new Error("No transactions found");
+      }
+      return data;
+    },
+    5,
+    1000,
+  );
+  if (result?.data?.transactions?.edges?.length > 0) {
+    const edges = result?.data?.transactions?.edges || [];
+    for (const edge of edges) {
+      const tags = edge.node.tags || [];
+      const transferErrorTag = tags.find((t: any) => t.name === "Action" && t.value === "Transfer-Error");
+      if (transferErrorTag) {
+        return getTagValue("Error", tags) || browser.i18n.getMessage("transfer_error");
+      }
+    }
+  }
+  return null;
+}
+
+export async function checkTransferError(process: string, transferId: string): Promise<string | null> {
+  let timeoutId: NodeJS.Timeout;
+
+  const timeout = new Promise<null>((resolve) => {
+    timeoutId = setTimeout(() => resolve(null), 10000);
+  });
+
+  try {
+    return Promise.race([
+      checkMessageResultForError(process, transferId).catch(() => null),
+      checkMessageGraphqlResultForError(transferId).catch(() => null),
+      timeout,
+    ]);
+  } finally {
+    clearTimeout(timeoutId);
+  }
 }

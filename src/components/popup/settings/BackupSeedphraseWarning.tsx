@@ -1,4 +1,4 @@
-import { ListItem } from "@arconnect/components-rebrand";
+import { ListItem } from "@wanderapp/components";
 import { AlertTriangle } from "@untitled-ui/icons-react";
 import { useTheme } from "styled-components";
 import browser from "webextension-polyfill";

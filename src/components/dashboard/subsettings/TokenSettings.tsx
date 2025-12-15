@@ -1,4 +1,4 @@
-import { Button, Select, Spacer, Text, Tooltip, useToasts } from "@arconnect/components-rebrand";
+import { Button, Select, Spacer, Text, Tooltip, useToasts } from "@wanderapp/components";
 import type { TokenType } from "~tokens/token";
 import { Token as aoToken } from "ao-tokens";
 import { PersistentStorage, useStorage } from "~utils/storage";

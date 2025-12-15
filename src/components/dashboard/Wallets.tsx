@@ -1,4 +1,4 @@
-import { Button, useInput } from "@arconnect/components-rebrand";
+import { Button, useInput } from "@wanderapp/components";
 import { Reorder } from "framer-motion";
 import { useEffect, useMemo } from "react";
 import styled from "styled-components";

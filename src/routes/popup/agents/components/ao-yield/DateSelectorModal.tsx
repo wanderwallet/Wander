@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback } from "react";
 import styled, { css, useTheme } from "styled-components";
 import browser from "webextension-polyfill";
-import { Text } from "@arconnect/components-rebrand";
+import { Text } from "@wanderapp/components";
 import SliderMenu from "~components/SliderMenu";
 import { ChevronLeft, ChevronRight } from "@untitled-ui/icons-react";
 import { CustomSelect } from "./CustomSelect";

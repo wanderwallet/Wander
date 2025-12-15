@@ -436,8 +436,8 @@ export const tokenIdInfoMap = {
   [WAR_PROCESS_ID]: assets[1],
 };
 
-export function formatTokenQuantity(value: string, decimals: number) {
-  return formatBalance(balanceToFractioned(String(value), { decimals })).displayBalance;
+export function formatTokenQuantity(value: string, denomination: number) {
+  return formatBalance(balanceToFractioned(String(value), denomination)).displayBalance;
 }
 
 export function formatDate(date: Date | null, fallbackLabel: string) {

@@ -1,7 +1,7 @@
 import { useStorage } from "~utils/storage";
 import styled from "styled-components";
 import { ExtensionStorage } from "~utils/storage";
-import { Checkbox, Spacer, Text } from "@arconnect/components-rebrand";
+import { Checkbox, Spacer, Text } from "@wanderapp/components";
 import browser from "webextension-polyfill";
 import { RadioWrapper } from "./Setting";
 import { ToggleSwitch } from "~components/ToggleSwitch";

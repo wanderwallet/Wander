@@ -7,7 +7,7 @@ import copy from "copy-to-clipboard";
 import { PageType, trackPage } from "~utils/analytics";
 import { useLocation } from "~wallets/router/router.utils";
 import type { CommonRouteProps } from "~wallets/router/router.types";
-import { Button, Spacer, Text } from "@arconnect/components-rebrand";
+import { Button, Spacer, Text } from "@wanderapp/components";
 import { AlertTriangle, Check, Copy01, Eye, EyeOff } from "@untitled-ui/icons-react";
 
 export type BackupWelcomeViewProps = CommonRouteProps<SetupWelcomeViewParams>;
