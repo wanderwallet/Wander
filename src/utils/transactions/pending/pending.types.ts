@@ -5,6 +5,7 @@ export interface PendingTransaction {
   address: string;
   transaction: ExtendedTransaction;
   createdAt: number;
+  confirmed?: boolean;
   foundInGraphQL?: boolean;
 }
 

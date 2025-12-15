@@ -19,7 +19,7 @@ export async function schedulePendingTransactionsCleanupAlarm() {
   const existingAlarm = await browser.alarms.get(PENDING_TRANSACTIONS_ALARM_NAME);
   if (existingAlarm) return;
 
-  const pendingTransactions = await pendingTransactionsArray.filter((tx) => !tx.foundInGraphQL);
+  const pendingTransactions = await pendingTransactionsArray.filter((tx) => !tx.confirmed);
   if (pendingTransactions.length === 0) return;
 
   // Clear existing alarm if any

@@ -25,73 +25,7 @@ import {
 } from "./pending.alarms";
 import { getActiveAddress } from "~wallets";
 import { TempTransactionStorage } from "~utils/storage";
-
-export class ObservableMap<K, V> {
-  private map = new Map<K, V>();
-  private listeners = new Set<() => void>();
-
-  subscribe(fn: () => void) {
-    this.listeners.add(fn);
-    return () => {
-      this.listeners.delete(fn);
-    };
-  }
-
-  private notify() {
-    for (const fn of this.listeners) {
-      try {
-        fn();
-      } catch {}
-    }
-  }
-
-  set(key: K, value: V) {
-    this.map.set(key, value);
-    this.notify();
-    return this;
-  }
-
-  setAll(entries: [K, V][]) {
-    this.map.clear();
-    for (const [key, value] of entries) {
-      this.map.set(key, value);
-    }
-    this.notify();
-    return this;
-  }
-
-  delete(key: K) {
-    const result = this.map.delete(key);
-    if (result) this.notify();
-    return result;
-  }
-
-  clear() {
-    if (this.map.size === 0) return;
-    this.map.clear();
-    this.notify();
-  }
-
-  // read methods
-  get(key: K) {
-    return this.map.get(key);
-  }
-  has(key: K) {
-    return this.map.has(key);
-  }
-  entries() {
-    return this.map.entries();
-  }
-  values() {
-    return this.map.values();
-  }
-  keys() {
-    return this.map.keys();
-  }
-  size() {
-    return this.map.size;
-  }
-}
+import { ObservableMap } from "~utils/map";
 
 export const pendingTransactionsStats = new ObservableMap<string, PendingTransactionStats>();
 
@@ -208,8 +142,8 @@ export async function removePendingTransactions(transactionIds: string[]): Promi
     const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
     const idsSet = new Set(transactionIds);
     await pendingTransactionsArray.updateWhere(
-      (pt) => idsSet.has(pt.id) && !pt.foundInGraphQL,
-      (pt) => ({ ...pt, foundInGraphQL: true }),
+      (pt) => idsSet.has(pt.id) && (!pt.confirmed || !pt.foundInGraphQL),
+      (pt) => ({ ...pt, confirmed: true, foundInGraphQL: true }),
     );
     await pendingTransactionsArray.removeWhere((pt) => idsSet.has(pt.id) && pt.createdAt <= fiveMinutesAgo);
     await setPendingTransactionsStats();
@@ -220,12 +154,12 @@ export async function removePendingTransactions(transactionIds: string[]): Promi
 }
 
 /**
- * Clean up old pending transactions (older than 6 hours)
+ * Clean up old pending transactions (older than 3 hours)
  */
 export async function cleanupOldPendingTransactions(): Promise<void> {
   try {
-    const sixHoursAgo = Date.now() - 6 * 60 * 60 * 1000;
-    const removed = await pendingTransactionsArray.removeWhere((pt) => pt.createdAt <= sixHoursAgo);
+    const threeHoursAgo = Date.now() - 3 * 60 * 60 * 1000;
+    const removed = await pendingTransactionsArray.removeWhere((pt) => pt.createdAt <= threeHoursAgo);
     if (removed > 0) await setPendingTransactionsStats();
   } catch (error) {
     log(LOG_GROUP.TRANSACTIONS, "Error cleaning up old pending transactions:", error);
@@ -239,17 +173,18 @@ export async function checkAndCleanPendingTransactions(): Promise<void> {
   try {
     // Filter out already found transactions
     await cleanupOldPendingTransactions();
-    const pending = await pendingTransactionsArray.filter((tx) => !tx.foundInGraphQL);
+    const pending = await pendingTransactionsArray.filter((tx) => !tx.confirmed);
     if (!pending.length) {
       await clearPendingTransactionsAlarm();
       return;
     }
 
-    const arTx = pending.filter((tx) => !tx.transaction.aoInfo);
-    const aoTx = pending.filter((tx) => tx.transaction.aoInfo);
+    const arTxs = pending.filter((tx) => !tx.transaction.aoInfo);
+    const aoTxs = pending.filter((tx) => tx.transaction.aoInfo);
 
     const BATCH_SIZE = 100;
     const confirmed = new Set<string>();
+    const foundArTxsInGraphQL = new Set<string>();
 
     const checkBatches = async (ids: string[], query: string) => {
       for (let i = 0; i < ids.length; i += BATCH_SIZE) {
@@ -272,7 +207,11 @@ export async function checkAndCleanPendingTransactions(): Promise<void> {
             if (id) {
               // Only confirm AR transactions that have a timestamp
               if (+edge?.node?.quantity?.ar > 0) {
-                if (edge?.node?.block?.timestamp) confirmed.add(id);
+                if (edge?.node?.block?.timestamp) {
+                  confirmed.add(id);
+                } else {
+                  foundArTxsInGraphQL.add(id);
+                }
               } else {
                 confirmed.add(id);
               }
@@ -287,15 +226,15 @@ export async function checkAndCleanPendingTransactions(): Promise<void> {
 
     // Check AR + AO in parallel
     await Promise.allSettled([
-      arTx.length
+      arTxs.length
         ? checkBatches(
-            arTx.map((t) => t.id),
+            arTxs.map((t) => t.id),
             PENDING_TRANSACTIONS_QUERY,
           )
         : null,
-      aoTx.length
+      aoTxs.length
         ? checkBatches(
-            aoTx.map((t) => t.id),
+            aoTxs.map((t) => t.id),
             PENDING_AO_TRANSACTIONS_QUERY,
           )
         : null,
@@ -307,8 +246,24 @@ export async function checkAndCleanPendingTransactions(): Promise<void> {
       log(LOG_GROUP.TRANSACTIONS, `Removed ${confirmed.size} confirmed pending transactions`);
     }
 
+    if (foundArTxsInGraphQL.size) {
+      await pendingTransactionsArray.updateWhere(
+        (pt) => foundArTxsInGraphQL.has(pt.id) && !pt.foundInGraphQL,
+        (pt) => ({ ...pt, foundInGraphQL: true }),
+      );
+    }
+
+    const rejectedArTxs = await pendingTransactionsArray.filter(
+      (pt) => !pt.transaction.aoInfo && !pt.confirmed && pt.foundInGraphQL && !foundArTxsInGraphQL.has(pt.id),
+    );
+    const rejectedArTxIds = rejectedArTxs.map((pt) => pt.id);
+
+    if (rejectedArTxIds.length) {
+      await pendingTransactionsArray.removeWhere((pt) => rejectedArTxIds.includes(pt.id));
+    }
+
     // If no pending remain, clear cleanup alarms
-    const left = await pendingTransactionsArray.filter((pt) => !pt.foundInGraphQL);
+    const left = await pendingTransactionsArray.filter((pt) => !pt.confirmed);
     if (left.length === 0) {
       await clearPendingTransactionsAlarm();
     }
@@ -427,13 +382,28 @@ export async function mergeWithPending(
   baseTransactions: ExtendedTransaction[],
   pendingTransactions: ExtendedTransaction[],
 ): Promise<ExtendedTransaction[]> {
-  const graphqlTxIds = new Set(baseTransactions.map((tx) => tx.node.id));
-  const newPendingTxs = pendingTransactions.filter((tx) => !graphqlTxIds.has(tx.node.id));
+  if (pendingTransactions.length === 0) return baseTransactions.sort(sortFn);
 
-  // Remove pending transactions that are now available in GraphQL
-  if (graphqlTxIds.size > 0) {
-    await removePendingTransactions(Array.from(graphqlTxIds));
+  const baseIds = new Set<string>();
+  const removablePendingIds: string[] = [];
+
+  for (const tx of baseTransactions) {
+    const id = tx.node.id;
+    baseIds.add(id);
+
+    // already confirmed / resolvable → remove from pending store
+    if (tx.aoInfo || (!tx.aoInfo && tx.node.block?.timestamp)) {
+      removablePendingIds.push(id);
+    }
   }
+
+  if (removablePendingIds.length > 0) {
+    await removePendingTransactions(removablePendingIds);
+  }
+
+  const newPendingTxs = pendingTransactions.filter((tx) => !baseIds.has(tx.node.id));
+
+  if (newPendingTxs.length === 0) return baseTransactions.sort(sortFn);
 
   return [...newPendingTxs, ...baseTransactions].sort(sortFn);
 }
@@ -469,7 +439,7 @@ export async function setPendingTransactionsStats(): Promise<void> {
         (pt.address === address ||
           pt.transaction.node.recipient === address ||
           pt.transaction.aoInfo?.recipient === address) &&
-        !pt.foundInGraphQL,
+        !pt.confirmed,
     );
 
     // Group by token and calculate stats with balance
