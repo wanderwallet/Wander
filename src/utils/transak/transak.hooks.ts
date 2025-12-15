@@ -8,6 +8,7 @@ import { useLocation } from "~wallets/router/router.utils";
 import type { WanderRoutePath } from "~wallets/router/router.types";
 import getSymbolFromCurrency from "currency-symbol-map";
 import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
+import { isInsideIframe } from "~utils/embedded/iframe.utils";
 import { useActiveTier } from "~utils/tier/hooks";
 import { TierTypes } from "~utils/tier/constants";
 import { scheduleTransakPurchaseAlarm } from "./transak.alarms";
@@ -289,13 +290,8 @@ export const useTransak = (apiKey: string, initialConversion = false) => {
         const url = await createPurchaseUrl(activeAddress);
         if (url) {
           if (IS_EMBEDDED_APP) {
-            const link = document.createElement("a");
-            link.href = url;
-            link.target = "_blank";
-            link.rel = "noopener";
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            const targetWindow = isInsideIframe() && window.top ? window.top : window;
+            targetWindow.open(url, "_blank", "noopener");
           } else {
             await scheduleTransakPurchaseAlarm();
             browser.tabs.create({ url });
