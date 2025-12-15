@@ -618,12 +618,12 @@ export async function checkTransferError(process: string, transferId: string): P
   });
 
   try {
-    return Promise.race([
+    return await Promise.race([
       checkMessageResultForError(process, transferId).catch(() => null),
       checkMessageGraphqlResultForError(transferId).catch(() => null),
       timeout,
     ]);
   } finally {
-    clearTimeout(timeoutId);
+    if (timeoutId) clearTimeout(timeoutId);
   }
 }
