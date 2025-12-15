@@ -1,5 +1,5 @@
 import { AnimatePresence } from "framer-motion";
-import { Button, Text } from "@arconnect/components-rebrand";
+import { Button, Text } from "@wanderapp/components";
 import browser from "webextension-polyfill";
 import styled from "styled-components";
 

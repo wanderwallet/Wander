@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Button, Text } from "@arconnect/components-rebrand";
+import { Button, Text } from "@wanderapp/components";
 import { ExtensionStorage } from "~utils/storage";
 import { Flex } from "~components/common/Flex";
 import SliderMenu from "~components/SliderMenu";

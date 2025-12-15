@@ -1,4 +1,4 @@
-import { Card, Spacer, Text } from "@arconnect/components-rebrand";
+import { Card, Spacer, Text } from "@wanderapp/components";
 import browser from "webextension-polyfill";
 import { useMemo, useState } from "react";
 import styled from "styled-components";

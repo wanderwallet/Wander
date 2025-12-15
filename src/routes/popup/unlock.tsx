@@ -1,6 +1,6 @@
 import { unlock } from "~wallets/auth";
 import browser from "webextension-polyfill";
-import { Button, Input, Section, Text, useInput, useToasts } from "@arconnect/components-rebrand";
+import { Button, Input, Section, Text, useInput, useToasts } from "@wanderapp/components";
 import styled, { useTheme } from "styled-components";
 import WanderIcon from "url:assets/icon.svg";
 import IconText from "~components/IconText";

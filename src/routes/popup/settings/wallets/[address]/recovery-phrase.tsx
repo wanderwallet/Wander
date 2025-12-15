@@ -6,7 +6,7 @@ import { useLocation } from "~wallets/router/router.utils";
 import copy from "copy-to-clipboard";
 import Paragraph from "~components/Paragraph";
 import browser from "webextension-polyfill";
-import { Button, Spacer, Text } from "@arconnect/components-rebrand";
+import { Button, Spacer, Text } from "@wanderapp/components";
 import { AlertTriangle, Check, Copy01, Eye, EyeOff } from "@untitled-ui/icons-react";
 import styled from "styled-components";
 import { PageType, trackPage } from "~utils/analytics";

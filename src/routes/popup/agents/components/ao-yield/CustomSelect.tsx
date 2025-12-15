@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import styled, { useTheme } from "styled-components";
-import { Text } from "@arconnect/components-rebrand";
+import { Text } from "@wanderapp/components";
 import { ChevronRight } from "@untitled-ui/icons-react";
 
 interface CustomSelectOption {

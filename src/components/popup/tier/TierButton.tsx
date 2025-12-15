@@ -1,4 +1,4 @@
-import { Button } from "@arconnect/components-rebrand";
+import { Button } from "@wanderapp/components";
 import styled from "styled-components";
 import type { Tier } from "~utils/tier/types";
 

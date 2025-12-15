@@ -5,7 +5,7 @@ import { type SetupWelcomeViewParams, type WelcomeSetupMode } from "../setup";
 import { useLocation } from "~wallets/router/router.utils";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import styled from "styled-components";
-import { Button, ListItem, ListItemIcon } from "@arconnect/components-rebrand";
+import { Button, ListItem, ListItemIcon } from "@wanderapp/components";
 import { FolderShield, Key01, QrCode02 } from "@untitled-ui/icons-react";
 import KeystoneIcon from "url:assets/setup/keystone.svg";
 

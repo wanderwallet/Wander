@@ -1,4 +1,4 @@
-import { ListItem } from "@arconnect/components-rebrand";
+import { ListItem } from "@wanderapp/components";
 import type { Icon } from "~settings/setting";
 import browser from "webextension-polyfill";
 import type { HTMLProps } from "react";

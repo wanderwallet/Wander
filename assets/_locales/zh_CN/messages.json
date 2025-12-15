@@ -1079,6 +1079,10 @@
       "message": "无法发送交易，请重试。",
       "description": "Transfer error notification"
   },
+  "transfer_error": {
+    "message": "转账错误",
+    "description": "Transfer error notification"
+  },
   "failed_tx_with_gateway": {
       "message": "无法发送交易。请重试或使用不同的网关。",
       "description": "Transfer error notification"
@@ -4609,5 +4613,83 @@
     "not_enough_ao_tokens": {
       "message": "没有足够的 $$AO 代币。",
       "description": "Not enough $AO tokens text"
+    },
+    "pending_transactions_message": {
+      "message": "$COUNT$ 待处理 $TXS$。待处理总额：$SENT_BALANCE$ $TICKER$ 发送，$RECEIVED_BALANCE$ $TICKER$ 接收",
+      "description": "Pending transactions message text",
+      "placeholders": {
+        "count": {
+          "content": "$1",
+          "example": "1"
+        },
+        "txs": {
+          "content": "$2",
+          "example": "txs"
+        },
+        "sent_balance": {
+          "content": "$3",
+          "example": "1000"
+        },
+        "received_balance": {
+          "content": "$4",
+          "example": "1000"
+        },
+        "ticker": {
+          "content": "$5",
+          "example": "WNDR"
+        }
+      }
+    },
+    "pending_transactions_message_sent": {
+      "message": "$COUNT$ 待处理 $TXS$。待处理总额：$SENT_BALANCE$ $TICKER$ 发送",
+      "description": "Sent pending transactions message text",
+      "placeholders": {
+        "count": {
+          "content": "$1",
+          "example": "1"
+        },
+        "txs": {
+          "content": "$2",
+          "example": "txs"
+        },
+        "sent_balance": {
+          "content": "$3",
+          "example": "1000"
+        },
+        "ticker": {
+          "content": "$4",
+          "example": "WNDR"
+        }
+      }
+    },
+    "pending_transactions_message_received": {
+      "message": "$COUNT$ 待处理 $TXS$。待处理总额：$RECEIVED_BALANCE$ $TICKER$ 接收",
+      "description": "Received pending transactions message text",
+      "placeholders": {
+        "count": {
+          "content": "$1",
+          "example": "1"
+        },
+        "txs": {
+          "content": "$2",
+          "example": "txs"
+        },
+        "received_balance": {
+          "content": "$3",
+          "example": "1000"
+        },
+        "ticker": {
+          "content": "$4",
+          "example": "WNDR"
+        }
+      }
+    },
+    "tx_singular": {
+      "message": "交易",
+      "description": "Tx singular text"
+    },
+    "tx_plural": {
+      "message": "笔交易",
+      "description": "Tx plural text"
     }
 }

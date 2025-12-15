@@ -181,9 +181,7 @@ export const getFormattedAmount = (transaction: ExtendedTransaction) => {
     case "aoSent":
     case "aoReceived":
       if (transaction.aoInfo) {
-        return `${balanceToFractioned(transaction.aoInfo.quantity, {
-          divisibility: transaction.aoInfo.denomination,
-        })
+        return `${balanceToFractioned(transaction.aoInfo.quantity, transaction.aoInfo.denomination)
           .toFixed(3)
           .replace(/\.?0+$/, "")} ${transaction.aoInfo.tickerName}`;
       }

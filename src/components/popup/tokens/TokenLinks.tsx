@@ -4,7 +4,7 @@ import browser from "webextension-polyfill";
 import { CopyToClipboard } from "~components/CopyToClipboard";
 import { getKnownTokenInfo } from "~tokens/knownTokens";
 import { formatAddress } from "~utils/format";
-import { Text } from "@arconnect/components-rebrand";
+import { Text } from "@wanderapp/components";
 import { Flex } from "~components/common/Flex";
 import { ArrowUpRight } from "@untitled-ui/icons-react";
 import styled from "styled-components";

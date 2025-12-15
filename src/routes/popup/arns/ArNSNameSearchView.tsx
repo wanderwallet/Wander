@@ -1,5 +1,5 @@
 import { mARIOToken, type AoArNSNameData } from "@ar.io/sdk/web";
-import { Button, Spacer, Text, useInput } from "@arconnect/components-rebrand";
+import { Button, Spacer, Text, useInput } from "@wanderapp/components";
 import { useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
 import { Flex } from "~components/common/Flex";

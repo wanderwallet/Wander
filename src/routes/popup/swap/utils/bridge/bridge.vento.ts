@@ -28,7 +28,7 @@ import { defaultOptions } from "~tokens/hooks";
 import type { JWKInterface } from "arweave/web/lib/wallet";
 import type { HardwareWallet } from "~wallets/hardware";
 import { assertTransferResult, createKeystoneFeeTransaction, createSwapMessage } from "../swap.utils";
-import { createAoPendingTransaction, createArPendingTransaction } from "~utils/transactions";
+import { createAoPendingTransaction, createArPendingTransaction } from "~utils/transactions/pending/pending.utils";
 
 export const VENTO_BRIDGE_ADDRESS = "mFRKcHsO6Tlv2E2wZcrcbv3mmzxzD7vYPbyybI3KCVA";
 

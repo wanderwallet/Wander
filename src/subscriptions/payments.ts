@@ -83,7 +83,10 @@ export const prepare = async (
     };
 
     // convert to winston
-    const paymentQuantity = fractionedToBalance(data.subscriptionFeeAmount.toString(), arPlaceholder, "AR").toString();
+    const paymentQuantity = fractionedToBalance(
+      data.subscriptionFeeAmount.toString(),
+      arPlaceholder.denomination,
+    ).toString();
 
     const tx = await arweave.createTransaction({
       target,

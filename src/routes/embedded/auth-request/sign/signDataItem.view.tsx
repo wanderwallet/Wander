@@ -9,7 +9,7 @@ import { fetchTokenByProcessId, getTagValue, type TokenInfo } from "~tokens/aoTo
 import { ExtensionStorage, PersistentStorage, useStorage } from "~utils/storage";
 import { humanizeTimestampTags } from "~utils/timestamp";
 import { useTokenBalance } from "~tokens/hooks";
-import { Loading } from "@arconnect/components-rebrand";
+import { Loading } from "@wanderapp/components";
 import TransactionMessage from "~components/embed/auth/TransactionMessage";
 import { formatBalance } from "~utils/format";
 import { AuthRequestCard } from "~components/embed/ui/molecules/card/auth-request-card/AuthRequestCard";

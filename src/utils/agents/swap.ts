@@ -69,7 +69,7 @@ function sortAscending(a: MintTransaction, b: MintTransaction): number {
 }
 
 function convertQuantityToUsd(quantity: string, price: number): string {
-  const amount = balanceToFractioned(quantity, { decimals: 12 });
+  const amount = balanceToFractioned(quantity, 12);
   return BigNumber(amount.multipliedBy(price).toPrecision(8, BigNumber.ROUND_HALF_UP)).toFixed();
 }
 

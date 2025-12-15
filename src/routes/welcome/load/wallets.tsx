@@ -6,7 +6,7 @@ import type { JWKInterface } from "arweave/web/lib/wallet";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { useStorage } from "~utils/storage";
 import { PasswordContext, WalletContext, type SetupWelcomeViewParams } from "../setup";
-import { Button, Modal, Spacer, Text, useModal, useToasts } from "@arconnect/components-rebrand";
+import { Button, Modal, Spacer, Text, useModal, useToasts } from "@wanderapp/components";
 import Migrate from "~components/welcome/load/Migrate";
 import SeedInput from "~components/SeedInput";
 import Paragraph from "~components/Paragraph";

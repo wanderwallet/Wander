@@ -1,4 +1,4 @@
-import { Modal, Text } from "@arconnect/components-rebrand";
+import { Modal, Text } from "@wanderapp/components";
 import { useRef } from "react";
 import { Content, ContentWrapper } from "~components/modals/Components";
 

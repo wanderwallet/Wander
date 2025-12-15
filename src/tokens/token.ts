@@ -9,8 +9,7 @@ export interface Token {
   type: TokenType;
   hidden?: boolean;
   balance: string | null;
-  divisibility?: number;
-  decimals?: number;
+  denomination?: number;
   defaultLogo?: string;
 }
 

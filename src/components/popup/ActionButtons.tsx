@@ -1,4 +1,4 @@
-import { Button } from "@arconnect/components-rebrand";
+import { Button } from "@wanderapp/components";
 import styled from "styled-components";
 import type { WanderRoutePath } from "~wallets/router/router.types";
 import { useLocation } from "~wallets/router/router.utils";

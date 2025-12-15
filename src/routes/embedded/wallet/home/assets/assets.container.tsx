@@ -38,7 +38,7 @@ export function WalletHomeAssets({
           ticker={token.Ticker}
           amount={token.balance}
           fiatPrice={prices[token.id]}
-          divisibility={token.Denomination}
+          denomination={token.Denomination}
         />
       ))}
 

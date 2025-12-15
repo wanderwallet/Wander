@@ -1,4 +1,4 @@
-import { ListItem, Text } from "@arconnect/components-rebrand";
+import { ListItem, Text } from "@wanderapp/components";
 import { Flex } from "~components/common/Flex";
 import { SvgImageWithBackground } from "../SvgImage";
 import AoLogo from "url:/assets/ecosystem/ao-logo.svg";

@@ -1,5 +1,5 @@
 import { useCurrentAuthRequest } from "~utils/auth/auth.hooks";
-import { Input, ListItem, Section, Spacer, Text, useInput, useToasts } from "@arconnect/components-rebrand";
+import { Input, ListItem, Section, Spacer, Text, useInput, useToasts } from "@wanderapp/components";
 import Wrapper from "~components/auth/Wrapper";
 import browser from "webextension-polyfill";
 import { useState } from "react";

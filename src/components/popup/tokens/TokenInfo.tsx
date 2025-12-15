@@ -6,7 +6,7 @@ import { useAoToken } from "~tokens/hooks";
 import { useTokenPriceChange } from "~tokens/hooks/useTokenPriceChange";
 import { useFormattedTokenBalance } from "~tokens/hooks/useFormattedTokenBalance";
 import useSetting from "~settings/hook";
-import { Text } from "@arconnect/components-rebrand";
+import { Text } from "@wanderapp/components";
 import browser from "webextension-polyfill";
 import Skeleton from "~components/Skeleton";
 import TriangleIcon from "~components/icons/TriangleIcon";
@@ -16,6 +16,7 @@ import { useMemo } from "react";
 import { PriceChart } from "./PriceChart";
 import { ActiveAgentsSlider } from "./ActiveAgentsSlider";
 import { TokenActionButtons } from "./TokenActionButtons";
+import { PendingTransactionsTooltip } from "../PendingTransactionsTooltip";
 
 interface TokenInfoProps {
   id: string;
@@ -66,7 +67,11 @@ export const TokenInfo = ({ id }: TokenInfoProps) => {
   return (
     <Flex direction="column" gap={24}>
       <TokenInfoItem>
-        <TokenInfoLabel>{browser.i18n.getMessage("your_balance")}</TokenInfoLabel>
+        <Flex direction="row" gap={8} align="center">
+          <TokenInfoLabel>{browser.i18n.getMessage("your_balance")}</TokenInfoLabel>
+          <PendingTransactionsTooltip tokenId={id} ticker={token?.Ticker} />
+        </Flex>
+
         <TokenBalance>
           <TokenBalanceText>
             {tokenDisplay.loading ? (

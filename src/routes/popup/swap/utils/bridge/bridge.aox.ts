@@ -29,7 +29,7 @@ import type { AoxBridgeTransactionStatus } from "./bridge.types";
 import type { JWKInterface } from "arweave/web/lib/wallet";
 import type { HardwareWallet } from "~wallets/hardware";
 import { assertTransferResult, createKeystoneFeeTransaction, createSwapMessage } from "../swap.utils";
-import { createAoPendingTransaction, createArPendingTransaction } from "~utils/transactions";
+import { createAoPendingTransaction, createArPendingTransaction } from "~utils/transactions/pending/pending.utils";
 
 const FAILED_STATUSES = new Set<AoxBridgeTransactionStatus>(["failed", "submintAosFailed", "notOnChain", "refunded"]);
 

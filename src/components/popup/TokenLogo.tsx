@@ -118,7 +118,7 @@ export function TokenLogo({
       ticker: tokenInfo.Ticker,
       type: tokenInfo.type,
       hidden: tokenInfo.hidden,
-      decimals: tokenInfo.Denomination,
+      denomination: tokenInfo.Denomination,
       defaultLogo: tokenInfo.Logo,
     };
   }, [tokenProp]);

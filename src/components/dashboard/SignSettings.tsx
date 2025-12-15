@@ -1,4 +1,4 @@
-import { Text, Input } from "@arconnect/components-rebrand";
+import { Text, Input } from "@wanderapp/components";
 import browser from "webextension-polyfill";
 import styled from "styled-components";
 import { ExtensionStorage } from "~utils/storage";

@@ -1,4 +1,4 @@
-import { Button, Text } from "@arconnect/components-rebrand";
+import { Button, Text } from "@wanderapp/components";
 import { useEffect, useMemo, useState } from "react";
 import { Flex } from "~components/common/Flex";
 import HeadV2 from "~components/popup/HeadV2";

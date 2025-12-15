@@ -1,4 +1,4 @@
-import { Text } from "@arconnect/components-rebrand";
+import { Text } from "@wanderapp/components";
 import browser from "webextension-polyfill";
 import styled, { useTheme } from "styled-components";
 import Token from "../Token";
@@ -28,7 +28,7 @@ export default function Tokens() {
         {tokens.map((token) => (
           <Token
             key={token.id}
-            divisibility={token.Denomination}
+            denomination={token.Denomination}
             type={"asset"}
             defaultLogo={token?.Logo}
             id={token.id}

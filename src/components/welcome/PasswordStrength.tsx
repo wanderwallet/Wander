@@ -1,5 +1,5 @@
 import { type DiversityType, passwordStrength } from "check-password-strength";
-import { Spacer, Text } from "@arconnect/components-rebrand";
+import { Spacer, Text } from "@wanderapp/components";
 import { useMemo } from "react";
 import browser from "webextension-polyfill";
 import styled from "styled-components";

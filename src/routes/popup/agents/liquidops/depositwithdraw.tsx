@@ -2,7 +2,7 @@ import HeadV2 from "~components/popup/HeadV2";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import browser from "webextension-polyfill";
 import styled, { useTheme } from "styled-components";
-import { Section, Input, Text, Spacer, Button } from "@arconnect/components-rebrand";
+import { Section, Input, Text, Spacer, Button } from "@wanderapp/components";
 import { Flex } from "~components/common/Flex";
 import { SvgImageWithBackground } from "../components/SvgImage";
 import { AmountValidationState, getErrorMessage, MaxButton, validateAmount } from "~routes/popup/send/amount";

@@ -1,7 +1,7 @@
 import styled, { useTheme } from "styled-components";
 import HeadV2 from "~components/popup/HeadV2";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Section, Button, Text, Tooltip, Loading, useToasts } from "@arconnect/components-rebrand";
+import { Section, Button, Text, Tooltip, Loading, useToasts } from "@wanderapp/components";
 import browser from "webextension-polyfill";
 import { ArrowUpRight, HelpCircle, InfoCircle, Plus, Trash02 } from "@untitled-ui/icons-react";
 import { useAOYieldDelegations, useDelegationInfo, useFairLaunchTokens } from "~utils/fair_launch/fair_launch.hooks";
