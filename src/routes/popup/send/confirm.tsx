@@ -94,7 +94,7 @@ async function invalidateQueries(queryClient: QueryClient, tokenID: string, from
     keys.forEach((key) => queryClient.invalidateQueries({ queryKey: key, exact: true }));
 
     // Delayed refetch attempts
-    const delays = [5000, 7000, 10000];
+    const delays = [5000, 7000, 10000, 15000, 20000, 25000, 30000];
 
     const timeouts = delays.map((delay) =>
       setTimeout(() => {
