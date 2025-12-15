@@ -245,13 +245,10 @@ export const useTransak = (apiKey: string, initialConversion = false) => {
         paymentMethod: quote.paymentMethod,
       };
 
-      const response = await fetch(
-        `https://wander-cache-git-fix-transak-widget-community-labs.vercel.app/api/transak-widget`,
-        {
-          method: "POST",
-          body: JSON.stringify({ widgetParams }),
-        },
-      );
+      const response = await fetch(`${CACHE_API}/api/transak-widget`, {
+        method: "POST",
+        body: JSON.stringify({ widgetParams }),
+      });
 
       if (!response.ok) {
         throw new Error("Failed to create Transak widget url");
@@ -290,8 +287,7 @@ export const useTransak = (apiKey: string, initialConversion = false) => {
         const url = await createPurchaseUrl(activeAddress);
         if (url) {
           if (IS_EMBEDDED_APP) {
-            const targetWindow = isInsideIframe() && window.top ? window.top : window;
-            targetWindow.open(url, "_blank", "noopener");
+            window.open(url, "_blank", "noopener,noreferrer");
           } else {
             await scheduleTransakPurchaseAlarm();
             browser.tabs.create({ url });
