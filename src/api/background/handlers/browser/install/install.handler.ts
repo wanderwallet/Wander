@@ -1,7 +1,6 @@
 import { scheduleGatewayUpdate } from "~gateways/cache";
 import browser, { type Runtime } from "webextension-polyfill";
 import { loadTokens } from "~tokens/token";
-import { initializeARBalanceMonitor } from "~utils/analytics";
 import { handleGatewayUpdateAlarm } from "~api/background/handlers/alarms/gateway-update/gateway-update-alarm.handler";
 import { openOrSelectWelcomePage } from "~wallets";
 import { ExtensionStorage } from "~utils/storage";
@@ -41,9 +40,6 @@ export async function handleInstall(details: Runtime.OnInstalledDetailsType) {
     // create alarm to schedule pending transactions cleanup
     schedulePendingTransactionsCleanupAlarm();
   }
-
-  // init monthly AR
-  await initializeARBalanceMonitor();
 
   // initialize alarm to fetch notifications
   browser.alarms.create("notifications", { periodInMinutes: 10 });
