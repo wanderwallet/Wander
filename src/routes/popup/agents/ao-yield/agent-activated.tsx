@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { Button, Section, Text } from "@arconnect/components-rebrand";
+import { Button, Section, Text } from "@wanderapp/components";
 import browser from "webextension-polyfill";
 import { Flex } from "~components/common/Flex";
 import agentActivated from "url:/assets/agents/images/agent-activated.svg";

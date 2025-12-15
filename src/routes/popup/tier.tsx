@@ -4,7 +4,7 @@ import HeadV2 from "~components/popup/HeadV2";
 import { ArrowUpRight, Award03 } from "@untitled-ui/icons-react";
 import { WanderIcon } from "~components/popup/tier/WanderIcon";
 import { EXPLORE_TIER_BENEFITS, TierTypes } from "~utils/tier/constants";
-import { Loading, Text, Tooltip } from "@arconnect/components-rebrand";
+import { Loading, Text, Tooltip } from "@wanderapp/components";
 import { Flex } from "~components/common/Flex";
 import wanderIcon from "~assets/ecosystem/wander.svg";
 import { defaultStars, AnimatedStarContainer } from "~components/common/AnimatedStarContainer";
@@ -40,9 +40,7 @@ export function TierView() {
 
   const formattedBalance = useMemo(() => {
     if (!activeTier) return { displayBalance: "0", tooltipBalance: "0", showTooltip: false, hasSuffix: false };
-    const fractionedBalance = balanceToFractioned(String(activeTier?.balance ?? 0), {
-      decimals: wanderTokenInfo.Denomination,
-    });
+    const fractionedBalance = balanceToFractioned(String(activeTier?.balance ?? 0), wanderTokenInfo.Denomination);
     return formatBalance(fractionedBalance);
   }, [activeTier?.balance]);
 

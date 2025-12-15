@@ -1,4 +1,4 @@
-import type { DisplayTheme } from "@arconnect/components-rebrand";
+import type { DisplayTheme } from "@wanderapp/components";
 import type { PropsWithChildren } from "react";
 import styled from "styled-components";
 import { useTheme } from "~utils/theme/theme.hook";

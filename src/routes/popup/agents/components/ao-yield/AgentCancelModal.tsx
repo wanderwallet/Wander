@@ -1,7 +1,7 @@
 import browser from "webextension-polyfill";
 import { Flex } from "~components/common/Flex";
 import SliderMenu from "~components/SliderMenu";
-import { Button, Input, Text, useInput, useToasts } from "@arconnect/components-rebrand";
+import { Button, Input, Text, useInput, useToasts } from "@wanderapp/components";
 import { updateAOYieldAgent } from "~utils/agents/utils";
 import { useMemo, useState } from "react";
 import { useAskPassword } from "~wallets/hooks";

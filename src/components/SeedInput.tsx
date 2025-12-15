@@ -3,7 +3,7 @@ import { type DragEvent, useCallback, useEffect, useMemo, useState } from "react
 import { CloseIcon, FolderIcon, WalletIcon } from "@iconicicons/react";
 import type { JWKInterface } from "arweave/web/lib/wallet";
 import styled, { keyframes, useTheme } from "styled-components";
-import { Loading, Text } from "@arconnect/components-rebrand";
+import { Loading, Text } from "@wanderapp/components";
 import { formatAddress } from "~utils/format";
 import { readFileString } from "~utils/file";
 import { wordlists } from "bip39-web-crypto";

@@ -1,5 +1,5 @@
 import { IconButton } from "~components/IconButton";
-import { Button } from "@arconnect/components-rebrand";
+import { Button } from "@wanderapp/components";
 import styled from "styled-components";
 
 export const InputWithBtn = styled.div`

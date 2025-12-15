@@ -1,4 +1,4 @@
-import { Button, Card, Text } from "@arconnect/components-rebrand";
+import { Button, Card, Text } from "@wanderapp/components";
 import { MinusIcon, PlusIcon } from "@iconicicons/react";
 import { useEffect, useMemo, useState } from "react";
 import styled from "styled-components";

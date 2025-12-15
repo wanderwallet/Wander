@@ -1,7 +1,7 @@
 import HeadV2 from "~components/popup/HeadV2";
 import browser from "webextension-polyfill";
 import styled from "styled-components";
-import { Section, Text } from "@arconnect/components-rebrand";
+import { Section, Text } from "@wanderapp/components";
 import { Flex } from "~components/common/Flex";
 import { Line } from "~routes/popup/purchase";
 import { Agent } from "../components/liquidops/Agent";

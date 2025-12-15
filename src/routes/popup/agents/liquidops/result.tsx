@@ -1,4 +1,4 @@
-import { Button, Section, Text } from "@arconnect/components-rebrand";
+import { Button, Section, Text } from "@wanderapp/components";
 import browser from "webextension-polyfill";
 import styled from "styled-components";
 import { Flex } from "~components/common/Flex";

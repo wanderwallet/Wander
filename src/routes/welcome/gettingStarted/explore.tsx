@@ -2,7 +2,7 @@ import styled, { useTheme } from "styled-components";
 import { useEffect } from "react";
 import { PageType, trackPage } from "~utils/analytics";
 import { Container, Content } from "~components/welcome/Wrapper";
-import { Text } from "@arconnect/components-rebrand";
+import { Text } from "@wanderapp/components";
 import browser from "webextension-polyfill";
 import ExploreImage from "url:/assets/setup/explore_tour.png";
 import ExploreImageLight from "url:/assets/setup/explore_tour_light.png";

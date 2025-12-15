@@ -4,7 +4,7 @@ import { useScanner } from "@arconnect/keystone-sdk";
 import { Alert, Icon as WarningIcon } from "~components/auth/CustomGatewayWarning";
 import { useState } from "react";
 import { Modal, Spacer, Text, useModal, useToasts } from "@arconnect/components";
-import { Button } from "@arconnect/components-rebrand";
+import { Button } from "@wanderapp/components";
 import AnimatedQRScanner from "./AnimatedQRScanner";
 import browser from "webextension-polyfill";
 import styled from "styled-components";

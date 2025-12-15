@@ -1,4 +1,4 @@
-import { Text } from "@arconnect/components-rebrand";
+import { Text } from "@wanderapp/components";
 import xLogo from "url:/assets/setup/x-logo.svg";
 import discordLogo from "url:/assets/setup/discord-logo.svg";
 import browser from "webextension-polyfill";

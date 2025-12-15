@@ -1,4 +1,4 @@
-import { Button, Spacer, Text } from "@arconnect/components-rebrand";
+import { Button, Spacer, Text } from "@wanderapp/components";
 import { WalletContext, type SetupWelcomeViewParams } from "../setup";
 import browser from "webextension-polyfill";
 import { useContext, useEffect } from "react";

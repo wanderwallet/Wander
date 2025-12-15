@@ -1,5 +1,5 @@
 import { Spacer } from "@arconnect/components";
-import { Button } from "@arconnect/components-rebrand";
+import { Button } from "@wanderapp/components";
 import { AnimatePresence, motion } from "framer-motion";
 import styled from "styled-components";
 import browser from "webextension-polyfill";

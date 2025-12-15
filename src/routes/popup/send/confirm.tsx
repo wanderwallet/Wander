@@ -1,4 +1,4 @@
-import { Button, Input, Section, Spacer, Text, useInput, useToasts } from "@arconnect/components-rebrand";
+import { Button, Input, Section, Spacer, Text, useInput, useToasts } from "@wanderapp/components";
 import { ArrowRightIcon } from "@iconicicons/react";
 import styled from "styled-components";
 import browser from "webextension-polyfill";
@@ -7,7 +7,11 @@ import { SendButton, type RecipientType, type TransactionData } from ".";
 import { formatAddress } from "~utils/format";
 import type Transaction from "arweave/web/lib/transaction";
 import { useStorage } from "~utils/storage";
-import { createArPendingTransaction, createAoPendingTransaction } from "~utils/transactions";
+import {
+  createArPendingTransaction,
+  createAoPendingTransaction,
+  checkAndCleanPendingTransactions,
+} from "~utils/transactions/pending/pending.utils";
 import { ExtensionStorage, TempTransactionStorage, type RawStoredTransfer } from "~utils/storage";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { findGateway, retryWithGateways } from "~gateways/wayfinder";
@@ -56,6 +60,7 @@ import { Flex } from "~components/common/Flex";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 import { useAoRateLimitedToast } from "~utils/toast/toast.hooks";
+import { TransferError } from "~utils/error/error.utils";
 
 export interface ConfirmViewParams {
   token: string;
@@ -89,7 +94,7 @@ async function invalidateQueries(queryClient: QueryClient, tokenID: string, from
     keys.forEach((key) => queryClient.invalidateQueries({ queryKey: key, exact: true }));
 
     // Delayed refetch attempts
-    const delays = [5000, 7000, 10000];
+    const delays = [5000, 7000, 10000, 15000, 20000, 25000, 30000];
 
     const timeouts = delays.map((delay) =>
       setTimeout(() => {
@@ -105,6 +110,11 @@ async function invalidateQueries(queryClient: QueryClient, tokenID: string, from
             if (!query.state.isInvalidated) {
               query.invalidate();
             }
+
+            if (tokenID === AR_PROCESS_ID && index === balanceKeys.length - 1) {
+              timeouts.forEach((timeout) => clearTimeout(timeout));
+            }
+
             return;
           }
 
@@ -120,6 +130,12 @@ async function invalidateQueries(queryClient: QueryClient, tokenID: string, from
 
           // Refetch using observer
           observers.forEach((observer) => observer.refetch().catch(() => {}));
+
+          if (tokenID === AR_PROCESS_ID && index === balanceKeys.length - 1) {
+            timeouts.forEach((timeout) => clearTimeout(timeout));
+          }
+
+          if (tokenID !== AR_PROCESS_ID) checkAndCleanPendingTransactions();
         });
       }, delay),
     );
@@ -188,7 +204,6 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
       try {
         const data: TransactionData = await TempTransactionStorage.get("send");
         if (data) {
-          const estimatedFiatTotal = BigNumber(data.estimatedFiat).plus(data.estimatedNetworkFee).toFixed(2);
           setIsAo(data.isAo);
           setRecipient(data.recipient);
           setToken(data.token);
@@ -233,7 +248,7 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
       const { result: tx, gateway } = await retryWithGateways(async (arweave) => {
         const transaction = await arweave.createTransaction({
           target,
-          quantity: fractionedToBalance(amount, { decimals: token.Denomination }, "AR"),
+          quantity: fractionedToBalance(amount, token.Denomination),
           data: message ? decodeURIComponent(message) : undefined,
         });
 
@@ -351,7 +366,7 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
     // 2/21/24: Checking first if it's an ao transfer and will handle in this block
     if (isAo) {
       try {
-        const quantity = fractionedToBalance(amount, { decimals: token.Denomination }, "AO");
+        const quantity = fractionedToBalance(amount, token.Denomination);
         const res = await sendAoTransfer(ao, tokenID, recipient.address, quantity);
         if (res) {
           await createAoPendingTransaction(res, activeAddress, recipient.address, quantity, tokenID, token, message);
@@ -371,11 +386,7 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
       } catch (err) {
         console.log("err in ao", err);
         setIsLoading(false);
-        setToast({
-          type: "error",
-          content: browser.i18n.getMessage("failed_tx"),
-          duration: 2000,
-        });
+        showTransferErrorToast(err);
         showAoRateLimitedToast(err);
         return;
       }
@@ -552,7 +563,7 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
       try {
         setPreparedTx(prepared);
 
-        const quantity = fractionedToBalance(amount, { decimals: token.Denomination }, "AO");
+        const quantity = fractionedToBalance(amount, token.Denomination);
         const res = await sendAoTransferKeystone(ao, tokenID, recipient.address, quantity, keystoneSigner);
 
         if (res) {
@@ -573,6 +584,7 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
       } catch (err) {
         console.log("err in ao", err);
         showAoRateLimitedToast(err);
+        showTransferErrorToast(err);
         setIsLoading(false);
         return;
       }
@@ -667,6 +679,20 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
       }
     },
   );
+
+  function showTransferErrorToast(error: Error) {
+    const toast = {
+      content: browser.i18n.getMessage("failed_tx"),
+      type: "error",
+      duration: 2000,
+    };
+
+    if (error instanceof TransferError) {
+      toast.content = error?.message || browser.i18n.getMessage("transfer_error");
+    }
+
+    setToast(toast as any);
+  }
 
   return (
     <Wrapper>
@@ -866,6 +892,7 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
         </BodyWrapper>
         <SendButton
           fullWidth
+          loading={isLoading}
           disabled={(transferRequirePassword && !passwordInput.state) || isLoading || hardwareStatus === "scan"}
           onClick={async () => {
             if (wallet.type === "local") await sendLocal();

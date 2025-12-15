@@ -7,7 +7,7 @@ import { PageType, trackPage } from "~utils/analytics";
 import { useLocation } from "~wallets/router/router.utils";
 import type { SetupWelcomeViewParams } from "~routes/welcome/setup";
 import type { CommonRouteProps } from "~wallets/router/router.types";
-import { Button } from "@arconnect/components-rebrand";
+import { Button } from "@wanderapp/components";
 import Paragraph from "~components/Paragraph";
 import Checkbox from "~components/Checkbox";
 

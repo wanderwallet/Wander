@@ -1,6 +1,6 @@
 import { PageType, trackPage } from "~utils/analytics";
 import { useEffect } from "react";
-import { Section } from "@arconnect/components-rebrand";
+import { Section } from "@wanderapp/components";
 import browser from "webextension-polyfill";
 import HeadV2 from "~components/popup/HeadV2";
 import { useStorage } from "@plasmohq/storage/hook";

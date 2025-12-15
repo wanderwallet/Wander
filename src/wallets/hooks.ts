@@ -42,7 +42,7 @@ import {
   getPendingTransactions,
   mergeWithPending,
   removeTransferErrorTransactions,
-} from "~utils/transactions";
+} from "~utils/transactions/pending/pending.utils";
 
 /**
  * Wallets with details hook
@@ -371,7 +371,7 @@ export const useTransactions = (activeAddress: string, limit?: number) => {
 
       // Get pending transactions and merge with GraphQL results
       pendingTransactions = await removeTransferErrorTransactions(pendingTransactions);
-      combinedTransactions = await mergeWithPending(combinedTransactions, pendingTransactions, true);
+      combinedTransactions = await mergeWithPending(combinedTransactions, pendingTransactions);
 
       const actualCount = combinedTransactions.length;
 

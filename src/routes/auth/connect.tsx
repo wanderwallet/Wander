@@ -1,4 +1,4 @@
-import { Input, Section, Spacer, Text, useInput, useToasts } from "@arconnect/components-rebrand";
+import { Input, Section, Spacer, Text, useInput, useToasts } from "@wanderapp/components";
 import { permissionData, signPolicyOptions, type PermissionType } from "~applications/permissions";
 import { useCurrentAuthRequest } from "~utils/auth/auth.hooks";
 import { AnimatePresence, motion } from "framer-motion";

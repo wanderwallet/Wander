@@ -1,4 +1,4 @@
-import { Input } from "@arconnect/components-rebrand";
+import { Input } from "@wanderapp/components";
 import type { HTMLProps } from "react";
 import styled from "styled-components";
 

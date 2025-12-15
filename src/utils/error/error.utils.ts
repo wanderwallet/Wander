@@ -46,6 +46,13 @@ export class BalanceFetchError extends Error {
   }
 }
 
+export class TransferError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "TransferError";
+  }
+}
+
 export const isNetworkError = (error: any) =>
   error?.name === "NetworkError" ||
   error?.message === "Failed to fetch" ||

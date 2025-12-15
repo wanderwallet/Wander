@@ -5,7 +5,7 @@ import {
   ARCONNECT_LIGHT_THEME,
   Provider as ThemeProvider,
   type ArconnectTheme,
-} from "@arconnect/components-rebrand";
+} from "@wanderapp/components";
 import { useTheme } from "~utils/theme/theme.hook";
 import { ThemeBackgroundObserver } from "~utils/theme/observer/theme-observer.component";
 

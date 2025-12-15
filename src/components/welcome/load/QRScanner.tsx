@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import QrScanner from "qr-scanner";
 import styled from "styled-components";
-import { Text, useToasts } from "@arconnect/components-rebrand";
+import { Text, useToasts } from "@wanderapp/components";
 import browser from "webextension-polyfill";
 import { parseFramesReducer, areFramesComplete, framesToData, progressOfFrames } from "qrloop";
 

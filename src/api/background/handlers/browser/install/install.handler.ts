@@ -1,12 +1,12 @@
 import { scheduleGatewayUpdate } from "~gateways/cache";
 import browser, { type Runtime } from "webextension-polyfill";
 import { loadTokens } from "~tokens/token";
-import { initializeARBalanceMonitor } from "~utils/analytics";
 import { handleGatewayUpdateAlarm } from "~api/background/handlers/alarms/gateway-update/gateway-update-alarm.handler";
 import { openOrSelectWelcomePage } from "~wallets";
 import { ExtensionStorage } from "~utils/storage";
 import { resetAllPermissions } from "./permissions.handler";
 import { scheduleFairLaunchTokensAlarm } from "~utils/fair_launch/fair_launch.alarms";
+import { schedulePendingTransactionsCleanupAlarm } from "~api/background/handlers/alarms/pending-transactions/pending-transactions-alarm.handler";
 
 /**
  * On extension installed event handler
@@ -36,10 +36,10 @@ export async function handleInstall(details: Runtime.OnInstalledDetailsType) {
 
     // create alarm to sync labels every 6 hours
     browser.alarms.create("sync_labels", { delayInMinutes: 1, periodInMinutes: 360 });
-  }
 
-  // init monthly AR
-  await initializeARBalanceMonitor();
+    // create alarm to schedule pending transactions cleanup
+    schedulePendingTransactionsCleanupAlarm();
+  }
 
   // initialize alarm to fetch notifications
   browser.alarms.create("notifications", { periodInMinutes: 10 });

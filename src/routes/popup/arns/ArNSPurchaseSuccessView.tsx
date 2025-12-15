@@ -1,4 +1,4 @@
-import { Card, Text, Button } from "@arconnect/components-rebrand";
+import { Card, Text, Button } from "@wanderapp/components";
 import styled from "styled-components";
 import { Flex } from "~components/common/Flex";
 import { truncateMiddle } from "~utils/format";

@@ -1,5 +1,5 @@
 import styled, { css, keyframes } from "styled-components";
-import { Button } from "@arconnect/components-rebrand";
+import { Button } from "@wanderapp/components";
 
 export const IconButton = styled(Button)`
   padding: 1.2rem;

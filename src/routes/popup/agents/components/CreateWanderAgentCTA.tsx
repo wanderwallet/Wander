@@ -1,4 +1,4 @@
-import { Button, Text } from "@arconnect/components-rebrand";
+import { Button, Text } from "@wanderapp/components";
 import styled from "styled-components";
 import { Flex } from "~components/common/Flex";
 import { ExtensionStorage } from "~utils/storage";

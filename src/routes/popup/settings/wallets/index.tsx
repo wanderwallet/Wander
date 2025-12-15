@@ -1,4 +1,4 @@
-import { Button, Section } from "@arconnect/components-rebrand";
+import { Button, Section } from "@wanderapp/components";
 import styled from "styled-components";
 import browser from "webextension-polyfill";
 import WalletListItem from "~components/dashboard/list/WalletListItem";

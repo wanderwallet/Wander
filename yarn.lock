@@ -28,17 +28,6 @@
     winston "^3.13.0"
     zod "^3.23.8"
 
-"@arconnect/components-rebrand@https://github.com/wanderwallet/components-rebrand.git#master":
-  version "1.0.0"
-  resolved "https://github.com/wanderwallet/components-rebrand.git#2c6d32146d52a2febd42bf56a5a438c3102d9a84"
-  dependencies:
-    "@iconicicons/react" "^1.5.1"
-    "@untitled-ui/icons-react" "^0.1.4"
-    axios "^1.6.7"
-    framer-motion "^7.5.3"
-    nanoid "^4.0.1"
-    uuid "^9.0.1"
-
 "@arconnect/components@^1.0.0":
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/@arconnect/components/-/components-1.0.0.tgz#4186b98cccb1e4a0241cd69bccb33459a7b4cf93"
@@ -1103,6 +1092,26 @@
   version "2.1.1"
   resolved "https://registry.yarnpkg.com/@fastify/busboy/-/busboy-2.1.1.tgz#b9da6a878a371829a0502c9b6c1c143ef6663f4d"
   integrity sha512-vBZP4NlzfOlerQTnba4aqZoMhE/a9HY7HRqoOPaETQcSQuWEIyZMHGfVu6w9wGtGK5fED5qRs2DteVCjOH60sA==
+
+"@floating-ui/core@^1.7.3":
+  version "1.7.3"
+  resolved "https://registry.npmjs.org/@floating-ui/core/-/core-1.7.3.tgz#462d722f001e23e46d86fd2bd0d21b7693ccb8b7"
+  integrity sha512-sGnvb5dmrJaKEZ+LDIpguvdX3bDlEllmv4/ClQ9awcmCZrlx5jQyyMWFM5kBI+EyNOCDDiKk8il0zeuX3Zlg/w==
+  dependencies:
+    "@floating-ui/utils" "^0.2.10"
+
+"@floating-ui/dom@^1.6.1":
+  version "1.7.4"
+  resolved "https://registry.npmjs.org/@floating-ui/dom/-/dom-1.7.4.tgz#ee667549998745c9c3e3e84683b909c31d6c9a77"
+  integrity sha512-OOchDgh4F2CchOX94cRVqhvy7b3AFb+/rQXyswmzmGakRfkMgoWVjfnLWkRirfLEfuD4ysVW16eXzwt3jHIzKA==
+  dependencies:
+    "@floating-ui/core" "^1.7.3"
+    "@floating-ui/utils" "^0.2.10"
+
+"@floating-ui/utils@^0.2.10":
+  version "0.2.10"
+  resolved "https://registry.npmjs.org/@floating-ui/utils/-/utils-0.2.10.tgz#a2a1e3812d14525f725d011a73eceb41fef5bc1c"
+  integrity sha512-aGTxbpbg8/b5JfU1HXSrbH3wXZuLPJcNEcZQFMxLs3oSzgtVu6nFPkbbGGUvBcUjKV2YyB9Wxxabo+HEH9tcRQ==
 
 "@iconicicons/react@^1.5.0", "@iconicicons/react@^1.5.1":
   version "1.5.1"
@@ -4975,6 +4984,19 @@
   resolved "https://registry.yarnpkg.com/@vue/shared/-/shared-3.5.18.tgz#529f24a88d3ed678d50fd5c07455841fbe8ac95e"
   integrity sha512-cZy8Dq+uuIXbxCZpuLd2GJdeSO/lIzIspC2WtkqIpje5QyFbvLaI5wZtdUjLHjGZrlVX6GilejatWwVYYRc8tA==
 
+"@wanderapp/components@^1.0.1":
+  version "1.0.1"
+  resolved "https://registry.npmjs.org/@wanderapp/components/-/components-1.0.1.tgz#eca30809b43ddde71754c8403ba39df20c176062"
+  integrity sha512-z0fF2/hpDy4xTA6GHCTZiDYc+Ds+wX38YQMVfxfFw2Rvl0XnmhorfwNJISPj/qJOzApBObqnJ+vUKzqu2UmYNw==
+  dependencies:
+    "@iconicicons/react" "^1.5.1"
+    "@untitled-ui/icons-react" "^0.1.4"
+    axios "^1.6.7"
+    framer-motion "^7.5.3"
+    nanoid "^4.0.1"
+    react-tooltip "^5.30.0"
+    uuid "^9.0.1"
+
 "@wanderapp/webext-bridge@^5.0.7":
   version "5.0.7"
   resolved "https://registry.npmjs.org/@wanderapp/webext-bridge/-/webext-bridge-5.0.7.tgz#7123b7e03a1ad65744ccac4420474942c39d40c6"
@@ -5770,15 +5792,10 @@ camelize@^1.0.0:
   resolved "https://registry.yarnpkg.com/camelize/-/camelize-1.0.1.tgz#89b7e16884056331a35d6b5ad064332c91daa6c3"
   integrity sha512-dU+Tx2fsypxTgtLoE36npi3UqcjSSMNYfkqgmoEhtZrraP5VWq0K7FkWVTYa8eMPtnU/G2txVsfdCJTn9uzpuQ==
 
-caniuse-lite@^1.0.30001541, caniuse-lite@^1.0.30001726:
-  version "1.0.30001727"
-  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001727.tgz#22e9706422ad37aa50556af8c10e40e2d93a8b85"
-  integrity sha512-pB68nIHmbN6L/4C6MH1DokyR3bYqFwjaSs/sWDHGj4CTcFtQUQMuJftVwWkXq7mNWOybD3KhUv3oWHoGxgP14Q==
-
-caniuse-lite@^1.0.30001579:
-  version "1.0.30001745"
-  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001745.tgz#ab2a36e3b6ed5bfb268adc002c476aab6513f859"
-  integrity sha512-ywt6i8FzvdgrrrGbr1jZVObnVv6adj+0if2/omv9cmR2oiZs30zL4DIyaptKcbOrBdOIc74QTMoJvSE2QHh5UQ==
+caniuse-lite@^1.0.30001541, caniuse-lite@^1.0.30001579, caniuse-lite@^1.0.30001726:
+  version "1.0.30001759"
+  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001759.tgz"
+  integrity sha512-Pzfx9fOKoKvevQf8oCXoyNRQ5QyxJj+3O0Rqx2V5oxT61KGx8+n6hV/IUyJeifUci2clnmmKVpvtiqRzgiWjSw==
 
 cbor-sync@^1.0.4:
   version "1.0.4"
@@ -5911,6 +5928,11 @@ cipher-base@^1.0.0, cipher-base@^1.0.1, cipher-base@^1.0.3:
   dependencies:
     inherits "^2.0.4"
     safe-buffer "^5.2.1"
+
+classnames@^2.3.0:
+  version "2.5.1"
+  resolved "https://registry.npmjs.org/classnames/-/classnames-2.5.1.tgz#ba774c614be0f016da105c858e7159eae8e7687b"
+  integrity sha512-saHYOzhIQs6wy2sVxTM6bUDsQO4F50V9RQ22qBpEdCW+I+/Wmke2HOl6lS6dTpdxVhb88/I6+Hs+438c3lfUow==
 
 clean-stack@^2.0.0:
   version "2.2.0"
@@ -11035,6 +11057,14 @@ react-toastify@^11.0.5:
   integrity sha512-EpqHBGvnSTtHYhCPLxML05NLY2ZX0JURbAdNYa6BUkk+amz4wbKBQvoKQAB0ardvSarUBuY4Q4s1sluAzZwkmA==
   dependencies:
     clsx "^2.1.1"
+
+react-tooltip@^5.30.0:
+  version "5.30.0"
+  resolved "https://registry.npmjs.org/react-tooltip/-/react-tooltip-5.30.0.tgz#8e1af2d1bf91a2a5169302bd0eb82b62847ad224"
+  integrity sha512-Yn8PfbgQ/wmqnL7oBpz1QiDaLKrzZMdSUUdk7nVeGTwzbxCAJiJzR4VSYW+eIO42F1INt57sPUmpgKv0KwJKtg==
+  dependencies:
+    "@floating-ui/dom" "^1.6.1"
+    classnames "^2.3.0"
 
 react@18.2.0:
   version "18.2.0"

@@ -22,7 +22,6 @@ export enum EventType {
   CONNECTED_APP = "CONNECTED_APP",
   LOGIN = "LOGIN",
   ONBOARDED = "ONBOARDED",
-  BALANCE = "BALANCE",
   SIGNED = "SIGNED",
   TRANSACTION_INCOMPLETE = "TRANSACTION_INCOMPLETE",
   FALLBACK = "FALLBACK",
@@ -226,32 +225,6 @@ export const trackEvent = async (eventName: EventType, properties: any) => {
   } catch (err) {
     console.log(`Failed to track event ${eventName}:`, err);
   }
-};
-
-/**
- * Initializes the AR balance event tracker.
- * This function sets up a monthly alarm to track the total balance.
- * It schedules the first alarm to the start of the next month and
- * stores this schedule time in the extension storage.
- */
-
-export const initializeARBalanceMonitor = async () => {
-  const timer = setToStartOfNextMonth(new Date());
-  browser.alarms.create("track-balance", {
-    when: timer.getTime(),
-  });
-};
-
-/**
- * Sets the given date to the start of the next month in UTC
- * The time is set to beginning of the month (00:00:00.000).
- * @param {Date} currentDate
- * @returns {Date} Date to trigger alarm
- */
-
-export const setToStartOfNextMonth = (currentDate: Date): Date => {
-  const newDate = new Date(Date.UTC(currentDate.getUTCFullYear(), currentDate.getUTCMonth() + 1, 1, 0, 0, 0, 0));
-  return newDate;
 };
 
 export interface WalletBitsCheck {

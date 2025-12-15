@@ -1,4 +1,4 @@
-import { Tooltip, useToasts } from "@arconnect/components-rebrand";
+import { Tooltip, useToasts } from "@wanderapp/components";
 import browser from "webextension-polyfill";
 import styled from "styled-components";
 import {

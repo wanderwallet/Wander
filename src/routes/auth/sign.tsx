@@ -18,7 +18,7 @@ import {
   TagValue,
   TransactionProperty,
 } from "~routes/popup/transaction/[id]";
-import { Input, Section, Spacer, Text, useInput, useToasts } from "@arconnect/components-rebrand";
+import { Input, Section, Spacer, Text, useInput, useToasts } from "@wanderapp/components";
 import AnimatedQRScanner from "~components/hardware/AnimatedQRScanner";
 import AnimatedQRPlayer from "~components/hardware/AnimatedQRPlayer";
 import Wrapper from "~components/auth/Wrapper";

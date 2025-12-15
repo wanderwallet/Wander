@@ -9,7 +9,7 @@ import HedgehogHeadIcon from "url:/assets/agents/images/hedgehog-head.svg";
 import { useAOMintingStatus } from "~utils/agents/hooks";
 import { EventType, trackEvent } from "~utils/analytics";
 import { useHasClaimableBalance } from "~utils/fair_launch/fair_launch.hooks";
-import { Tooltip } from "@arconnect/components-rebrand";
+import { Tooltip } from "@wanderapp/components";
 import { MaintenanceTag } from "./home/MaintenanceTag";
 
 const Home05Active = () => (

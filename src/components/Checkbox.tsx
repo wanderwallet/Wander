@@ -1,4 +1,4 @@
-import { Text, type TextProps } from "@arconnect/components-rebrand";
+import { Text, type TextProps } from "@wanderapp/components";
 import { useCallback, useMemo, type HTMLAttributes, type HTMLProps } from "react";
 import styled from "styled-components";
 

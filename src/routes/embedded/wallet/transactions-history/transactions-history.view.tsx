@@ -1,4 +1,4 @@
-import { Loading } from "@arconnect/components-rebrand";
+import { Loading } from "@wanderapp/components";
 import { Text, Box, Button } from "~components/embed/ui";
 import browser from "~iframe/browser";
 import { useActiveWallet, useTransactions } from "~wallets/hooks";

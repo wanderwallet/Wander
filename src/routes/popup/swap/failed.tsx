@@ -1,4 +1,4 @@
-import { Section, Button, Text, Loading } from "@arconnect/components-rebrand";
+import { Section, Button, Text, Loading } from "@wanderapp/components";
 import styled, { useTheme } from "styled-components";
 import { Flex } from "~components/common/Flex";
 import { TokenLogo } from "~components/popup/TokenLogo";

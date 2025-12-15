@@ -1,4 +1,4 @@
-import { Text, Input, useInput, Section, Button, Loading, ListItem, ListItemIcon } from "@arconnect/components-rebrand";
+import { Text, Input, useInput, Section, Button, Loading, ListItem, ListItemIcon } from "@wanderapp/components";
 import browser from "webextension-polyfill";
 import { Bank, BankNote01, ChevronDown, SwitchVertical02 } from "@untitled-ui/icons-react";
 import styled from "styled-components";

@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import React from "react";
 import { Coins03 } from "@untitled-ui/icons-react";
-import { useInput } from "@arconnect/components-rebrand";
+import { useInput } from "@wanderapp/components";
 import SelectorContainer from "./SelectorContainer";
 import SelectorItem from "./SelectorItem";
 import { TextInput } from "~components/embed";

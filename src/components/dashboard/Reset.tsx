@@ -1,4 +1,4 @@
-import { Text, Spacer, Button, useModal, Modal, useToasts, type DisplayTheme } from "@arconnect/components-rebrand";
+import { Text, Spacer, Button, useModal, Modal, useToasts, type DisplayTheme } from "@wanderapp/components";
 import { TrashIcon } from "@iconicicons/react";
 import browser from "webextension-polyfill";
 import styled from "styled-components";

@@ -1,4 +1,4 @@
-import { Button, Text, ARCONNECT_DARK_THEME } from "@arconnect/components-rebrand";
+import { Button, Text, ARCONNECT_DARK_THEME } from "@wanderapp/components";
 import { ExtensionStorage } from "~utils/storage";
 import { Flex } from "~components/common/Flex";
 import SliderMenu from "~components/SliderMenu";

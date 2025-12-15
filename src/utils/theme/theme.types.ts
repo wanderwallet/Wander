@@ -1,4 +1,4 @@
-import type { DisplayTheme } from "@arconnect/components-rebrand";
+import type { DisplayTheme } from "@wanderapp/components";
 import type { commonTokens, themeTokens } from "~components/embed/themes/theme-config";
 
 export type ThemeMode = "light" | "dark" | "system";

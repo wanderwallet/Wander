@@ -1,4 +1,4 @@
-import { Button, Input, Text, useInput, useToasts } from "@arconnect/components-rebrand";
+import { Button, Input, Text, useInput, useToasts } from "@wanderapp/components";
 import { InputWithBtn, InputWrapper } from "./InputWrapper";
 import { useStorage } from "~utils/storage";
 import { ExtensionStorage } from "~utils/storage";

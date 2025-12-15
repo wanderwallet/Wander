@@ -1,6 +1,6 @@
 import { AnimatePresence } from "framer-motion";
 import { useCallback, useState } from "react";
-import { Button, Spacer, Text } from "@arconnect/components-rebrand";
+import { Button, Spacer, Text } from "@wanderapp/components";
 import browser from "webextension-polyfill";
 import styled from "styled-components";
 

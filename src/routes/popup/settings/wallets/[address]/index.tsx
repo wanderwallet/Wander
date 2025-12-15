@@ -1,4 +1,4 @@
-import { Button, Input, ListItem, Section, Text, Tooltip, useInput, useToasts } from "@arconnect/components-rebrand";
+import { Button, Input, ListItem, Section, Text, Tooltip, useInput, useToasts } from "@wanderapp/components";
 import { CopyIcon } from "@iconicicons/react";
 import {
   AlertCircle,

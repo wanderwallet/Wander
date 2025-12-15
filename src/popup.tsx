@@ -12,17 +12,20 @@ import { FallbackView } from "~components/page/common/Fallback/fallback.view";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ExtensionStorage } from "~utils/storage";
 import styled from "styled-components";
-import { Section } from "@arconnect/components-rebrand";
+import { Section } from "@wanderapp/components";
 import UpdateSplash from "~routes/welcome/UpdateSplash";
 import StarIcons from "~components/welcome/StarIcons";
 import { useActivityTracking } from "~utils/inactivity/inactivity.hooks";
 import { queryClient } from "~utils/tanstack";
 import { ThemeProvider } from "~utils/theme/theme.provider";
+import { useUpdatePendingTransactionsStats } from "~utils/transactions/pending/pending.hooks";
 
 export function WanderBrowserExtensionApp() {
   const [showAnimation, setShowAnimation] = useState<boolean>(false);
 
   useActivityTracking();
+
+  useUpdatePendingTransactionsStats();
 
   useEffect(() => {
     handleSyncLabelsAlarm();

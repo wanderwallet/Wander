@@ -1,4 +1,4 @@
-import { Spacer, Text } from "@arconnect/components-rebrand";
+import { Spacer, Text } from "@wanderapp/components";
 import browser from "webextension-polyfill";
 import styled from "styled-components";
 import { ExtensionStorage } from "~utils/storage";

@@ -1,4 +1,4 @@
-import { Text } from "@arconnect/components-rebrand";
+import { Text } from "@wanderapp/components";
 import SliderMenu from "~components/SliderMenu";
 import { Carousel } from "~components/Carousel";
 import styled from "styled-components";

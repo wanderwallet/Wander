@@ -1,7 +1,7 @@
 import { ChevronDown } from "@untitled-ui/icons-react";
 import { Flex } from "~components/common/Flex";
 import { InputButton } from "~components/common/InputButton";
-import { Text } from "@arconnect/components-rebrand";
+import { Text } from "@wanderapp/components";
 import browser from "webextension-polyfill";
 import styled, { useTheme } from "styled-components";
 import { SlippageSelectorModal } from "~routes/popup/agents/components/ao-yield/SlippageSelectorModal";

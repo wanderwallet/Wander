@@ -1,4 +1,4 @@
-import { Checkbox, Input, Text, useInput } from "@arconnect/components-rebrand";
+import { Checkbox, Input, Text, useInput } from "@wanderapp/components";
 import { setting_element_padding } from "./list/BaseElement";
 import type SettingType from "~settings/setting";
 import browser from "webextension-polyfill";

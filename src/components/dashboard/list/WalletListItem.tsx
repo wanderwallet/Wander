@@ -4,7 +4,7 @@ import { formatAddress } from "~utils/format";
 import type { StoredWallet } from "~wallets";
 import HardwareWalletIcon from "~components/hardware/HardwareWalletIcon";
 import keystoneLogo from "url:/assets/hardware/keystone.png";
-import { ListItem, ListItemIcon, Text } from "@arconnect/components-rebrand";
+import { ListItem, ListItemIcon, Text } from "@wanderapp/components";
 import Online from "~components/Online";
 import { NoAvatarIcon } from "~components/Avatar";
 

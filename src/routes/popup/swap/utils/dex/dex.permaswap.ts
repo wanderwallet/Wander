@@ -22,7 +22,7 @@ import { getLinkedMessages, OrderError } from "./dex.utils";
 import { queryClient } from "~utils/tanstack";
 import { assertTransferResult, createSwapMessage } from "../swap.utils";
 import browser from "webextension-polyfill";
-import { createAoPendingTransaction } from "~utils/transactions";
+import { createAoPendingTransaction } from "~utils/transactions/pending/pending.utils";
 
 const aoInstance = connect(defaultConfig);
 

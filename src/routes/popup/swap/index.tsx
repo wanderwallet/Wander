@@ -1,4 +1,4 @@
-import { Text, Section, Button } from "@arconnect/components-rebrand";
+import { Text, Section, Button } from "@wanderapp/components";
 import browser from "webextension-polyfill";
 import { ArrowDown, ClockRewind } from "@untitled-ui/icons-react";
 import styled from "styled-components";

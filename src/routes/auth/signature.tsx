@@ -1,4 +1,4 @@
-import { Input, Section, Text, useInput, useToasts } from "@arconnect/components-rebrand";
+import { Input, Section, Text, useInput, useToasts } from "@wanderapp/components";
 import Message from "~components/auth/Message";
 import Wrapper from "~components/auth/Wrapper";
 import browser from "webextension-polyfill";
