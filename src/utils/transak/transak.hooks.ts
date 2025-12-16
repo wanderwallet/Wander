@@ -286,7 +286,7 @@ export const useTransak = (apiKey: string, initialConversion = false) => {
         const url = await createPurchaseUrl(activeAddress);
         if (url) {
           if (IS_EMBEDDED_APP) {
-            window.open(url, "_blank", "noopener");
+            window.open(url, "_blank", "noopener,noreferrer");
           } else {
             await scheduleTransakPurchaseAlarm();
             browser.tabs.create({ url });
