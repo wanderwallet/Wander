@@ -2,7 +2,7 @@ export const PENDING_TRANSACTIONS_ALARM_NAME = "pending-transactions-cleanup";
 export const AO_PENDING_CLEANUP_ALARM_NAME_PREFIX = "ao-pending-cleanup-";
 
 // AO transaction cleanup alarm intervals (in seconds)
-export const PENDING_ALARM_CLEANUP_INTERVALS = [10, 30, 50, 70, 90];
+export const PENDING_ALARM_CLEANUP_INTERVALS = [10, 30, 50, 70, 90, 110, 130, 150, 170, 190];
 
 // Main alarm interval (5 minutes)
 export const PENDING_ALARM_INTERVAL_MINUTES = 5;
@@ -28,13 +28,19 @@ export const PENDING_TRANSACTIONS_QUERY = `query ($ids: [ID!]!) {
   }
 }`;
 
-export const PENDING_AO_TRANSACTIONS_QUERY = `query ($ids: [ID!]!) {
+export const PENDING_AO_TRANSACTIONS_QUERY = `query ($ids: [String!]!, $sort: SortOrder = HEIGHT_DESC) {
   transactions(
-    ids: $ids,
-    tags: [{name: "Data-Protocol", values: ["ao"]}]) {
+    tags: [
+      {name: "Data-Protocol", values: ["ao"]},
+      {name: "Action", values: ["Credit-Notice", "Debit-Notice", "Transfer-Error"]},
+      {name: "Pushed-For", values: $ids}
+    ],
+    sort: $sort
+  ) {
     edges {
       node {
         id
+        tags { name, value }
         quantity { ar }
         block { timestamp }
       }

@@ -2,7 +2,7 @@ import { hasTransferError, sortFn, type ExtendedTransaction } from "~lib/transac
 import { getTagValue, type TokenInfo } from "~tokens/aoTokens/ao";
 import type { GQLNodeInterface } from "ar-gql/dist/faces";
 import { createStorageArray } from "~utils/storage/storage.array";
-import { AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
+import { AO_PROCESS_ID, AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 import type Transaction from "arweave/web/lib/transaction";
 import type { Tag } from "arweave/web/lib/transaction";
 import { balanceToFractioned } from "~tokens/currency";
@@ -186,34 +186,40 @@ export async function checkAndCleanPendingTransactions(): Promise<void> {
     const confirmed = new Set<string>();
     const foundArTxsInGraphQL = new Set<string>();
 
-    const checkBatches = async (ids: string[], query: string) => {
+    const checkBatches = async (ids: string[], query: string, isAo: boolean = false) => {
       for (let i = 0; i < ids.length; i += BATCH_SIZE) {
         const batch = ids.slice(i, i + BATCH_SIZE);
 
         try {
           const result = await retryWithDelay(async (attempt) => {
             const gateway = txHistoryGateways[attempt % txHistoryGateways.length];
-            const res = await gql(query, { ids: batch }, gateway);
+            const res = await gql(query, { ids: batch, sort: "INGESTED_AT_DESC" }, gateway);
 
             if (res?.data === null && (res as any)?.errors?.length) {
               throw new Error((res as any).errors?.[0]?.message || "GraphQL Error");
             }
             return res;
-          }, 2);
+          }, 3);
 
           const edges = result?.data?.transactions?.edges || [];
           for (const edge of edges) {
-            const id = edge?.node?.id;
-            if (id) {
-              // Only confirm AR transactions that have a timestamp
-              if (+edge?.node?.quantity?.ar > 0) {
-                if (edge?.node?.block?.timestamp) {
-                  confirmed.add(id);
-                } else {
-                  foundArTxsInGraphQL.add(id);
-                }
-              } else {
+            // Only confirm AR transactions that have a timestamp
+            if (!isAo && +edge?.node?.quantity?.ar > 0) {
+              const id = edge.node.id;
+              if (edge?.node?.block?.timestamp) {
                 confirmed.add(id);
+              } else {
+                foundArTxsInGraphQL.add(id);
+              }
+            }
+
+            if (isAo) {
+              const pushedFor = getTagValue("Pushed-For", edge.node.tags);
+              const tokenId = getTagValue("From-Process", edge.node.tags);
+              if (tokenId === AO_PROCESS_ID) {
+                if (edge?.node?.block?.timestamp) confirmed.add(pushedFor);
+              } else {
+                confirmed.add(pushedFor);
               }
             }
           }
@@ -230,12 +236,14 @@ export async function checkAndCleanPendingTransactions(): Promise<void> {
         ? checkBatches(
             arTxs.map((t) => t.id),
             PENDING_TRANSACTIONS_QUERY,
+            false,
           )
         : null,
       aoTxs.length
         ? checkBatches(
             aoTxs.map((t) => t.id),
             PENDING_AO_TRANSACTIONS_QUERY,
+            true,
           )
         : null,
     ]);
@@ -392,9 +400,7 @@ export async function mergeWithPending(
     baseIds.add(id);
 
     // already confirmed / resolvable → remove from pending store
-    if (tx.aoInfo || (!tx.aoInfo && tx.node.block?.timestamp)) {
-      removablePendingIds.push(id);
-    }
+    if (tx.node.block?.timestamp) removablePendingIds.push(id);
   }
 
   if (removablePendingIds.length > 0) {
