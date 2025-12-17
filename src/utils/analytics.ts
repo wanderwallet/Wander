@@ -1,19 +1,21 @@
 import { getSetting } from "~settings";
 import { ExtensionStorage, TempTransactionStorage } from "./storage";
-import { AnalyticsBrowser } from "@segment/analytics-next";
 import { getActiveKeyfile, getActiveAddress, getWalletKeyLength } from "~wallets";
-import browser from "webextension-polyfill";
 import axios from "axios";
 import { isLocalWallet } from "./assertions";
 import { freeDecryptedWallet } from "~wallets/encryption";
 import { ERR_MSG_NO_WALLETS_ADDED } from "~utils/auth/auth.constants";
 import { nanoid } from "nanoid";
+import { getUserIP } from "./ipaddress";
 
-const PUBLIC_SEGMENT_WRITEKEY = "J97E4cvSZqmpeEdiUQNC2IxS1Kw4Cwxm";
+const GA4_MEASUREMENT_ID = "G-PL5850YVRW";
+const GA4_API_SECRET = process.env.PLASMO_PUBLIC_GA4_API_SECRET || "";
+const GA_ENDPOINT = "https://www.google-analytics.com/mp/collect";
+const DEFAULT_ENGAGEMENT_TIME_MSEC = 100;
+const SESSION_EXPIRATION_IN_MIN = 30;
 
-const analytics = AnalyticsBrowser.load({
-  writeKey: PUBLIC_SEGMENT_WRITEKEY,
-});
+// Use debug mode in development
+const DEBUG_MODE = process.env.NODE_ENV === "development";
 
 // TODO: add analytics for signature
 
@@ -131,61 +133,174 @@ export enum PageType {
   ARNS_SET_PRIMARY_NAME_ERROR = "ARNS_SET_PRIMARY_NAME_ERROR",
 }
 
-export const trackPage = async (title: PageType) => {
-  // Only track BE production events:
-  if (process.env.NODE_ENV === "development" || import.meta.env?.VITE_IS_EMBEDDED_APP === "1") return;
-
-  const enabled = await getSetting("analytics").getValue();
-
-  if (!enabled) return;
-
-  try {
-    await analytics.page("Wander Extension", {
-      title,
-    });
-  } catch (err) {
-    console.log("err", err);
-  }
-};
-
-export const trackDirect = async (event: EventType, properties: Record<string, unknown>) => {
-  // Only track BE production events:
-  if (process.env.NODE_ENV === "development" || import.meta.env?.VITE_IS_EMBEDDED_APP === "1") return;
-
-  const enabled = await getSetting("analytics").getValue();
-
-  if (!enabled) return;
-
-  // TODO: We probably want to update this for Connect:
+/**
+ * Get or create a unique user/client ID for analytics
+ * Using same user_id as Segment did (stored as "user_id" key)
+ */
+const getOrCreateClientId = async (): Promise<string> => {
   let userId = await ExtensionStorage.get("user_id");
   if (!userId) {
     userId = nanoid();
     await ExtensionStorage.set("user_id", userId);
   }
+  return userId;
+};
 
-  return fetch("https://api.segment.io/v1/t", {
+/**
+ * Get or create a session ID for analytics
+ * Sessions expire after 30 minutes of inactivity (Google's recommendation)
+ */
+const getOrCreateSessionId = async (): Promise<string> => {
+  let sessionData = await ExtensionStorage.get<{ session_id: string; timestamp: number }>("analytics_session");
+  const currentTimeInMs = Date.now();
+
+  // Check if session exists and is still valid
+  if (sessionData && sessionData.timestamp) {
+    const durationInMin = (currentTimeInMs - sessionData.timestamp) / 60000;
+
+    // Session expired after 30 minutes of inactivity
+    if (durationInMin > SESSION_EXPIRATION_IN_MIN) {
+      sessionData = null;
+      console.log("🔄 Session expired, creating new session");
+    } else {
+      // Update timestamp to keep session alive
+      sessionData.timestamp = currentTimeInMs;
+      await ExtensionStorage.set("analytics_session", sessionData);
+    }
+  }
+
+  if (!sessionData) {
+    // Create and store a new session
+    sessionData = {
+      session_id: currentTimeInMs.toString(),
+      timestamp: currentTimeInMs,
+    };
+    await ExtensionStorage.set("analytics_session", sessionData);
+    console.log("✅ Created new GA4 session:", sessionData.session_id);
+  }
+
+  return sessionData.session_id;
+};
+
+/**
+ * Fire an event to Google Analytics 4 using Measurement Protocol
+ * This is the official Google-recommended way for Chrome extensions
+ */
+const fireGA4Event = async (eventName: string, params: Record<string, any> = {}) => {
+  try {
+    // Add session id and engagement time if not present
+    if (!params.session_id) {
+      params.session_id = await getOrCreateSessionId();
+    }
+    if (!params.engagement_time_msec) {
+      params.engagement_time_msec = DEFAULT_ENGAGEMENT_TIME_MSEC;
+    }
+
+    const endpoint = DEBUG_MODE ? GA_ENDPOINT : GA_ENDPOINT;
+    const url = `${endpoint}?measurement_id=${GA4_MEASUREMENT_ID}&api_secret=${GA4_API_SECRET}`;
+
+    // Get user's IP address for geolocation
+    const userIP = await getUserIP();
+
+    const payload: any = {
+      client_id: await getOrCreateClientId(),
+      events: [
+        {
+          name: eventName, // Using exact event name (not lowercase)
+          params,
+        },
+      ],
+    };
+
+    // Add IP override if available - GA4 will derive geographic info from it
+    if (userIP) {
+      payload.ip_override = userIP;
+    }
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    console.log("GA4 Response:", response);
+  } catch (error) {
+    console.error("Google Analytics request failed with an exception", error);
+  }
+};
+
+/**
+ * Track page views in Google Analytics 4
+ * Replicates: analytics.page("Wander Extension", { title })
+ */
+export const trackPage = async (title: PageType) => {
+  // Only track BE production events:
+  // if (process.env.NODE_ENV === "development" || import.meta.env?.VITE_IS_EMBEDDED_APP === "1") return;
+
+  const enabled = await getSetting("analytics").getValue();
+  if (!enabled) return;
+
+  try {
+    const response = await fireGA4Event("page_view", {
+      page_title: title,
+      page_location: "Wander Extension",
+    });
+
+    console.log("GA4 Page View Response:", response);
+  } catch (err) {
+    console.log("err", err);
+  }
+};
+
+/**
+ * Track events directly (for background scripts)
+ * Replicates: fetch("https://api.segment.io/v1/t", { event, properties, userId, messageId, timestamp })
+ */
+export const trackDirect = async (event: EventType, properties: Record<string, unknown>) => {
+  // Only track BE production events:
+  // if (process.env.NODE_ENV === "development" || import.meta.env?.VITE_IS_EMBEDDED_APP === "1") return;
+
+  const enabled = await getSetting("analytics").getValue();
+  if (!enabled) return;
+
+  // Get or create user ID (same as Segment did)
+  const userId = await getOrCreateClientId();
+
+  // Send to GA4 with same structure as Segment
+  return fetch(`${GA_ENDPOINT}?measurement_id=${GA4_MEASUREMENT_ID}&api_secret=${GA4_API_SECRET}`, {
     method: "POST",
     body: JSON.stringify({
-      event,
-      properties,
-      messageId: nanoid(),
-      sentAt: new Date().toISOString(),
-      timestamp: new Date().toISOString(),
-      type: "track",
-      userId: userId,
-      writeKey: PUBLIC_SEGMENT_WRITEKEY,
+      client_id: userId,
+      events: [
+        {
+          name: event, // Use exact event name, not lowercase
+          params: {
+            ...properties,
+            messageId: nanoid(),
+            sentAt: new Date().toISOString(),
+            timestamp: new Date().toISOString(),
+            type: "track",
+            userId: userId,
+          },
+        },
+      ],
     }),
   });
 };
 
+/**
+ * Track custom events in Google Analytics 4
+ * Replicates: analytics.track(eventName, { ...properties })
+ */
 export const trackEvent = async (eventName: EventType, properties: any) => {
   try {
     // Only track BE production events:
-    if (process.env.NODE_ENV === "development" || import.meta.env?.VITE_IS_EMBEDDED_APP === "1") return;
+    // if (process.env.NODE_ENV === "development" || import.meta.env?.VITE_IS_EMBEDDED_APP === "1") return;
 
     // first we check if we are allowed to collect data
     const enabled = await getSetting("analytics").getValue();
-
     if (!enabled) return;
 
     const ONE_HOUR_IN_MS = 3600000;
@@ -193,7 +308,6 @@ export const trackEvent = async (eventName: EventType, properties: any) => {
     // TODO:login is tracked only once and compared to an hour period before logged as another Login event
     if (eventName === EventType.LOGIN) {
       const storageTime = await TempTransactionStorage.get(EventType.LOGIN);
-
       if (storageTime && Date.now() < Number(storageTime) + ONE_HOUR_IN_MS) {
         return;
       }
@@ -210,7 +324,8 @@ export const trackEvent = async (eventName: EventType, properties: any) => {
 
     const time = Date.now();
 
-    await analytics.track(eventName, { ...properties });
+    // Send to GA4 - using exact event name like Segment did
+    await fireGA4Event(eventName, { ...properties });
 
     // POST TRACK EVENTS
     // only log login once every hour
@@ -351,3 +466,30 @@ export const isUserInGDPRCountry = async (): Promise<boolean> => {
     return true;
   }
 };
+
+// Export for debugging
+export const debugAnalytics = async () => {
+  console.log("=== ANALYTICS DEBUG INFO ===");
+  console.log("GA4 Measurement ID:", GA4_MEASUREMENT_ID);
+  console.log("API Secret set:", !!GA4_API_SECRET);
+  console.log("Debug mode:", DEBUG_MODE);
+
+  const userId = await getOrCreateClientId();
+  console.log("User ID (same as client ID):", userId);
+
+  const sessionId = await getOrCreateSessionId();
+  console.log("Session ID:", sessionId);
+
+  const enabled = await getSetting("analytics").getValue();
+  console.log("Analytics enabled in settings:", enabled);
+
+  return {
+    measurementId: GA4_MEASUREMENT_ID,
+    userId,
+    sessionId,
+    enabled,
+    debugMode: DEBUG_MODE,
+  };
+};
+
+debugAnalytics();
