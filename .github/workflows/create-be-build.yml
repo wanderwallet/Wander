@@ -1,6 +1,15 @@
 name: "Create BE Build"
 on:
   workflow_dispatch:
+    inputs:
+      browser:
+        description: "Browser target"
+        required: true
+        type: choice
+        options:
+          - chrome
+          - firefox
+        default: chrome
 
 jobs:
   build:
@@ -47,12 +56,12 @@ jobs:
           echo "TIMESTAMP=$(date +'%Y.%m.%d-%H.%M.%S')" >> $GITHUB_ENV
 
       - name: Build and Package the extension into a zip artifact
-        run: yarn build:chrome --zip
+        run: yarn build:${{ inputs.browser }} --zip
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Wander-${{ env.SHORT_SHA }}-${{ env.SAFE_REF_NAME }}-${{ env.TIMESTAMP }}
-          path: build/chrome-mv3-prod.zip
+          name: Wander-${{ inputs.browser }}-${{ env.SHORT_SHA }}-${{ env.SAFE_REF_NAME }}-${{ env.TIMESTAMP }}
+          path: build/${{ inputs.browser }}-mv3-prod.zip
           retention-days: 90 # or any number between 1 and 90
           compression-level: 0 # avoid compressing artifact since it's already compressed
