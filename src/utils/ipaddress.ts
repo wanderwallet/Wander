@@ -1,4 +1,5 @@
 import axios from "axios";
+import { TempTransactionStorage } from "./storage";
 
 type Source = {
   url: string;
@@ -39,17 +40,20 @@ const REQUEST_TIMEOUT = 3000;
  * Tries multiple providers with fallback
  */
 export const getUserIP = async (): Promise<string | undefined> => {
+  const cachedIP = await TempTransactionStorage.get<string>("user_ip");
+  if (cachedIP) return cachedIP;
+
   for (const { url, extract } of sources) {
     try {
       const { data, status } = await axios.get(url, { timeout: REQUEST_TIMEOUT });
-
       if (status !== 200) continue;
 
       const ip = extract(data);
-      if (ip) return ip;
-    } catch {
-      // silent fallback to next provider
-    }
+      if (ip) {
+        await TempTransactionStorage.set("user_ip", ip);
+        return ip;
+      }
+    } catch {}
   }
 
   return undefined;
