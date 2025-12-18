@@ -81,7 +81,7 @@ export async function checkIfTransakPurchaseSucceeded(address: string): Promise<
 
       try {
         log(LOG_GROUP.TRANSAK, "Tracking transak purchase: ", transactionData);
-        return await trackDirect(EventType.BUY_AR_CONFIRM_PURCHASE, transactionData);
+        return trackDirect(EventType.BUY_AR_CONFIRM_PURCHASE, transactionData);
       } catch (err) {
         log(LOG_GROUP.TRANSAK, "Error tracking transak purchase: ", err);
         throw err;

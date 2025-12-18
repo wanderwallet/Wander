@@ -296,7 +296,7 @@ export const trackPage = async (title: PageType) => {
     const enabled = await getSetting("analytics").getValue();
     if (!enabled) return;
 
-    analytics.page({ title });
+    await analytics.page({ title });
   } catch (err) {
     log(LOG_GROUP.ANALYTICS, "Page tracking error:", err);
   }
@@ -313,7 +313,7 @@ export const trackDirect = async (event: EventType, properties: Record<string, u
     const enabled = await getSetting("analytics").getValue();
     if (!enabled) return;
 
-    analytics.track(event, { ...properties });
+    await analytics.track(event, { ...properties });
   } catch (err) {
     log(LOG_GROUP.ANALYTICS, `Failed to track event ${event}:`, err);
   }
@@ -352,7 +352,7 @@ export const trackEvent = async (eventName: EventType, properties: any) => {
 
     const time = Date.now();
 
-    analytics.track(eventName, { ...properties });
+    await analytics.track(eventName, { ...properties });
 
     // POST TRACK EVENTS
     // only log login once every hour
@@ -422,7 +422,7 @@ export const checkWalletBits = async (): Promise<boolean | null> => {
       mismatch: !lengthsMatch,
     });
 
-    await trackEvent(EventType.BITS_LENGTH, { mismatch: !lengthsMatch });
+    trackEvent(EventType.BITS_LENGTH, { mismatch: !lengthsMatch });
 
     return !lengthsMatch;
   } catch (error) {

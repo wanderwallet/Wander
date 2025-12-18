@@ -122,7 +122,7 @@ export function ConfirmAOYieldAgentView() {
 
       const days = dayjs(aoYieldAgent.endDate).diff(dayjs(aoYieldAgent.startDate), "day") + 1;
       const runningTime = aoYieldAgent.runIndefinitely ? "∞" : `${days} ${days === 1 ? "day" : "days"}`;
-      await trackEvent(EventType.AO_YIELD_AGENT_CREATED, {
+      trackEvent(EventType.AO_YIELD_AGENT_CREATED, {
         buyAsset: aoYieldAgent.asset.id,
         runningTime,
         dailyConversionPercentage: aoYieldAgent.conversionPercentage,

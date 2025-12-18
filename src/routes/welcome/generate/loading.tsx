@@ -30,7 +30,7 @@ export function LoadingWelcomeView({ params }: LoadingWelcomeViewProps) {
       await loadTokens();
 
       // log user onboarded
-      await trackEvent(EventType.ONBOARDED, {});
+      trackEvent(EventType.ONBOARDED, {});
 
       // redirect to getting started pages
       navigate(`/${params.setupMode}/${Number(params.page) + 1}`);
@@ -63,7 +63,7 @@ export function LoadingWelcomeView({ params }: LoadingWelcomeViewProps) {
     await loadTokens();
 
     // log user onboarded
-    await trackEvent(EventType.ONBOARDED, {});
+    trackEvent(EventType.ONBOARDED, {});
 
     await ExtensionStorage.set(`tour_taken`, false);
 

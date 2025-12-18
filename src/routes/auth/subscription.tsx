@@ -94,7 +94,7 @@ export function SubscriptionAuthRequestView() {
       }
 
       // segment
-      await trackEvent(EventType.SUBSCRIBED, {
+      trackEvent(EventType.SUBSCRIBED, {
         applicationName: subscriptionData.applicationName,
         arweaveAccountAddress: subscriptionData.arweaveAccountAddress,
         recurringPaymentFrequency: subscriptionData.recurringPaymentFrequency,

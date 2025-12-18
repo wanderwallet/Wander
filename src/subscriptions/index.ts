@@ -158,7 +158,7 @@ export async function getAutoAllowance(): Promise<number> {
 }
 
 export async function trackCanceledSubscription(data: SubscriptionData, autoCanceled: boolean) {
-  await trackEvent(EventType.UNSUBSCRIBED, {
+  trackEvent(EventType.UNSUBSCRIBED, {
     applicationName: data.applicationName,
     arweaveAccountAddress: data.arweaveAccountAddress,
     recurringPaymentFrequency: data.recurringPaymentFrequency,
