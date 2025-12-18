@@ -7,7 +7,6 @@ import { freeDecryptedWallet } from "~wallets/encryption";
 import { ERR_MSG_NO_WALLETS_ADDED } from "~utils/auth/auth.constants";
 import { nanoid } from "nanoid";
 import Analytics from "analytics";
-import { getUserIP } from "./ipaddress";
 import browser from "webextension-polyfill";
 import { log } from "./log/log.utils";
 import { LOG_GROUP } from "./log/log.utils";
@@ -196,7 +195,6 @@ function GoogleAnalyticsPlugin() {
     page: async ({ payload }: any) => {
       try {
         const userId = await getOrCreateClientId();
-        const userIP = await getUserIP();
 
         const body: any = {
           client_id: userId,
@@ -212,10 +210,6 @@ function GoogleAnalyticsPlugin() {
             },
           ],
         };
-
-        if (userIP) {
-          body.ip_override = userIP;
-        }
 
         const response = await fetch(`${GA_ENDPOINT}?measurement_id=${GA_MEASUREMENT_ID}&api_secret=${GA_API_SECRET}`, {
           method: "POST",
@@ -236,7 +230,6 @@ function GoogleAnalyticsPlugin() {
     track: async ({ payload }: any) => {
       try {
         const userId = await getOrCreateClientId();
-        const userIP = await getUserIP();
 
         if (!payload.properties.session_id) {
           payload.properties.session_id = await getOrCreateSessionId();
@@ -255,10 +248,6 @@ function GoogleAnalyticsPlugin() {
             },
           ],
         };
-
-        if (userIP) {
-          body.ip_override = userIP;
-        }
 
         const response = await fetch(`${GA_ENDPOINT}?measurement_id=${GA_MEASUREMENT_ID}&api_secret=${GA_API_SECRET}`, {
           method: "POST",
