@@ -10,6 +10,7 @@ import Analytics from "analytics";
 import browser from "webextension-polyfill";
 import { log } from "./log/log.utils";
 import { LOG_GROUP } from "./log/log.utils";
+import { getUserCountryCode } from "./location";
 
 const GA_MEASUREMENT_ID = process.env.PLASMO_PUBLIC_GA_MEASUREMENT_ID || "";
 const GA_API_SECRET = process.env.PLASMO_PUBLIC_GA_API_SECRET || "";
@@ -195,6 +196,7 @@ function GoogleAnalyticsPlugin() {
     page: async ({ payload }: any) => {
       try {
         const userId = await getOrCreateClientId();
+        const countryCode = await getUserCountryCode();
 
         const body: any = {
           client_id: userId,
@@ -210,6 +212,10 @@ function GoogleAnalyticsPlugin() {
             },
           ],
         };
+
+        if (countryCode) {
+          body.user_location = { country_id: countryCode };
+        }
 
         const response = await fetch(`${GA_ENDPOINT}?measurement_id=${GA_MEASUREMENT_ID}&api_secret=${GA_API_SECRET}`, {
           method: "POST",
@@ -230,6 +236,7 @@ function GoogleAnalyticsPlugin() {
     track: async ({ payload }: any) => {
       try {
         const userId = await getOrCreateClientId();
+        const countryCode = await getUserCountryCode();
 
         if (!payload.properties.session_id) {
           payload.properties.session_id = await getOrCreateSessionId();
@@ -248,6 +255,10 @@ function GoogleAnalyticsPlugin() {
             },
           ],
         };
+
+        if (countryCode) {
+          body.user_location = { country_id: countryCode };
+        }
 
         const response = await fetch(`${GA_ENDPOINT}?measurement_id=${GA_MEASUREMENT_ID}&api_secret=${GA_API_SECRET}`, {
           method: "POST",
