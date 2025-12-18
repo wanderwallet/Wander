@@ -138,7 +138,6 @@ export enum PageType {
 
 /**
  * Get or create a unique user/client ID for analytics
- * Using same user_id as Segment did (stored as "user_id" key)
  */
 const getOrCreateClientId = async (): Promise<string> => {
   let userId = await ExtensionStorage.get("user_id");
@@ -484,10 +483,8 @@ const GDPR_COUNTRIES_AND_OTHERS = [
 // Defaults to true to
 export const isUserInGDPRCountry = async (): Promise<boolean> => {
   try {
-    const response = await axios.get("https://ipinfo.io?token=f73f7a8b88a8bf");
-
-    const { country } = response.data;
-    return GDPR_COUNTRIES_AND_OTHERS.includes(country);
+    const countryCode = await getUserCountryCode();
+    return GDPR_COUNTRIES_AND_OTHERS.includes(countryCode);
   } catch (error) {
     console.error("Error fetching location:", error);
     return true;

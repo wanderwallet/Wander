@@ -19,6 +19,10 @@ const sources: Source[] = [
     url: "https://ipinfo.io/json",
     extract: (data) => data?.country,
   },
+  {
+    url: "https://ipinfo.io/?token=f73f7a8b88a8bf",
+    extract: (data) => data?.country,
+  },
 ];
 
 const REQUEST_TIMEOUT = 3000;
