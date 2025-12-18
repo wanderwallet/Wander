@@ -58,7 +58,6 @@
     ]
   },
   "dependencies": {
-    "@analytics/google-analytics": "^1.1.0",
     "@ar.io/sdk": "^3.18.0",
     "@arconnect/components": "^1.0.0",
     "@arconnect/keystone-sdk": "^0.0.5",
