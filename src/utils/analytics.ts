@@ -17,6 +17,7 @@ const GA_API_SECRET = process.env.PLASMO_PUBLIC_GA_API_SECRET || "";
 const GA_ENDPOINT = "https://www.google-analytics.com/mp/collect";
 const DEFAULT_ENGAGEMENT_TIME_MSEC = 100;
 const SESSION_EXPIRATION_IN_MIN = 30;
+const ENABLE_DEV_ANALYTICS = process.env.PLASMO_PUBLIC_ENABLE_DEV_ANALYTICS === "true";
 
 const manifest = browser.runtime.getManifest();
 
@@ -289,8 +290,13 @@ const analytics = Analytics({
  */
 export const trackPage = async (title: PageType) => {
   try {
-    // Only track BE production events:
-    if (process.env.NODE_ENV === "development" || import.meta.env?.VITE_IS_EMBEDDED_APP === "1") return;
+    // Only track BE production events (unless dev analytics is explicitly enabled):
+    if (
+      (process.env.NODE_ENV === "development" && !ENABLE_DEV_ANALYTICS) ||
+      import.meta.env?.VITE_IS_EMBEDDED_APP === "1"
+    ) {
+      return;
+    }
 
     const enabled = await getSetting("analytics").getValue();
     if (!enabled) return;
@@ -306,8 +312,13 @@ export const trackPage = async (title: PageType) => {
  */
 export const trackDirect = async (event: EventType, properties: Record<string, unknown>) => {
   try {
-    // Only track BE production events:
-    if (process.env.NODE_ENV === "development" || import.meta.env?.VITE_IS_EMBEDDED_APP === "1") return;
+    // Only track BE production events (unless dev analytics is explicitly enabled):
+    if (
+      (process.env.NODE_ENV === "development" && !ENABLE_DEV_ANALYTICS) ||
+      import.meta.env?.VITE_IS_EMBEDDED_APP === "1"
+    ) {
+      return;
+    }
 
     const enabled = await getSetting("analytics").getValue();
     if (!enabled) return;
@@ -323,8 +334,13 @@ export const trackDirect = async (event: EventType, properties: Record<string, u
  */
 export const trackEvent = async (eventName: EventType, properties: any) => {
   try {
-    // Only track BE production events:
-    if (process.env.NODE_ENV === "development" || import.meta.env?.VITE_IS_EMBEDDED_APP === "1") return;
+    // Only track BE production events (unless dev analytics is explicitly enabled):
+    if (
+      (process.env.NODE_ENV === "development" && !ENABLE_DEV_ANALYTICS) ||
+      import.meta.env?.VITE_IS_EMBEDDED_APP === "1"
+    ) {
+      return;
+    }
 
     // first we check if we are allowed to collect data
     const enabled = await getSetting("analytics").getValue();
