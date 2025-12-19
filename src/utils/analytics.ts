@@ -10,6 +10,12 @@ import { log } from "./log/log.utils";
 import { LOG_GROUP } from "./log/log.utils";
 import { getUserCountryCode } from "./location";
 import { v4 as uuid } from "uuid";
+import throttle from "lodash.throttle";
+
+interface SessionData {
+  session_id: string;
+  timestamp: number;
+}
 
 const GA_MEASUREMENT_ID = process.env.PLASMO_PUBLIC_GA_MEASUREMENT_ID || "";
 const GA_API_SECRET = process.env.PLASMO_PUBLIC_GA_API_SECRET || "";
@@ -148,36 +154,60 @@ const getOrCreateClientId = async (): Promise<string> => {
   return userId;
 };
 
+// In-memory cache for session data to reduce storage reads
+let sessionCache: SessionData | null = null;
+
 /**
- * Get or create session ID (expires after SESSION_EXPIRATION_IN_MIN)
+ * Throttled function to persist session updates to storage
+ */
+const persistSessionData = throttle(
+  async (sessionCache: SessionData) => {
+    try {
+      await ExtensionStorage.set("session_data", sessionCache);
+    } catch (error) {
+      log(LOG_GROUP.ANALYTICS, "Failed to persist session data:", error);
+    }
+  },
+  60_000,
+  { leading: true, trailing: true },
+);
+
+/**
+ * Get or create session ID (expires after SESSION_EXPIRATION_IN_MIN of inactivity)
  */
 async function getOrCreateSessionId(): Promise<string> {
-  const currentTimeInMs = Date.now();
+  const now = Date.now();
   try {
-    let sessionData = await ExtensionStorage.get<{ session_id: string; timestamp: number }>("session_data");
+    if (!sessionCache) {
+      sessionCache = await ExtensionStorage.get<SessionData>("session_data");
+    }
 
     // Check if session exists and is still valid
-    if (sessionData?.timestamp) {
-      const durationInMin = (currentTimeInMs - sessionData.timestamp) / 60000;
+    if (sessionCache?.timestamp) {
+      const durationInMin = (now - sessionCache.timestamp) / 60000;
 
       if (durationInMin <= SESSION_EXPIRATION_IN_MIN) {
-        // Session is valid, update timestamp and return
-        sessionData.timestamp = currentTimeInMs;
-        await ExtensionStorage.set("session_data", sessionData);
-        return sessionData.session_id;
+        // Update in-memory timestamp immediately
+        sessionCache.timestamp = now;
+
+        // Persist to storage
+        persistSessionData(sessionCache);
+
+        return sessionCache.session_id;
       }
     }
 
-    // Create new session (either expired or doesn't exist)
-    const newSessionData = {
-      session_id: currentTimeInMs.toString(),
-      timestamp: currentTimeInMs,
-    };
-    await ExtensionStorage.set("session_data", newSessionData);
-    return newSessionData.session_id;
+    // Session expired or missing → create new
+    const newSession = { session_id: now.toString(), timestamp: now };
+    sessionCache = newSession;
+
+    // Persist to storage
+    ExtensionStorage.set("session_data", newSession);
+
+    return newSession.session_id;
   } catch (error) {
     log(LOG_GROUP.ANALYTICS, "Failed to get or create session id:", error);
-    return currentTimeInMs.toString();
+    return now.toString();
   }
 }
 

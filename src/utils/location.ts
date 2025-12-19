@@ -1,6 +1,8 @@
 import axios from "axios";
 import { TempTransactionStorage } from "./storage";
 
+let cachedCountryCode: string | undefined = undefined;
+
 type Source = {
   url: string;
   extract: (data: any) => string | undefined;
@@ -33,8 +35,8 @@ const REQUEST_TIMEOUT = 3000;
  */
 export const getUserCountryCode = async (): Promise<string | undefined> => {
   try {
-    const cachedCountry = await TempTransactionStorage.get<string>("user_country");
-    if (cachedCountry) return cachedCountry;
+    const countryCode = cachedCountryCode || (await TempTransactionStorage.get<string>("user_country"));
+    if (countryCode) return countryCode;
 
     for (const { url, extract } of sources) {
       try {
@@ -43,6 +45,7 @@ export const getUserCountryCode = async (): Promise<string | undefined> => {
 
         const country = extract(data);
         if (country) {
+          cachedCountryCode = country;
           await TempTransactionStorage.set("user_country", country);
           return country;
         }
