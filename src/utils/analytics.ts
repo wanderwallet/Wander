@@ -1,16 +1,15 @@
 import { getSetting } from "~settings";
 import { ExtensionStorage, TempTransactionStorage } from "./storage";
 import { getActiveKeyfile, getActiveAddress, getWalletKeyLength } from "~wallets";
-import axios from "axios";
 import { isLocalWallet } from "./assertions";
 import { freeDecryptedWallet } from "~wallets/encryption";
 import { ERR_MSG_NO_WALLETS_ADDED } from "~utils/auth/auth.constants";
-import { nanoid } from "nanoid";
 import Analytics from "analytics";
 import browser from "webextension-polyfill";
 import { log } from "./log/log.utils";
 import { LOG_GROUP } from "./log/log.utils";
 import { getUserCountryCode } from "./location";
+import { v4 as uuid } from "uuid";
 
 const GA_MEASUREMENT_ID = process.env.PLASMO_PUBLIC_GA_MEASUREMENT_ID || "";
 const GA_API_SECRET = process.env.PLASMO_PUBLIC_GA_API_SECRET || "";
@@ -143,7 +142,7 @@ export enum PageType {
 const getOrCreateClientId = async (): Promise<string> => {
   let userId = await ExtensionStorage.get("user_id");
   if (!userId) {
-    userId = nanoid();
+    userId = uuid();
     await ExtensionStorage.set("user_id", userId);
   }
   return userId;
@@ -153,9 +152,9 @@ const getOrCreateClientId = async (): Promise<string> => {
  * Get or create session ID (expires after SESSION_EXPIRATION_IN_MIN)
  */
 async function getOrCreateSessionId(): Promise<string> {
+  const currentTimeInMs = Date.now();
   try {
     let sessionData = await ExtensionStorage.get<{ session_id: string; timestamp: number }>("session_data");
-    const currentTimeInMs = Date.now();
 
     // Check if session exists and is still valid
     if (sessionData?.timestamp) {
@@ -171,14 +170,14 @@ async function getOrCreateSessionId(): Promise<string> {
 
     // Create new session (either expired or doesn't exist)
     const newSessionData = {
-      session_id: nanoid(),
+      session_id: currentTimeInMs.toString(),
       timestamp: currentTimeInMs,
     };
     await ExtensionStorage.set("session_data", newSessionData);
     return newSessionData.session_id;
   } catch (error) {
     log(LOG_GROUP.ANALYTICS, "Failed to get or create session id:", error);
-    return nanoid();
+    return currentTimeInMs.toString();
   }
 }
 
@@ -208,6 +207,10 @@ function GoogleAnalyticsPlugin() {
                 engagement_time_msec: DEFAULT_ENGAGEMENT_TIME_MSEC,
                 page_title: payload.properties?.title || payload.title,
                 page_location: payload.properties?.url || "",
+                page_path: payload.properties?.path || "",
+                page_hash: payload.properties?.hash || "",
+                page_search: payload.properties?.page_search || "",
+                page_referrer: payload.properties?.referrer || "",
               },
             },
           ],
