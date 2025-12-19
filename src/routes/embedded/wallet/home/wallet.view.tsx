@@ -1,7 +1,6 @@
 import { useStorage } from "~utils/storage";
 import { ExtensionStorage } from "~utils/storage";
 import React, { useEffect, useMemo } from "react";
-import { trackEvent, EventType, trackPage, PageType } from "~utils/analytics";
 import { useActiveWallet } from "~wallets/hooks";
 import { scheduleImportAoTokens } from "~tokens/aoTokens/sync";
 import { Card, Divider, AccountSelector, TabBar, Snackbar, type SnackbarVariant, Button } from "~components/embed/ui";
@@ -90,12 +89,6 @@ export function WalletHomeEmbeddedView() {
   }, [walletCount, lastRegisteredWallet, clearLastRegisteredWallet, backupMessage, unpartitionedStateStatus]);
 
   useEffect(() => {
-    const trackEventAndPage = async () => {
-      await trackEvent(EventType.LOGIN, {});
-      await trackPage(PageType.HOME);
-    };
-    trackEventAndPage();
-
     scheduleImportAoTokens();
   }, []);
 
