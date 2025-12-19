@@ -154,7 +154,7 @@ const getOrCreateClientId = async (): Promise<string> => {
  */
 async function getOrCreateSessionId(): Promise<string> {
   try {
-    let sessionData = await TempTransactionStorage.get<{ session_id: string; timestamp: number }>("sessionData");
+    let sessionData = await ExtensionStorage.get<{ session_id: string; timestamp: number }>("session_data");
     const currentTimeInMs = Date.now();
 
     // Check if session exists and is still valid
@@ -164,7 +164,7 @@ async function getOrCreateSessionId(): Promise<string> {
       if (durationInMin <= SESSION_EXPIRATION_IN_MIN) {
         // Session is valid, update timestamp and return
         sessionData.timestamp = currentTimeInMs;
-        await TempTransactionStorage.set("sessionData", sessionData);
+        await ExtensionStorage.set("session_data", sessionData);
         return sessionData.session_id;
       }
     }
@@ -174,7 +174,7 @@ async function getOrCreateSessionId(): Promise<string> {
       session_id: nanoid(),
       timestamp: currentTimeInMs,
     };
-    await TempTransactionStorage.set("sessionData", newSessionData);
+    await ExtensionStorage.set("session_data", newSessionData);
     return newSessionData.session_id;
   } catch (error) {
     log(LOG_GROUP.ANALYTICS, "Failed to get or create session id:", error);
