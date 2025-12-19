@@ -23,6 +23,8 @@ const GA_ENDPOINT = "https://www.google-analytics.com/mp/collect";
 const DEFAULT_ENGAGEMENT_TIME_MSEC = 100;
 const SESSION_EXPIRATION_IN_MIN = 30;
 const ENABLE_DEV_ANALYTICS = process.env.PLASMO_PUBLIC_ENABLE_DEV_ANALYTICS === "true";
+const SESSION_DATA_KEY = "analytics_session_data";
+const CLIENT_ID_KEY = "analytics_client_id";
 
 const manifest = browser.runtime.getManifest();
 
@@ -146,12 +148,12 @@ export enum PageType {
  * Get or create a unique user/client ID for analytics
  */
 const getOrCreateClientId = async (): Promise<string> => {
-  let userId = await ExtensionStorage.get("user_id");
-  if (!userId) {
-    userId = uuid();
-    await ExtensionStorage.set("user_id", userId);
+  let clientId = await ExtensionStorage.get(CLIENT_ID_KEY);
+  if (!clientId) {
+    clientId = uuid();
+    await ExtensionStorage.set(CLIENT_ID_KEY, clientId);
   }
-  return userId;
+  return clientId;
 };
 
 // In-memory cache for session data to reduce storage reads
@@ -163,7 +165,7 @@ let sessionCache: SessionData | null = null;
 const persistSessionData = throttle(
   async (sessionCache: SessionData) => {
     try {
-      await ExtensionStorage.set("session_data", sessionCache);
+      await ExtensionStorage.set(SESSION_DATA_KEY, sessionCache);
     } catch (error) {
       log(LOG_GROUP.ANALYTICS, "Failed to persist session data:", error);
     }
@@ -179,7 +181,7 @@ async function getOrCreateSessionId(): Promise<string> {
   const now = Date.now();
   try {
     if (!sessionCache) {
-      sessionCache = await ExtensionStorage.get<SessionData>("session_data");
+      sessionCache = await ExtensionStorage.get<SessionData>(SESSION_DATA_KEY);
     }
 
     // Check if session exists and is still valid
@@ -202,7 +204,7 @@ async function getOrCreateSessionId(): Promise<string> {
     sessionCache = newSession;
 
     // Persist to storage
-    ExtensionStorage.set("session_data", newSession);
+    ExtensionStorage.set(SESSION_DATA_KEY, newSession);
 
     return newSession.session_id;
   } catch (error) {
@@ -218,8 +220,8 @@ function GoogleAnalyticsPlugin() {
 
     initialize: async ({ instance }) => {
       try {
-        const userId = await getOrCreateClientId();
-        instance.identify(userId);
+        const clientId = await getOrCreateClientId();
+        instance.identify(clientId);
       } catch {}
       log(LOG_GROUP.ANALYTICS, "✅ Google Analytics plugin initialized");
     },
@@ -228,11 +230,11 @@ function GoogleAnalyticsPlugin() {
 
     page: async ({ payload, instance }: any) => {
       try {
-        const userId = instance.user("userId") || (await getOrCreateClientId());
+        const clientId = instance.user("userId") || (await getOrCreateClientId());
         const countryCode = await getUserCountryCode();
 
         const body: any = {
-          client_id: userId,
+          client_id: clientId,
           events: [
             {
               name: "page_view",
@@ -272,7 +274,7 @@ function GoogleAnalyticsPlugin() {
 
     track: async ({ payload, instance }: any) => {
       try {
-        const userId = instance.user("userId") || (await getOrCreateClientId());
+        const clientId = instance.user("userId") || (await getOrCreateClientId());
         const countryCode = await getUserCountryCode();
 
         if (!payload.properties.session_id) {
@@ -284,7 +286,7 @@ function GoogleAnalyticsPlugin() {
         }
 
         const body: any = {
-          client_id: userId,
+          client_id: clientId,
           events: [
             {
               name: payload.event,
