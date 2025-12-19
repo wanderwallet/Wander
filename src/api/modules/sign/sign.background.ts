@@ -145,7 +145,7 @@ const background: BackgroundModuleFunction<BackgroundResult> = async (
     freeDecryptedWallet(keyfile);
   }
   // analytics
-  await trackDirect(EventType.SIGNED, {
+  trackDirect(EventType.SIGNED, {
     appUrl: appData.url,
     totalInAR: arweave.ar.winstonToAr(price.toString()),
   });

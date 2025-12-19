@@ -307,7 +307,7 @@ export async function trackSwapAnalytics(swap: SwapData, status: "Success" | "Fa
 
     log(LOG_GROUP.SWAP, "Swap completed data: ", swapCompletedData);
 
-    await trackDirect(EventType.SWAP_COMPLETED, swapCompletedData);
+    trackDirect(EventType.SWAP_COMPLETED, swapCompletedData);
   } catch (error) {
     log(LOG_GROUP.SWAP, "Error tracking swap analytics", error);
   }

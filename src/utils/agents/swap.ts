@@ -701,7 +701,7 @@ export async function checkIfRecentTxSwapSucceeded(): Promise<boolean> {
       await saveWalletLifetimeSavings(walletAddress, feeSavingsUsd);
 
       try {
-        return await trackDirect(EventType.AO_YIELD_AGENT_TRANSACTION, transactionData);
+        return trackDirect(EventType.AO_YIELD_AGENT_TRANSACTION, transactionData);
       } catch (err) {
         log(LOG_GROUP.AGENTS, "Error tracking recent tx: ", err);
         throw err;

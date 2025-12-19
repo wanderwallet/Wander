@@ -60,7 +60,7 @@ export function AgentCancelModal({ open, onClose, agentId }: AgentCancelModalPro
       }
 
       await updateAOYieldAgent(agentId, { status: "Cancelled" });
-      await trackEvent(EventType.AO_YIELD_AGENT_CANCEL, {});
+      trackEvent(EventType.AO_YIELD_AGENT_CANCEL, {});
       toasts.setToast({
         content: browser.i18n.getMessage("agent_cancelled"),
         type: "success",
