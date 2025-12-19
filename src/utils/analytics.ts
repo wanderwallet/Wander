@@ -186,15 +186,19 @@ function GoogleAnalyticsPlugin() {
     name: "google-analytics-plugin",
     config: {},
 
-    initialize: () => {
+    initialize: async () => {
+      try {
+        const userId = await getOrCreateClientId();
+        analytics.identify(userId);
+      } catch {}
       log(LOG_GROUP.ANALYTICS, "✅ Google Analytics plugin initialized");
     },
 
-    identify: async ({ payload }: any) => {},
+    identify: async () => {},
 
-    page: async ({ payload }: any) => {
+    page: async ({ payload, instance }: any) => {
       try {
-        const userId = await getOrCreateClientId();
+        const userId = instance.user("userId") || (await getOrCreateClientId());
         const countryCode = await getUserCountryCode();
 
         const body: any = {
@@ -236,9 +240,9 @@ function GoogleAnalyticsPlugin() {
       }
     },
 
-    track: async ({ payload }: any) => {
+    track: async ({ payload, instance }: any) => {
       try {
-        const userId = await getOrCreateClientId();
+        const userId = instance.user("userId") || (await getOrCreateClientId());
         const countryCode = await getUserCountryCode();
 
         if (!payload.properties.session_id) {
