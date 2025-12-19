@@ -186,10 +186,10 @@ function GoogleAnalyticsPlugin() {
     name: "google-analytics-plugin",
     config: {},
 
-    initialize: async () => {
+    initialize: async ({ instance }) => {
       try {
         const userId = await getOrCreateClientId();
-        analytics.identify(userId);
+        instance.identify(userId);
       } catch {}
       log(LOG_GROUP.ANALYTICS, "✅ Google Analytics plugin initialized");
     },
@@ -282,6 +282,7 @@ function GoogleAnalyticsPlugin() {
         log(LOG_GROUP.ANALYTICS, "❌ GA event tracking failed:", error);
       }
     },
+    loaded: () => true,
   };
 }
 
