@@ -98,7 +98,7 @@ export function SendAuthView({ params: { tokenID } }: SendAuthViewProps) {
       await Promise.race([arweave.transactions.post(transaction), timeoutPromise]);
     } catch (err) {
       // SEGMENT
-      await trackEvent(EventType.TRANSACTION_INCOMPLETE, {});
+      trackEvent(EventType.TRANSACTION_INCOMPLETE, {});
       throw new Error("Error with posting to Arweave");
     }
   }
@@ -159,7 +159,7 @@ export function SendAuthView({ params: { tokenID } }: SendAuthViewProps) {
           const fallbackArweave = new Arweave(gateway);
           await fallbackArweave.transactions.sign(transaction, keyfile);
           await submitTx(transaction, fallbackArweave, type);
-          await trackEvent(EventType.FALLBACK, {});
+          trackEvent(EventType.FALLBACK, {});
         }
 
         // Success toast
@@ -219,7 +219,7 @@ export function SendAuthView({ params: { tokenID } }: SendAuthViewProps) {
           const fallbackArweave = new Arweave(gateway);
           await fallbackArweave.transactions.sign(transaction, keyfile);
           await submitTx(transaction, fallbackArweave, type);
-          await trackEvent(EventType.FALLBACK, {});
+          trackEvent(EventType.FALLBACK, {});
         }
 
         setToast({

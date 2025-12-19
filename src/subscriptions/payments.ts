@@ -148,7 +148,7 @@ export const send = async (
       await fallbackArweave.transactions.sign(unRaw, keyfile);
       const submitted = await submitTx(activeAddress, unRaw, fallbackArweave, subscriptionData, manualPayment);
       freeDecryptedWallet(keyfile);
-      await trackEvent(EventType.FALLBACK, {});
+      trackEvent(EventType.FALLBACK, {});
       return submitted;
     }
   } catch (e) {
@@ -172,7 +172,7 @@ const submitTx = async (
   try {
     await Promise.race([arweave.transactions.post(transaction), timeoutPromise]);
     const updatedSub = updateSubscriptionAlarm(activeAddress, data, transaction.id, manualPayment);
-    await trackEvent(EventType.SUBSCRIPTION_PAYMENT, {
+    trackEvent(EventType.SUBSCRIPTION_PAYMENT, {
       amount: data.subscriptionFeeAmount,
       autoPay: data.applicationAllowance !== 0,
       success: true,
@@ -180,8 +180,8 @@ const submitTx = async (
     return updatedSub;
   } catch (err) {
     // SEGMENT
-    await trackEvent(EventType.TRANSACTION_INCOMPLETE, {});
-    await trackEvent(EventType.SUBSCRIPTION_PAYMENT, {
+    trackEvent(EventType.TRANSACTION_INCOMPLETE, {});
+    trackEvent(EventType.SUBSCRIPTION_PAYMENT, {
       amount: data.subscriptionFeeAmount,
       autoPay: data.applicationAllowance !== 0,
       success: false,

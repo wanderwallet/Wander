@@ -1,19 +1,32 @@
 import { getSetting } from "~settings";
 import { ExtensionStorage, TempTransactionStorage } from "./storage";
-import { AnalyticsBrowser } from "@segment/analytics-next";
 import { getActiveKeyfile, getActiveAddress, getWalletKeyLength } from "~wallets";
-import browser from "webextension-polyfill";
-import axios from "axios";
 import { isLocalWallet } from "./assertions";
 import { freeDecryptedWallet } from "~wallets/encryption";
 import { ERR_MSG_NO_WALLETS_ADDED } from "~utils/auth/auth.constants";
-import { nanoid } from "nanoid";
+import Analytics from "analytics";
+import browser from "webextension-polyfill";
+import { log, LOG_GROUP } from "./log/log.utils";
+import { getUserCountryCode } from "./location";
+import { v4 as uuid } from "uuid";
+import throttle from "lodash.throttle";
 
-const PUBLIC_SEGMENT_WRITEKEY = "J97E4cvSZqmpeEdiUQNC2IxS1Kw4Cwxm";
+interface SessionData {
+  session_id: string;
+  timestamp: number;
+}
 
-const analytics = AnalyticsBrowser.load({
-  writeKey: PUBLIC_SEGMENT_WRITEKEY,
-});
+const GA_MEASUREMENT_ID = process.env.PLASMO_PUBLIC_GA_MEASUREMENT_ID || "";
+const GA_API_SECRET = process.env.PLASMO_PUBLIC_GA_API_SECRET || "";
+const GA_ENDPOINT = "https://www.google-analytics.com/mp/collect";
+const DEFAULT_ENGAGEMENT_TIME_MSEC = 100;
+const SESSION_EXPIRATION_IN_MIN = 30;
+const ENABLE_DEV_ANALYTICS = process.env.PLASMO_PUBLIC_ENABLE_DEV_ANALYTICS === "true";
+const SESSION_DATA_KEY = "analytics_session_data";
+const CLIENT_ID_KEY = "analytics_client_id";
+const IS_EMBEDDED_APP = import.meta.env?.VITE_IS_EMBEDDED_APP === "1";
+
+const manifest = browser.runtime.getManifest();
 
 // TODO: add analytics for signature
 
@@ -131,61 +144,239 @@ export enum PageType {
   ARNS_SET_PRIMARY_NAME_ERROR = "ARNS_SET_PRIMARY_NAME_ERROR",
 }
 
-export const trackPage = async (title: PageType) => {
-  // Only track BE production events:
-  if (process.env.NODE_ENV === "development" || import.meta.env?.VITE_IS_EMBEDDED_APP === "1") return;
+/**
+ * Get or create a unique user/client ID for analytics
+ */
+const getOrCreateClientId = async (): Promise<string> => {
+  let clientId = await ExtensionStorage.get(CLIENT_ID_KEY);
+  if (!clientId) {
+    clientId = uuid();
+    await ExtensionStorage.set(CLIENT_ID_KEY, clientId);
+  }
+  return clientId;
+};
 
-  const enabled = await getSetting("analytics").getValue();
+// In-memory cache for session data to reduce storage reads
+let sessionCache: SessionData | null = null;
 
-  if (!enabled) return;
+/**
+ * Throttled function to persist session updates to storage
+ */
+const persistSessionData = throttle(
+  async (sessionCache: SessionData) => {
+    try {
+      await ExtensionStorage.set(SESSION_DATA_KEY, sessionCache);
+    } catch (error) {
+      log(LOG_GROUP.ANALYTICS, "Failed to persist session data:", error);
+    }
+  },
+  60_000,
+  { leading: true, trailing: true },
+);
 
+/**
+ * Get or create session ID (expires after SESSION_EXPIRATION_IN_MIN of inactivity)
+ */
+async function getOrCreateSessionId(): Promise<string> {
+  const now = Date.now();
   try {
-    await analytics.page("Wander Extension", {
-      title,
-    });
+    if (!sessionCache) {
+      sessionCache = await ExtensionStorage.get<SessionData>(SESSION_DATA_KEY);
+    }
+
+    // Check if session exists and is still valid
+    if (sessionCache?.timestamp) {
+      const durationInMin = (now - sessionCache.timestamp) / 60000;
+
+      if (durationInMin <= SESSION_EXPIRATION_IN_MIN) {
+        // Update in-memory timestamp immediately
+        sessionCache.timestamp = now;
+
+        // Persist to storage
+        persistSessionData(sessionCache);
+
+        return sessionCache.session_id;
+      }
+    }
+
+    // Session expired or missing → create new
+    const newSession = { session_id: now.toString(), timestamp: now };
+    sessionCache = newSession;
+
+    // Persist to storage
+    ExtensionStorage.set(SESSION_DATA_KEY, newSession);
+
+    return newSession.session_id;
+  } catch (error) {
+    log(LOG_GROUP.ANALYTICS, "Failed to get or create session id:", error);
+    return now.toString();
+  }
+}
+
+function GoogleAnalyticsPlugin() {
+  return {
+    name: "google-analytics-plugin",
+    config: {},
+
+    initialize: async ({ instance }) => {
+      try {
+        const clientId = await getOrCreateClientId();
+        instance.identify(clientId);
+      } catch {}
+      log(LOG_GROUP.ANALYTICS, "✅ Google Analytics plugin initialized");
+    },
+
+    identify: async () => {},
+
+    page: async ({ payload, instance }: any) => {
+      try {
+        const clientId = instance.user("userId") || (await getOrCreateClientId());
+        const countryCode = await getUserCountryCode();
+
+        const body: any = {
+          client_id: clientId,
+          events: [
+            {
+              name: "page_view",
+              params: {
+                session_id: await getOrCreateSessionId(),
+                engagement_time_msec: DEFAULT_ENGAGEMENT_TIME_MSEC,
+                page_title: payload.properties?.title || payload.title,
+                page_location: payload.properties?.url || "",
+                page_path: payload.properties?.path || "",
+                page_hash: payload.properties?.hash || "",
+                page_search: payload.properties?.page_search || "",
+                page_referrer: payload.properties?.referrer || "",
+              },
+            },
+          ],
+        };
+
+        if (countryCode) {
+          body.user_location = { country_id: countryCode };
+        }
+
+        const response = await fetch(`${GA_ENDPOINT}?measurement_id=${GA_MEASUREMENT_ID}&api_secret=${GA_API_SECRET}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+
+        if (response.ok || response.status === 204) {
+          log(LOG_GROUP.ANALYTICS, "📄 Page view sent to GA:", payload.properties?.title || payload.title);
+        } else {
+          log(LOG_GROUP.ANALYTICS, "⚠️ GA page view response:", response.status, response.statusText);
+        }
+      } catch (error) {
+        log(LOG_GROUP.ANALYTICS, "❌ GA page tracking failed:", error);
+      }
+    },
+
+    track: async ({ payload, instance }: any) => {
+      try {
+        const clientId = instance.user("userId") || (await getOrCreateClientId());
+        const countryCode = await getUserCountryCode();
+
+        if (!payload.properties.session_id) {
+          payload.properties.session_id = await getOrCreateSessionId();
+        }
+
+        if (!payload.properties.engagement_time_msec) {
+          payload.properties.engagement_time_msec = DEFAULT_ENGAGEMENT_TIME_MSEC;
+        }
+
+        const body: any = {
+          client_id: clientId,
+          events: [
+            {
+              name: payload.event,
+              params: { ...payload.properties },
+            },
+          ],
+        };
+
+        if (countryCode) {
+          body.user_location = { country_id: countryCode };
+        }
+
+        const response = await fetch(`${GA_ENDPOINT}?measurement_id=${GA_MEASUREMENT_ID}&api_secret=${GA_API_SECRET}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+
+        if (response.ok || response.status === 204) {
+          log(LOG_GROUP.ANALYTICS, "🎯 Event sent to GA:", payload.event);
+        } else {
+          log(LOG_GROUP.ANALYTICS, "⚠️ GA event response:", response.status, response.statusText);
+        }
+      } catch (error) {
+        log(LOG_GROUP.ANALYTICS, "❌ GA event tracking failed:", error);
+      }
+    },
+    loaded: () => true,
+  };
+}
+
+const plugins = IS_EMBEDDED_APP ? [] : [GoogleAnalyticsPlugin()];
+
+const analytics = Analytics({
+  app: manifest.name,
+  version: manifest.version,
+  debug: false,
+  plugins,
+});
+
+/**
+ * Track page views
+ */
+export const trackPage = async (title: PageType) => {
+  try {
+    // Only track BE production events (unless dev analytics is explicitly enabled):
+    if ((process.env.NODE_ENV === "development" && !ENABLE_DEV_ANALYTICS) || IS_EMBEDDED_APP) {
+      return;
+    }
+
+    const enabled = await getSetting("analytics").getValue();
+    if (!enabled) return;
+
+    await analytics.page({ title });
   } catch (err) {
-    console.log("err", err);
+    log(LOG_GROUP.ANALYTICS, "Page tracking error:", err);
   }
 };
 
+/**
+ * Track events directly (for background scripts)
+ */
 export const trackDirect = async (event: EventType, properties: Record<string, unknown>) => {
-  // Only track BE production events:
-  if (process.env.NODE_ENV === "development" || import.meta.env?.VITE_IS_EMBEDDED_APP === "1") return;
+  try {
+    // Only track BE production events (unless dev analytics is explicitly enabled):
+    if ((process.env.NODE_ENV === "development" && !ENABLE_DEV_ANALYTICS) || IS_EMBEDDED_APP) {
+      return;
+    }
 
-  const enabled = await getSetting("analytics").getValue();
+    const enabled = await getSetting("analytics").getValue();
+    if (!enabled) return;
 
-  if (!enabled) return;
-
-  // TODO: We probably want to update this for Connect:
-  let userId = await ExtensionStorage.get("user_id");
-  if (!userId) {
-    userId = nanoid();
-    await ExtensionStorage.set("user_id", userId);
+    await analytics.track(event, { ...properties });
+  } catch (err) {
+    log(LOG_GROUP.ANALYTICS, `Failed to track event ${event}:`, err);
   }
-
-  return fetch("https://api.segment.io/v1/t", {
-    method: "POST",
-    body: JSON.stringify({
-      event,
-      properties,
-      messageId: nanoid(),
-      sentAt: new Date().toISOString(),
-      timestamp: new Date().toISOString(),
-      type: "track",
-      userId: userId,
-      writeKey: PUBLIC_SEGMENT_WRITEKEY,
-    }),
-  });
 };
 
+/**
+ * Track custom events
+ */
 export const trackEvent = async (eventName: EventType, properties: any) => {
   try {
-    // Only track BE production events:
-    if (process.env.NODE_ENV === "development" || import.meta.env?.VITE_IS_EMBEDDED_APP === "1") return;
+    // Only track BE production events (unless dev analytics is explicitly enabled):
+    if ((process.env.NODE_ENV === "development" && !ENABLE_DEV_ANALYTICS) || IS_EMBEDDED_APP) {
+      return;
+    }
 
     // first we check if we are allowed to collect data
     const enabled = await getSetting("analytics").getValue();
-
     if (!enabled) return;
 
     const ONE_HOUR_IN_MS = 3600000;
@@ -193,7 +384,6 @@ export const trackEvent = async (eventName: EventType, properties: any) => {
     // TODO:login is tracked only once and compared to an hour period before logged as another Login event
     if (eventName === EventType.LOGIN) {
       const storageTime = await TempTransactionStorage.get(EventType.LOGIN);
-
       if (storageTime && Date.now() < Number(storageTime) + ONE_HOUR_IN_MS) {
         return;
       }
@@ -223,7 +413,7 @@ export const trackEvent = async (eventName: EventType, properties: any) => {
       await ExtensionStorage.set(`wallet_funded_${activeAddress}`, true);
     }
   } catch (err) {
-    console.log(`Failed to track event ${eventName}:`, err);
+    log(LOG_GROUP.ANALYTICS, `Failed to track event ${eventName}:`, err);
   }
 };
 
@@ -280,7 +470,7 @@ export const checkWalletBits = async (): Promise<boolean | null> => {
       mismatch: !lengthsMatch,
     });
 
-    await trackEvent(EventType.BITS_LENGTH, { mismatch: !lengthsMatch });
+    trackEvent(EventType.BITS_LENGTH, { mismatch: !lengthsMatch });
 
     return !lengthsMatch;
   } catch (error) {
@@ -342,10 +532,8 @@ const GDPR_COUNTRIES_AND_OTHERS = [
 // Defaults to true to
 export const isUserInGDPRCountry = async (): Promise<boolean> => {
   try {
-    const response = await axios.get("https://ipinfo.io?token=f73f7a8b88a8bf");
-
-    const { country } = response.data;
-    return GDPR_COUNTRIES_AND_OTHERS.includes(country);
+    const countryCode = await getUserCountryCode();
+    return GDPR_COUNTRIES_AND_OTHERS.includes(countryCode);
   } catch (error) {
     console.error("Error fetching location:", error);
     return true;

@@ -73,7 +73,7 @@ export function PermissionsWelcomeView({ params }: PermissionsWelcomeViewProps) 
       await loadTokens();
 
       // log user onboarded
-      await trackEvent(EventType.ONBOARDED, {});
+      trackEvent(EventType.ONBOARDED, {});
 
       if (!analyticSetting && !answered) {
         await setAnswered(true);
@@ -112,7 +112,7 @@ export function PermissionsWelcomeView({ params }: PermissionsWelcomeViewProps) 
     await loadTokens();
 
     // log user onboarded
-    await trackEvent(EventType.ONBOARDED, {});
+    trackEvent(EventType.ONBOARDED, {});
 
     if (!analyticSetting && !answered) {
       await setAnswered(true);

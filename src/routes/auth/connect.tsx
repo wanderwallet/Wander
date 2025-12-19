@@ -168,7 +168,7 @@ export function ConnectAuthRequestView() {
       }
 
       // track connected app.
-      await trackEvent(EventType.CONNECTED_APP, {
+      trackEvent(EventType.CONNECTED_APP, {
         appName: appInfo.name,
         appUrl: url,
       });

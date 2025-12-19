@@ -331,7 +331,7 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
       await Promise.race([arweave.transactions.post(transaction), timeoutPromise]);
     } catch (err) {
       // SEGMENT
-      await trackEvent(EventType.TRANSACTION_INCOMPLETE, {});
+      trackEvent(EventType.TRANSACTION_INCOMPLETE, {});
       throw new Error("Error with posting to Arweave");
     }
   }
@@ -417,7 +417,7 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
             const fallbackArweave = new Arweave(gateway);
             await fallbackArweave.transactions.sign(convertedTransaction, keyfile);
             await submitTx(convertedTransaction, fallbackArweave, type);
-            await trackEvent(EventType.FALLBACK, {});
+            trackEvent(EventType.FALLBACK, {});
           }
 
           // Save pending transaction to extension storage
@@ -473,7 +473,7 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
             const fallbackArweave = new Arweave(gateway);
             await fallbackArweave.transactions.sign(convertedTransaction, keyfile);
             await submitTx(convertedTransaction, fallbackArweave, type);
-            await trackEvent(EventType.FALLBACK, {});
+            trackEvent(EventType.FALLBACK, {});
           }
 
           // Save pending transaction to extension storage

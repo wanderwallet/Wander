@@ -141,7 +141,7 @@ async function trackSigned(app: Application, appUrl: string, tokenId: string, am
   try {
     if (isTransferTx && amount !== "0") {
       const appInfo = await app.getAppData();
-      await trackDirect(EventType.SIGNED, {
+      trackDirect(EventType.SIGNED, {
         appName: appInfo.name,
         appUrl,
         tokenId,
