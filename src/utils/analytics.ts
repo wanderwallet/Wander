@@ -25,6 +25,7 @@ const SESSION_EXPIRATION_IN_MIN = 30;
 const ENABLE_DEV_ANALYTICS = process.env.PLASMO_PUBLIC_ENABLE_DEV_ANALYTICS === "true";
 const SESSION_DATA_KEY = "analytics_session_data";
 const CLIENT_ID_KEY = "analytics_client_id";
+const IS_EMBEDDED_APP = import.meta.env?.VITE_IS_EMBEDDED_APP === "1";
 
 const manifest = browser.runtime.getManifest();
 
@@ -318,11 +319,13 @@ function GoogleAnalyticsPlugin() {
   };
 }
 
+const plugins = IS_EMBEDDED_APP ? [] : [GoogleAnalyticsPlugin()];
+
 const analytics = Analytics({
   app: manifest.name,
   version: manifest.version,
   debug: false,
-  plugins: [GoogleAnalyticsPlugin()],
+  plugins,
 });
 
 /**
@@ -331,10 +334,7 @@ const analytics = Analytics({
 export const trackPage = async (title: PageType) => {
   try {
     // Only track BE production events (unless dev analytics is explicitly enabled):
-    if (
-      (process.env.NODE_ENV === "development" && !ENABLE_DEV_ANALYTICS) ||
-      import.meta.env?.VITE_IS_EMBEDDED_APP === "1"
-    ) {
+    if ((process.env.NODE_ENV === "development" && !ENABLE_DEV_ANALYTICS) || IS_EMBEDDED_APP) {
       return;
     }
 
@@ -353,10 +353,7 @@ export const trackPage = async (title: PageType) => {
 export const trackDirect = async (event: EventType, properties: Record<string, unknown>) => {
   try {
     // Only track BE production events (unless dev analytics is explicitly enabled):
-    if (
-      (process.env.NODE_ENV === "development" && !ENABLE_DEV_ANALYTICS) ||
-      import.meta.env?.VITE_IS_EMBEDDED_APP === "1"
-    ) {
+    if ((process.env.NODE_ENV === "development" && !ENABLE_DEV_ANALYTICS) || IS_EMBEDDED_APP) {
       return;
     }
 
@@ -375,10 +372,7 @@ export const trackDirect = async (event: EventType, properties: Record<string, u
 export const trackEvent = async (eventName: EventType, properties: any) => {
   try {
     // Only track BE production events (unless dev analytics is explicitly enabled):
-    if (
-      (process.env.NODE_ENV === "development" && !ENABLE_DEV_ANALYTICS) ||
-      import.meta.env?.VITE_IS_EMBEDDED_APP === "1"
-    ) {
+    if ((process.env.NODE_ENV === "development" && !ENABLE_DEV_ANALYTICS) || IS_EMBEDDED_APP) {
       return;
     }
 
