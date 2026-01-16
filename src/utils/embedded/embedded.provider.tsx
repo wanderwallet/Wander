@@ -1314,9 +1314,21 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     isomorphicOnMessage("embedded_navigate", ({ data }) => {
       const navigate = navigateRef.current;
 
-      if (data !== "backup" || !navigate) return;
+      if (!navigate) return;
 
-      navigate("/account/backup-wallet");
+      if (data === "backup") {
+        navigate("/account/backup-wallet");
+      } else if (data === "home") {
+        navigate("/");
+      } else if (data === "receive") {
+        navigate("/wallet/receive/options");
+      } else if (data === "receive-address") {
+        navigate("/wallet/deposit");
+      } else if (data === "buy") {
+        navigate("/wallet/buy/cash");
+      } else if (data === "transactions") {
+        navigate("/wallet/transactions");
+      }
     });
   }, []);
 
