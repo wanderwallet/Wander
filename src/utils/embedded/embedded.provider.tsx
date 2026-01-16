@@ -1320,6 +1320,14 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         navigate("/account/backup-wallet");
       } else if (data === "home") {
         navigate("/");
+      } else if (data === "receive") {
+        navigate("/wallet/receive/options");
+      } else if (data === "receive-address") {
+        navigate("/wallet/deposit");
+      } else if (data === "buy") {
+        navigate("/wallet/buy/cash");
+      } else if (data === "transactions") {
+        navigate("/wallet/transactions");
       }
     });
   }, []);

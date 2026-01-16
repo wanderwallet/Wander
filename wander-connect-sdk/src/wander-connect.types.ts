@@ -4,7 +4,7 @@ export type OpenReason = "manually" | "embedded_open" | "embedded_request";
 
 // Routes and layouts:
 
-export type DirectAccess = "backup" | "home";
+export type DirectAccess = "backup" | "home" | "receive" | "receive-address" | "buy" | "transactions";
 
 /**
  * Types of routes available in the Wander Connect SDK.
