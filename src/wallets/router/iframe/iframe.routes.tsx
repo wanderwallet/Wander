@@ -76,7 +76,7 @@ import { AccountBackupCloudImportSuccessEmbeddedView } from "~routes/embedded/ac
 /**
  * Developers can manually navigate to these flows:
  */
-export type DirectAccess = "backup";
+export type DirectAccess = "backup" | "home" | "receive" | "receive-address" | "buy" | "transactions";
 
 export type EmbeddedRoutePath =
   | "/support/unpartitioned-state"
