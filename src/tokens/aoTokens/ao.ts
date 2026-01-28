@@ -104,7 +104,7 @@ export function getTokenInfoFromData(res: any, id: string): TokenInfo {
     const Logo = getTagValue("Logo", msg.Tags);
     const Transferable = getTagValue("Transferable", msg.Tags);
 
-    if (!Ticker && !Name) continue;
+    if (!Ticker || !Name) continue;
 
     return {
       processId: id,
