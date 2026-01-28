@@ -4,11 +4,10 @@ import { getAoTokensCache } from "~tokens";
 import type { GQLTransactionsResultInterface } from "ar-gql/dist/faces";
 import { PersistentStorage } from "~utils/storage";
 import { getActiveAddress } from "~wallets";
-import { type TokenInfo, getTokenInfoFromData, DEFAULT_CU_URL, AO_DEV_CU_URL } from "./ao";
+import { getTokenInfo, type TokenInfo } from "./ao";
 import { withRetry } from "~utils/promises/retry";
 import { timeoutPromise } from "~utils/promises/timeout";
 import { Mutex } from "~utils/mutex";
-import { Id, Owner, UTD_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 
 /** Tokens storage name */
 export const AO_TOKENS = "ao_tokens";
@@ -34,34 +33,6 @@ export const gateway = {
   port: 443,
   protocol: "https",
 };
-
-async function getTokenInfo(id: string): Promise<TokenInfo> {
-  const body = {
-    Id,
-    Target: id,
-    Owner,
-    Anchor: "0",
-    Data: "1234",
-    Tags: [
-      { name: "Action", value: "Info" },
-      { name: "Data-Protocol", value: "ao" },
-      { name: "Type", value: "Message" },
-      { name: "Variant", value: "ao.TN.1" },
-    ],
-  };
-  const cuUrl = id === UTD_PROCESS_ID ? AO_DEV_CU_URL : DEFAULT_CU_URL;
-  const res = await (
-    await fetch(`${cuUrl}/dry-run?process-id=${id}`, {
-      headers: {
-        "content-type": "application/json",
-      },
-      body: JSON.stringify(body),
-      method: "POST",
-    })
-  ).json();
-
-  return getTokenInfoFromData(res, id);
-}
 
 // Get transactions for AO token discovery
 function getNoticeTransactionsQuery(address: string, filterProcesses: string[], minBlockHeight?: number) {

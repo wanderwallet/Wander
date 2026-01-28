@@ -54,19 +54,21 @@ type DataItemResult = {
 const ao = connect(defaultConfig);
 
 export const ARDRIVE_CU_URL = "https://cu.ardrive.io";
-export const AO_DEV_CU_URL = "https://aodev.fun/ao/cu";
 export const DEFAULT_CU_URL = "https://cu.ao-testnet.xyz";
 
 const { dryrun: arDriveDryrun } = connect({ CU_URL: ARDRIVE_CU_URL });
-const { dryrun: aoDevDryrun } = connect({ CU_URL: AO_DEV_CU_URL });
 
 const ARDRIVE_PROCESSES = [ARIO_MAINNET_PROCESS_ID, ARIO_TESTNET_PROCESS_ID];
 
 export const getDryrunForProcess = (processId: string) => {
-  if (processId === UTD_PROCESS_ID) return { dryrunFn: aoDevDryrun, isCustomDryrun: true };
   if (ARDRIVE_PROCESSES.includes(processId)) return { dryrunFn: arDriveDryrun, isCustomDryrun: true };
 
   return { dryrunFn: dryrun, isCustomDryrun: false };
+};
+
+export const getCuUrlForProcess = (processId: string) => {
+  if (ARDRIVE_PROCESSES.includes(processId)) return ARDRIVE_CU_URL;
+  return DEFAULT_CU_URL;
 };
 
 export function getTokenInfoFromData(res: any, id: string): TokenInfo {
@@ -102,7 +104,7 @@ export function getTokenInfoFromData(res: any, id: string): TokenInfo {
     const Logo = getTagValue("Logo", msg.Tags);
     const Transferable = getTagValue("Transferable", msg.Tags);
 
-    if (!Ticker && !Name) continue;
+    if (!Ticker || !Name) continue;
 
     return {
       processId: id,
@@ -135,7 +137,7 @@ export async function getTokenInfo(id: string): Promise<TokenInfo> {
     return { ...data.tokenInfo, processId: id };
   } catch {
     // query ao
-    const dryrunFn = id === UTD_PROCESS_ID ? aoDevDryrun : dryrun;
+    const { dryrunFn } = getDryrunForProcess(id);
     const res = await dryrunFn({
       Id,
       Owner,
