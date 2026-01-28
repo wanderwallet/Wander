@@ -49,6 +49,7 @@ export async function handleInstall(details: Runtime.OnInstalledDetailsType) {
 
   // initialize alarm to update tokens once a week
   browser.alarms.create("update_ao_tokens", {
+    delayInMinutes: 1,
     periodInMinutes: 10080,
   });
 
