@@ -60,7 +60,9 @@
       "gecko": {
         "id": "{6c337925-991d-4139-8b64-8380cd30517a}",
         "data_collection_permissions": {
-          "required": [],
+          "required": [
+            "none"
+          ],
           "optional": [
             "technicalAndInteraction"
           ]
