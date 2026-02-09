@@ -34,10 +34,23 @@ jobs:
         run: yarn build:firefox
 
       - name: Package into zip artifact
-        run: cd build && zip -r firefox-mv3-prod.zip firefox-mv3-prod/
+        run: cd build/firefox-mv3-prod && zip -r ../firefox-mv3-prod.zip .
+
+      - name: Prepare submission keys
+        id: prepare-keys
+        run: |
+          # Take the base keys JSON and replace placeholder values with actual secrets
+          KEYS_JSON='${{ secrets.SUBMIT_KEYS_PRODUCTION_FF }}'
+          KEYS_JSON=$(echo "$KEYS_JSON" | jq --arg extId "${{ secrets.FIREFOX_EXT_ID }}" \
+            --arg apiKey "${{ secrets.FIREFOX_API_KEY }}" \
+            --arg apiSecret "${{ secrets.FIREFOX_API_SECRET }}" \
+            '.firefox.extId = $extId | .firefox.apiKey = $apiKey | .firefox.apiSecret = $apiSecret')
+          echo "KEYS_JSON<<EOF" >> $GITHUB_ENV
+          echo "$KEYS_JSON" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
 
       - name: Browser Platform Publish
         uses: PlasmoHQ/bpp@v3
         with:
-          keys: '{"firefox":{"extId":"${{ secrets.FIREFOX_EXT_ID }}","apiKey":"${{ secrets.FIREFOX_API_KEY }}","apiSecret":"${{ secrets.FIREFOX_API_SECRET }}"}}'
+          keys: ${{ env.KEYS_JSON }}
           artifact: build/firefox-mv3-prod.zip
