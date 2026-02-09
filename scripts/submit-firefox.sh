@@ -50,11 +50,6 @@ if [ ! -d "build/firefox-mv3-prod" ]; then
   exit 1
 fi
 
-# Package zip with manifest.json at root
-echo -e "${GREEN}Packaging into zip...${NC}"
-rm -f build/firefox-mv3-prod.zip
-(cd build/firefox-mv3-prod && zip -r ../firefox-mv3-prod.zip .)
-
 echo -e "${GREEN}Build successful!${NC}"
 
 # Submit via web-ext
@@ -66,23 +61,9 @@ fi
 
 echo -e "${GREEN}Submitting to Firefox Add-ons via web-ext...${NC}"
 
-TEMP_DIR=$(mktemp -d)
-trap 'rm -rf "$TEMP_DIR"' EXIT
-
-unzip -q "build/firefox-mv3-prod.zip" -d "$TEMP_DIR"
-
-# Inject extension ID into manifest.json if needed
-if command -v jq &> /dev/null; then
-  if ! jq -e '.browser_specific_settings.gecko.id' "$TEMP_DIR/manifest.json" > /dev/null 2>&1; then
-    jq --arg extId "$FIREFOX_EXT_ID" '. + {browser_specific_settings: {gecko: {id: $extId}}}' \
-      "$TEMP_DIR/manifest.json" > "$TEMP_DIR/manifest.json.tmp" && mv "$TEMP_DIR/manifest.json.tmp" "$TEMP_DIR/manifest.json"
-    echo -e "${GREEN}Injected extension ID into manifest.json${NC}"
-  fi
-fi
-
 export WEB_EXT_API_KEY="$FIREFOX_API_KEY"
 export WEB_EXT_API_SECRET="$FIREFOX_API_SECRET"
 
-web-ext sign --source-dir="$TEMP_DIR" --channel=listed
+web-ext sign --source-dir=build/firefox-mv3-prod --channel=listed
 
 echo -e "${GREEN}Submission successful!${NC}"

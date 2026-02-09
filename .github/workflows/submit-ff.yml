@@ -1,13 +1,32 @@
 name: "Submit to Firefox Add-ons"
 on:
   workflow_dispatch:
+    inputs:
+      channel:
+        description: "Submission channel"
+        required: true
+        type: choice
+        options:
+          - listed
+          - unlisted
+        default: listed
+      version:
+        description: "Version override (unlisted/beta only, e.g. 1.41.3.1)"
+        required: false
+        type: string
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    # Only run on production branch
-    if: github.ref == 'refs/heads/production'
+    # Only allow "listed" on production branch
+    if: ${{ inputs.channel == 'unlisted' || github.ref == 'refs/heads/production' }}
     steps:
+      - name: Validate inputs
+        if: inputs.channel == 'unlisted' && inputs.version == ''
+        run: |
+          echo "::error::Version is required for unlisted channel"
+          exit 1
+
       - uses: actions/checkout@v3
       - name: Set up Node.js
         uses: actions/setup-node@v4.0.1
@@ -30,27 +49,21 @@ jobs:
           echo "PLASMO_PUBLIC_GA_MEASUREMENT_ID=${{ secrets.GA_MEASUREMENT_ID }}" >> .env
           echo "PLASMO_PUBLIC_GA_API_SECRET=${{ secrets.GA_API_SECRET }}" >> .env
 
+      - name: Modify package.json for beta (unlisted)
+        if: inputs.channel == 'unlisted'
+        run: |
+          jq '.displayName = "Wander BETA"' package.json > temp.json && mv temp.json package.json
+          jq --arg version "${{ inputs.version }}" '.version = $version' package.json > temp.json && mv temp.json package.json
+          cp -rf assets-beta/* assets/
+
       - name: Build the Firefox extension (includes bundle splitting)
         run: yarn build:firefox
 
-      - name: Package into zip artifact
-        run: cd build/firefox-mv3-prod && zip -r ../firefox-mv3-prod.zip .
+      - name: Install web-ext
+        run: npm install -g web-ext
 
-      - name: Prepare submission keys
-        id: prepare-keys
-        run: |
-          # Take the base keys JSON and replace placeholder values with actual secrets
-          KEYS_JSON='${{ secrets.SUBMIT_KEYS_PRODUCTION_FF }}'
-          KEYS_JSON=$(echo "$KEYS_JSON" | jq --arg extId "${{ secrets.FIREFOX_EXT_ID }}" \
-            --arg apiKey "${{ secrets.FIREFOX_API_KEY }}" \
-            --arg apiSecret "${{ secrets.FIREFOX_API_SECRET }}" \
-            '.firefox.extId = $extId | .firefox.apiKey = $apiKey | .firefox.apiSecret = $apiSecret')
-          echo "KEYS_JSON<<EOF" >> $GITHUB_ENV
-          echo "$KEYS_JSON" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
-
-      - name: Browser Platform Publish
-        uses: PlasmoHQ/bpp@v3
-        with:
-          keys: ${{ env.KEYS_JSON }}
-          artifact: build/firefox-mv3-prod.zip
+      - name: Submit via web-ext
+        env:
+          WEB_EXT_API_KEY: ${{ secrets.FIREFOX_API_KEY }}
+          WEB_EXT_API_SECRET: ${{ secrets.FIREFOX_API_SECRET }}
+        run: web-ext sign --source-dir=build/firefox-mv3-prod --channel=${{ inputs.channel }}
