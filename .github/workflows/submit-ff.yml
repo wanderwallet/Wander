@@ -39,12 +39,11 @@ jobs:
       - name: Prepare submission keys
         id: prepare-keys
         run: |
-          # Take the base keys JSON and replace placeholder values with actual secrets
-          KEYS_JSON='${{ secrets.SUBMIT_KEYS_PRODUCTION_FF }}'
-          KEYS_JSON=$(echo "$KEYS_JSON" | jq --arg extId "${{ secrets.FIREFOX_EXT_ID }}" \
+          KEYS_JSON=$(jq -n \
+            --arg extId "${{ secrets.FIREFOX_EXT_ID }}" \
             --arg apiKey "${{ secrets.FIREFOX_API_KEY }}" \
             --arg apiSecret "${{ secrets.FIREFOX_API_SECRET }}" \
-            '.firefox.extId = $extId | .firefox.apiKey = $apiKey | .firefox.apiSecret = $apiSecret')
+            '{firefox: {extId: $extId, apiKey: $apiKey, apiSecret: $apiSecret}}')
           echo "KEYS_JSON<<EOF" >> $GITHUB_ENV
           echo "$KEYS_JSON" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
