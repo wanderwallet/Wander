@@ -36,18 +36,8 @@ jobs:
       - name: Package into zip artifact
         run: cd build && zip -r firefox-mv3-prod.zip firefox-mv3-prod/
 
-      - name: Prepare submission keys
-        id: prepare-keys
-        run: |
-          KEYS_JSON=$(jq -cn \
-            --arg extId "${{ secrets.FIREFOX_EXT_ID }}" \
-            --arg apiKey "${{ secrets.FIREFOX_API_KEY }}" \
-            --arg apiSecret "${{ secrets.FIREFOX_API_SECRET }}" \
-            '{firefox: {extId: $extId, apiKey: $apiKey, apiSecret: $apiSecret}}')
-          echo "keys=$KEYS_JSON" >> $GITHUB_OUTPUT
-
       - name: Browser Platform Publish
         uses: PlasmoHQ/bpp@v3
         with:
-          keys: ${{ steps.prepare-keys.outputs.keys }}
+          keys: '{"firefox":{"extId":"${{ secrets.FIREFOX_EXT_ID }}","apiKey":"${{ secrets.FIREFOX_API_KEY }}","apiSecret":"${{ secrets.FIREFOX_API_SECRET }}"}}'
           artifact: build/firefox-mv3-prod.zip
