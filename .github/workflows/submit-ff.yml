@@ -6,7 +6,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     # Only run on production branch
-    if: github.ref == 'refs/heads/production'
+    # if: github.ref == 'refs/heads/production'
     steps:
       - uses: actions/checkout@v3
       - name: Set up Node.js
