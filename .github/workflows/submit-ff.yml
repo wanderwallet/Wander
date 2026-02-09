@@ -39,17 +39,15 @@ jobs:
       - name: Prepare submission keys
         id: prepare-keys
         run: |
-          KEYS_JSON=$(jq -n \
+          KEYS_JSON=$(jq -cn \
             --arg extId "${{ secrets.FIREFOX_EXT_ID }}" \
             --arg apiKey "${{ secrets.FIREFOX_API_KEY }}" \
             --arg apiSecret "${{ secrets.FIREFOX_API_SECRET }}" \
             '{firefox: {extId: $extId, apiKey: $apiKey, apiSecret: $apiSecret}}')
-          echo "KEYS_JSON<<EOF" >> $GITHUB_ENV
-          echo "$KEYS_JSON" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
+          echo "keys=$KEYS_JSON" >> $GITHUB_OUTPUT
 
       - name: Browser Platform Publish
         uses: PlasmoHQ/bpp@v3
         with:
-          keys: ${{ env.KEYS_JSON }}
+          keys: ${{ steps.prepare-keys.outputs.keys }}
           artifact: build/firefox-mv3-prod.zip
