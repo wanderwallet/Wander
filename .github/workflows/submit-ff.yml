@@ -30,8 +30,11 @@ jobs:
           echo "PLASMO_PUBLIC_GA_MEASUREMENT_ID=${{ secrets.GA_MEASUREMENT_ID }}" >> .env
           echo "PLASMO_PUBLIC_GA_API_SECRET=${{ secrets.GA_API_SECRET }}" >> .env
 
-      - name: Build and Package the Firefox extension into a zip artifact
-        run: yarn build:firefox --zip
+      - name: Build the Firefox extension (includes bundle splitting)
+        run: yarn build:firefox
+
+      - name: Package into zip artifact
+        run: cd build && zip -r firefox-mv3-prod.zip firefox-mv3-prod/
 
       - name: Prepare submission keys
         id: prepare-keys
