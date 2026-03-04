@@ -16,6 +16,7 @@ export function WanderFooter() {
           className={styles.link}>
           Privacy Policy
         </a>
+        <span className={styles.separator}>&middot;</span>
         <a
           href="https://www.wander.app/legal/terms-of-service"
           target="_blank"

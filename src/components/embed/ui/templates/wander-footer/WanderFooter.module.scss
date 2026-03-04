@@ -15,10 +15,16 @@
 
 .links {
   display: flex;
-  width: 100%;
-  justify-content: space-between;
+  justify-content: center;
+  align-items: center;
+  gap: var(--spacing-2);
   margin-top: var(--spacing-2);
-  padding: 0 var(--spacing-4);
+}
+
+.separator {
+  color: var(--color-text-footer);
+  font-size: var(--font-size-xxs, 10px);
+  opacity: 0.7;
 }
 
 .link {
