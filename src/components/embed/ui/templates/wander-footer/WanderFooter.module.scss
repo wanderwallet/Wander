@@ -13,6 +13,26 @@
 .attribution {
 }
 
+.links {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  margin-top: var(--spacing-2);
+  padding: 0 var(--spacing-4);
+}
+
+.link {
+  color: var(--color-text-footer);
+  text-decoration: none;
+  font-size: var(--font-size-xxs, 10px);
+  opacity: 0.7;
+
+  &:hover {
+    opacity: 1;
+    text-decoration: underline;
+  }
+}
+
 .banner {
   z-index: 100;
   pointer-events: all;
