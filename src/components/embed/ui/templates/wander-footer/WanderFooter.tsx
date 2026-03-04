@@ -8,6 +8,23 @@ export function WanderFooter() {
       <div className={styles.attribution}>
         Secured by <WanderIcon />
       </div>
+      <div className={styles.links}>
+        <a
+          href="https://www.wander.app/legal/privacy-policy"
+          target="_blank"
+          rel="noopener noreferrer"
+          className={styles.link}>
+          Privacy Policy
+        </a>
+        <span className={styles.separator}>&middot;</span>
+        <a
+          href="https://www.wander.app/legal/terms-of-service"
+          target="_blank"
+          rel="noopener noreferrer"
+          className={styles.link}>
+          Terms of Service
+        </a>
+      </div>
     </footer>
   );
 }
