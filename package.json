@@ -1,7 +1,7 @@
 {
   "name": "wander",
   "displayName": "Wander",
-  "version": "1.40.0",
+  "version": "1.41.3",
   "description": "__MSG_extensionDescription__",
   "author": "th8ta",
   "packageManager": "yarn@1.22.18",
@@ -10,7 +10,7 @@
     "dev:chrome": "yarn patch:math-intrinsics && cross-env PARCEL_WORKER_BACKEND=process plasmo dev",
     "build:chrome": "yarn patch:math-intrinsics && cross-env PARCEL_WORKER_BACKEND=process plasmo build --no-hoist",
     "dev:firefox": "yarn patch:math-intrinsics && cross-env PARCEL_WORKER_BACKEND=process plasmo dev --target=firefox-mv3",
-    "build:firefox": "yarn patch:math-intrinsics && cross-env PARCEL_WORKER_BACKEND=process plasmo build --target=firefox-mv3 --no-hoist",
+    "build:firefox": "yarn patch:math-intrinsics && node patches/patch-plasmo-bundler.js && cross-env PARCEL_WORKER_BACKEND=process plasmo build --target=firefox-mv3 && node scripts/split-large-bundles.js",
     "dev:iframe": "vite",
     "build:iframe": "vite build && yarn build:assets",
     "preview:iframe": "vite preview",
@@ -55,16 +55,29 @@
           "*://*/*"
         ]
       }
-    ]
+    ],
+    "browser_specific_settings": {
+      "gecko": {
+        "id": "{6c337925-991d-4139-8b64-8380cd30517a}",
+        "data_collection_permissions": {
+          "required": [
+            "none"
+          ],
+          "optional": [
+            "technicalAndInteraction"
+          ]
+        }
+      }
+    }
   },
   "dependencies": {
-    "@ar.io/sdk": "^3.18.0",
+    "@ar.io/sdk": "^3.23.1",
     "@arconnect/components": "^1.0.0",
     "@arconnect/keystone-sdk": "^0.0.5",
     "@dha-team/arbundles": "^1.0.2",
     "@iconicicons/react": "^1.5.0",
-    "@keystonehq/arweave-keyring": "^0.1.1-alpha.0",
-    "@keystonehq/bc-ur-registry-arweave": "^0.1.1-alpha.0",
+    "@keystonehq/arweave-keyring": "^0.5.3",
+    "@keystonehq/bc-ur-registry-arweave": "^0.5.3",
     "@ngraveio/bc-ur": "^1.1.6",
     "@noble/curves": "^1.9.2",
     "@number-flow/react": "^0.5.5",
@@ -129,6 +142,7 @@
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.1",
+    "@plasmohq/bms": "^2.6.1",
     "@semantic-release/git": "^10.0.1",
     "@semantic-release/github": "^9.2.6",
     "@types/chrome": "^0.0.319",
@@ -182,5 +196,15 @@
   },
   "lint-staged": {
     "*.{js,ts,tsx,html,css,scss,md,json}": "prettier --write"
+  },
+  "@plasmohq/parcel-config": {
+    "minBundles": 2,
+    "minBundleSize": 3000,
+    "maxParallelRequests": 30
+  },
+  "@parcel/bundler-default": {
+    "minBundles": 2,
+    "minBundleSize": 3000,
+    "maxParallelRequests": 30
   }
 }
